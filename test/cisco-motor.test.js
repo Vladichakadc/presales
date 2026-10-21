@@ -7,7 +7,7 @@
 const test = require('node:test');
 const assert = require('node:assert');
 const M = require('../public/js/cisco-motor.js');
-const { MODELS, LICENCIAS_G2 } = require('../server/seed/legacyData/cisco.js');
+const { MODELS, LICENCIAS_G2, LICENCIAS_DNA } = require('../server/seed/legacyData/cisco.js');
 
 const id = (x) => MODELS.find((m) => m.id === x);
 const SR = (n) => id(`Cisco Secure Router ${n}`);
@@ -136,17 +136,101 @@ test('requisitos: «no lo tiene» y «no consta» apartan distinto; la segunda f
   assert.ok(poe.filas.find((x) => x.m.id === 'Cisco Secure Router C8235-G2').ok);
 });
 
-test('licencias de la G2 por la clase de la plataforma, y sin LIC-SEC en la 2XL', () => {
+test('licencias de la G2 por la clase de la plataforma, y sin LIC-SEC donde la guía no los admite', () => {
+  const skus = (l) => l.filas.map((x) => x.sku).filter(Boolean);
   const l = M.licencias(SR('C8231-G2'), { gestion: 'sdwan', nivel: 'A', seguridad: 'onbox', url: true, anios: 3 }, LICENCIAS_G2);
-  assert.deepStrictEqual(l.filas.map((x) => x.sku), ['R-OS-M-E', 'LIC-CSWAN-M-A', 'LIC-SEC-M-T', 'LIC-SEC-M-C']);
+  assert.deepStrictEqual(skus(l), ['R-OS-M-E', 'LIC-CSWAN-M-A', 'LIC-SEC-M-T', 'LIC-SEC-M-C']);
+  // En SD-WAN, la gestión del SD-WAN Manager se elige (nube de Cisco, Pro o propia): línea «elegir una».
+  // Es opcional (puede ir con controladores propios): la pantalla no la marca «Requerida».
+  assert.ok(l.filas.some((x) => !x.sku && x.opcional && /elegir una/.test(x.desc) && /LIC-CSWAN-HCLD/.test(x.nota)));
   const aut = M.licencias(SR('C8355-G2'), { gestion: 'autonomo', nivel: 'A', anios: 1 }, LICENCIAS_G2);
-  assert.deepStrictEqual(aut.filas.map((x) => x.sku), ['R-OS-L-E', 'LIC-ROS-L-A']);
-  const xxl = M.licencias(SR('C8650-G2'), { gestion: 'sdwan', nivel: 'A', seguridad: 'onbox' }, LICENCIAS_G2);
-  assert.ok(!xxl.filas.some((x) => /LIC-SEC/.test(x.sku)));
-  assert.ok(xxl.avisos.some((a) => /2XL/.test(a)));
-  const dna = M.licencias(id('Catalyst 8500-12X'), { nivel: 'E', anios: 5 }, LICENCIAS_G2);
-  assert.strictEqual(dna.filas[0].sku, 'DNA-C-T<n>-E-5Y');
-  assert.ok(dna.avisos.some((a) => /no admite DNA Essentials/.test(a)));
+  assert.deepStrictEqual(skus(aut), ['R-OS-L-E', 'LIC-ROS-L-A']);
+  // En autónomo, los add-ons de seguridad piden el SD-WAN Manager local (LIC-R-OP-SWM) y Routing Advantage.
+  const autSeg = M.licencias(SR('C8355-G2'), { gestion: 'autonomo', nivel: 'E', seguridad: 'onbox', anios: 1 }, LICENCIAS_G2);
+  assert.deepStrictEqual(skus(autSeg), ['R-OS-L-E', 'LIC-ROS-L-A', 'LIC-R-OP-SWM', 'LIC-SEC-L-T']);
+  // Ninguna nota se queda con la plantilla sin sustituir («R-OS-{c}-A»).
+  assert.ok(autSeg.filas.every((x) => !/\{c\}/.test(x.nota || '')), JSON.stringify(autSeg.filas.map((x) => x.nota)));
+  // La guía nombra los que no admiten Threat, URL ni Malware: C8130/C8140-G2, 8500 y 8600.
+  for (const n of ['C8130-G2', 'C8140-G2', 'C8550-G2', 'C8570-G2', 'C8650-G2']) {
+    const x = M.licencias(SR(n), { gestion: 'sdwan', nivel: 'A', seguridad: 'onbox' }, LICENCIAS_G2);
+    assert.ok(!skus(x).some((k) => /LIC-SEC/.test(k)), n);
+    assert.ok(x.avisos.some((a) => /no admite las licencias de seguridad/.test(a)), n);
+  }
+  assert.ok(skus(M.licencias(SR('C8131-G2'), { gestion: 'sdwan', nivel: 'A', seguridad: 'onbox' }, LICENCIAS_G2)).includes('LIC-SEC-S-T'));
+});
+
+test('DNA: tier de ancho de banda por el tráfico, sin pasar del máximo de la plataforma', () => {
+  const lic = (m, o) => M.licencias(m, { gestion: 'sdwan', nivel: 'A', anios: 3, ...o }, LICENCIAS_G2, LICENCIAS_DNA);
+  const dna = (l) => l.filas.find((x) => /^DNA-C-/.test(x.sku || '')).sku;
+  // En SD-WAN cuenta todo el tráfico WAN (los dos sentidos): 300 Mbps → T1 (400 agregados).
+  assert.strictEqual(dna(lic(id('Catalyst 8200'), { trafico: { wan: 300, cifrado: 210 } })), 'DNA-C-T1-A-3Y');
+  assert.strictEqual(dna(lic(id('Catalyst 8300-1N1S-4T2X'), { trafico: { wan: 5000, cifrado: 3500 } })), 'DNA-C-T3-A-3Y');
+  // El 8200 llega como mucho a T2 (la guía: «Tier 2 provides the max platform throughput»).
+  const alto = lic(id('Catalyst 8200'), { trafico: { wan: 3000, cifrado: 0 } });
+  assert.strictEqual(dna(alto), 'DNA-C-T2-A-3Y');
+  assert.ok(alto.avisos.some((a) => /el más alto de esta plataforma/.test(a)));
+  // T4 y T5 solo existen en el 20X6C.
+  assert.strictEqual(dna(lic(id('Catalyst 8500-20X6C'), { trafico: { wan: 40000, cifrado: 0 } })), 'DNA-C-T4-A-3Y');
+  assert.strictEqual(dna(lic(id('Catalyst 8500-12X4QC'), { trafico: { wan: 40000, cifrado: 0 } })), 'DNA-C-T3-A-3Y');
+  // Fuera de SD-WAN cuenta solo el cifrado; sin cifrado, el tier más bajo.
+  assert.strictEqual(dna(lic(id('Catalyst 8200'), { gestion: 'autonomo', trafico: { wan: 900, cifrado: 0 } })), 'DNA-C-T0-A-3Y');
+  assert.strictEqual(dna(lic(id('Catalyst 8200'), { gestion: 'autonomo', trafico: { wan: 900, cifrado: 300 } })), 'DNA-C-T1-A-3Y');
+  // El margen de crecimiento que cruza de tier se avisa.
+  assert.ok(lic(id('Catalyst 8200'), { trafico: { wan: 380, cifrado: 0, conMargen: 494 } }).avisos.some((a) => /haría falta el T2/.test(a)));
+});
+
+test('DNA: Premier discontinuado, Advantage obligatorio en 8500 y ASR, plazos, VPN y voz', () => {
+  const lic = (m, o) => M.licencias(m, { gestion: 'sdwan', anios: 3, trafico: { wan: 300, cifrado: 0 }, ...o }, LICENCIAS_G2, LICENCIAS_DNA);
+  const dna = (l) => l.filas.find((x) => /^DNA-C-/.test(x.sku || '')).sku;
+  const p = lic(id('Catalyst 8200'), { nivel: 'P' });
+  assert.strictEqual(dna(p), 'DNA-C-T1-A-3Y');
+  assert.ok(p.avisos.some((a) => /Premier está discontinuado/.test(a)));
+  for (const n of ['Catalyst 8500-12X', 'ASR 1002-HX']) {
+    const e = lic(id(n), { nivel: 'E' });
+    assert.match(dna(e), /-A-3Y$/, n);
+    assert.ok(e.avisos.some((a) => /solo admite DNA Advantage/.test(a)), n);
+  }
+  // Los plazos de DNA son 3, 5 y 7 años: 1 año no existe.
+  const uno = lic(id('Catalyst 8200'), { nivel: 'A', anios: 1 });
+  assert.strictEqual(dna(uno), 'DNA-C-T1-A-3Y');
+  assert.ok(uno.avisos.some((a) => /3, 5 o 7 años/.test(a)));
+  assert.strictEqual(dna(lic(id('Catalyst 8200'), { nivel: 'A', anios: 7 })), 'DNA-C-T1-A-7Y');
+  // Essentials: 10 VPN de usuario. Con más, Advantage.
+  assert.strictEqual(dna(lic(id('Catalyst 8200'), { nivel: 'E', vpns: 10 })), 'DNA-C-T1-E-3Y');
+  const seg = lic(id('Catalyst 8200'), { nivel: 'E', vpns: 12 });
+  assert.strictEqual(dna(seg), 'DNA-C-T1-A-3Y');
+  assert.ok(seg.avisos.some((a) => /10 VPN de usuario/.test(a)));
+  // Los módulos de voz piden Advantage (guía de pedido, tabla 9): con Essentials, se avisa.
+  const { MODULOS_C8K } = require('../server/seed/legacyData/cisco.js');
+  const fxs = MODULOS_C8K.find((x) => x.sku === 'NIM-4FXSP');
+  assert.ok(lic(id('Catalyst 8300-1N1S-6T'), { nivel: 'E', modulos: [fxs] }).avisos.some((a) => /módulos de voz/.test(a)));
+  assert.ok(!lic(id('Catalyst 8300-1N1S-6T'), { nivel: 'A', modulos: [fxs] }).avisos.some((a) => /módulos de voz/.test(a)));
+});
+
+test('cifrado: HSEC incluida en los Catalyst 8200/8300 y en el ISR por encima de VPERF', () => {
+  const lic = (m, o) => M.licencias(m, { gestion: 'sdwan', nivel: 'A', anios: 3, ...o }, LICENCIAS_G2, LICENCIAS_DNA);
+  const c = lic(id('Catalyst 8300-1N1S-6T'), { trafico: { wan: 300, cifrado: 200 } });
+  const h = c.filas.find((x) => x.sku === 'C8000-HSEC');
+  assert.ok(h && h.incluida, 'la HSEC va incluida con la suscripción');
+  const c85 = lic(id('Catalyst 8500-12X'), { trafico: { wan: 300, cifrado: 200 } });
+  assert.ok(!c85.filas.some((x) => /HSEC/.test(x.sku || '')), 'el 8500 no la lleva por esta guía');
+  // Y no se calla: dice que para él las fuentes no la nombran, en vez de darla por resuelta.
+  assert.ok(c85.avisos.some((x) => /HSEC: .*no la nombran/.test(x)));
+  // ISR: SEC 50 Mbps, VPERF 250 (8P) o 150 (4P), HSEC sin límite.
+  assert.ok(lic(id('ISR 1111-8P'), { trafico: { wan: 400, cifrado: 300 } }).filas.some((x) => x.sku === 'FL-1100-8P-HSEC'));
+  assert.ok(lic(id('ISR 1116-4P'), { trafico: { wan: 400, cifrado: 200 } }).filas.some((x) => x.sku === 'FL-1100-4P-HSEC'));
+  const bajo = lic(id('ISR 1111-8P'), { trafico: { wan: 300, cifrado: 200 } });
+  assert.ok(!bajo.filas.some((x) => /HSEC/.test(x.sku || '')) && bajo.avisos.some((a) => /basta la licencia de rendimiento VPERF/.test(a)));
+  // En autónomo, el Catalyst ofrece Routing Essentials como alternativa.
+  assert.ok(lic(id('Catalyst 8200'), { gestion: 'autonomo', trafico: { wan: 300, cifrado: 0 } }).avisos.some((a) => /ROUT-P-C8200-E-7Y/.test(a)));
+});
+
+test('el tráfico que cuenta para el tier: todo el WAN en SD-WAN; el cifrado fuera de él', () => {
+  const d = M.demanda({ ...base, diaPct: 30, bwMbps: 500 });
+  const sd = M.traficoLicencia(d, { perfil: 'sdwan', seguridad: 'ninguna', headPct: 30 });
+  assert.deepStrictEqual([sd.wan, sd.cifrado], [1000, 700]);
+  assert.strictEqual(M.traficoLicencia(d, { perfil: 'sdwan', seguridad: 'sse', headPct: 30 }).cifrado, 1000);
+  assert.strictEqual(M.traficoLicencia(d, { perfil: 'fwd', seguridad: 'ninguna', headPct: 30 }).cifrado, 0);
 });
 
 test('Meraki: la licencia por suscripción lleva la referencia de su clase', () => {

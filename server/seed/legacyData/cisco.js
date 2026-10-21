@@ -134,50 +134,50 @@ const MODELS = [
   {id:'Catalyst 8200L',   ser:'Catalyst 8000', fam:'Sucursal SD-WAN compacta',          fwd:3800, ipsec:400, sdwan:300, amenazas:null, aps:null, redund:false, lte:false, bases:B_C8K,
    tuneles:1500, pim:true, clase:null,
    psu:{tipo:'fuente interna fija de AC', texto:'Ficha: «Both models use an internal, fixed AC power supply»; el PoE de una NIM pide una fuente externa adicional.'},
-   ports:'2 GE RJ45 + 2 GE SFP WAN · 1 NIM · 1 PIM', nim:1, sm:0, optics:['sfp1g'], parts:['DNA-ADVANTAGE'], lic:'dna', datasheet:DS.c8200},
+   ports:'2 GE RJ45 + 2 GE SFP WAN · 1 NIM · 1 PIM', nim:1, sm:0, optics:['sfp1g'], parts:['DNA-ADVANTAGE'], lic:'dna', dnaTierMax:'T2', datasheet:DS.c8200},
   {id:'Catalyst 8200',    ser:'Catalyst 8000', fam:'Sucursal SD-WAN estándar',          fwd:3800, ipsec:900, sdwan:850, amenazas:980, aps:null, redund:false, lte:false, bases:B_C8K,
    tuneles:2500, pim:true,
    psu:{tipo:'fuente interna fija de AC', texto:'Ficha: «Both models use an internal, fixed AC power supply»; el PoE de una NIM pide una fuente externa adicional.'},
-   ports:'2 GE RJ45 + 2 GE SFP WAN · 1 NIM · 1 PIM', nim:1, sm:0, optics:['sfp1g'], parts:['DNA-ADVANTAGE'], elp:'$6,967.76', elpN:6967.76, lic:'dna', datasheet:DS.c8200},
+   ports:'2 GE RJ45 + 2 GE SFP WAN · 1 NIM · 1 PIM', nim:1, sm:0, optics:['sfp1g'], parts:['DNA-ADVANTAGE'], elp:'$6,967.76', elpN:6967.76, lic:'dna', dnaTierMax:'T2', datasheet:DS.c8200},
   {id:'Catalyst 8300-1N1S-6T',   ser:'Catalyst 8000', fam:'Hub regional SD-WAN, WAN 1G',  fwd:19700, ipsec:1900, sdwan:1700, amenazas:2100, aps:null, redund:true, lte:false, bases:B_C8K,
    tuneles:6000, pim:true,
    psu:{tipo:'dos fuentes de serie', texto:'Ficha: «All Catalyst 8300 platforms ship with dual power supplies for redundancy».'},
-   ports:'6 GE (2 SFP) · 1 NIM · 1 SM · 1 PIM · 1RU', nim:1, sm:1, optics:['sfp1g','sfp10g'], parts:['DNA-ADVANTAGE'], elp:'$21,286.41', elpN:21286.41, lic:'dna', datasheet:DS.c8300},
+   ports:'6 GE (2 SFP) · 1 NIM · 1 SM · 1 PIM · 1RU', nim:1, sm:1, optics:['sfp1g','sfp10g'], parts:['DNA-ADVANTAGE'], elp:'$21,286.41', elpN:21286.41, lic:'dna', dnaTierMax:'T2', datasheet:DS.c8300},
   {id:'Catalyst 8300-1N1S-4T2X', ser:'Catalyst 8000', fam:'Hub regional SD-WAN, WAN 10G', fwd:19700, ipsec:6600, sdwan:5500, amenazas:2900, aps:null, redund:true, lte:false, bases:B_C8K,
    tuneles:6000, pim:true,
    psu:{tipo:'dos fuentes de serie', texto:'Ficha: «All Catalyst 8300 platforms ship with dual power supplies for redundancy».'},
-   ports:'2x 10G SFP+ + 4 GE · 1 NIM · 1 SM · 1 PIM · 1RU', nim:1, sm:1, optics:['sfp1g','sfp10g'], parts:['DNA-ADVANTAGE'], lic:'dna', datasheet:DS.c8300},
+   ports:'2x 10G SFP+ + 4 GE · 1 NIM · 1 SM · 1 PIM · 1RU', nim:1, sm:1, optics:['sfp1g','sfp10g'], parts:['DNA-ADVANTAGE'], lic:'dna', dnaTierMax:'T3', datasheet:DS.c8300},
   {id:'Catalyst 8300-2N2S-6T',   ser:'Catalyst 8000', fam:'Hub regional SD-WAN doble NIM, WAN 1G', fwd:19700, ipsec:1900, sdwan:1700, amenazas:2300, aps:null, redund:true, lte:false, bases:B_C8K,
    tuneles:6000, pim:true,
    psu:{tipo:'dos fuentes de serie', texto:'Ficha: «All Catalyst 8300 platforms ship with dual power supplies for redundancy».'},
-   ports:'6 GE (2 SFP) · 2 NIM · 2 SM · 1 PIM · 2RU', nim:2, sm:2, optics:['sfp1g','sfp10g'], parts:['DNA-ADVANTAGE'], elp:'$29,026.93', elpN:29026.93, lic:'dna', datasheet:DS.c8300},
+   ports:'6 GE (2 SFP) · 2 NIM · 2 SM · 1 PIM · 2RU', nim:2, sm:2, optics:['sfp1g','sfp10g'], parts:['DNA-ADVANTAGE'], elp:'$29,026.93', elpN:29026.93, lic:'dna', dnaTierMax:'T2', datasheet:DS.c8300},
   {id:'Catalyst 8300-2N2S-4T2X', ser:'Catalyst 8000', fam:'Hub regional SD-WAN doble NIM, WAN 10G', fwd:19700, ipsec:9300, sdwan:5600, amenazas:4900, aps:null, redund:true, lte:false, bases:B_C8K,
    tuneles:6000, pim:true,
    psu:{tipo:'dos fuentes de serie', texto:'Ficha: «All Catalyst 8300 platforms ship with dual power supplies for redundancy».'},
-   ports:'2x 10G SFP+ + 4 GE · 2 NIM · 2 SM · 1 PIM · 2RU', nim:2, sm:2, optics:['sfp1g','sfp10g'], parts:['DNA-ADVANTAGE'], lic:'dna', datasheet:DS.c8300},
+   ports:'2x 10G SFP+ + 4 GE · 2 NIM · 2 SM · 1 PIM · 2RU', nim:2, sm:2, optics:['sfp1g','sfp10g'], parts:['DNA-ADVANTAGE'], lic:'dna', dnaTierMax:'T3', datasheet:DS.c8300},
   {id:'Catalyst 8500L-8S4X',     ser:'Catalyst 8000', fam:'Agregación / hub DC compacto',  fwd:39000, ipsec:19000, sdwan:10000, amenazas:4000, aps:null, redund:true, lte:false, bases:B_C85,
    tuneles:6000,
    psu:{tipo:'dos fuentes de serie', texto:'Ficha: «High-efficiency dual power supplies by default for power supply redundancy».'},
-   ports:'4x 1/10G SFP+ + 8x 1G SFP · 1RU', nim:0, sm:0, optics:['sfp1g','sfp10g'], parts:['DNA-ADVANTAGE'], lic:'dna', datasheet:DS.c8500},
+   ports:'4x 1/10G SFP+ + 8x 1G SFP · 1RU', nim:0, sm:0, optics:['sfp1g','sfp10g'], parts:['DNA-ADVANTAGE'], lic:'dna', dnaTierMax:'T3', datasheet:DS.c8500},
   {id:'Catalyst 8500-12X',       ser:'Catalyst 8000', fam:'Hub DC / agregación 10G',       fwd:118000, ipsec:84000, sdwan:22600, amenazas:null, aps:null, redund:true, lte:false, bases:B_C85,
    tuneles:8000,
    psu:{tipo:'dos fuentes de serie (PWR-CH1-750WACR o PWR-CH1-950WDCR)', texto:'Ficha: «High-efficiency dual power supplies by default for power supply redundancy».'},
-   ports:'12x 1/10G SFP+ · 1RU', nim:0, sm:0, optics:['sfp10g'], parts:['DNA-ADVANTAGE'], lic:'dna', datasheet:DS.c8500},
+   ports:'12x 1/10G SFP+ · 1RU', nim:0, sm:0, optics:['sfp10g'], parts:['DNA-ADVANTAGE'], lic:'dna', dnaTierMax:'T3', datasheet:DS.c8500},
   {id:'Catalyst 8500-12X4QC',    ser:'Catalyst 8000', fam:'Hub DC / Edge de alto rendimiento', fwd:197000, ipsec:135000, sdwan:31900, amenazas:null, aps:null, redund:true, lte:false, bases:B_C85,
    tuneles:8000,
    psu:{tipo:'dos fuentes de serie (PWR-CH1-750WACR o PWR-CH1-950WDCR)', texto:'Ficha: «High-efficiency dual power supplies by default for power supply redundancy».'},
-   ports:'12x 10G SFP+ + 4x 40G QSFP · 1RU', nim:0, sm:0, optics:['sfp10g','qsfp40g','qsfp100g'], parts:['DNA-ADVANTAGE'], lic:'dna', datasheet:DS.c8500},
+   ports:'12x 10G SFP+ + 4x 40G QSFP · 1RU', nim:0, sm:0, optics:['sfp10g','qsfp40g','qsfp100g'], parts:['DNA-ADVANTAGE'], lic:'dna', dnaTierMax:'T3', datasheet:DS.c8500},
   {id:'Catalyst 8500-20X6C',     ser:'Catalyst 8000', fam:'Núcleo SD-WAN / DC de alta densidad', fwd:500000, ipsec:400000, sdwan:100000, amenazas:null, aps:null, redund:true, lte:false, bases:B_C85,
    tuneles:8000,
    psu:{tipo:'fuentes N+1 de serie (opción N+2): PWR-CH1-1100WAC o PWR-CH1-950WDC', texto:'Ficha: «N+1 redundancy (Option N+2 redundancy)».'},
-   ports:'20x 1/10G SFP+ + 6x 40/100G QSFP28 · 3RU', nim:0, sm:0, optics:['sfp10g','qsfp40g','qsfp100g'], parts:['DNA-ADVANTAGE'], lic:'dna', datasheet:DS.c8500},
+   ports:'20x 1/10G SFP+ + 6x 40/100G QSFP28 · 3RU', nim:0, sm:0, optics:['sfp10g','qsfp40g','qsfp100g'], parts:['DNA-ADVANTAGE'], lic:'dna', dnaTierMax:'T5', datasheet:DS.c8500},
 
   // ── Cisco Secure Router (G2) ── Fichas de las series 8100 a 8600 y «Cisco 8000 Series Secure Routers
   // Ordering Guide» (oct-2026). `clase` es la «Platform class» de su tabla 1 (S, M, L, XL, 2XL), que es
   // la que fija la referencia de cada licencia (LIC-CSWAN-<clase>-E/A, LIC-SEC-<clase>-T...). Los
   // túneles son los de IOS XE 26.2.1 en adelante; la cifra anterior va en `tunelesNota`. Precio de
   // lista solo en el C8355-G2, el único que traía el export de CCW del 17-ago-2026.
-  {id:'Cisco Secure Router C8130-G2', ser:'Secure Router (G2)', fam:'Sucursal pequeña, 6 GE', clase:'S', fwd:1900, ipsec:1500, sdwan:900, amenazas:null, aps:null, redund:false, lte:false, bases:B_G2,
+  {id:'Cisco Secure Router C8130-G2', ser:'Secure Router (G2)', fam:'Sucursal pequeña, 6 GE', clase:'S', fwd:1900, ipsec:1500, sdwan:900, amenazas:null, aps:null, redund:false, lte:false, bases:B_G2, secAddon:false,
    tuneles:250, rutas:280000, nat:100000, pim:false, sdwanDesde:'IOS XE 26.2.1',
    psu:{watts:16, tipo:'adaptador externo (PWR-CC1-30WAC por defecto)'},
    ports:'1 GE + 1 GE RJ45/SFP WAN · 2 GE flex · 2 GE LAN', nim:0, sm:0, optics:['sfp1g'], parts:[], lic:'cswan', datasheet:DS.sr8100},
@@ -185,7 +185,7 @@ const MODELS = [
    tuneles:250, rutas:500000, nat:100000, pim:false,
    psu:{watts:16, tipo:'adaptador externo (PWR-CC1-30WAC por defecto)'},
    ports:'1 GE + 1 GE RJ45/SFP WAN · 2 GE flex · 2 GE LAN', nim:0, sm:0, optics:['sfp1g'], parts:[], lic:'cswan', datasheet:DS.sr8100},
-  {id:'Cisco Secure Router C8140-G2', ser:'Secure Router (G2)', fam:'Sucursal pequeña, 10 GE', clase:'S', fwd:5600, ipsec:1500, sdwan:900, amenazas:null, aps:null, redund:false, lte:false, bases:B_G2,
+  {id:'Cisco Secure Router C8140-G2', ser:'Secure Router (G2)', fam:'Sucursal pequeña, 10 GE', clase:'S', fwd:5600, ipsec:1500, sdwan:900, amenazas:null, aps:null, redund:false, lte:false, bases:B_G2, secAddon:false,
    tuneles:250, rutas:280000, nat:100000, pim:false, sdwanDesde:'IOS XE 26.2.1',
    psu:{watts:20, tipo:'adaptador externo (PWR-CC1-66WAC por defecto)'},
    ports:'2 GE RJ45/SFP WAN · 2 GE flex · 6 GE LAN', nim:0, sm:0, optics:['sfp1g'], parts:[], lic:'cswan', datasheet:DS.sr8100},
@@ -246,15 +246,15 @@ const MODELS = [
    tuneles:6000, tunelesNota:'3.500 antes de IOS XE 26.2.1', rutas:5800000, nat:null, pim:false,
    psu:{tipo:'400 W AC (PWR-CH1-400WAC) por defecto; 400 W DC u HVDC', texto:'La ficha da el peso «with 2x AC power supplies and fan tray» y la guía de pedido una sola referencia de fuente por defecto: cuántas vienen de serie no consta. Confirmar en CCW antes de prometer redundancia.'},
    ports:'8x 1G SFP + 8x 10G SFP+ + 4x 10/25G SFP28 · 1RU · 32 GB', nim:0, sm:0, optics:['sfp1g','sfp10g'], parts:[], lic:'cswan', datasheet:DS.sr8400},
-  {id:'Cisco Secure Router C8550-G2', ser:'Secure Router (G2)', fam:'Agregación / headend DC, 12x 10G', clase:'XL', fwd:115000, ipsec:48000, sdwan:19000, amenazas:null, aps:null, redund:null, lte:false, bases:B_G2,
+  {id:'Cisco Secure Router C8550-G2', ser:'Secure Router (G2)', fam:'Agregación / headend DC, 12x 10G', clase:'XL', fwd:115000, ipsec:48000, sdwan:19000, amenazas:null, aps:null, redund:null, lte:false, bases:B_G2, secAddon:false,
    tuneles:10000, rutas:8000000, nat:16000000, pim:false, macsec:'integrado',
    psu:{tipo:'750 W AC (PWR-CH1-750WACR) o 950 W DC', texto:'La guía de instalación muestra dos bahías de fuente (PEM 0 y PEM 1); la guía de pedido no dice cuántas vienen por defecto.'},
    ports:'12x 1/10G SFP+ · MACsec en todos · 1RU', nim:0, sm:0, optics:['sfp1g','sfp10g'], parts:[], lic:'cswan', datasheet:DS.sr8500},
-  {id:'Cisco Secure Router C8570-G2', ser:'Secure Router (G2)', fam:'Agregación / headend DC con 40/100G', clase:'XL', fwd:190000, ipsec:63000, sdwan:21000, amenazas:null, aps:null, redund:null, lte:false, bases:B_G2,
+  {id:'Cisco Secure Router C8570-G2', ser:'Secure Router (G2)', fam:'Agregación / headend DC con 40/100G', clase:'XL', fwd:190000, ipsec:63000, sdwan:21000, amenazas:null, aps:null, redund:null, lte:false, bases:B_G2, secAddon:false,
    tuneles:10000, rutas:8000000, nat:16000000, pim:false, macsec:'integrado',
    psu:{tipo:'750 W AC (PWR-CH1-750WACR) o 950 W DC', texto:'La guía de instalación muestra dos bahías de fuente (PEM 0 y PEM 1); la guía de pedido no dice cuántas vienen por defecto.'},
    ports:'12x 10G SFP+ + 2x 40G QSFP+ + 2x 40/100G QSFP28 (240G simultáneos) · 1RU', nim:0, sm:0, optics:['sfp10g','qsfp40g','qsfp100g'], parts:[], lic:'cswan', datasheet:DS.sr8500},
-  {id:'Cisco Secure Router C8650-G2', ser:'Secure Router (G2)', fam:'Núcleo SD-WAN / headend de proveedor', clase:'2XL', fwd:540000, ipsec:225000, sdwan:80000, amenazas:null, aps:null, redund:true, lte:false, bases:B_G2,
+  {id:'Cisco Secure Router C8650-G2', ser:'Secure Router (G2)', fam:'Núcleo SD-WAN / headend de proveedor', clase:'2XL', fwd:540000, ipsec:225000, sdwan:80000, amenazas:null, aps:null, redund:true, lte:false, bases:B_G2, secAddon:false,
    tuneles:12000, rutas:16000000, nat:32000000, pim:false, macsec:'integrado',
    psu:{tipo:'tres fuentes de 1.100 W AC por defecto (3x PWR-CH1-1100WAC-D) o 950 W DC', texto:'Ficha: «AC or DC power supplies (N+2 redundancy)»; guía de pedido: tres fuentes por defecto y una cuarta opcional.'},
    ports:'20x 1/10G SFP+ + 6x 40/100G QSFP28 · 3RU · 64 GB', nim:0, sm:0, optics:['sfp10g','qsfp40g','qsfp100g'], parts:[], lic:'cswan', datasheet:DS.sr8600},
@@ -355,8 +355,10 @@ for (const m of MODELS) {
 }
 
 // Licencias de la línea G2 (guía de pedido, tablas 9 y 10). La referencia completa sale de la clase
-// de la plataforma; el término y el precio, de CCW. LIC-SEC no existe en 2XL: el 8600 no publica
-// Threat Protection.
+// de la plataforma; el término y el precio, de CCW. Los add-ons de seguridad (LIC-SEC) no van en el
+// C8130-G2, el C8140-G2 ni las series 8500 y 8600 (la guía los nombra: `secAddon: false` en cada
+// modelo), y con Routing Advantage piden el SD-WAN Manager local (LIC-R-OP-SWM). La gestión en la
+// nube del SD-WAN Manager es opcional y se elige.
 const LICENCIAS_G2 = {
   cswanE: {sku:'LIC-CSWAN-{c}-E', n:'Cisco WAN Essentials', d:'Bajo Cisco Networking subscription. SD-WAN gestionado desde Catalyst SD-WAN Manager.'},
   cswanA: {sku:'LIC-CSWAN-{c}-A', n:'Cisco WAN Advantage', d:'Bajo Cisco Networking subscription. Todo Essentials más las funciones avanzadas de la matriz de licencias.'},
@@ -365,6 +367,45 @@ const LICENCIAS_G2 = {
   secT:   {sku:'LIC-SEC-{c}-T',   n:'Seguridad — Threat', d:'Complemento de amenazas (IPS). Requiere WAN Essentials/Advantage, Routing Advantage u OS Advantage.'},
   secC:   {sku:'LIC-SEC-{c}-C',   n:'Seguridad — URL Filtering', d:'Requiere además el complemento Threat. Se gestiona desde SD-WAN Manager.'},
   secM:   {sku:'LIC-SEC-{c}-M',   n:'Seguridad — Malware Defense', d:'Requiere además el complemento Threat. Se gestiona desde SD-WAN Manager.'},
+  swmOnPrem: {sku:'LIC-R-OP-SWM', n:'SD-WAN Manager local', d:'«Required for Security Add-ons with Routing Advantage/OS Advantage» (guía de pedido, tabla 10).'},
+  nube: {n:'Gestión del SD-WAN Manager (opcional) — elegir una', d:'Cisco Hosted Cloud (LIC-CSWAN-HCLD), Hosted Cloud Pro (LIC-CSWAN-HCLDP-A, proveedor elegido por Cisco, o LIC-CSWAN-HCLDPRO, por el cliente) o controladores propios; LIC-CSWAN-HCLDMSP solo para proveedores de servicio calificados (guía de pedido, tabla 10).'},
+};
+
+// Licencias DNA de los Catalyst 8000, el ISR 1000 y el ASR 1000. Fuentes: «Cisco DNA Software for
+// SD-WAN and Routing — Subscription FAQ» (16-jun-2026), la guía de pedido de los Catalyst 8300/8200
+// (17-jun-2026) y la ficha del ISR 1000.
+//  · Tiers de ancho de banda (FAQ, tabla 3): nominal y agregado. En SD-WAN cuenta TODO el tráfico
+//    WAN (IPsec, salida directa, GRE); en modo autónomo con cifrado, el cifrado; sin cifrado, el
+//    tier más bajo de la plataforma ya libera todo el reenvío. T4 solo en el 8000V y el 8500-20X6C;
+//    T5 solo en el 20X6C. El tier máximo de cada plataforma va en su `dnaTierMax` (notas de la
+//    tabla 11 de la guía: T2 da el máximo del 8200 y de los 8300-6T; T3, el de los 4T2X y los 8500).
+//  · Plazos de 3, 5 y 7 años. DNA Premier está discontinuado (FAQ). El 8500 y el ASR 1000 solo
+//    admiten Advantage. Essentials trae firewall de aplicaciones, IPS/IDS, filtrado de URL y Secure
+//    Endpoint, pero solo 10 VPN de usuario (más la de gestión); la segmentación sin límite es de
+//    Advantage.
+//  · HSEC (guía, tabla 8): obligatoria para el cifrado completo en los 8200/8300; va incluida con la
+//    suscripción DNA (C8000-HSEC, o C8000-HSEC-DNA si DNA se pide aparte). En el ISR 1000 (ficha,
+//    tabla 41): SEC da 50 Mbps de IPsec, VPERF lo lleva a 250 (8P) o 150 (4P) y HSEC quita el límite.
+//  · Voz (guía, tabla 9): los módulos de voz y SRST piden DNA Advantage; CUBE, Essentials.
+//  · Catalyst Routing Essentials (guía y FAQ): solo modo autónomo, 7 años, sin tier de ancho de banda;
+//    firewall de aplicaciones e IPsec punto a punto con HSEC; sin SD-WAN.
+const LICENCIAS_DNA = {
+  tiers: [
+    {t:'T0', nominal:25,    agregado:50},
+    {t:'T1', nominal:200,   agregado:400},
+    {t:'T2', nominal:1000,  agregado:2000},
+    {t:'T3', nominal:10000, agregado:20000},
+    {t:'T4', nominal:25000, agregado:50000, solo:['Catalyst 8500-20X6C']},
+    {t:'T5', nominal:50000, agregado:100000, solo:['Catalyst 8500-20X6C']},
+  ],
+  terminos: [3, 5, 7],
+  // Prefijos de `id` (no RegExp: el objeto viaja como JSON a la página).
+  soloAdvantage: ['Catalyst 8500', 'ASR 1'],
+  vpnsEssentials: 10,
+  hsecCatalyst: {sku:'C8000-HSEC', familias:['Catalyst 8200', 'Catalyst 8300'], n:'Licencia HSEC (exportación de criptografía)',
+    d:'Obligatoria para el cifrado completo; va incluida con la suscripción DNA (C8000-HSEC-DNA si DNA se pide aparte). Guía de pedido, tabla 8.'},
+  isr: {sec:50, vperf8P:250, vperf4P:150, hsec8P:'FL-1100-8P-HSEC', hsec4P:'FL-1100-4P-HSEC'},
+  routingEssentials: [{familia:'Catalyst 8300', sku:'ROUT-P-C8300-E-7Y'}, {familia:'Catalyst 8200', sku:'ROUT-P-C8200-E-7Y'}],
 };
 // Módulos de la guía de pedido de la G2 (tabla 7, «Supported NIM and SM modules on the C8300 and
 // C8200 Series») y de celular (tabla 8). `en` dice qué tipo de ranura ocupa.
@@ -410,8 +451,9 @@ const MODULOS_C8K = (() => {
   for (const c of columnas) {
     for (const sku of c.skus) {
       const ya = lista.find(x => x.sku === sku);
-      if (ya) { ya.d = 'NIM de datos y de voz'; continue; }
+      if (ya) { ya.d = 'NIM de datos y de voz'; ya.voz = true; continue; }
       const x = {sku, en:c.en, d:c.d};
+      if (c.d === 'NIM de voz' || /^SM-X-(\d+FXS|8FXS|16FXS|24FXS|72FXS|PVDM)/.test(sku)) x.voz = true;
       if (solo8300.has(sku)) x.familia = 'Catalyst 8300';
       if (dobleAncho.has(sku)) { x.familia = 'Catalyst 8300-2N2S'; x.ranuras = 2; }
       lista.push(x);
@@ -520,9 +562,9 @@ const SMARTNET = {
 //  · DNA Essentials NO soporta tier de ancho de banda T3 o superior (requiere Advantage o Premier).
 //  · Catalyst 8500 series solo soporta DNA Advantage — Essentials no está disponible en esa plataforma.
 const DNA_DESC = {
-  ess:  'DNA Essentials — licenciamiento básico: SD-WAN, QoS, administración centralizada. No disponible en Catalyst 8500 ni en tiers de ancho de banda T3+.',
-  adv:  'DNA Advantage — SD-WAN avanzado: AppFlow, Catalyst SD-WAN Analytics, ThousandEyes, Zero Trust Network Access. Único tier soportado en Catalyst 8500.',
-  pre:  'DNA Premier — todo Advantage + Umbrella SIG, Secure Endpoint, Duo MFA integrado. Requiere programa Cisco Network Premier.',
+  ess:  'DNA Essentials — SD-WAN Manager (nube o local), topología libre, políticas por aplicación, firewall de aplicaciones, IPS/IDS Snort, filtrado de URL, Secure Endpoint, FEC y OSPF/BGP; hasta 10 VPN de usuario. No disponible en el Catalyst 8500 ni el ASR 1000 (FAQ de DNA, 16-jun-2026).',
+  adv:  'DNA Advantage — todo Essentials más segmentación sin límite, SD-WAN Analytics, Predictive Path Recommendations (ThousandEyes WAN Insights), Cloud OnRamp avanzado y encadenado de servicios (FAQ de DNA, 16-jun-2026).',
+  pre:  'DNA Premier — discontinuado (FAQ de DNA, 16-jun-2026): se propone Advantage.',
 };
 
 // Cisco Networking Cloud — dos frentes de unificación confirmados:
@@ -541,4 +583,4 @@ const CLOUD_UNIFICATION_NOTE = 'Cisco unificó Meraki y Catalyst bajo "Cisco Net
 // la página del dimensionador.
 const SDWAN_COMPARISON_NOTE = 'Catalyst SD-WAN es un router con funciones de seguridad añadidas; Fortinet y Palo Alto son firewalls con routing añadido — por eso la visibilidad nativa de tráfico/aplicaciones y el enrutamiento consciente de aplicaciones de Cisco suelen calificar por debajo de Fortinet en reportes de usuarios, y la licencia/configuración es más compleja y costosa. A favor de Cisco: soporte nativo de Segment Routing sobre IPv6 (SRv6) para ingeniería de tráfico determinística en WANs multi-MPLS complejas, algo que Fortinet, Palo Alto y Aruba no igualan — ventaja real en entornos grandes con múltiples proveedores de transporte.';
 
-module.exports = { MODELS, OPTICS, OPTIC_LABEL, PARTS_DESC, SMARTNET, DNA_DESC, LICENCIAS_G2, MODULOS_G2, MODULOS_C8K, CLOUD_UNIFICATION_NOTE, SDWAN_COMPARISON_NOTE };
+module.exports = { MODELS, OPTICS, OPTIC_LABEL, PARTS_DESC, SMARTNET, DNA_DESC, LICENCIAS_G2, LICENCIAS_DNA, MODULOS_G2, MODULOS_C8K, CLOUD_UNIFICATION_NOTE, SDWAN_COMPARISON_NOTE };

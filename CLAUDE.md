@@ -453,7 +453,12 @@ Módulos compartidos:
   entero. El descifrado TLS en el router no tiene cifra: sin candidato. Escala publicada que no llega
   y requisito que no consta apartan con su motivo; lo no publicado, avisa. En SD-WAN un modelo sin
   cifra propia cae a IPsec y la lista lo marca. Licencias G2 por `clase` (S…2XL, guía de pedido) y
-  segunda fuente `psu2`; en Meraki, la licencia por suscripción por clase de equipo (`licClase`:
+  segunda fuente `psu2`; los LIC-SEC no se proponen donde la guía los niega (`secAddon: false`), y en
+  autónomo piden Routing Advantage y LIC-R-OP-SWM. **DNA** (`LICENCIAS_DNA`, FAQ de DNA y guía de
+  los 8300/8200): el tier sale del tráfico (todo el WAN en SD-WAN, solo el cifrado en autónomo;
+  `traficoLicencia`), sin pasar del `dnaTierMax` de la plataforma; plazos 3/5/7, Premier
+  discontinuado, 8500 y ASR solo Advantage, Essentials hasta 10 VPN, voz con Advantage; HSEC
+  incluida en 8200/8300 y, en el ISR, por encima de VPERF. En Meraki, la licencia por suscripción por clase de equipo (`licClase`:
   LIC-MX-S…XL o LIC-CSR-S/L/XL, -E o -A; la de co-terminación va por modelo y no se publica) y
   SD-WAN+ cita la ampliación `LIC-MX-SDW-<sdwPlus>` solo donde su página nombra el modelo. Los
   Meraki llevan sus ópticas MA-SFP (guía de accesorios SFP), por familia: los G2-MX no admiten la

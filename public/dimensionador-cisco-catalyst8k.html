@@ -365,7 +365,9 @@ tr.sel td{background:rgba(4,159,217,.07);font-weight:600}
         <option value="1">1 año</option>
         <option value="3" selected>3 años</option>
         <option value="5">5 años</option>
+        <option value="7">7 años</option>
       </select>
+      <p class="hint">DNA se suscribe a 3, 5 o 7 años; con 1 año se propone 3.</p>
     </div>
   </section>
 
@@ -383,9 +385,14 @@ tr.sel td{background:rgba(4,159,217,.07);font-weight:600}
       <select id="licNivel">
         <option value="E">Essentials</option>
         <option value="A" selected>Advantage</option>
-        <option value="P">Premier (DNA) / SD-WAN Plus (Meraki)</option>
+        <option value="P">SD-WAN+ (Meraki) · Premier (DNA, discontinuado)</option>
       </select>
       <p class="hint" id="licHint">En la G2 la referencia sale de la clase de la plataforma (S, M, L, XL, 2XL).</p>
+    </div>
+    <div class="field">
+      <label for="licVpns">VPN de usuario (VRF) por equipo</label>
+      <input type="number" id="licVpns" min="0" step="1" placeholder="sin segmentar" autocomplete="off">
+      <p class="hint">DNA Essentials admite 10 más la de gestión; por encima se propone Advantage.</p>
     </div>
     <div class="field" id="secExtras">
       <label>Seguridad en el router (G2)</label>

@@ -4,7 +4,8 @@ Registro vivo de lo que falta. **Al empezar una tarea se buscan aquí los puntos
 tocan, y al terminarla se actualiza**, y su contenido se resume al usuario al cerrar cada entrega — esa es la instrucción
 permanente que lo justifica (ver `CLAUDE.md`, sección *Instrucciones permanentes del dueño*).
 
-Última revisión: 2026-10-20, cuadragesimoctava entrega (**Cerrado también lo que había quedado «sin documento» en Cisco.** Cuatro vueltas más de transporte: la guía HTML de la 8200 dibuja el C8221-G2 y el C8231-E-G2 y dos traseras más; la licencia Meraki por suscripción tiene referencia oficial por clase y el BOM la lleva; los MX llevan sus ópticas MA-SFP en vez de las de Catalyst. Lo que Cisco no publica en ninguna edición queda dicho en su pestaña y fuera de los pendientes. Ver *Cerrado recientemente*.)
+Última revisión: 2026-10-21, cuadragesimonovena entrega (**Licencias DNA y de seguridad de Cisco con fuente, el vigía contrasta las fichas de Cisco cada lunes, y propuestas de conectividad, SD-WAN y seguridad.** Encargo del dueño: «ejecuta la mejora propuesta y revisa si falta algún componente de seguridad, ya sea con licenciamiento DNA, o propón mejoras de conectividad, SD-WAN y seguridad». El vigía corre `npm run cisco --traer` cada lunes. El tier DNA sale del tráfico y del máximo de la plataforma; Premier, el término de 1 año y Essentials en 8500/ASR ya no se proponen; HSEC, LIC-SEC donde la guía lo niega, LIC-R-OP-SWM y la gestión del SD-WAN Manager entran en el BOM con su documento. Las propuestas, en `docs/propuestas-cisco-conectividad-sdwan-seguridad-2026-10-21.md`: ninguna implementada. Ver *Cerrado recientemente* y *Decisiones que necesitan al dueño*.)
+Revisión anterior: 2026-10-20, cuadragesimoctava entrega (**Cerrado también lo que había quedado «sin documento» en Cisco.** Cuatro vueltas más de transporte: la guía HTML de la 8200 dibuja el C8221-G2 y el C8231-E-G2 y dos traseras más; la licencia Meraki por suscripción tiene referencia oficial por clase y el BOM la lleva; los MX llevan sus ópticas MA-SFP en vez de las de Catalyst. Lo que Cisco no publica en ninguna edición queda dicho en su pestaña y fuera de los pendientes. Ver *Cerrado recientemente*.)
 Revisión anterior: 2026-10-20, cuadragesimoséptima entrega (**Cerrado lo que dejó abierto la entrega de Cisco, y hecha la mejora propuesta.** Encargo del dueño: «cierra lo que está abierto y ejecuta la mejora propuesta». Entran el C8355-G2-MX y el C8455-G2-MX con sus fichas y figuras, la trasera del C8650-G2, las figuras de tres ISR, el fin de venta del 8500-20X6C, los dispositivos del MX95/105, los módulos de los Catalyst 8300/8200 y la referencia SD-WAN+ de Meraki; lo que ningún documento publica queda dicho en su pestaña. Las dos decisiones abiertas se ejecutan con su opción recomendada (precios «~» a «Consultar», bloque de Gemini bajo la regla de datos). Y `npm run cisco` contrasta las fichas traídas celda a celda: 268 de 268 casan. Ver *Cerrado recientemente*.)
 Revisión anterior: 2026-10-20, cuadragesimosexta entrega (**Dimensionador Cisco rehecho con la herramienta externa del dueño, contrastada contra las fichas oficiales, y con las figuras frontal y trasera de cada equipo.** El catálogo pasa a 50 modelos: los 20 Secure Router (G2), los Catalyst 8000 con su fin de venta por boletín, los ISR 1000 releídos y los Meraki MX con sus fichas vigentes; cada cifra declara su base de medida. 58 figuras oficiales sin pérdida con el pie literal de cada cara. Motor puro (`cisco-motor.js`): overlay y salida local, cada uno contra la cifra de su capa, licencias G2 por clase, escala y requisitos que apartan con su motivo. Del adjunto entra el método, corregido; ningún precio ni referencia sin documento. Ver *Cerrado recientemente* y `docs/herramienta-externa-cisco-2026-10-20.md`.)
 Revisión anterior: 2026-10-20, cuadragesimoquinta entrega (**La mejora propuesta: la foto de producto a color como tercera vista, y de paso el tamaño y el peso.** La tarjeta común (`ficha.js`) admite una pestaña «Foto» opcional con su propio pie de procedencia; la lupa y las flechas recorren las tres caras. Juniper la estrena en 16 de sus 18 equipos: los SRX300-380 de la imagen de su ficha de línea, que rotula cada modelo; SRX1600/2300/4300/4700 de la imagen de familia de juniper.net, casadas con la foto de cada ficha de un solo modelo; SRX1500 y los SSR de sus fichas. SRX4100/4200 sin foto: su ficha en inglés devuelve HTML. **Mejora encontrada por el camino**: el pendiente de tamaño y peso se cierra con la tabla «Physical Specifications» de cada guía. Ver *Cerrado recientemente*.)
@@ -2031,6 +2032,15 @@ documento que se miró; si Cisco publica una edición nueva, `traer-cisco-huawei
 
 ## Decisiones que necesitan al dueño del producto
 
+- **Propuestas de conectividad, SD-WAN y seguridad del dimensionador Cisco (2026-10-21).** Encargo
+  del dueño: «mira qué propones». Nueve propuestas en
+  `docs/propuestas-cisco-conectividad-sdwan-seguridad-2026-10-21.md`, cada una con qué evita, qué
+  cuesta y qué documento pide: enlaces WAN a puertos reales, PIM por categoría, HA por par de
+  routers, **túneles y BFD por topología (recomendada: aritmética sobre la cifra de túneles que ya
+  está en el catálogo, sin documento nuevo)**, controladores, AppQoE, Cisco Secure Access en el BOM,
+  Cisco Secure Firewall y un aviso de Threat Protection con URL y Malware Defense. **Ninguna está
+  hecha**; las que piden documento lo traen por `traer-cisco-huawei.yml`. No se hace por silencio.
+
 - ~~**Precios «~ $» sin lista en el cotizador (2026-10-19).**~~ **Decidido el 2026-10-20: la opción
   recomendada**, con el encargo del dueño «cierra lo que está abierto». Las líneas de Huawei,
   Juniper, Nokia y Cisco pasan a «Consultar» (`elpN: 0`); las tres de Cisco con fila en el export de
@@ -2167,6 +2177,29 @@ que ya se comprobó y lo que cuesta cada opción.
     normalizar) se cerró el 2026-09-02 — ver *Cerrado recientemente*.
 
 ## Cerrado recientemente
+
+- **2026-10-21 · Licencias DNA y de seguridad de Cisco con su documento, y el vigía contrasta las
+  fichas de Cisco cada lunes.** Encargo del dueño: «ejecuta la mejora propuesta y revisa si hay algún
+  componente de seguridad que haga falta, ya sea con licenciamiento DNA». **Vigía**: job nuevo
+  `contrastar_cisco` en `vigia-fuentes.yml` (sin escritura): `npm run cisco -- --traer --json` trae las
+  fichas que el catálogo cita y `fuentes.js` declara (solo www.cisco.com y documentation.meraki.com)
+  y las contrasta celda a celda; el issue lleva la tabla de lo que difiere, y una ficha que no se
+  pudo traer o leer sale con su motivo (código 2). Las páginas de Cisco son `estable: false` y nunca
+  quedaban pendientes: esta es la vigilancia de sus datos. **Licencias** (FAQ de DNA del 16-jun-2026,
+  traída a `fuente/cisco-dna-faq-2026-10-21`; guía de pedido de los 8300/8200, tablas 8, 9 y 11; guía
+  de la G2, tabla 10; ficha del ISR 1000, tabla 41): el tier DNA sale del tráfico (todo el WAN en
+  SD-WAN, el cifrado en autónomo) sin pasar del `dnaTierMax` de la plataforma, y avisa si el margen
+  pide el siguiente; Premier (discontinuado) pasa a Advantage; DNA es de 3, 5 o 7 años (la página
+  ofrece 7 y 1 año se propone como 3); el 8500 y el ASR solo admiten Advantage; más de 10 VPN de
+  usuario o un módulo de voz piden Advantage; HSEC real (`C8000-HSEC` incluida en 8200/8300;
+  `FL-1100-8P/4P-HSEC` en el ISR por encima de VPERF; en 8500 y ASR, aviso de que las fuentes no la
+  nombran); LIC-SEC fuera en C8130-G2, C8140-G2, 8500 y 8600 (`secAddon: false`); en autónomo, los
+  complementos de seguridad llevan Routing Advantage y LIC-R-OP-SWM; la gestión del SD-WAN Manager
+  (Hosted Cloud, Pro o propia) va como línea opcional; Routing Essentials se cita en autónomo. Los
+  avisos salen también en el BOM y en las notas del Excel. **Por el camino**: la nota de Routing
+  Advantage decía «R-OS-{c}-A» sin sustituir, y el panel de licencias no se repintaba al elegir un
+  módulo. Pruebas: tier por tráfico, tope y margen, T4/T5 solo en el 20X6C, Premier, plazos, VPN, voz,
+  HSEC por familia y por VPERF, LIC-SEC denegado, LIC-R-OP-SWM, gestión opcional y la plantilla.
 
 - **2026-10-20 · Lo que quedaba «sin documento» en Cisco: cerrado con cuatro vueltas más de
   transporte.** Mismo encargo («cierra lo que está abierto»); la entrega anterior lo había dejado

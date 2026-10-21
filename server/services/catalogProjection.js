@@ -398,7 +398,7 @@ async function toDimensionadorCisco() {
   // pedido, que no viven en tablas (la referencia de cada licencia G2 sale de la clase del equipo,
   // `clase` en sus specs).
   return { optics, opticLabel, partsDesc, smartnet, dnaDesc, models,
-    licenciasG2: ciscoData.LICENCIAS_G2, modulosG2: ciscoData.MODULOS_G2, modulosC8k: ciscoData.MODULOS_C8K };
+    licenciasG2: ciscoData.LICENCIAS_G2, licenciasDna: ciscoData.LICENCIAS_DNA, modulosG2: ciscoData.MODULOS_G2, modulosC8k: ciscoData.MODULOS_C8K };
 }
 
 async function toDimensionadorFortinet() {

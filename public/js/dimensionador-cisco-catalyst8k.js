@@ -19,6 +19,8 @@ let OPTIC_LABEL = {};
 let PARTS_DESC = {};
 let SMARTNET = {};
 let LIC_G2 = {};
+// Tiers, términos y reglas de la suscripción DNA (FAQ de DNA y guías de pedido): `LICENCIAS_DNA`.
+let LIC_DNA = null;
 let MOD_G2 = [];
 let MOD_C8K = [];
 let VISTAS = null;
@@ -62,7 +64,7 @@ const ENTRADAS = ['bw', 'unit', 'sites', 'conc', 'head', 'profile', 'plataforma'
   'chkRedund', 'chk4g', 'chkNim', 'chkSm', 'chkMacsec', 'chkPoe', 'poeW'];
 ENTRADAS.forEach(id => $(id).addEventListener('input', render));
 // Las licencias se pintan en las dos pestañas: el centro del dimensionamiento y el BOM.
-['licGestion', 'licNivel', 'secUrl', 'secMalware', 'termYears'].forEach(id => $(id).addEventListener('input', () => { render(); }));
+['licGestion', 'licNivel', 'licVpns', 'secUrl', 'secMalware', 'termYears'].forEach(id => $(id).addEventListener('input', () => { render(); }));
 ['pickModel', 'qty', 'modNim', 'modSm', 'modPim', 'optSel', 'optQty'].forEach(id => $(id).addEventListener('input', renderBom));
 
 /* ── Ayudas de presentación ── */
@@ -93,9 +95,17 @@ function parametros(){
       macsec:$('chkMacsec').checked, poe:$('chkPoe').checked, poeW:numDe('poeW')},
   };
 }
-function opcionesLicencia(p){
+// El tier DNA sale del tráfico del escenario (todo el WAN en SD-WAN, solo el cifrado en
+// autónomo), y los módulos de voz piden Advantage: solo cuentan los del equipo que está en el BOM.
+function modulosElegidos(m){
+  if(!m || $('pickModel').value !== m.id) return [];
+  const lista = modulosDe(m).lista;
+  return ['modNim', 'modSm', 'modPim'].map(id => lista.find(x => x.sku === $(id).value)).filter(Boolean);
+}
+function opcionesLicencia(p, m){
   return {gestion:$('licGestion').value, nivel:$('licNivel').value, seguridad:p.seguridad,
-    url:$('secUrl').checked, malware:$('secMalware').checked, anios:+$('termYears').value || 1};
+    url:$('secUrl').checked, malware:$('secMalware').checked, anios:+$('termYears').value || 1,
+    trafico:M.traficoLicencia(M.demanda(p), p), vpns:numDe('licVpns'), modulos:modulosElegidos(m)};
 }
 const filaDe = id => (ultimaEval ? ultimaEval.filas.find(f => f.m.id === id) : null) || null;
 
@@ -223,7 +233,7 @@ function render(){
     if(m.ser === 'Meraki MX') filasEscala.push(['Dispositivos recomendados', typeof m.clientes === 'number' ? miles(m.clientes) : 'no lo publica']);
     if(m.clase) filasEscala.push(['Clase de plataforma (licencias)', `<code>${esc(m.clase)}</code>`]);
     const ranuras = [m.nim ? `${m.nim} NIM` : null, m.sm ? `${m.sm} SM` : null, m.pim ? '1 PIM (celular)' : null].filter(Boolean).join(' · ');
-    const lic = M.licencias(m, opcionesLicencia(p), LIC_G2);
+    const lic = M.licencias(m, opcionesLicencia(p, m), LIC_G2, LIC_DNA);
     return [
       {titulo:'Rendimiento publicado', filas:filasRend,
         nota:'Cada cifra con su base de medida: no se comparan cifras de bases distintas entre sí.'},
@@ -333,13 +343,13 @@ function pintarCgnat(){
 
 function pintarLicencias(m, p){
   if(!m){ $('licBox').innerHTML = '<p style="font-size:13.5px;color:var(--steel)">Sin equipo elegido no hay licencias que proponer.</p>'; return; }
-  const lic = M.licencias(m, opcionesLicencia(p), LIC_G2);
-  $('licBox').innerHTML = `<ul class="clean">${lic.filas.map(x => `<li class="on"><b>${esc(x.desc)}</b>${x.incluida ? '<span class="req opt">Incluida</span>' : '<span class="req">Requerida</span>'}<span class="sku">${x.sku ? `<code>${esc(x.sku)}</code> · ` : ''}${esc(x.nota || '')}</span></li>`).join('')}
-    ${lic.avisos.map(a => `<li><span class="warn">${esc(a)}</span></li>`).join('')}
-    <li><b>HSEC (cifrado fuerte)</b><span class="req opt">Según país</span><span class="sku">Requerida para exportar criptografía fuerte a países con control. Verificar con Cisco.</span></li></ul>
+  const lic = M.licencias(m, opcionesLicencia(p, m), LIC_G2, LIC_DNA);
+  $('licBox').innerHTML = `<ul class="clean">${lic.filas.map(x => `<li class="on"><b>${esc(x.desc)}</b>${x.incluida ? '<span class="req opt">Incluida</span>' : x.opcional ? '<span class="req opt">Opcional</span>' : '<span class="req">Requerida</span>'}<span class="sku">${x.sku ? `<code>${esc(x.sku)}</code> · ` : ''}${esc(x.nota || '')}</span></li>`).join('')}
+    ${lic.avisos.map(a => `<li><span class="warn">${esc(a)}</span></li>`).join('')}</ul>
     <p class="hint">Gestión y nivel se eligen en la pestaña «Equipo y BOM».</p>`;
   $('licHint').textContent = m.lic === 'cswan' ? `${m.id}: clase ${m.clase || 'no consta'}; la referencia sale de la clase.`
-    : m.lic === 'meraki' ? 'Meraki: una licencia por equipo, por modelo y término.' : 'Catalyst 8000, ISR y ASR: suscripción DNA por tier de ancho de banda.';
+    : m.lic === 'meraki' ? 'Meraki: una licencia por equipo, de la clase del equipo.'
+      : 'Catalyst 8000, ISR y ASR: suscripción DNA de 3, 5 o 7 años; el tier sale del tráfico (todo el WAN en SD-WAN, solo el cifrado en autónomo).';
   $('secExtras').classList.toggle('hidden', !(m.lic === 'cswan' && p.seguridad === 'onbox'));
 }
 
@@ -502,7 +512,7 @@ function renderBom(){
       ? {cat:'Ópticas', desc:`${OPTIC_LABEL[k] || k} — ${o.sku}`, sku:o.bom || o.sku, qty:optQty * qty, unit:null, nota:o.d}
       : {cat:'Ópticas', desc:'Óptica — elegir el modelo', sku:null, qty:optQty * qty, unit:null, nota:'Elige la óptica en «Módulos y ópticas».'});
   }
-  const lic = M.licencias(m, opcionesLicencia(p), LIC_G2);
+  const lic = M.licencias(m, opcionesLicencia(p, m), LIC_G2, LIC_DNA);
   lic.filas.forEach(x => filas.push({...x, qty:x.qty * qty, nota:x.incluida ? `${x.nota} Incluida con el equipo.` : x.nota}));
   const sn = SMARTNET[crit];
   if(sn) filas.push({cat:'Soporte', desc:sn.n, sku:null, qty, unit:null, nota:`${sn.sla || ''} · término ${anios} año(s)`});
@@ -520,6 +530,7 @@ function renderBom(){
     <tr><td>${esc(M.cifra(m, 'amenazas').n)}</td><td class="n">${cifraHtml(m, 'amenazas')}</td></tr>
     <tr><td>Puertos y ranuras</td><td>${esc(m.ports)}</td></tr>
     </tbody></table></div>
+    ${lic.avisos.length ? `<ul class="hint" style="margin:10px 0 0;padding-left:18px">${lic.avisos.map(a => `<li class="warn">${esc(a)}</li>`).join('')}</ul>` : ''}
     ${m.eolAnnounced ? `<p class="hint warn" style="margin-top:10px">${vencido(m) ? '<b>Fin de venta VENCIDO</b>' : 'Fin de venta anunciado'} (PID <code>${esc(m.eolAnnounced.pid)}</code>) — último día de pedido: <b>${esc(m.eolAnnounced.lastOrder)}</b>${vencido(m) ? ', ya pasado: solo referencia para parque instalado' : ''}.${m.eolAnnounced.sucesor ? ` Sucesor según el boletín: <b>${esc(m.eolAnnounced.sucesor)}</b>.` : ' El boletín no nombra un PID de reemplazo directo.'}${m.eolAnnounced.url ? ` <a href="${esc(m.eolAnnounced.url)}" target="_blank" rel="noopener">Boletín oficial</a>.` : ''}</p>` : ''}
     </section>`;
 
@@ -537,6 +548,7 @@ function renderBom(){
       '  Verificar referencia, termino y precio final en Cisco Commerce Workspace antes de cotizar.',
       m.eolAnnounced ? `  AVISO: fin de venta ${vencido(m) ? 'VENCIDO' : 'anunciado'} (${m.eolAnnounced.pid}), ultimo dia de pedido ${m.eolAnnounced.lastOrder}.` : null,
       m.eolAnnounced && m.eolAnnounced.sucesor ? `  Sucesor segun el boletin: ${m.eolAnnounced.sucesor}.` : null,
+      ...lic.avisos.map(a => `  LICENCIAS: ${a}`),
     ].filter(n => n !== null),
   };
   const d = dtoActual();
@@ -545,6 +557,9 @@ function renderBom(){
   $('bomOut').value = BOM.comoTexto(filas, meta);
   bomFilas = filas; bomMeta = meta;
   pintarTco(filas);
+  // Un módulo de voz elegido aquí cambia lo que pide la licencia DNA: el panel de licencias del
+  // dimensionamiento se repinta si el equipo del BOM es el de la ficha.
+  if(FICHA.elegido('verdict') === m.id) pintarLicencias(m, p);
 }
 
 /* ── PRECIO NETO, TCO Y CUOTA MENSUAL ── */
@@ -612,7 +627,7 @@ $('memoriaBtn').addEventListener('click', () => {
 /* ── PERFILES MULTI-SEDE ──
    Misma clave compartida que los demás fabricantes (`BOM.perfiles`): un despliegue real mezcla
    marcas. Cargar es de Cisco (los campos son ids de ESTA página); consolidar no. */
-const CAMPOS_PERFIL = [...ENTRADAS, 'qty', 'termYears', 'licGestion', 'licNivel', 'secUrl', 'secMalware', 'optQty'];
+const CAMPOS_PERFIL = [...ENTRADAS, 'qty', 'termYears', 'licGestion', 'licNivel', 'licVpns', 'secUrl', 'secMalware', 'optQty'];
 const SEGS_PERFIL = ['modeSeg', 'dirSeg', 'critSeg'];
 function capturarCampos(){
   const v = {};
@@ -705,6 +720,7 @@ $('consolidadoCerrar').addEventListener('click', () => { $('modalConsolidado').h
   PARTS_DESC = data.partsDesc;
   SMARTNET = data.smartnet;
   LIC_G2 = data.licenciasG2 || {};
+  LIC_DNA = data.licenciasDna || null;
   MOD_G2 = data.modulosG2 || [];
   MOD_C8K = data.modulosC8k || [];
   // Sin el mapa la página funciona igual: la ficha no pinta la tarjeta gráfica.
@@ -755,7 +771,7 @@ document.addEventListener('click', (e) => {
    demás (voz, AppX, APs) no tienen equivalente y el aviso del enlace lo dice. */
 document.addEventListener('DOMContentLoaded', () => {
   const MIGRADOS = ['sNgfw', 'sUmbrella', 'dnaTier'];
-  const st = ESTADO.vincular({ campos:[...ENTRADAS, 'critSeg', 'dirSeg', 'modeSeg', 'qty', 'termYears', 'licGestion', 'licNivel', 'secUrl', 'secMalware', 'optQty', 'verdict-sel'],
+  const st = ESTADO.vincular({ campos:[...ENTRADAS, 'critSeg', 'dirSeg', 'modeSeg', 'qty', 'termYears', 'licGestion', 'licNivel', 'licVpns', 'secUrl', 'secMalware', 'optQty', 'verdict-sel'],
     migrados:MIGRADOS });
   const q = new URLSearchParams(location.search);
   const si = k => ['1', 'true', 'on'].includes(String(q.get(k)).toLowerCase());

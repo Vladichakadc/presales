@@ -271,14 +271,35 @@
     return [...grupos.entries()].map(([motivo, ids]) => ({ motivo, ids }));
   }
 
+  // Tráfico que cuenta para el tier de ancho de banda DNA (FAQ de las suscripciones DNA): en
+  // SD-WAN, todo el tráfico WAN (los dos sentidos, que es el «agregado» de la tabla); fuera de
+  // SD-WAN, solo el cifrado: el overlay si el perfil cifra y la salida a un SSE, que viaja en IPsec.
+  function traficoLicencia(d, p) {
+    if (!d) return { wan: 0, cifrado: 0 };
+    const tunel = p.perfil === 'fwd' ? 0 : d.overlay;
+    const sse = p.seguridad === 'sse' ? d.diaMbps : 0;
+    return { wan: d.sitio, cifrado: tunel + sse, conMargen: d.sitio * (1 + num(p.headPct) / 100) };
+  }
+
+  // El tier DNA más bajo que cubre el tráfico, sin pasar del máximo de la plataforma (`dnaTierMax`)
+  // ni usar un tier que la plataforma no tiene (`solo`). Sin tráfico que contar, el más bajo.
+  function tierDna(m, mbps, DNA) {
+    const disp = DNA.tiers.filter((t) => !t.solo || t.solo.includes(m.id));
+    const tope = m.dnaTierMax ? disp.findIndex((t) => t.t === m.dnaTierMax) : disp.length - 1;
+    const lista = disp.slice(0, tope >= 0 ? tope + 1 : disp.length);
+    const t = lista.find((x) => x.agregado >= mbps);
+    return { tier: t || lista[lista.length - 1], tope: !t, lista };
+  }
+
   // Licencias del equipo elegido. G2: por la clase (S, M, L, XL, 2XL) de la guía de pedido;
-  // Catalyst 8000, ISR y ASR: DNA por tier; Meraki: por clase de equipo (suscripción).
-  //   o = { gestion: 'sdwan'|'autonomo', nivel: 'E'|'A'|'P', seguridad, url, malware, anios }
-  function licencias(m, o, LIC) {
+  // Catalyst 8000, ISR y ASR: DNA por tier de ancho de banda; Meraki: por clase de equipo.
+  //   o = { gestion: 'sdwan'|'autonomo', nivel: 'E'|'A'|'P', seguridad, url, malware, anios,
+  //         trafico: traficoLicencia(), vpns, modulos: [módulos elegidos] }
+  function licencias(m, o, LIC, DNA) {
     const anios = Math.max(1, Math.floor(num(o.anios, 1)) || 1);
     const nivel = ['E', 'A', 'P'].includes(o.nivel) ? o.nivel : 'A';
     const filas = [], avisos = [];
-    const sku = (plantilla, c) => plantilla.replace('{c}', c);
+    const sku = (plantilla, c) => plantilla.replaceAll('{c}', c);
     if (m.lic === 'cswan') {
       const c = m.clase;
       if (!c) { avisos.push('La clase de esta plataforma no consta: la referencia de licencia sale de CCW.'); return { filas, avisos }; }
@@ -286,14 +307,21 @@
       const nv = nivel === 'P' ? 'A' : nivel;
       if (nivel === 'P') avisos.push('La G2 no tiene un nivel Premier: se propone Advantage.');
       if (o.gestion === 'autonomo') {
-        if (nv === 'A') filas.push({ cat: 'Licencias', desc: LIC.rosA.n, sku: sku(LIC.rosA.sku, c), qty: 1, unit: null, nota: `${LIC.rosA.d} Término ${anios} año(s): precio en CCW.` });
+        if (nv === 'A') filas.push({ cat: 'Licencias', desc: LIC.rosA.n, sku: sku(LIC.rosA.sku, c), qty: 1, unit: null, nota: `${sku(LIC.rosA.d, c)} Término ${anios} año(s): precio en CCW.` });
       } else {
         const L = nv === 'E' ? LIC.cswanE : LIC.cswanA;
         filas.push({ cat: 'Licencias', desc: L.n, sku: sku(L.sku, c), qty: 1, unit: null, nota: `${L.d} Término ${anios} año(s): precio en CCW.` });
+        if (LIC.nube) filas.push({ cat: 'Licencias', desc: LIC.nube.n, sku: null, qty: 1, unit: null, nota: LIC.nube.d, opcional: true });
       }
       if (o.seguridad === 'onbox') {
-        if (c === '2XL') avisos.push('La clase 2XL (8600) no tiene licencias de seguridad LIC-SEC: la inspección va desacoplada o en la nube.');
+        // La guía de pedido nombra los que no admiten Threat, URL Filtering ni Malware Defense.
+        if (m.secAddon === false) avisos.push(`El ${m.id.replace('Cisco Secure Router ', '')} no admite las licencias de seguridad LIC-SEC (guía de pedido de la G2): la inspección va desacoplada o en la nube.`);
         else {
+          if (o.gestion === 'autonomo' && LIC.swmOnPrem) {
+            if (nv !== 'A') avisos.push('Los add-ons de seguridad en modo autónomo van sobre Routing Advantage: se propone Advantage.');
+            if (nv !== 'A') filas.push({ cat: 'Licencias', desc: LIC.rosA.n, sku: sku(LIC.rosA.sku, c), qty: 1, unit: null, nota: `${sku(LIC.rosA.d, c)} Término ${anios} año(s): precio en CCW.` });
+            filas.push({ cat: 'Licencias', desc: LIC.swmOnPrem.n, sku: LIC.swmOnPrem.sku, qty: 1, unit: null, nota: LIC.swmOnPrem.d });
+          }
           filas.push({ cat: 'Licencias', desc: LIC.secT.n, sku: sku(LIC.secT.sku, c), qty: 1, unit: null, nota: LIC.secT.d });
           if (o.url) filas.push({ cat: 'Licencias', desc: LIC.secC.n, sku: sku(LIC.secC.sku, c), qty: 1, unit: null, nota: LIC.secC.d });
           if (o.malware) filas.push({ cat: 'Licencias', desc: LIC.secM.n, sku: sku(LIC.secM.sku, c), qty: 1, unit: null, nota: LIC.secM.d });
@@ -317,12 +345,59 @@
           : 'En co-terminación, la página de licencias de Meraki no da la ampliación SD-WAN+ por dispositivo de este modelo con este término: confirmar en CCW.');
       }
       if (o.seguridad === 'onbox' && nivel === 'E') avisos.push('En suscripción, Essential ya trae IDS/IPS, filtrado y AMP; en co-terminación, inspeccionar en el MX pide Advanced Security (Enterprise no lo incluye).');
-    } else {
+    } else if (!DNA) {
       const letra = nivel;
       const nom = { E: 'Essentials', A: 'Advantage', P: 'Premier' }[letra];
       filas.push({ cat: 'Licencias', desc: `Cisco DNA ${nom}`, sku: `DNA-C-T<n>-${letra}-${anios}Y`, qty: 1, unit: null,
-        nota: `Término ${anios} año(s). El tier de ancho de banda (T0-T3+) se confirma en CCW según el caudal.` });
-      if (letra === 'E' && /8500/.test(m.id)) avisos.push('Catalyst 8500 no admite DNA Essentials: requiere Advantage como mínimo.');
+        nota: `Término ${anios} año(s). El tier de ancho de banda se confirma en CCW según el caudal.` });
+    } else {
+      let letra = nivel;
+      if (letra === 'P') { letra = 'A'; avisos.push('DNA Premier está discontinuado (FAQ de las suscripciones DNA): se propone Advantage.'); }
+      if (letra === 'E' && DNA.soloAdvantage.some((p) => m.id.startsWith(p))) {
+        letra = 'A';
+        avisos.push(`${/^ASR/.test(m.id) ? 'El ASR 1000' : 'El Catalyst 8500'} solo admite DNA Advantage (FAQ de las suscripciones DNA): se propone Advantage.`);
+      }
+      const vpns = Math.floor(num(o.vpns));
+      if (letra === 'E' && vpns > DNA.vpnsEssentials) {
+        letra = 'A';
+        avisos.push(`DNA Essentials admite ${DNA.vpnsEssentials} VPN de usuario (más la de gestión) y el escenario pide ${vpns}: la segmentación sin límite es de Advantage, que se propone.`);
+      }
+      const plazo = DNA.terminos.includes(anios) ? anios : DNA.terminos[0];
+      if (plazo !== anios) avisos.push(`Las suscripciones DNA son de ${DNA.terminos.slice(0, -1).join(', ')} o ${DNA.terminos[DNA.terminos.length - 1]} años: se propone ${plazo}.`);
+      const tr = o.trafico || { wan: 0, cifrado: 0 };
+      const sdwan = o.gestion !== 'autonomo';
+      const cuenta = sdwan ? tr.wan : tr.cifrado;
+      const { tier, tope, lista } = tierDna(m, cuenta, DNA);
+      const porque = sdwan
+        ? `todo el tráfico WAN, ${fmt(cuenta)} sumando los dos sentidos`
+        : cuenta > 0 ? `el tráfico cifrado, ${fmt(cuenta)} sumando los dos sentidos` : 'sin cifrado, el tier más bajo ya libera todo el reenvío';
+      filas.push({ cat: 'Licencias', desc: `Cisco DNA ${letra === 'E' ? 'Essentials' : 'Advantage'} — ${tier.t}`, sku: `DNA-C-${tier.t}-${letra}-${plazo}Y`, qty: 1, unit: null,
+        nota: `Tier ${tier.t} (hasta ${fmt(tier.nominal)} nominales, ${fmt(tier.agregado)} agregados) por ${porque}. Término ${plazo} años; precio en CCW.` });
+      if (tope && cuenta > tier.agregado) avisos.push(`El tráfico (${fmt(cuenta)}) pasa del tier ${tier.t}, el más alto de esta plataforma: la plataforma se queda corta.`);
+      else if (sdwan && tr.conMargen > tier.agregado) {
+        const sig = lista.find((x) => x.agregado >= tr.conMargen);
+        if (sig) avisos.push(`Con el margen de crecimiento (${fmt(tr.conMargen)}) haría falta el ${sig.t}: el tier se puede subir a mitad del plazo (FAQ de DNA).`);
+      }
+      const voz = (o.modulos || []).filter((x) => x && x.voz).map((x) => x.sku);
+      if (voz.length && letra === 'E') avisos.push(`La guía de pedido pide DNA Advantage para los módulos de voz (tabla 9), y el BOM lleva ${voz.join(', ')}.`);
+      // HSEC: incluida con la suscripción en los 8200/8300; en el ISR, por encima del límite de VPERF.
+      const H = DNA.hsecCatalyst;
+      if (H && H.familias.some((f) => m.id.startsWith(f))) filas.push({ cat: 'Licencias', desc: H.n, sku: H.sku, qty: 1, unit: 0, nota: H.d, incluida: true });
+      else if (m.ser !== 'ISR 1000') avisos.push(`HSEC: la guía de pedido de los Catalyst 8300/8200 la incluye con DNA; para el ${m.id} las fuentes del catálogo no la nombran: confirmar en CCW si hace falta cifrado completo.`);
+      if (m.ser === 'ISR 1000' && DNA.isr) {
+        const cuatro = /-4P$/.test(m.id);
+        const limite = cuatro ? DNA.isr.vperf4P : DNA.isr.vperf8P;
+        if (tr.cifrado > limite) {
+          filas.push({ cat: 'Licencias', desc: 'Licencia HSEC (IPsec sin límite)', sku: cuatro ? DNA.isr.hsec4P : DNA.isr.hsec8P, qty: 1, unit: null,
+            nota: `El tráfico cifrado (${fmt(tr.cifrado)}) pasa de los ${limite} Mbps de la licencia VPERF; HSEC quita el límite (ficha del ISR 1000, tabla 41).` });
+        } else if (tr.cifrado > 0) {
+          avisos.push(`Con ${fmt(tr.cifrado)} cifrados basta la licencia de rendimiento VPERF (hasta ${limite} Mbps; SEC sola da ${DNA.isr.sec}): ver la tabla 41 de la ficha del ISR 1000.`);
+        }
+      }
+      if (!sdwan) {
+        const re = (DNA.routingEssentials || []).find((x) => m.id.startsWith(x.familia));
+        if (re) avisos.push(`En modo autónomo hay otra opción: Catalyst Routing Essentials (${re.sku}), 7 años y sin tier de ancho de banda, con firewall de aplicaciones e IPsec punto a punto con HSEC; no incluye SD-WAN, y la guía no le cita IPS ni filtrado de URL.`);
+      }
     }
     return { filas, avisos };
   }
@@ -390,6 +465,6 @@
 
   return {
     PLATAFORMAS, PERFILES, SEGURIDAD, PUERTOS_UTILES,
-    fmt, cifra, capaOverlay, demanda, requisitos, escala, evaluar, resumenApartados, licencias, poolCgnat, memoria,
+    fmt, cifra, capaOverlay, demanda, requisitos, escala, evaluar, resumenApartados, licencias, traficoLicencia, tierDna, poolCgnat, memoria,
   };
 });
