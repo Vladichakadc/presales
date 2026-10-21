@@ -1,6 +1,6 @@
 {
  "medidoEn": {
-  "commit": "370b8c2",
+  "commit": "eec1d2c",
   "fecha": "2026-10-21"
  },
  "umbralRozado": 25,
@@ -76,17 +76,17 @@
    "pct": 18
   },
   {
+   "modulo": "procedencia.js",
+   "estado": "ejercitado",
+   "total": 36,
+   "usadas": 18,
+   "pct": 50
+  },
+  {
    "modulo": "navegacion.js",
    "estado": "ejercitado",
    "total": 17,
    "usadas": 9,
-   "pct": 53
-  },
-  {
-   "modulo": "procedencia.js",
-   "estado": "ejercitado",
-   "total": 36,
-   "usadas": 19,
    "pct": 53
   },
   {
@@ -149,8 +149,8 @@
    "modulo": "index.js",
    "estado": "ejercitado",
    "total": 58,
-   "usadas": 43,
-   "pct": 74
+   "usadas": 42,
+   "pct": 72
   },
   {
    "modulo": "ficha.js",
@@ -160,11 +160,25 @@
    "pct": 75
   },
   {
+   "modulo": "cisco-motor.js",
+   "estado": "ejercitado",
+   "total": 150,
+   "usadas": 119,
+   "pct": 79
+  },
+  {
    "modulo": "mikrotik-motor.js",
    "estado": "ejercitado",
    "total": 89,
    "usadas": 70,
    "pct": 79
+  },
+  {
+   "modulo": "dimensionador-cisco-catalyst8k.js",
+   "estado": "ejercitado",
+   "total": 172,
+   "usadas": 137,
+   "pct": 80
   },
   {
    "modulo": "dimensionador-fortinet-fortigate.js",
@@ -186,13 +200,6 @@
    "total": 61,
    "usadas": 49,
    "pct": 80
-  },
-  {
-   "modulo": "dimensionador-cisco-catalyst8k.js",
-   "estado": "ejercitado",
-   "total": 163,
-   "usadas": 132,
-   "pct": 81
   },
   {
    "modulo": "dimensionador-mikrotik-routeros.js",
@@ -221,13 +228,6 @@
    "total": 161,
    "usadas": 139,
    "pct": 86
-  },
-  {
-   "modulo": "cisco-motor.js",
-   "estado": "ejercitado",
-   "total": 117,
-   "usadas": 103,
-   "pct": 88
   },
   {
    "modulo": "aruba-reglas.js",
