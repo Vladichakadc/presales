@@ -561,7 +561,7 @@ Módulos compartidos:
 ## Documentos de referencia
 
 `IMPORTAR-CATALOGO.md` (procedimiento de importación) · `docs/sincronizacion.md` ·
-`docs/decisiones-del-dueno-2026-09-24.md` · `docs/herramienta-externa-cisco-2026-10-20.md` · `docs/portabilidad-aruba.md` (tres capas: escenario,
+`docs/decisiones-del-dueno-2026-09-24.md` · `docs/herramienta-externa-cisco-2026-10-20.md` · `docs/propuestas-cisco-conectividad-sdwan-seguridad-2026-10-21.md` (propuestas sin implementar) · `docs/portabilidad-aruba.md` (tres capas: escenario,
 comercial, gobierno del dato) · `docs/revision-huawei-2026-09-29.md` · `docs/manual-usuario/`
 (manual a PDF con `npm run manual`; Playwright fuera de `package.json` a propósito) ·
 `docs/claude-md-cronica.md` (la historia de cada regla de este archivo).

@@ -1863,6 +1863,15 @@ etapa 6, y *Cerrado recientemente*. Lo que sigue abierto, con su motivo:
     bloqueado desde el sandbox (2026-09-16); cierra bajando el DS oficial de la
     serie 7000/7200 desde una máquina con acceso y repitiendo este mismo patrón.
 
+## Vigilar: un push a `main` que Railway no vio (2026-10-21)
+
+El push de `73569ae` (licencias DNA de Cisco) pasó `verificar` y `pantallas` en verde y Railway no
+creó ningún despliegue: ni en espera, ni saltado, ni trabajo pendiente en el entorno; la
+configuración del servicio era la de siempre (`main`, `checkSuites: true`). Se cerró empujando el
+siguiente commit real. Si vuelve a pasar, la señal es esa: CI en verde y `list-deployments` sin
+una fila del commit. Las herramientas del conector no lo arreglan: `redeploy` repite el build
+anterior (otro commit) y `create-deployment` crea un servicio nuevo.
+
 ## Vigilar: un despliegue sano cuyo `success` no llegó a GitHub (2026-10-02)
 
 El punto ciego que *Cada despliegue se comprueba y avisa solo* declaraba («si Railway dejara de
