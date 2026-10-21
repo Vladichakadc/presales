@@ -1102,6 +1102,11 @@ jobs:
                 descubrirPiezas: { de: ['cisco-sr8400-vistas-c8455.html', 'cisco-sr8400-vistas-c8475.html', 'cisco-c8500-hig-overview.html'],
                   base: 'https://www.cisco.com/', dominios: ['cisco.com'], relativas: true,
                   contiene: ['/c/dam/', '/content/dam/'], max: 120 } },
+              // Revision de seguridad y licencias (2026-10-21): la guia de pedido de los Catalyst
+              // remite a este FAQ para los tiers de ancho de banda DNA y lo que cuenta en cada uno.
+              { archivo: 'cisco-dna-faq.html', tipo: 'html', para: 'CISCO', debeContener: 'DNA', urls: [
+                'https://www.cisco.com/c/en/us/products/collateral/software/one-wan-subscription/nb-06-dna-sw-rout-sub-faq-ctp-en.html',
+              ] },
               // Las fichas del MX250 y el MX450 no listan opticas: remiten a esta guia.
               { archivo: 'meraki-sfp.html', tipo: 'html', para: 'CISCO', debeContener: 'MA-SFP', urls: [
                 'https://documentation.meraki.com/Platform_Management/Product_Information/Overviews_and_Datasheets/Small-Form_Factor_Pluggable_(SFP)_and_Stacking_Accessories',
