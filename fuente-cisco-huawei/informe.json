@@ -1,0 +1,17 @@
+[
+  {
+    "archivo": "cisco-sr8500-hig-bahias.html",
+    "para": "CISCO",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://www.cisco.com/c/en/us/td/docs/routers/secure-routers/sec-8500-series/hardware-installation-guide/cisco-8500-series-secure-router-HIG/introduction-c8500/bay-configuration.html",
+        "status": 200,
+        "bytes": 77541,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  }
+]
