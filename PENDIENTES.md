@@ -1880,9 +1880,14 @@ del conector.
 **Y se repitió** con `60a347f` (10:47 UTC, enlaces a puertos de Cisco): `verificar` y `pantallas` en
 verde a las 10:56 y ningún `deployment_status` de Railway (ninguna corrida de la sonda) a las 11:07,
 cuando la sonda suele llegar al minuto. Esta vez el conector de Railway pedía autorización y no se
-pudo mirar ni lanzar el despliegue desde la sesión: queda para el siguiente push a `main`, que lleva
-también ese commit. Si tampoco crea despliegue, hace falta lanzarlo desde Railway o autorizar el
-conector.
+pudo mirar ni lanzar el despliegue desde la sesión.
+**Tampoco con `fab44b0`** (óptica por alcance, 11:56 UTC): `verificar` y `pantallas` en verde a las
+12:05 y ninguna sonda a las 12:16. El último `deployment_status` de Railway es el de `24287c2`
+(03:40): **producción sigue en `24287c2`**, sin los enlaces a puertos ni la óptica por alcance de
+Cisco. **Abierto, necesita al dueño**: lanzar el despliegue del último commit de `main` desde Railway
+(«Deploy latest commit» en `presales-web`) o autorizar el conector de Railway en claude.ai para
+hacerlo desde la sesión. Después, la sonda tiene que salir en verde con `head_sha` `fab44b0` o
+posterior.
 
 ## Vigilar: un despliegue sano cuyo `success` no llegó a GitHub (2026-10-02)
 
