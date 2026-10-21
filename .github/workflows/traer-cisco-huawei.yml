@@ -1133,6 +1133,60 @@ jobs:
               { archivo: 'cisco-sr8500-hig-bahias.html', tipo: 'html', para: 'CISCO', debeContener: 'C8570-G2', urls: [
                 'https://www.cisco.com/c/en/us/td/docs/routers/secure-routers/sec-8500-series/hardware-installation-guide/cisco-8500-series-secure-router-HIG/introduction-c8500/bay-configuration.html',
               ] },
+              // Propuestas de conectividad, SD-WAN y seguridad (2026-10-21, encargo «avanza con todo»):
+              // cada cifra nueva del dimensionador Cisco sale de uno de estos documentos.
+              // 1.2 celular por categoría: los PIM y su categoría LTE/5G.
+              { archivo: 'cisco-pim-wwan.html', tipo: 'html', para: 'CISCO', debeContener: 'P-LTEA7', urls: [
+                'https://www.cisco.com/c/en/us/solutions/collateral/enterprise-networks/4g-lte-solutions/datasheet-c78-743503.html',
+              ] },
+              { archivo: 'cisco-pim-overview.pdf', tipo: 'pdf', para: 'CISCO', urls: [
+                'https://www.cisco.com/c/en/us/td/docs/routers/iot-antennas/cellular-pluggable-modules/b-cellular-pluggable-interface-module-configuration-guide/m-pluggable-module-overview.pdf',
+              ] },
+              // 1.3 sitio en alta disponibilidad: el diseño de dos routers (TLOC extension, VRRP).
+              { archivo: 'cisco-sdwan-design.html', tipo: 'html', para: 'CISCO', debeContener: 'TLOC', urls: [
+                'https://www.cisco.com/c/en/us/td/docs/solutions/CVD/SDWAN/cisco-sdwan-design-guide.html',
+              ] },
+              { archivo: 'cisco-tloc-ext.html', tipo: 'html', para: 'CISCO', debeContener: 'TLOC', urls: [
+                'https://www.cisco.com/c/en/us/td/docs/routers/sdwan/17-x/systems-interfaces/systems-interfaces-guide-17-x/tloc-extension.html',
+              ] },
+              // 2.2 controladores: recursos recomendados por número de equipos (versión 20.18).
+              { archivo: 'cisco-sdwan-recursos.html', tipo: 'html', para: 'CISCO', debeContener: 'vCPU', urls: [
+                'https://www.cisco.com/c/en/us/td/docs/routers/sdwan/release/notes/compatibility-and-server-recommendations/ch-server-recs-20-18-combined11.html',
+              ] },
+              // 2.3 AppQoE: qué equipos lo admiten y con qué perfil.
+              { archivo: 'cisco-appqoe-dre.html', tipo: 'html', para: 'CISCO', debeContener: 'DRE', urls: [
+                'https://www.cisco.com/c/en/us/td/docs/routers/sdwan/26x-later/appqoe/appqoe-configuration-guide/tcp-optimization-with-dre.html',
+              ] },
+              { archivo: 'cisco-sr8300-scg.html', tipo: 'html', para: 'CISCO', debeContener: 'AppQoE', urls: [
+                'https://www.cisco.com/c/en/us/td/docs/routers/secure-routers/sec-8300-series/software-config-guide/secure-8300-series-scg/overview.html',
+              ] },
+              // 3.1 Secure Access: guía de pedido y límite por túnel.
+              { archivo: 'cisco-sa-og.html', tipo: 'html', para: 'CISCO', debeContener: 'Secure Access', urls: [
+                'https://www.cisco.com/c/en/us/products/collateral/security/secure-access/secure-access-sub-og.html',
+              ] },
+              { archivo: 'cisco-sa-tuneles.html', tipo: 'html', para: 'CISCO', debeContener: 'Gbps', urls: [
+                'https://docs.sse.cisco.com/sse-user-guide/docs/secure-access-network-tunnels',
+              ] },
+              // 3.2 Secure Firewall: fichas de las series 1200, 3100 y 4200 y guía de pedido.
+              { archivo: 'cisco-fw1200-ds.html', tipo: 'html', para: 'CISCO', debeContener: '1250', urls: [
+                'https://www.cisco.com/c/en/us/products/collateral/security/firewalls/secure-firewall-1200-series-ds.html',
+              ] },
+              { archivo: 'cisco-fw3100-ds.html', tipo: 'html', para: 'CISCO', debeContener: '3140', urls: [
+                'https://www.cisco.com/c/en/us/products/collateral/security/firewalls/secure-firewall-3100-series-ds.html',
+              ] },
+              { archivo: 'cisco-fw4200-ds.html', tipo: 'html', para: 'CISCO', debeContener: '4245', urls: [
+                'https://www.cisco.com/c/en/us/products/collateral/security/firewalls/secure-firewall-4200-ds.html',
+              ] },
+              { archivo: 'cisco-netsec-og.pdf', tipo: 'pdf', para: 'CISCO', urls: [
+                'https://www.cisco.com/c/en/us/products/collateral/security/secure-firewall/guide-c07-737902.pdf',
+              ] },
+              // Pendiente del DSL por módulo: ficha de los NIM VDSL2/ADSL2+ y su fin de venta.
+              { archivo: 'cisco-nim-dsl-ds.html', tipo: 'html', para: 'CISCO', debeContener: 'NIM-VAB-A', urls: [
+                'https://www.cisco.com/c/en/us/products/collateral/routers/4000-series-integrated-services-routers-isr/datasheet-c78-733645.html',
+              ] },
+              { archivo: 'cisco-nim-dsl-eol.html', tipo: 'html', para: 'CISCO', debeContener: 'NIM-VA', urls: [
+                'https://www.cisco.com/c/en/us/products/collateral/interfaces-modules/network-modules/select-wan-interface-modules-eol.html',
+              ] },
               { archivo: 'cisco-hig3-img', tipo: 'imagenes', para: 'CISCO', urls: [],
                 descubrirPiezas: { de: ['cisco-isr1100-hig-overview.html', 'cisco-sr8200-hig-overview.html'],
                   base: 'https://www.cisco.com/', dominios: ['cisco.com'], relativas: true,
