@@ -1,6 +1,6 @@
 {
  "medidoEn": {
-  "commit": "554f8c2",
+  "commit": "24287c2",
   "fecha": "2026-10-21"
  },
  "umbralRozado": 25,
@@ -160,13 +160,6 @@
    "pct": 75
   },
   {
-   "modulo": "dimensionador-cisco-catalyst8k.js",
-   "estado": "ejercitado",
-   "total": 138,
-   "usadas": 107,
-   "pct": 78
-  },
-  {
    "modulo": "mikrotik-motor.js",
    "estado": "ejercitado",
    "total": 89,
@@ -174,10 +167,17 @@
    "pct": 79
   },
   {
+   "modulo": "dimensionador-cisco-catalyst8k.js",
+   "estado": "ejercitado",
+   "total": 159,
+   "usadas": 127,
+   "pct": 80
+  },
+  {
    "modulo": "dimensionador-fortinet-fortigate.js",
    "estado": "ejercitado",
-   "total": 283,
-   "usadas": 225,
+   "total": 284,
+   "usadas": 226,
    "pct": 80
   },
   {
@@ -216,18 +216,18 @@
    "pct": 82
   },
   {
-   "modulo": "cisco-motor.js",
-   "estado": "ejercitado",
-   "total": 50,
-   "usadas": 42,
-   "pct": 84
-  },
-  {
    "modulo": "dimensionador-huawei-netengine.js",
    "estado": "ejercitado",
    "total": 161,
    "usadas": 139,
    "pct": 86
+  },
+  {
+   "modulo": "cisco-motor.js",
+   "estado": "ejercitado",
+   "total": 97,
+   "usadas": 87,
+   "pct": 90
   },
   {
    "modulo": "aruba-reglas.js",
