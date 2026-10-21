@@ -23,6 +23,12 @@ let LIC_G2 = {};
 let LIC_DNA = null;
 let MOD_G2 = [];
 let MOD_C8K = [];
+// Cisco Secure Access (guía de pedido): `SECURE_ACCESS`.
+let SA = null;
+// Categoría y ancho de banda de cada módulo celular (ficha de los módulos): `CELULAR`.
+let CELULAR = {};
+// Recursos de los componentes de control de SD-WAN: `CONTROLADORES_SDWAN`.
+let CTRL = null;
 let VISTAS = null;
 
 let dirMult = 2, mode = 'link', crit = 'low', lastPick = null, ultimaEval = null;
@@ -61,11 +67,12 @@ grupo('critSeg', v => { crit = v; });
 
 const ENTRADAS = ['bw', 'unit', 'sites', 'conc', 'head', 'profile', 'plataforma', 'diaPct', 'seguridad', 'chkTls',
   'chkFec', 'fecPct', 'dupPct', 'tuneles', 'rutas', 'sesiones', 'dispositivos', 'cgnatUsuarios', 'cgnatBloque',
-  'chkRedund', 'chk4g', 'chkNim', 'chkSm', 'chkMacsec', 'chkPoe', 'poeW',
+  'chkRedund', 'chk4g', 'chkNim', 'chkSm', 'chkMacsec', 'chkPoe', 'poeW', 'chkHa', 'chkHaTloc', 'chkAppqoe', 'appqoeCon',
   'topologia', 'topoSedes', 'topoHubs', 'topoColores', 'topoColoresHub', 'topoVen', 'enlacesData'];
 ENTRADAS.forEach(id => $(id).addEventListener('input', render));
 // Las licencias se pintan en las dos pestañas: el centro del dimensionamiento y el BOM.
-['licGestion', 'licNivel', 'licVpns', 'secUrl', 'secMalware', 'termYears'].forEach(id => $(id).addEventListener('input', () => { render(); }));
+const CAMPOS_SA = ['saLic', 'saNivel', 'saUsuarios', 'saPrivado', 'saIps', 'ctrlEquipos', 'ctrlSaie'];
+['licGestion', 'licNivel', 'licVpns', 'secUrl', 'secMalware', 'termYears', ...CAMPOS_SA].forEach(id => $(id).addEventListener('input', () => { render(); }));
 ['pickModel', 'qty', 'modNim', 'modSm', 'modPim', 'optSel', 'optQty'].forEach(id => $(id).addEventListener('input', renderBom));
 
 /* ── Ayudas de presentación ── */
@@ -96,7 +103,9 @@ function parametros(){
     topologia:{topologia:$('topologia').value, sedes:$('topoSedes').value, hubs:$('topoHubs').value,
       colores:$('topoColores').value, coloresHub:$('topoColoresHub').value, ven:$('topoVen').checked},
     requisitos:{dualPsu:$('chkRedund').checked, celular:$('chk4g').checked, nim:$('chkNim').checked, sm:$('chkSm').checked,
-      macsec:$('chkMacsec').checked, poe:$('chkPoe').checked, poeW:numDe('poeW')},
+      macsec:$('chkMacsec').checked, poe:$('chkPoe').checked, poeW:numDe('poeW'),
+      appqoe:$('chkAppqoe').checked, appqoeConexiones:numDe('appqoeCon')},
+    ha:mode === 'link' && $('chkHa').checked, haTloc:mode === 'link' && $('chkHa').checked && $('chkHaTloc').checked,
   };
 }
 // El tier DNA sale del tráfico del escenario (todo el WAN en SD-WAN, solo el cifrado en
@@ -120,7 +129,10 @@ function escribirEnlaces(l){
   $('enlacesData').dispatchEvent(new Event('input', {bubbles:true}));
 }
 function catalogoPuertos(){ return {optics:OPTICS, modulosG2:MOD_G2, modulosC8k:MOD_C8K}; }
-const esFibra = e => e.tipo !== 'celular' && M.ENTREGAS[e.entrega] && M.ENTREGAS[e.entrega].medio === 'fibra';
+const medioDe = e => (e.tipo !== 'celular' && M.ENTREGAS[e.entrega] ? M.ENTREGAS[e.entrega].medio : null);
+const esFibra = e => medioDe(e) === 'fibra';
+// El tramo se declara en fibra y en cobre (el cobre llega a 100 m, o a 30 m con un SFP-10G-T-X).
+const conTramo = e => medioDe(e) === 'fibra' || medioDe(e) === 'cobre';
 function pintarEnlaces(){
   const l = leerEnlaces();
   enlacesPintados = $('enlacesData').value || '';
@@ -131,10 +143,11 @@ function pintarEnlaces(){
     <span class="enl-n" aria-hidden="true">${i + 1}</span>
     <select data-k="tipo" aria-label="Tipo del enlace ${i + 1}">${opt(M.TIPOS_ENLACE, e.tipo)}</select>
     <select data-k="rol" aria-label="Rol del enlace ${i + 1}">${opt(M.ROLES_ENLACE, e.rol)}</select>
-    ${e.tipo === 'celular' ? '<span class="sku" style="flex:1 1 120px">Módem celular (integrado o PIM)</span>'
+    ${e.tipo === 'celular' ? `<input type="number" data-k="bajada" min="0" step="any" value="${esc(e.bajada ?? '')}" placeholder="Bajada Mbps" aria-label="Bajada que pide el enlace ${i + 1} en Mbps" autocomplete="off">
+    <input type="number" data-k="subida" min="0" step="any" value="${esc(e.subida ?? '')}" placeholder="Subida Mbps" aria-label="Subida que pide el enlace ${i + 1} en Mbps" autocomplete="off">`
       : `<select data-k="entrega" aria-label="Entrega del enlace ${i + 1}">${opt(entregas, e.entrega)}</select>`}
-    ${esFibra(e) ? `<select data-k="fibra" aria-label="Tipo de fibra del enlace ${i + 1}">${opt(fibras, e.fibra || '')}</select>
-    <input type="number" data-k="km" min="0" step="any" value="${esc(e.km ?? '')}" placeholder="Tramo km" aria-label="Distancia del tramo del enlace ${i + 1} en km" autocomplete="off">` : ''}
+    ${esFibra(e) ? `<select data-k="fibra" aria-label="Tipo de fibra del enlace ${i + 1}">${opt(fibras, e.fibra || '')}</select>` : ''}
+    ${conTramo(e) ? `<input type="number" data-k="km" min="0" step="any" value="${esc(e.km ?? '')}" placeholder="Tramo km" aria-label="Distancia del tramo del enlace ${i + 1} en km" autocomplete="off">` : ''}
     <button type="button" class="btn ghost enl-quitar" data-quitar="${i}" aria-label="Quitar el enlace ${i + 1}">×</button>
   </div>`).join('') : '<p class="hint" style="margin:0">Sin enlaces declarados: los puertos no se comprueban.</p>';
   $('btnAddEnlace').disabled = l.length >= M.MAX_ENLACES;
@@ -143,15 +156,18 @@ $('enlacesBox').addEventListener('input', e => {
   const f = e.target.closest('.enlace-fila'); const k = e.target.dataset.k;
   if(!f || !k) return;
   const l = leerEnlaces(), fila = l[+f.dataset.i];
-  const antes = esFibra(fila);
+  const antes = medioDe(fila);
   fila[k] = e.target.value;
   if(k === 'tipo' && e.target.value !== 'celular' && !fila.entrega) fila.entrega = ENLACE_NUEVO.entrega;
-  // Sin fibra, la fibra y el tramo no significan nada: no viajan en el enlace.
-  if(!esFibra(fila)){ delete fila.fibra; delete fila.km; }
-  for(const c of ['fibra', 'km']) if(fila[c] === '') delete fila[c];
+  // Lo que no significa nada en esta entrega no viaja en el enlace: la fibra fuera de una fibra y
+  // el tramo en un DSL o un celular.
+  if(!esFibra(fila)) delete fila.fibra;
+  if(!conTramo(fila)) delete fila.km;
+  if(fila.tipo !== 'celular'){ delete fila.bajada; delete fila.subida; }
+  for(const c of ['fibra', 'km', 'bajada', 'subida']) if(fila[c] === '') delete fila[c];
   escribirEnlaces(l);
-  // Pasar a celular o cambiar de cobre a fibra cambia la fila: se repinta y el foco vuelve al campo.
-  if(k === 'tipo' || (k === 'entrega' && antes !== esFibra(fila))){
+  // Pasar a celular o cambiar de medio cambia la fila: se repinta y el foco vuelve al campo.
+  if(k === 'tipo' || (k === 'entrega' && antes !== medioDe(fila))){
     pintarEnlaces();
     const t = $('enlacesBox').querySelector(`.enlace-fila[data-i="${f.dataset.i}"] [data-k="${k}"]`); if(t) t.focus();
   }
@@ -180,9 +196,15 @@ function opcionesLicencia(p, m){
     trafico:M.traficoLicencia(M.demanda(p), p), vpns:numDe('licVpns'), modulos:modulosElegidos(m)};
 }
 const filaDe = id => (ultimaEval ? ultimaEval.filas.find(f => f.m.id === id) : null) || null;
+// La suscripción de Secure Access, solo con la salida a Internet hacia un SSE.
+function lineasSecureAccess(p){
+  if(p.seguridad !== 'sse') return {filas:[], avisos:[]};
+  return M.secureAccess({licencia:$('saLic').value, nivel:$('saNivel').value, usuarios:numDe('saUsuarios'),
+    privado:$('saPrivado').checked, ips:$('saIps').checked}, M.demanda(p), SA);
+}
 
 // Precio neto: el simulador de tramos partner es de bom.js, compartido por los siete fabricantes.
-const OPEX_CISCO = ['Licencias', 'Soporte'];
+const OPEX_CISCO = ['Licencias', 'Soporte', 'Seguridad en la nube'];
 const DTO = BOM.simuladorDescuento('cajaDescuento', () => renderBom());
 const dtoActual = () => (DTO ? DTO.valor() : 0);
 const dtoEtiqueta = () => (DTO ? DTO.etiqueta() : null);
@@ -207,6 +229,9 @@ function pintarControles(){
   $('segHint').textContent = (M.SEGURIDAD[$('seguridad').value] || M.SEGURIDAD.ninguna).d;
   $('fecPct').disabled = !$('chkFec').checked;
   $('poeW').disabled = !$('chkPoe').checked;
+  // La extensión TLOC solo tiene sentido con dos routers.
+  $('chkHaTloc').disabled = !$('chkHa').checked;
+  $('appqoeCon').disabled = !$('chkAppqoe').checked;
   // Sin topología, sus campos no cuentan ni viajan en el enlace (estado.js salta `data-inactivo`).
   const conTopo = !!$('topologia').value;
   $('topoBlock').classList.toggle('hidden', !conTopo);
@@ -317,8 +342,10 @@ function render(){
       const rot = `Enlace ${x.n} · ${M.TIPOS_ENLACE[x.tipo]}, ${M.ROLES_ENLACE[x.rol].toLowerCase()}${x.e ? ` · ${x.e.n}` : ''}`;
       const a = en && en.asignados.find(y => y.enlace === x.n), s = en && en.sinAsignar.find(y => y.enlace === x.n);
       const al = a && a.alcance, mo = a && M.motivoOptica(a);
+      const tc = a && a.tramoCobre;
       const optica = al && al.elegida ? ` · ${esc(al.elegida.bom || al.elegida.sku)} (${esc(M.fmtKm(al.km))} en ${esc(M.FIBRAS[al.fibra])})`
-        : mo ? ` · <span class="warn">${esc(mo)}</span>` : '';
+        : mo ? ` · <span class="warn">${esc(mo)}</span>`
+        : tc ? ` · tramo de ${esc(M.fmtKm(tc.km))}, llega a ${tc.llega} m${tc.supuesto ? ' (norma 802.3)' : ''}` : '';
       const v = x.tipo === 'celular' ? (m.lte ? 'Módem celular integrado' : m.pim ? 'Módulo PIM (va al BOM)' : '<span class="warn">sin módem celular</span>')
         : a ? `${esc(M.rotuloPuerto(a))}${a.via === 'transceptor' ? ' · con transceptor de cobre' : ''}${optica}`
         : s ? `<span class="warn">${esc(s.motivo)}</span>`
@@ -423,7 +450,8 @@ function pintarAvisos(ev, p){
   const L = [];
   if(ev.tlsEnRouter) L.push('<div class="callout" role="note"><p><b>Descifrado TLS en el router: ninguna ficha lo publica.</b> Ningún Secure Router, Catalyst ni Meraki de este catálogo publica caudal con inspección TLS, así que no se deriva de otra cifra. Si la salida a Internet necesita descifrado, va en un <b>firewall dedicado</b> o en un servicio <b>SSE en la nube</b>: cambia «Seguridad de la salida a Internet».</p></div>');
   if(p.seguridad === 'desacoplada' && ev.demanda.diaNeed > 0) L.push(`<div class="callout info" role="note"><p><b>Firewall dedicado.</b> El router solo enruta la salida local (${fmt(ev.demanda.diaNeed)} con margen); el firewall que la inspecciona se dimensiona aparte, por su capa de inspección — por ejemplo en el <a href="/dimensionador-fortinet-fortigate.html">dimensionador Fortinet</a>. Cisco Secure Firewall no está en este catálogo.</p></div>`);
-  if(p.seguridad === 'sse' && ev.demanda.diaNeed > 0) L.push('<div class="callout info" role="note"><p><b>Seguridad en la nube.</b> La salida a Internet viaja cifrada hasta el servicio SSE, así que el router la cuenta en su capa IPsec. La suscripción del servicio (Cisco Secure Access) va por usuario y no está en este catálogo: confirmarla con el distribuidor.</p></div>');
+  if(p.seguridad === 'sse' && ev.demanda.diaNeed > 0) L.push('<div class="callout info" role="note"><p><b>Seguridad en la nube.</b> La salida a Internet viaja cifrada hasta el servicio SSE, así que el router la cuenta en su capa IPsec. La suscripción de Cisco Secure Access (por usuario o por sede) va en las licencias y en el BOM, de su guía de pedido; cada túnel lleva 1 Gbps y pide otro de respaldo.</p></div>');
+  if(ev.ha) L.push(`<div class="callout info" role="note"><p><b>Sede con dos routers.</b> Si uno cae, el otro lleva el enrutamiento de toda la sede (guía de diseño de Catalyst SD-WAN): cada router se dimensiona para todo el tráfico y el BOM lleva dos, con sus licencias y su soporte.${ev.ha.tloc ? ' Con extensión TLOC, los enlaces se alternan entre los dos routers y cada uno suma una interfaz hacia el otro (cobre de 1G, supuesto).' : ' Cada router va a todos los transportes, que es lo habitual: cada enlace ocupa un puerto en los dos.'}${ev.ha.tloc && ev.ha.celular ? ' <b>Un enlace celular no se puede extender por TLOC</b>: cada router necesita su propio módem.' : ''}</p></div>`);
   if(ev.enlacesCaudal) L.push(`<div class="callout" role="note"><p><b>El caudal no cabe en la entrega de los enlaces principales.</b> Se declaran ${fmt(ev.enlacesCaudal.bw)} por sentido y los principales entregan ${fmt(ev.enlacesCaudal.cabe)}: revisar la entrega de los enlaces o el caudal.</p></div>`);
   if(p.plataforma === 'asr') L.push('<div class="callout" role="note"><p><b>ASR 1000: fuera de venta.</b> Los tres modelos pasaron su último día de pedido; se evalúan como referencia de parque instalado y nunca se recomiendan.</p></div>');
   $('avisosMotor').innerHTML = L.join('');
@@ -461,6 +489,8 @@ function pintarCgnat(){
 function pintarLicencias(m, p){
   if(!m){ $('licBox').innerHTML = '<p style="font-size:13.5px;color:var(--steel)">Sin equipo elegido no hay licencias que proponer.</p>'; return; }
   const lic = M.licencias(m, opcionesLicencia(p, m), LIC_G2, LIC_DNA);
+  const sa = lineasSecureAccess(p);
+  lic.filas.push(...sa.filas); lic.avisos.push(...sa.avisos);
   $('licBox').innerHTML = `<ul class="clean">${lic.filas.map(x => `<li class="on"><b>${esc(x.desc)}</b>${x.incluida ? '<span class="req opt">Incluida</span>' : x.opcional ? '<span class="req opt">Opcional</span>' : '<span class="req">Requerida</span>'}<span class="sku">${x.sku ? `<code>${esc(x.sku)}</code> · ` : ''}${esc(x.nota || '')}</span></li>`).join('')}
     ${lic.avisos.map(a => `<li><span class="warn">${esc(a)}</span></li>`).join('')}</ul>
     <p class="hint">Gestión y nivel se eligen en la pestaña «Equipo y BOM».</p>`;
@@ -468,6 +498,27 @@ function pintarLicencias(m, p){
     : m.lic === 'meraki' ? 'Meraki: una licencia por equipo, de la clase del equipo.'
       : 'Catalyst 8000, ISR y ASR: suscripción DNA de 3, 5 o 7 años; el tier sale del tráfico (todo el WAN en SD-WAN, solo el cifrado en autónomo).';
   $('secExtras').classList.toggle('hidden', !(m.lic === 'cswan' && p.seguridad === 'onbox'));
+  // Controladores: solo con un overlay de Catalyst SD-WAN (IOS XE gestionado por el SD-WAN Manager).
+  const conCtrl = m.lic !== 'meraki' && $('licGestion').value !== 'autonomo';
+  $('ctrlBlock').classList.toggle('hidden', !conCtrl);
+  $('ctrlBlock').toggleAttribute('data-inactivo', !conCtrl);
+  pintarControladores();
+  // Sin SSE, los campos de Secure Access no cuentan ni viajan en el enlace.
+  $('saBlock').classList.toggle('hidden', p.seguridad !== 'sse');
+  $('saBlock').toggleAttribute('data-inactivo', p.seguridad !== 'sse');
+}
+
+// Componentes de control para el número de equipos del overlay (propuesta 2.2).
+function pintarControladores(){
+  const r = M.controladoresSdwan(numDe('ctrlEquipos'), $('ctrlSaie').checked, CTRL);
+  if(!r){ $('ctrlBox').innerHTML = ''; return; }
+  if(r.fuera){ $('ctrlBox').innerHTML = `<p class="hint warn" style="margin:0">Más de ${miles(r.max)} equipos: la guía (${esc(r.version)}) pide varios overlays.</p>`; return; }
+  const v = r.validadores, c = r.controladores;
+  $('ctrlBox').innerHTML = `<ul class="clean" style="font-size:13.5px">
+    <li><b>SD-WAN Manager</b>${r.manager.map(x => `<span class="sku">${esc(x.n)} · ${esc(x.recursos)} por nodo${x.dr ? ' · admite recuperación ante desastres' : ''}</span>`).join('')}</li>
+    ${v ? `<li><b>${v.n} Validators</b><span class="sku">${v.vcpu} vCPU y ${v.ram} GB de RAM cada uno</span></li>` : ''}
+    ${c ? `<li><b>${c.n} Controllers</b><span class="sku">${c.vcpu} vCPU y ${c.ram} GB de RAM cada uno</span></li>` : ''}
+  </ul>`;
 }
 
 // Escala logarítmica: la capacidad equivalente de cada equipo de la plataforma para esta mezcla
@@ -569,7 +620,10 @@ function renderBom(){
   // click que llega antes que el fetch, y aquí reventaba.
   if(!m) return;
   const p = parametros();
-  const qty = Math.max(1, parseInt($('qty').value, 10) || 1);
+  // Con dos routers por sede (propuesta 1.3), todo lo que va por equipo se duplica; lo que el reparto
+  // con TLOC ya asigna a un router (`porRouter`) no.
+  const sedesQty = Math.max(1, parseInt($('qty').value, 10) || 1);
+  const qty = sedesQty * (p.ha ? 2 : 1);
   const anios = +$('termYears').value || 3;
   const optQty = Math.max(0, parseInt($('optQty').value, 10) || 0);
   const g2 = m.lic === 'cswan';
@@ -577,7 +631,7 @@ function renderBom(){
   // Módulos: solo los de la guía de pedido de su familia, y solo en el equipo que tiene la ranura.
   const mods = modulosDe(m);
   const conLista = mods.lista.length > 0;
-  const deTipo = en => mods.lista.filter(x => x.en === en).map(x => ({v:x.sku, t:`${x.sku} — ${x.d}`}));
+  const deTipo = en => mods.lista.filter(x => x.en === en).map(x => ({v:x.sku, t:`${x.sku} — ${x.d}${x.finVenta ? ` · FIN DE VENTA (último pedido ${x.finVenta.ultimoPedido}, ${x.finVenta.boletin})` : ''}`}));
   opciones('modNim', conLista && m.nim ? deTipo('nim') : [], '— ninguno —');
   opciones('modSm', conLista && m.sm ? deTipo('sm') : [], '— ninguno —');
   opciones('modPim', conLista && m.pim ? deTipo('pim') : [], '— ninguno —');
@@ -597,9 +651,20 @@ function renderBom(){
   for(const pz of rq.piezas){
     if(pz.pim){
       if($('modPim').value) continue;
-      const lista = mods.lista.filter(x => x.en === 'pim').map(x => x.sku).join(', ');
-      filas.push({cat:'Módulos', desc:'Módulo celular (PIM) — elegir uno', sku:null, qty, unit:null,
-        nota:lista ? `Según la región y el operador: ${lista} (guía de pedido, ${mods.pim}).` : 'Referencia en la guía de pedido de esta familia: consultar en CCW.'});
+      // Por categoría (propuesta 1.2): con la bajada y la subida del enlace celular, solo los PIM de
+      // su guía cuya categoría llega; es un pico teórico, no el caudal del operador.
+      const pc = M.pimsCelular(mods.lista.filter(x => x.en === 'pim'), CELULAR, pz.need);
+      const rot = o => `${o.sku}${o.red ? ` (${o.red}, ${miles(o.bajada)}/${miles(o.subida)} Mbps)` : ' (categoría sin dato)'}`;
+      const need = pz.need && (pz.need.bajada || pz.need.subida) ? `${miles(pz.need.bajada || 0)}/${miles(pz.need.subida || 0)} Mbps de bajada/subida` : null;
+      if(!pc.opciones.length){
+        filas.push({cat:'Módulos', desc:'Módulo celular (PIM) — elegir uno', sku:null, qty, unit:null, nota:'Referencia en la guía de pedido de esta familia: consultar en CCW.'});
+      } else if(!pc.elegibles.length){
+        filas.push({cat:'Módulos', desc:'Módulo celular (PIM) — consultar', sku:null, qty, unit:null,
+          nota:`Ningún PIM de su guía de pedido llega por categoría a ${need}${pc.max ? ` (el mayor, ${rot(pc.max)})` : ''}: consultar.`});
+      } else {
+        filas.push({cat:'Módulos', desc:`Módulo celular (PIM)${pc.elegibles.length > 1 ? ' — elegir uno' : ''}`, sku:pc.elegibles.length === 1 ? pc.elegibles[0].sku : null, qty, unit:null,
+          nota:`${pc.falta ? 'Según la región y el operador' : `Llegan a ${need} por categoría; según la región y el operador`}: ${pc.elegibles.map(rot).join(', ')} (guía de pedido, ${mods.pim}). La categoría da el pico de la norma, no el caudal del operador.`});
+      }
     } else if(pz.macsec){
       if(/^C-NIM-WAN/.test($('modNim').value)) continue;
       filas.push({cat:'Módulos', desc:'NIM WAN con MACsec — elegir una', sku:null, qty, unit:null,
@@ -626,9 +691,9 @@ function renderBom(){
   }
   // Lo que pide el reparto de los enlaces: módulos, ópticas y transceptores. Un módulo que ya se
   // eligió a mano no se repite.
-  const enl = M.asignarEnlaces(m, p.enlaces, p.catalogo);
+  const enl = M.repartoHa(m, p);
   const aMano = new Set(['modNim', 'modSm', 'modPim'].map(id => $(id).value).filter(Boolean));
-  M.piezasEnlaces(enl).filter(pz => !(pz.moduloEnlace && aMano.has(pz.sku))).forEach(pz => filas.push({...pz, qty, unit:null}));
+  M.piezasEnlaces(enl).filter(pz => !(pz.moduloEnlace && aMano.has(pz.sku))).forEach(pz => filas.push({...pz, qty:pz.porRouter ? sedesQty : qty, unit:null}));
   const avisosPuertos = [
     ...enl.sinAsignar.map(x => x.motivo[0].toUpperCase() + x.motivo.slice(1) + '.'),
     ...enl.asignados.filter(a => M.motivoOptica(a)).map(a => `Enlace ${a.enlace}: ${M.motivoOptica(a)}; consultar con Cisco.`),
@@ -638,6 +703,10 @@ function renderBom(){
   ];
   const lic = M.licencias(m, opcionesLicencia(p, m), LIC_G2, LIC_DNA);
   lic.filas.forEach(x => filas.push({...x, qty:x.qty * qty, nota:x.incluida ? `${x.nota} Incluida con el equipo.` : x.nota}));
+  // Secure Access va por cliente y por usuario, no por equipo: su cantidad no se multiplica.
+  const sa = lineasSecureAccess(p);
+  sa.filas.forEach(x => filas.push({...x, unit:null}));
+  lic.avisos.push(...sa.avisos);
   const sn = SMARTNET[crit];
   if(sn) filas.push({cat:'Soporte', desc:sn.n, sku:null, qty, unit:null, nota:`${sn.sla || ''} · término ${anios} año(s)`});
 
@@ -752,7 +821,7 @@ $('memoriaBtn').addEventListener('click', () => {
 /* ── PERFILES MULTI-SEDE ──
    Misma clave compartida que los demás fabricantes (`BOM.perfiles`): un despliegue real mezcla
    marcas. Cargar es de Cisco (los campos son ids de ESTA página); consolidar no. */
-const CAMPOS_PERFIL = [...ENTRADAS, 'qty', 'termYears', 'licGestion', 'licNivel', 'licVpns', 'secUrl', 'secMalware', 'optQty'];
+const CAMPOS_PERFIL = [...ENTRADAS, 'qty', 'termYears', 'licGestion', 'licNivel', 'licVpns', 'secUrl', 'secMalware', ...CAMPOS_SA, 'optQty'];
 const SEGS_PERFIL = ['modeSeg', 'dirSeg', 'critSeg'];
 function capturarCampos(){
   const v = {};
@@ -848,6 +917,9 @@ $('consolidadoCerrar').addEventListener('click', () => { $('modalConsolidado').h
   LIC_DNA = data.licenciasDna || null;
   MOD_G2 = data.modulosG2 || [];
   MOD_C8K = data.modulosC8k || [];
+  SA = data.secureAccess || null;
+  CELULAR = data.celular || {};
+  CTRL = data.controladoresSdwan || null;
   // Sin el mapa la página funciona igual: la ficha no pinta la tarjeta gráfica.
   try {
     const rv = await fetch('/data/cisco-vistas-equipos.json');
@@ -896,7 +968,7 @@ document.addEventListener('click', (e) => {
    demás (voz, AppX, APs) no tienen equivalente y el aviso del enlace lo dice. */
 document.addEventListener('DOMContentLoaded', () => {
   const MIGRADOS = ['sNgfw', 'sUmbrella', 'dnaTier'];
-  const st = ESTADO.vincular({ campos:[...ENTRADAS, 'critSeg', 'dirSeg', 'modeSeg', 'qty', 'termYears', 'licGestion', 'licNivel', 'licVpns', 'secUrl', 'secMalware', 'optQty', 'verdict-sel'],
+  const st = ESTADO.vincular({ campos:[...ENTRADAS, 'critSeg', 'dirSeg', 'modeSeg', 'qty', 'termYears', 'licGestion', 'licNivel', 'licVpns', 'secUrl', 'secMalware', ...CAMPOS_SA, 'optQty', 'verdict-sel'],
     migrados:MIGRADOS });
   const q = new URLSearchParams(location.search);
   const si = k => ['1', 'true', 'on'].includes(String(q.get(k)).toLowerCase());

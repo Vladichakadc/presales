@@ -362,7 +362,7 @@ test('túneles por topología en la evaluación: apartan con su cifra y la escri
 
 // ENLACES WAN A PUERTOS REALES (propuesta 1.1, 2026-10-21). Lo que evita: proponer un equipo con
 // el caudal justo y sin el puerto para un enlace, o cotizar ópticas a ojo.
-const { MODULOS_G2, MODULOS_C8K, OPTICS } = require('../server/seed/legacyData/cisco.js');
+const { MODULOS_G2, MODULOS_C8K, OPTICS, SECURE_ACCESS, CELULAR, CONTROLADORES_SDWAN } = require('../server/seed/legacyData/cisco.js');
 const CAT = { optics: OPTICS, modulosG2: MODULOS_G2, modulosC8k: MODULOS_C8K };
 const E = (...xs) => xs.map((x) => (typeof x === 'string' ? { tipo: 'internet', rol: 'principal', entrega: x } : x));
 const asig = (m, ...xs) => M.asignarEnlaces(typeof m === 'string' ? id(m) : m, E(...xs), CAT);
@@ -514,17 +514,40 @@ test('óptica por alcance en el reparto: la pieza lleva su referencia, o «consu
   assert.ok(c && c.avisos.some((x) => /^Enlace 1: ninguna óptica de 10G del catálogo/.test(x)), JSON.stringify(c && c.avisos));
   const ok = M.evaluar(MODELS, { ...base, bwMbps: 100, enlaces: [f('fibra-10g', 'smf', '12')], catalogo: CAT });
   assert.match(M.memoria(ok, { perfil: 'sdwan' }), /Enlace 1: Internet, principal, fibra de 10G, 12 km en monomodo G\.652 → .*óptica SFP-10G-ER-I/);
-  // La fibra y el tramo solo cuentan en una entrega de fibra.
-  assert.deepStrictEqual(M.enlacesValidos([{ entrega: 'cobre-1g', fibra: 'smf', km: 3 }]).map((x) => [x.fibra, x.km]), [[null, null]]);
+  // La fibra solo cuenta en una entrega de fibra; el tramo, en fibra y en cobre (no en DSL).
+  assert.deepStrictEqual(M.enlacesValidos([{ entrega: 'cobre-1g', fibra: 'smf', km: 3 }, { entrega: 'dsl', km: 2 }]).map((x) => [x.fibra, x.km]), [[null, 3], [null, null]]);
 });
 
 // LO QUE EL REPARTO NO CUBRÍA (2026-10-21), cerrado con su documento.
+test('cobre con tramo: 100 m en un RJ-45 o con un 1000BASE-T, 30 m con el SFP-10G-T-X', () => {
+  const c = (entrega, km) => ({ tipo: 'internet', rol: 'principal', entrega, km });
+  // 80 m en el RJ-45 de un Catalyst 8300: llega, con los 100 m de su guía de hardware.
+  const ok = M.asignarEnlaces(id('Catalyst 8300-1N1S-6T'), [c('cobre-1g', '0.08')], CAT);
+  assert.deepStrictEqual(ok.asignados[0].tramoCobre, { km: 0.08, llega: 100, supuesto: false });
+  // 150 m: ningún puerto ni transceptor de cobre llega; el motivo es la distancia.
+  const lejos = M.asignarEnlaces(id('Catalyst 8300-1N1S-6T'), [c('cobre-1g', '0.15')], CAT);
+  assert.match(lejos.sinAsignar[0].motivo, /el cobre no llega a 150 m \(100 m en un RJ-45; 100 m con el SFP-1GE-T; 100 m con el SFP-GE-T\); hace falta fibra/);
+  // 10G de cobre en el C8355-G2: el SFP-10G-T-X llega a 30 m; a 50 m, no.
+  const t = M.asignarEnlaces(id('Cisco Secure Router C8355-G2'), [c('cobre-10g', '0.025')], CAT);
+  assert.strictEqual(t.asignados[0].tramoCobre.llega, 30);
+  assert.match(M.piezasEnlaces(t)[0].nota, /Tramo de 25 m; llega a 30 m/);
+  assert.match(M.asignarEnlaces(id('Cisco Secure Router C8355-G2'), [c('cobre-10g', '0.05')], CAT).sinAsignar[0].motivo, /el cobre no llega a 50 m \(30 m con el SFP-10G-T-X\)/);
+  // Donde la guía de hardware no da los 100 m (ISR, Meraki), es la norma: se avisa.
+  const ev = M.evaluar(MODELS, { ...base, bwMbps: 50, plataforma: 'isr', enlaces: [c('cobre-1g', '0.05')], catalogo: CAT });
+  assert.ok(ev.candidatos[0].avisos.some((x) => /los 100 m del cobre en su RJ-45 son la norma IEEE 802\.3/.test(x)), JSON.stringify(ev.candidatos[0].avisos));
+  // Sin tramo declarado no se comprueba nada.
+  assert.strictEqual(M.asignarEnlaces(id('Catalyst 8300-1N1S-6T'), [c('cobre-1g')], CAT).asignados[0].tramoCobre, null);
+});
+
 test('reparto: el DSL del ISR 1116-4P recibe un enlace DSL y nunca uno Ethernet', () => {
   const r = asig('ISR 1116-4P', 'cobre-1g', 'dsl');
   assert.deepStrictEqual(r.sinAsignar, []);
   assert.strictEqual(M.rotuloPuerto(r.asignados[1]), 'Puerto DSL WAN (ADSL2/VDSL2+, Annex B/J sobre RDSI)');
   assert.match(asig('ISR 1116-4P', 'cobre-1g', 'cobre-1g').sinAsignar[0].motivo, /sin puerto para el enlace 2/);
   assert.match(asig('ISR 1111-8P', 'dsl').sinAsignar[0].motivo, /sin puerto para el enlace 1 \(DSL/);
+  // En un Catalyst 8300, el DSL por NIM ya no se puede pedir: EOL15805, último pedido el 1-ago-2026.
+  assert.match(asig('Catalyst 8300-1N1S-6T', 'dsl').sinAsignar[0].motivo, /fuera de venta \(último pedido el 2026-08-01, boletín EOL15805\)/);
+  assert.ok(MODULOS_C8K.find((x) => x.sku === 'NIM-VA-B').finVenta);
   // Un DSL entre los principales no declara velocidad: no se afirma que el caudal no cabe.
   assert.strictEqual(M.enlacesFrenteCaudal({ ...base, bwMbps: 5000, enlaces: E('dsl') }), null);
 });
@@ -592,6 +615,101 @@ test('puertos mGig: la velocidad mínima tiene fuente en la G2 y es supuesto sol
       assert.strictEqual(!!g.velMinSupuesto, m.ser === 'Meraki MX', `${m.id}: velMinSupuesto donde no toca`);
     }
   }
+});
+
+// PROPUESTA 2.3 (2026-10-21): AppQoE con DRE, por la guía de configuración (sin caudal publicado).
+test('AppQoE con DRE: aparta a quien no consta o no llega a las conexiones, y avisa sin cifra de caudal', () => {
+  const r = (id_, c) => M.requisitos(id(id_), { appqoe: true, appqoeConexiones: c });
+  assert.match(r('Catalyst 8200L', 100).motivos[0], /AppQoE \(DRE\) no consta/);
+  assert.match(r('Catalyst 8200', 1000).motivos[0], /DRE llega a 750 conexiones \(perfil S\) frente a 1\.000/);
+  const ok = r('Catalyst 8300-2N2S-4T2X', 6000);
+  assert.ok(!ok.motivos.length && /perfil L, hasta 10\.000 conexiones/.test(ok.avisos[0]) && /ninguna ficha publica el caudal/.test(ok.avisos[0]));
+  // El perfil más pequeño que llega: 3.000 conexiones en un C8375-E-G2 son su perfil M.
+  assert.match(r('Cisco Secure Router C8375-E-G2', 3000).avisos[0], /perfil M, hasta 5\.000/);
+  // Un controlador de servicio no ejecuta el DRE: lo dice, sin apartar.
+  const ctrl = r('Catalyst 8500-12X', 1000);
+  assert.ok(!ctrl.motivos.length && /nodo externo/.test(ctrl.avisos[0]));
+});
+
+// PROPUESTA 1.3 (2026-10-21): sede con dos routers.
+test('sede con dos routers: cada uno para toda la sede; con TLOC, enlaces alternados y una interfaz entre los dos', () => {
+  const p = { ...base, bwMbps: 100, enlaces: E('fibra-1g', 'cobre-1g'), catalogo: CAT };
+  // Sin TLOC, el reparto es el de un router (los dos van a todos los transportes).
+  const ha = M.evaluar(MODELS, { ...p, ha: true });
+  const sin = M.evaluar(MODELS, p);
+  assert.deepStrictEqual(ha.candidatos.map((f) => f.m.id), sin.candidatos.map((f) => f.m.id));
+  assert.deepStrictEqual(ha.ha, { tloc: false, celular: false });
+  assert.match(M.memoria(ha, { perfil: 'sdwan' }), /Sede con dos routers: cada uno dimensionado para todo el tráfico/);
+  // Con TLOC: el enlace 1 al router 1, el 2 al router 2, y cada uno su interfaz TLOC.
+  const r = M.repartoHa(id('Catalyst 8300-1N1S-6T'), { ...p, ha: true, haTloc: true });
+  assert.deepStrictEqual(r.asignados.map((a) => [a.router, a.enlace]), [[1, 1], [1, 101], [2, 2], [2, 102]]);
+  assert.ok(r.tloc && !r.sinAsignar.length);
+  // Una pieza de un router lo dice y no se duplica con el segundo.
+  const pz = M.piezasEnlaces(r).find((x) => /^Router 1: Óptica de 1G para el enlace 1/.test(x.desc));
+  assert.ok(pz && pz.porRouter, JSON.stringify(M.piezasEnlaces(r).map((x) => x.desc)));
+  // Un equipo sin puerto libre para la interfaz TLOC se aparta con su motivo.
+  const ev = M.evaluar(MODELS, { ...p, plataforma: 'meraki', ha: true, haTloc: true, enlaces: E('cobre-1g', 'cobre-1g', 'cobre-1g', 'cobre-1g') });
+  assert.ok(M.resumenApartados(ev.apartados).some((g) => /extensión TLOC|algún enlace WAN|enlaces WAN/.test(g.motivo)), JSON.stringify(M.resumenApartados(ev.apartados)));
+  assert.ok(ev.candidatos.every((f) => f.avisos.some((x) => /warm spare/.test(x))));
+});
+
+// PROPUESTA 2.2 (2026-10-21): los componentes de control por número de equipos (versión 20.18.x).
+test('controladores SD-WAN: Manager, Validators y Controllers por equipos del overlay', () => {
+  const r = M.controladoresSdwan(1200, false, CONTROLADORES_SDWAN);
+  assert.deepStrictEqual(r.manager.map((x) => x.n), ['Un nodo Large', 'Clúster de tres nodos Large (todos los servicios)']);
+  assert.deepStrictEqual([r.validadores.n, r.validadores.vcpu, r.controladores.n, r.controladores.vcpu], [2, 4, 2, 8]);
+  // 6.000 equipos: seis Controllers y cuatro Validators; con SAIE, otro despliegue del Manager.
+  const g = M.controladoresSdwan(6000, true, CONTROLADORES_SDWAN);
+  assert.deepStrictEqual([g.validadores.n, g.controladores.n], [4, 6]);
+  assert.ok(g.manager.every((x) => /seis nodos/.test(x.n)));
+  // Más de 12.500: varios overlays. Sin equipos, nada.
+  assert.ok(M.controladoresSdwan(13000, false, CONTROLADORES_SDWAN).fuera);
+  assert.strictEqual(M.controladoresSdwan(0, false, CONTROLADORES_SDWAN), null);
+});
+
+// PROPUESTA 1.2 (2026-10-21): el módulo celular se elige por la categoría que llega.
+test('celular por categoría: los PIM de la guía que llegan a la bajada y la subida del enlace', () => {
+  const g2 = MODULOS_G2.filter((x) => x.en === 'pim');
+  // 500/100 Mbps: solo el 5G de la G2 (el CAT7 da 300/150).
+  const r = M.pimsCelular(g2, CELULAR, { bajada: 500, subida: 100 });
+  assert.deepStrictEqual(r.elegibles.map((o) => o.sku), ['P-5GS6-R16SA-GL']);
+  // 200/120: el 5G y los tres CAT7 (uno por región).
+  assert.strictEqual(M.pimsCelular(g2, CELULAR, { bajada: 200, subida: 120 }).elegibles.length, 4);
+  // 4 Gbps no llega con ninguno: se dice cuál es el mayor.
+  const no = M.pimsCelular(g2, CELULAR, { bajada: 4000 });
+  assert.ok(!no.elegibles.length && no.max.sku === 'P-5GS6-R16SA-GL');
+  // Sin bajada ni subida, la lista entera de la familia, como antes.
+  assert.ok(M.pimsCelular(g2, CELULAR, null).falta);
+  // En los Catalyst 8300/8200, la subida del CAT6 (50 Mbps) se queda corta para 100.
+  const c8k = MODULOS_C8K.filter((x) => x.en === 'pim');
+  assert.deepStrictEqual(M.pimsCelular(c8k, CELULAR, { subida: 100 }).elegibles.map((o) => o.sku), ['P-LTEAP18-GL']);
+  // El requisito lleva la mayor bajada y subida de los enlaces celulares.
+  const req = M.requisitosConEnlaces({ enlaces: [{ tipo: 'celular', rol: 'respaldo', bajada: '150', subida: '40' }] });
+  assert.deepStrictEqual(req.celularMbps, { bajada: 150, subida: 40 });
+});
+
+// PROPUESTA 3.1 (2026-10-21): la salida a un SSE lleva la suscripción de Secure Access.
+test('Secure Access: suscripción, licencia por usuario con su mínimo, por sede por ancho de banda y túneles', () => {
+  const d = M.demanda({ ...base, bwMbps: 400, diaPct: 50 });
+  const r = M.secureAccess({ licencia: 'usuario', nivel: 'ess', usuarios: 30, privado: true, ips: true }, d, SECURE_ACCESS);
+  assert.deepStrictEqual(r.filas.map((x) => [x.sku, x.qty]), [['SECURE-ACCESS-SUB', 1], ['SA-SIA-ESS', 50], ['SA-SPA-ESS-K9', 50], ['SA-THRT', 50]]);
+  assert.ok(r.avisos.some((x) => /mínimo de 50 usuarios/.test(x)));
+  // 400 Mbps por sentido × 50 % = 400 Mbps de suma, 520 con el margen: un túnel y su respaldo.
+  assert.deepStrictEqual([r.principales, r.tuneles], [1, 2]);
+  // Advantage incluye el IPS: sin SA-THRT.
+  const adv = M.secureAccess({ licencia: 'usuario', nivel: 'adv', usuarios: 200, ips: true }, d, SECURE_ACCESS);
+  assert.ok(!adv.filas.some((x) => x.sku === 'SA-THRT') && adv.filas.some((x) => x.sku === 'SA-SIA-ADV-K9' && x.qty === 200));
+  // Por sede: 200 Mbps por sentido van al grupo Medium (hasta 500 Mbps), «elegir una» por volumen.
+  const sede = M.secureAccess({ licencia: 'sede', nivel: 'adv' }, d, SECURE_ACCESS);
+  const fila = sede.filas.find((x) => /por sede/.test(x.desc));
+  assert.ok(fila && /grupo Medium/.test(fila.desc) && /SA-SIAS-M1-ESS: 1 TB/.test(fila.nota), JSON.stringify(sede.filas));
+  assert.ok(sede.avisos.some((x) => /solo existe en SIA Essentials/.test(x)));
+  // Más de 5 Gbps por sentido no cabe por sede: va por usuario. Y 3 Gbps de salida piden 4 túneles.
+  const grande = M.secureAccess({ licencia: 'sede' }, M.demanda({ ...base, bwMbps: 6000, diaPct: 100 }), SECURE_ACCESS);
+  assert.ok(grande.avisos.some((x) => /llega a 5\.000 Mbps/.test(x)) && grande.filas.some((x) => x.sku === 'SA-SIA-ESS'));
+  assert.strictEqual(M.secureAccess({}, M.demanda({ ...base, bwMbps: 1500, diaPct: 100 }), SECURE_ACCESS).principales, 4);
+  // Sin salida a Internet no hay nada que pagar.
+  assert.deepStrictEqual(M.secureAccess({}, M.demanda(base), SECURE_ACCESS).filas, []);
 });
 
 test('enlaces en la evaluación: apartan agrupados, el celular pide módem y sin enlaces nada cambia', () => {

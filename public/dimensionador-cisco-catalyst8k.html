@@ -318,18 +318,22 @@ tr.sel td{background:rgba(4,159,217,.07);font-weight:600}
       <input type="hidden" id="enlacesData">
       <div id="enlacesBox" role="group" aria-labelledby="enlacesLbl"></div>
       <button type="button" class="btn ghost" id="btnAddEnlace" style="margin-top:6px">+ Añadir enlace</button>
-      <p class="hint">Cada enlace va a un puerto real del equipo, contado de su ficha: los WAN primero, luego los flex o convertibles; los de solo LAN, nunca. La <b>entrega</b> es cómo lo da el operador (cobre o fibra y la velocidad de la interfaz), no lo contratado. Un respaldo también ocupa puerto; un celular pide módem. Si no cabe, se propone un módulo NIM de la guía de pedido (sin ranura NIM, en el portador de una ranura SM) o se aparta el equipo. Un enlace DSL va al puerto DSL del equipo. En un enlace de fibra, el <b>tipo de fibra</b> y la <b>distancia del tramo</b> eligen la óptica por el alcance de su ficha; sin ellos, va «elegir una». Sin enlaces, los puertos no se comprueban.</p>
+      <p class="hint">Cada enlace va a un puerto real del equipo, contado de su ficha: los WAN primero, luego los flex o convertibles; los de solo LAN, nunca. La <b>entrega</b> es cómo lo da el operador (cobre o fibra y la velocidad de la interfaz), no lo contratado. Un respaldo también ocupa puerto; un celular pide módem. Si no cabe, se propone un módulo NIM de la guía de pedido (sin ranura NIM, en el portador de una ranura SM) o se aparta el equipo. Un enlace DSL va al puerto DSL del equipo. En un enlace de fibra, el <b>tipo de fibra</b> y la <b>distancia del tramo</b> eligen la óptica por el alcance de su ficha; sin ellos, va «elegir una». En cobre, el tramo se comprueba contra los 100 m del RJ-45 o los 30 m del SFP-10G-T-X. Sin enlaces, los puertos no se comprueban.</p>
     </div>
     <div class="field">
       <div class="checks">
+        <label class="check"><input type="checkbox" id="chkHa"> <span>Sede con dos routers (alta disponibilidad)</span></label>
+        <label class="check"><input type="checkbox" id="chkHaTloc"> <span>Un transporte por router, con extensión TLOC</span></label>
         <label class="check"><input type="checkbox" id="chkRedund"> <span>Doble fuente de alimentación</span></label>
         <label class="check"><input type="checkbox" id="chk4g"> <span>Respaldo celular 4G/5G (integrado o módulo PIM)</span></label>
         <label class="check"><input type="checkbox" id="chkNim"> <span>Ranura NIM libre</span></label>
         <label class="check"><input type="checkbox" id="chkSm"> <span>Ranura SM (módulo de servicio)</span></label>
         <label class="check"><input type="checkbox" id="chkMacsec"> <span>MACsec en la WAN</span></label>
         <label class="check"><input type="checkbox" id="chkPoe"> <span>PoE para teléfonos o APs</span></label>
+        <label class="check"><input type="checkbox" id="chkAppqoe"> <span>Optimización TCP con DRE (AppQoE)</span></label>
       </div>
       <div class="field" style="margin-top:8px"><label for="poeW">Potencia PoE necesaria (W)</label><input type="number" id="poeW" min="0" step="1" autocomplete="off" disabled></div>
+      <div class="field" style="margin-top:8px"><label for="appqoeCon">Conexiones TCP optimizadas (DRE)</label><input type="number" id="appqoeCon" min="0" step="1" autocomplete="off" disabled></div>
       <p class="hint">Un equipo que no confirma el requisito se aparta, diciendo si no lo tiene o si su ficha no lo dice.</p>
     </div>
     <div class="field">
@@ -430,7 +434,28 @@ tr.sel td{background:rgba(4,159,217,.07);font-weight:600}
         <label class="check"><input type="checkbox" id="secUrl"> <span>Filtrado URL (LIC-SEC-…-C)</span></label>
         <label class="check"><input type="checkbox" id="secMalware"> <span>Malware Defense (LIC-SEC-…-M)</span></label>
       </div>
-      <p class="hint">Solo con «Inspección en el router»: los dos piden además el complemento Threat.</p>
+      <p class="hint">Solo con «Inspección en el router»: los dos piden además el complemento Threat. La cifra de Threat Protection de las fichas ya está medida con ellos (DIA-NAT + NGFW + IPS + URLF + AMP): marcarlos no la cambia.</p>
+    </div>
+    <div class="field hidden" id="ctrlBlock" data-inactivo>
+      <label for="ctrlEquipos">Controladores SD-WAN: equipos en el overlay</label>
+      <input type="number" id="ctrlEquipos" min="0" step="1" placeholder="sedes + hubs" autocomplete="off">
+      <label class="check" style="margin-top:8px"><input type="checkbox" id="ctrlSaie"> <span>Con SAIE (estadísticas de aplicaciones)</span></label>
+      <div id="ctrlBox" style="margin-top:8px"></div>
+      <p class="hint">Recursos recomendados de los componentes de control (versión 20.18.x, sep-2026): el SD-WAN Manager, y los Validators y Controllers ya con la redundancia entre dos centros de datos. En la nube de Cisco los dimensiona Cisco.</p>
+    </div>
+    <div class="field hidden" id="saBlock" data-inactivo>
+      <label>Cisco Secure Access (salida a Internet por SSE)</label>
+      <div class="dos">
+        <div><label for="saLic">Licencia</label><select id="saLic"><option value="usuario" selected>Por usuario cubierto</option><option value="sede">Por sede (solo SIA Essentials)</option></select></div>
+        <div><label for="saNivel">Paquete</label><select id="saNivel"><option value="ess" selected>Essentials</option><option value="adv">Advantage</option></select></div>
+      </div>
+      <label for="saUsuarios" style="margin-top:8px">Usuarios cubiertos</label>
+      <input type="number" id="saUsuarios" min="0" step="1" placeholder="mínimo 50" autocomplete="off">
+      <div class="checks" style="margin-top:8px">
+        <label class="check"><input type="checkbox" id="saPrivado"> <span>Acceso privado a aplicaciones (SPA)</span></label>
+        <label class="check"><input type="checkbox" id="saIps"> <span>IPS y control L7 en la nube</span></label>
+      </div>
+      <p class="hint">Guía de pedido de Secure Access (oct-2026): una suscripción por cliente; por usuario (mínimo 50) o, en SIA Essentials, por el ancho de banda de la sede. Advantage incluye IPS; en Essentials es el complemento SA-THRT. Cada túnel a Secure Access lleva 1 Gbps y pide otro de respaldo.</p>
     </div>
   </section>
 

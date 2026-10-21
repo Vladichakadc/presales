@@ -441,6 +441,33 @@ const MAX_WAN = {
 };
 // Restricciones de la ficha que el reparto de puertos no modela: se dicen cuando un enlace usa ese
 // tipo de puerto.
+// AppQoE con DRE (2026-10-21, propuesta 2.3): «Cisco Catalyst SD-WAN AppQoE Configuration Guide,
+// Releases 26.x», capítulo «Traffic Optimization with DRE» (10-mar-2026). «Supported Devices for DRE»
+// dice qué equipos ejecutan el DRE (nodos integrados) y cuáles solo lo redirigen a un nodo externo
+// (controladores de servicio); su tabla 4, los perfiles de cada nodo con sus conexiones optimizadas
+// y la RAM y el disco que piden además de los del equipo. No publica caudal con optimización.
+const DRE = (p, conexiones, ram, disco) => ({p, conexiones, ram, disco});
+const APPQOE = {
+  'Catalyst 8200':                  {rol:'nodo', perfiles:[DRE('S', 750, 8, 120)]},
+  'Catalyst 8300-1N1S-6T':          {rol:'nodo', perfiles:[DRE('S', 750, 8, 120), DRE('M', 5000, 8, 280)]},
+  'Catalyst 8300-1N1S-4T2X':        {rol:'nodo', perfiles:[DRE('S', 750, 8, 120), DRE('M', 5000, 8, 280)]},
+  'Catalyst 8300-2N2S-6T':          {rol:'nodo', perfiles:[DRE('S', 750, 8, 120), DRE('M', 5000, 8, 280)]},
+  'Catalyst 8300-2N2S-4T2X':        {rol:'nodo', perfiles:[DRE('S', 750, 8, 120), DRE('M', 5000, 8, 280), DRE('L', 10000, 16, 500)]},
+  'Cisco Secure Router C8231-E-G2': {rol:'nodo', perfiles:[]},
+  'Cisco Secure Router C8235-E-G2': {rol:'nodo', perfiles:[DRE('S', 750, 16, 120)]},
+  'Cisco Secure Router C8375-E-G2': {rol:'nodo', perfiles:[DRE('M', 5000, 16, 280), DRE('L', 10000, 32, 500)]},
+  'Cisco Secure Router C8355-G2':   {rol:'nodo', perfiles:[DRE('M', 5000, 16, 280)]},
+  'Cisco Secure Router C8455-G2':   {rol:'nodo', perfiles:[DRE('L', 16000, 32, 500)]},
+  'Cisco Secure Router C8475-G2':   {rol:'nodo', perfiles:[DRE('L', 22000, 32, 500)]},
+  'ASR 1001-X':                     {rol:'controlador'},
+  'ASR 1002-HX':                    {rol:'controlador'},
+  'Catalyst 8500-12X4QC':           {rol:'controlador'},
+  'Catalyst 8500-12X':              {rol:'controlador'},
+  'Catalyst 8500L-8S4X':            {rol:'controlador'},
+  'Catalyst 8500-20X6C':            {rol:'controlador'},
+  'Cisco Secure Router C8550-G2':   {rol:'controlador'},
+  'Cisco Secure Router C8570-G2':   {rol:'controlador'},
+};
 const NOTA_PUERTOS = {};
 // Combinaciones de puertos que el equipo admite a la vez (`combinaciones`): cuántos puertos SFP+
 // (de 1 o 10G), de 40G y de 100G como mucho en cada una, y de dónde sale la lista. Lo que no cabe en
@@ -468,6 +495,16 @@ const COMBINACIONES = {
 const DSL = {
   'ISR 1116-4P': 'ADSL2/VDSL2+, Annex B/J sobre RDSI',
 };
+// Alcance del cobre en los RJ-45 del equipo (`alcanceRJ45`, 2026-10-21): 100 m. Las guías de
+// hardware de los Catalyst 8200 y 8300 y de la G2 8100, 8200 y 8300 lo dicen para 1000BASE-T
+// («Supports the Ethernet maximum length of 328 feet (100 meters)»), y la de la 8200 también para
+// 2.5GBASE-T: `hasta` es la velocidad hasta la que consta. Por encima, y en las familias cuya guía
+// no lo trae (ISR 1000, ASR, Meraki), es la norma IEEE 802.3, supuesto declarado.
+const RJ45_GUIA = [
+  {de:/^Catalyst 8[23]00/, hasta:1, guia:'la guía de hardware de los Catalyst 8200/8300'},
+  {de:/^Cisco Secure Router C82\d\d/, hasta:2.5, guia:'la guía de hardware de la serie 8200 de la G2'},
+  {de:/^Cisco Secure Router C8(1\d\d|3\d\d)-/, hasta:1, guia:'la guía de hardware de su serie de la G2'},
+];
 
 for (const m of MODELS) {
   m.eolAnnounced = EOL_ANNOUNCED[m.id] || null;
@@ -478,6 +515,9 @@ for (const m of MODELS) {
   if (NOTA_PUERTOS[m.id]) m.notaPuertos = NOTA_PUERTOS[m.id];
   if (COMBINACIONES[m.id]) m.combinaciones = COMBINACIONES[m.id];
   if (DSL[m.id]) m.dsl = DSL[m.id];
+  if (APPQOE[m.id]) m.appqoe = APPQOE[m.id];
+  const rj = RJ45_GUIA.find((x) => x.de.test(m.id) && !/-MX$/.test(m.id));
+  m.alcanceRJ45 = rj ? {m:100, hasta:rj.hasta, guia:rj.guia} : {m:100, hasta:0, guia:null};
 }
 
 // Licencias de la línea G2 (guía de pedido, tablas 9 y 10). La referencia completa sale de la clase
@@ -603,6 +643,10 @@ const MODULOS_C8K = (() => {
     'NIM-ES2-8-P': {d:'Switch LAN de 8 puertos Gigabit Ethernet con PoE'},
   };
   for (const x of lista) if (DETALLE[x.sku]) Object.assign(x, DETALLE[x.sku]);
+  // Fuera de venta (2026-10-21): boletín EOL15805 (actualizado el 30-ene-2026), último pedido el
+  // 1-ago-2026 y sin reemplazo. La guía de pedido aún los lista; el BOM no los propone.
+  const EOL15805 = ['NIM-4SHDSL-EA', 'NIM-VAB-A', 'NIM-VA-B', 'NIM-VAB-M', 'SM-X-1T3/E3'];
+  for (const x of lista) if (EOL15805.includes(x.sku)) x.finVenta = {boletin:'EOL15805', ultimoPedido:'2026-08-01'};
   return lista;
 })();
 
@@ -627,8 +671,9 @@ const OPTICS = {
       alcance:[T('smf', 10000), ...MM.map((f) => T(f, 550, ACONDICIONADOR, {segunda:true}))]},
     {sku:'GLC-ZX-SMD',  bom:'SFP-1GE-ZX',   d:'1000BASE-ZX · monomodo · LC · unos 70 km',
       alcance:[T('smf', 70000, 'unos 70 km según la pérdida del enlace (presupuesto óptico de 21 dB); con una pérdida de tramo menor de 8 dB, la ficha pide un atenuador de 10 dB en recepción en cada extremo')]},
-    {sku:'GLC-T',       bom:'SFP-1GE-T',     d:'1000BASE-T · cobre · RJ45 · 100 m'},
-    {sku:'GLC-TE',      bom:'SFP-GE-T',      d:'1000BASE-T enhanced · cobre · RJ45 · para ISR/Catalyst'},
+    // Los de cobre: «up to 100 m» sobre Cat 5 (GLC-T) y Cat 5e (GLC-TE), texto de la misma ficha.
+    {sku:'GLC-T',       bom:'SFP-1GE-T',     d:'1000BASE-T · cobre · RJ45 · 100 m', alcance:[T('cobre', 100)]},
+    {sku:'GLC-TE',      bom:'SFP-GE-T',      d:'1000BASE-T enhanced · cobre · RJ45 · 100 m · para ISR/Catalyst', alcance:[T('cobre', 100)]},
   ],
   sfp10g: [
     {sku:'SFP-10G-SR',   bom:'SFP-10G-SR-S', d:'10GBASE-SR · multimodo · LC · 33 m (OM1) a 400 m (OM4)',
@@ -648,7 +693,7 @@ const OPTICS = {
   // tabla de cableado («Gigabit Ethernet SFP+, copper · RJ-45 · 10GBASE-T · Category 6, Category
   // 7»); la referencia y su alcance son los de la ficha de 10G (tabla 1, «up to 30 meters»).
   sfp10gt: [
-    {sku:'SFP-10G-T-X', bom:'SFP-10G-T-X', d:'10GBASE-T · cobre · RJ45 · hasta 30 m (CAT6A/CAT7) · 100M/1G/10G'},
+    {sku:'SFP-10G-T-X', bom:'SFP-10G-T-X', d:'10GBASE-T · cobre · RJ45 · hasta 30 m (CAT6A/CAT7) · 100M/1G/10G', alcance:[T('cobre', 30)]},
   ],
   qsfp40g: [
     {sku:'QSFP-40G-SR4', bom:'QSFP-40G-SR4-S',d:'40GBASE-SR4 · multimodo · MPO de 12 fibras · 100 m (OM3) y 150 m (OM4)',
@@ -679,7 +724,7 @@ const MX_1G = [
     alcance:[T('om1', 220), T('om2', 550), T('om3', 550), T('om4', 1000)]},
   {sku:'MA-SFP-1GB-LX10', bom:'MA-SFP-1GB-LX10', d:'1000BASE-LX10 · monomodo · 1310 nm · 10 km (550 m en multimodo con cable de acondicionamiento)',
     alcance:[T('smf', 10000), ...MM.map((f) => T(f, 550, 'en multimodo lleva un cable LC de acondicionamiento de modo', {segunda:true}))]},
-  {sku:'MA-SFP-1GB-TX',   bom:'MA-SFP-1GB-TX',   d:'1000BASE-T · cobre RJ45 · 100 m'},
+  {sku:'MA-SFP-1GB-TX',   bom:'MA-SFP-1GB-TX',   d:'1000BASE-T · cobre RJ45 · 100 m', alcance:[T('cobre', 100)]},
 ];
 const LRM_SMF = T('smf', 300, '10GBASE-LRM es de multimodo; la guía de Meraki lo admite en monomodo hasta 300 m', {segunda:true});
 const MX_10G = [
@@ -729,6 +774,88 @@ Object.assign(OPTICS, {
     {sku:`SFP-25G-AOC${l}`, bom:`SFP-25G-AOC${l}`, d:`Cable óptico activo de 25 Gbps, ${l.replace('M', ' m')} (ficha del C8455-G2-MX, «SFP-25G-AOC1M/3M/5M»)`},
   ]),
 });
+
+// Controladores de Catalyst SD-WAN (2026-10-21, propuesta 2.2): «Recommended Computing Resources for
+// Cisco Catalyst SD-WAN Control Components Release 20.18.x» (actualizada el 25-sep-2026), un solo
+// inquilino. Tabla 2: el SD-WAN Manager por número de equipos, sin y con SAIE (rangos que se solapan:
+// la tabla da varias opciones, con o sin recuperación ante desastres); tablas 5 y 6: Validators y
+// Controllers, ya contando la redundancia 1:1 entre dos centros de datos. Por encima de 12.500
+// equipos, varios overlays; en la nube de Cisco, los recursos los fija Cisco Cloud Ops.
+const CONTROLADORES_SDWAN = {
+  version:'20.18.x', maxEquipos:12500,
+  tipos:{Small:'16 vCPU, 32 GB de RAM, 500 GB', Medium:'32 vCPU, 64 GB de RAM, 1 TB', Large:'32 vCPU, 128 GB de RAM, 5 TB'},
+  manager:{
+    sinSaie:[
+      {de:0, a:249, n:'Un nodo Small', tipo:'Small', dr:false},
+      {de:0, a:999, n:'Un nodo Large', tipo:'Large', dr:true},
+      {de:1000, a:1500, n:'Un nodo Large', tipo:'Large', dr:true},
+      {de:1500, a:2000, n:'Clúster de tres nodos Medium (todos los servicios)', tipo:'Medium', dr:false},
+      {de:1000, a:2500, n:'Clúster de tres nodos Large (todos los servicios)', tipo:'Large', dr:true},
+      {de:2000, a:5000, n:'Clúster de tres nodos Large (todos los servicios)', tipo:'Large', dr:true},
+      {de:2000, a:5000, n:'Clúster de seis nodos Large (tres con ConfigDB)', tipo:'Large', dr:true},
+      {de:5000, a:12500, n:'Clúster de seis nodos Large (tres con ConfigDB)', tipo:'Large', dr:false},
+    ],
+    conSaie:[
+      {de:0, a:249, n:'Un nodo Medium', tipo:'Medium', dr:false},
+      {de:0, a:249, n:'Un nodo Large', tipo:'Large', dr:true},
+      {de:250, a:1000, n:'Un nodo Large', tipo:'Large', dr:true},
+      {de:1000, a:2500, n:'Clúster de tres nodos Large (todos los servicios)', tipo:'Large', dr:true},
+      {de:2500, a:4000, n:'Clúster de tres nodos Large (todos los servicios)', tipo:'Large', dr:true},
+      {de:2500, a:5000, n:'Clúster de seis nodos Large (tres con ConfigDB)', tipo:'Large', dr:true},
+      {de:4000, a:7000, n:'Clúster de seis nodos Large (tres con ConfigDB)', tipo:'Large', dr:true},
+      {de:7000, a:12500, n:'Clúster de seis nodos Large (tres con ConfigDB)', tipo:'Large', dr:true},
+    ],
+  },
+  validadores:[
+    {de:0, a:50, n:2, vcpu:2, ram:4}, {de:51, a:1000, n:2, vcpu:2, ram:4}, {de:1000, a:4000, n:2, vcpu:4, ram:8},
+    {de:4000, a:8000, n:4, vcpu:4, ram:8}, {de:8000, a:12500, n:6, vcpu:4, ram:8},
+  ],
+  controladores:[
+    {de:0, a:249, n:2, vcpu:4, ram:8}, {de:250, a:1000, n:2, vcpu:4, ram:16}, {de:1000, a:2500, n:2, vcpu:8, ram:16},
+    {de:2500, a:5000, n:4, vcpu:8, ram:16}, {de:5000, a:7500, n:6, vcpu:8, ram:16}, {de:7500, a:10000, n:8, vcpu:8, ram:16},
+    {de:10000, a:12500, n:10, vcpu:8, ram:16},
+  ],
+};
+
+// Módulos celulares (2026-10-21, propuesta 1.2): categoría y ancho de banda de bajada y subida de la
+// ficha «Cisco Wireless WAN Routers and Modules» (tabla 1, 4-jun-2024). Es el de la categoría de la
+// norma, un pico teórico: el operador da menos. La ficha no lista la G2 entre los equipos que los
+// admiten (es anterior a ella): qué PIM va en cada familia lo siguen diciendo sus guías de pedido.
+const CELULAR = {
+  'P-5GS6-R16SA-GL': {red:'5G SA', bajada:3600, subida:450},
+  'P-5GS6-GL':       {red:'5G', bajada:3300, subida:400},
+  'P-LTEAP18-GL':    {red:'LTE CAT18', bajada:1200, subida:150},
+  'P-LTEA7-NA':      {red:'LTE CAT7', bajada:300, subida:150},
+  'P-LTEA7-EAL':     {red:'LTE CAT7', bajada:300, subida:150},
+  'P-LTEA7-JP':      {red:'LTE CAT7', bajada:300, subida:150},
+  'P-LTEA-EA':       {red:'LTE CAT6', bajada:300, subida:50},
+  'P-LTEA-LA':       {red:'LTE CAT6', bajada:300, subida:50},
+  'NIM-LTEA-EA':     {red:'LTE CAT6', bajada:300, subida:50},
+  'NIM-LTEA-LA':     {red:'LTE CAT6', bajada:300, subida:50},
+};
+
+// Cisco Secure Access, la salida a Internet protegida en la nube (2026-10-21, propuesta 3.1).
+// Guía de pedido «Secure-Access-Sub» (actualizada el 20-oct-2026): una suscripción por cliente
+// (SECURE-ACCESS-SUB, sin precio propio), plazos de 12, 36 o 60 meses, licencia por usuario cubierto
+// (SIA y SPA, Essentials o Advantage, mínimo 50 usuarios; precio por tramos en CCW) o, solo en SIA
+// Essentials y para los usuarios de la sede, por ancho de banda de la sede con un volumen mensual de
+// datos. Advantage incluye IPS y control L7; en Essentials es el complemento SA-THRT, con la cantidad
+// del mayor número de puestos. «Best Practices for Configuring Network Tunnels by Device» de su guía
+// de usuario: «a throughput of 1 Gbps per tunnel», túnel principal y de respaldo obligatorios, y más
+// de 1 Gbps con varios túneles en ECMP.
+const SECURE_ACCESS = {
+  sub:'SECURE-ACCESS-SUB', plazos:[12, 36, 60], minUsuarios:50, tunelMbps:1000,
+  usuario:{
+    ess:{n:'Essentials', sia:'SA-SIA-ESS', spa:'SA-SPA-ESS-K9'},
+    adv:{n:'Advantage', sia:'SA-SIA-ADV-K9', spa:'SA-SPA-ADV-K9'},
+  },
+  amenazas:{sku:'SA-THRT', n:'Cisco Secure Access Threat Defense', d:'IPS y control L7 («This is L7/IPS functionality»): complemento de Essentials; Advantage lo incluye.'},
+  sede:[
+    {grupo:'Small', hastaMbps:50, tiers:[{t:'S1', sku:'SA-SIAS-S1-ESS', datos:'100 GB'}, {t:'S2', sku:'SA-SIAS-S2-ESS', datos:'250 GB'}, {t:'S3', sku:'SA-SIAS-S3-ESS', datos:'500 GB'}]},
+    {grupo:'Medium', hastaMbps:500, tiers:[{t:'M1', sku:'SA-SIAS-M1-ESS', datos:'1 TB'}, {t:'M2', sku:'SA-SIAS-M2-ESS', datos:'2,5 TB'}, {t:'M3', sku:'SA-SIAS-M3-ESS', datos:'5 TB'}]},
+    {grupo:'Large', hastaMbps:5000, tiers:[{t:'L1', sku:'SA-SIAS-L1-ESS', datos:'10 TB'}, {t:'L2', sku:'SA-SIAS-L2-ESS', datos:'25 TB'}, {t:'L3', sku:'SA-SIAS-L3-ESS', datos:'50 TB'}]},
+  ],
+};
 
 const OPTIC_LABEL = {sfp1g:'1GE — SFP / GLC', sfp10g:'10GE — SFP+', sfp10gt:'10GE — SFP+ de cobre (10GBASE-T)', qsfp40g:'40GE — QSFP+', qsfp100g:'100GE — QSFP28',
   mxsfp1g:'1GE — SFP Meraki', mxg2sfp1g:'1GE — SFP Meraki (G2-MX)', mxsfp10g:'10GE — SFP+ Meraki', mxg2sfp10g:'10GE — SFP+ Meraki (G2-MX)',
@@ -788,4 +915,4 @@ const CLOUD_UNIFICATION_NOTE = 'Cisco unificó Meraki y Catalyst bajo "Cisco Net
 // la página del dimensionador.
 const SDWAN_COMPARISON_NOTE = 'Catalyst SD-WAN es un router con funciones de seguridad añadidas; Fortinet y Palo Alto son firewalls con routing añadido — por eso la visibilidad nativa de tráfico/aplicaciones y el enrutamiento consciente de aplicaciones de Cisco suelen calificar por debajo de Fortinet en reportes de usuarios, y la licencia/configuración es más compleja y costosa. A favor de Cisco: soporte nativo de Segment Routing sobre IPv6 (SRv6) para ingeniería de tráfico determinística en WANs multi-MPLS complejas, algo que Fortinet, Palo Alto y Aruba no igualan — ventaja real en entornos grandes con múltiples proveedores de transporte.';
 
-module.exports = { MODELS, PUERTOS, OPTICS, OPTIC_LABEL, PARTS_DESC, SMARTNET, DNA_DESC, LICENCIAS_G2, LICENCIAS_DNA, MODULOS_G2, MODULOS_C8K, CLOUD_UNIFICATION_NOTE, SDWAN_COMPARISON_NOTE };
+module.exports = { MODELS, PUERTOS, OPTICS, SECURE_ACCESS, CELULAR, CONTROLADORES_SDWAN, OPTIC_LABEL, PARTS_DESC, SMARTNET, DNA_DESC, LICENCIAS_G2, LICENCIAS_DNA, MODULOS_G2, MODULOS_C8K, CLOUD_UNIFICATION_NOTE, SDWAN_COMPARISON_NOTE };
