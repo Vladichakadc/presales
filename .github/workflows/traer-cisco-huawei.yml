@@ -1128,6 +1128,11 @@ jobs:
               { archivo: 'cisco-opt-100g.html', tipo: 'html', para: 'CISCO', debeContener: 'QSFP-100G-LR4', urls: [
                 'https://www.cisco.com/c/en/us/products/collateral/interfaces-modules/transceiver-modules/datasheet-c78-736282.html',
               ] },
+              // Bahias del C8570-G2 (2026-10-21): la ficha solo da «max 240GE ports can be enabled
+              // simultaneously»; que puertos deja cada configuracion lo dice este capitulo de su guia.
+              { archivo: 'cisco-sr8500-hig-bahias.html', tipo: 'html', para: 'CISCO', debeContener: 'C8570-G2', urls: [
+                'https://www.cisco.com/c/en/us/td/docs/routers/secure-routers/sec-8500-series/hardware-installation-guide/cisco-8500-series-secure-router-HIG/introduction-c8500/bay-configuration.html',
+              ] },
               { archivo: 'cisco-hig3-img', tipo: 'imagenes', para: 'CISCO', urls: [],
                 descubrirPiezas: { de: ['cisco-isr1100-hig-overview.html', 'cisco-sr8200-hig-overview.html'],
                   base: 'https://www.cisco.com/', dominios: ['cisco.com'], relativas: true,
