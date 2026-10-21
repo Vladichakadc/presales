@@ -261,6 +261,11 @@ tr.sel td{background:rgba(4,159,217,.07);font-weight:600}
       </select>
       <p class="hint" id="segHint"></p>
       <label class="check" style="margin-top:8px"><input type="checkbox" id="chkTls"> <span>Descifrado TLS de la salida a Internet</span></label>
+      <div id="fwBlock" class="hidden" data-inactivo style="margin-top:8px">
+        <label for="fwCapa">Inspección en el firewall dedicado</label>
+        <select id="fwCapa"><option value="ips" selected>Firewall + aplicaciones + IPS (FW + AVC + IPS)</option><option value="avc">Firewall + aplicaciones (FW + AVC)</option></select>
+        <p class="hint">Se propone un Cisco Secure Firewall (series 1200, 3100 y 4200) por la cifra de esa capa en su ficha; con descifrado TLS, por la de TLS.</p>
+      </div>
     </div>
     <div class="field">
       <label>Supuestos del overlay</label>

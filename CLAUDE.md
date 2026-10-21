@@ -468,7 +468,18 @@ Módulos compartidos:
   tramo en km, la primera de la lista que llega según el `alcance` de la ficha de la óptica (en
   `OPTICS`, columna `reach` de `Optic`), antes la que no pide RS-FEC ni cable de acondicionamiento;
   sin los dos datos, «elegir una»; si ninguna llega, «consultar» y aviso, sin apartar (el catálogo
-  no trae todas las ópticas de Cisco). Sin enlaces no se comprueba nada. En SD-WAN un modelo sin
+  no trae todas las ópticas de Cisco). En cobre el tramo se comprueba contra los 100 m del RJ-45
+  (`alcanceRJ45`: de su guía de hardware o, si no lo da, la norma 802.3, avisada) o el alcance del
+  transceptor. Sin enlaces no se comprueba nada. **Propuestas de conectividad, SD-WAN y seguridad**
+  (todas hechas el 2026-10-21; `docs/propuestas-cisco-conectividad-sdwan-seguridad-2026-10-21.md`):
+  el enlace celular declara bajada y subida y el PIM sale de su categoría (`CELULAR`, un pico de la
+  norma); sede con dos routers (`repartoHa`: cada uno para toda la sede; con TLOC, enlaces
+  alternados y una interfaz entre los dos); controladores por equipos del overlay
+  (`CONTROLADORES_SDWAN`, recursos 20.18.x); AppQoE con DRE por perfil y conexiones (`appqoe`, sin
+  caudal publicado: avisa); Cisco Secure Access en el BOM con sus túneles de 1 Gbps y respaldo
+  (`SECURE_ACCESS`); y con «Firewall dedicado», un Cisco Secure Firewall 1200/3100/4200 por la cifra
+  de su capa (`SECURE_FIREWALL`, `firewallDedicado`: FW + AVC, con IPS o TLS, nunca otra) y su
+  licencia TMC. La cifra de Threat Protection ya incluye URLF y AMP. En SD-WAN un modelo sin
   cifra propia cae a IPsec y la lista lo marca. Licencias G2 por `clase` (S…2XL, guía de pedido) y
   segunda fuente `psu2`; los LIC-SEC no se proponen donde la guía los niega (`secAddon: false`), y en
   autónomo piden Routing Advantage y LIC-R-OP-SWM. **DNA** (`LICENCIAS_DNA`, FAQ de DNA y guía de
@@ -578,7 +589,7 @@ Módulos compartidos:
 ## Documentos de referencia
 
 `IMPORTAR-CATALOGO.md` (procedimiento de importación) · `docs/sincronizacion.md` ·
-`docs/decisiones-del-dueno-2026-09-24.md` · `docs/herramienta-externa-cisco-2026-10-20.md` · `docs/propuestas-cisco-conectividad-sdwan-seguridad-2026-10-21.md` (propuestas sin implementar) · `docs/portabilidad-aruba.md` (tres capas: escenario,
+`docs/decisiones-del-dueno-2026-09-24.md` · `docs/herramienta-externa-cisco-2026-10-20.md` · `docs/propuestas-cisco-conectividad-sdwan-seguridad-2026-10-21.md` (las nueve, hechas o cerradas el 2026-10-21, con su documento) · `docs/portabilidad-aruba.md` (tres capas: escenario,
 comercial, gobierno del dato) · `docs/revision-huawei-2026-09-29.md` · `docs/manual-usuario/`
 (manual a PDF con `npm run manual`; Playwright fuera de `package.json` a propósito) ·
 `docs/claude-md-cronica.md` (la historia de cada regla de este archivo).

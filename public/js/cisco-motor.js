@@ -75,7 +75,7 @@
     onbox: { n: 'Inspección en el router', k: 'amenazas',
       d: 'Threat Protection en Secure Router y Catalyst (EMIX, NGFW + IPS + URLF + AMP); NGFW en Meraki.' },
     desacoplada: { n: 'Firewall dedicado', k: 'fwd',
-      d: 'El router enruta y un firewall aparte inspecciona: el firewall se dimensiona en su propio dimensionador.' },
+      d: 'El router enruta y un firewall aparte inspecciona: se propone un Cisco Secure Firewall por la cifra de su capa de inspección.' },
     sse: { n: 'Seguridad en la nube (SSE)', k: 'ipsec',
       d: 'La salida a Internet viaja cifrada hasta el servicio en la nube: ocupa la capa IPsec del router.' },
   };
@@ -751,6 +751,50 @@
       validadores: RC.validadores.find(en) || null, controladores: RC.controladores.find(en) || null };
   }
 
+  /* ══ FIREWALL DEDICADO: CISCO SECURE FIREWALL (2026-10-21, propuesta 3.2) ══
+     Con «Firewall dedicado aparte», la salida a Internet la inspecciona un Secure Firewall de las
+     series 1200, 3100 o 4200 (`SECURE_FIREWALL`): el más pequeño cuya cifra de la capa que pide el
+     escenario llega, como en Fortinet: FW + AVC, FW + AVC + IPS (la habitual) o el descifrado TLS si
+     se pide; nunca la cifra de otra capa. La necesidad es la salida a Internet con el margen, los dos
+     sentidos sumados (la ficha no dice el sentido). Las sesiones escritas, si las hay, contra las
+     sesiones con AVC de la ficha. */
+  const CAPAS_FW = { avc: { k: 'fwAvc', n: 'FW + AVC' }, ips: { k: 'ips', n: 'FW + AVC + IPS' }, tls: { k: 'tls', n: 'descifrado TLS' } };
+  function firewallDedicado(d, o, FW) {
+    if (!FW || !d || !(d.diaMbps > 0)) return null;
+    const x = o || {};
+    const capa = x.tls ? 'tls' : x.capa === 'avc' ? 'avc' : 'ips';
+    const c = CAPAS_FW[capa];
+    const need = d.diaNeed;
+    const ses = Math.floor(num(x.sesiones));
+    const filas = FW.modelos.map((m) => {
+      const motivos = [];
+      if (m[c.k] < need) motivos.push(`${c.n}: ${miles(m[c.k])} Mbps frente a ${miles(need)}`);
+      if (ses && m.sesiones < ses) motivos.push(`${miles(m.sesiones)} sesiones con AVC frente a ${miles(ses)}`);
+      return { m, ok: !motivos.length, motivos, u: need / m[c.k] };
+    });
+    const candidatos = filas.filter((f) => f.ok).sort((a, b) => a.m[c.k] - b.m[c.k]);
+    return { capa, n: c.n, k: c.k, base: FW.bases[c.k], need, candidatos, apartados: filas.filter((f) => !f.ok), elegido: candidatos[0] || null };
+  }
+  // El firewall elegido y su licencia de Threat, Malware y URL al BOM. La 3100 y la 4200 llevan el
+  // plazo en la referencia (1, 3 o 5 años); la 1200 lo elige en CCW.
+  function piezasFirewall(fw, anios) {
+    if (!fw || !fw.elegido) return { filas: [], avisos: [] };
+    const m = fw.elegido.m;
+    const avisos = [];
+    let n = [1, 3, 5].includes(anios) ? anios : null;
+    if (!n) { n = anios > 5 ? 5 : 3; avisos.push(`La suscripción del Secure Firewall es de 1, 3 o 5 años: se propone ${n}.`); }
+    const conPlazo = m.tmc.includes('{n}');
+    return {
+      filas: [
+        { cat: 'Firewall', desc: `${m.id} — firewall dedicado con Threat Defense`, sku: m.pid, qty: 1,
+          nota: `Se dimensiona con su ${fw.n}: ${miles(m[fw.k])} Mbps (${fw.base}) frente a ${miles(fw.need)} de salida a Internet con margen. Precio en CCW.` },
+        { cat: 'Licencias', desc: `Licencia Threat, Malware y URL del ${m.id}${conPlazo ? ` — ${n} años` : ''}`, sku: m.tmc.replace('{n}', n), qty: 1,
+          nota: `IPS, Malware Defense y URL Filtering (guía de pedido de seguridad de red). ${conPlazo ? '' : `Plazo de 1, 3 o 5 años al pedirla en CCW (${n} propuesto). `}Malware y URL no tienen cifra propia en la ficha.` },
+      ],
+      avisos,
+    };
+  }
+
   // Escala: una cifra publicada que no llega aparta; una que no se publica, avisa.
   function escala(m, e) {
     const motivos = [], avisos = [];
@@ -837,6 +881,8 @@
     [/sesiones de NAT frente/, 'publican menos sesiones de NAT de las pedidas'],
     [/dispositivos recomendados frente/, 'recomiendan menos dispositivos de los de la sede'],
     [/^PoE de/, 'no llegan a la potencia PoE pedida'],
+    [/el cobre no llega a/, 'no llegan con cobre a algún tramo: hace falta fibra'],
+    [/NIM DSL de su guía están fuera de venta/, 'no tienen DSL integrado (los NIM DSL están fuera de venta)'],
     [/^sin puerto para el enlace/, 'no tienen puerto para algún enlace WAN'],
     [/^sin puerto para la extensión TLOC/, 'no tienen puerto para la extensión TLOC'],
     [/enlaces WAN a la vez/, 'admiten menos enlaces WAN de los declarados'],
@@ -1065,7 +1111,7 @@
 
   return {
     PLATAFORMAS, PERFILES, SEGURIDAD, PUERTOS_UTILES,
-    TIPOS_ENLACE, ROLES_ENLACE, ENTREGAS, FIBRAS, MAX_ENLACES, elegirOptica, motivoOptica, fmtKm, secureAccess, pimsCelular, controladoresSdwan,
+    TIPOS_ENLACE, ROLES_ENLACE, ENTREGAS, FIBRAS, MAX_ENLACES, elegirOptica, motivoOptica, fmtKm, secureAccess, firewallDedicado, piezasFirewall, pimsCelular, controladoresSdwan,
     fmt, cifra, capaOverlay, demanda, requisitos, escala, tunelesTopologia, evaluar,
     enlacesValidos, requisitosConEnlaces, modulosEquipo, asignarEnlaces, repartoHa, motivoCombinacion, piezasEnlaces, rotuloPuerto, enlacesFrenteCaudal, resumenApartados, licencias, traficoLicencia, tierDna, poolCgnat, memoria,
   };

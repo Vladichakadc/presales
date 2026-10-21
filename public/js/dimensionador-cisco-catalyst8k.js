@@ -25,6 +25,8 @@ let MOD_G2 = [];
 let MOD_C8K = [];
 // Cisco Secure Access (guía de pedido): `SECURE_ACCESS`.
 let SA = null;
+// Cisco Secure Firewall para el firewall dedicado: `SECURE_FIREWALL`.
+let SFW = null;
 // Categoría y ancho de banda de cada módulo celular (ficha de los módulos): `CELULAR`.
 let CELULAR = {};
 // Recursos de los componentes de control de SD-WAN: `CONTROLADORES_SDWAN`.
@@ -68,7 +70,7 @@ grupo('critSeg', v => { crit = v; });
 const ENTRADAS = ['bw', 'unit', 'sites', 'conc', 'head', 'profile', 'plataforma', 'diaPct', 'seguridad', 'chkTls',
   'chkFec', 'fecPct', 'dupPct', 'tuneles', 'rutas', 'sesiones', 'dispositivos', 'cgnatUsuarios', 'cgnatBloque',
   'chkRedund', 'chk4g', 'chkNim', 'chkSm', 'chkMacsec', 'chkPoe', 'poeW', 'chkHa', 'chkHaTloc', 'chkAppqoe', 'appqoeCon',
-  'topologia', 'topoSedes', 'topoHubs', 'topoColores', 'topoColoresHub', 'topoVen', 'enlacesData'];
+  'topologia', 'topoSedes', 'topoHubs', 'topoColores', 'topoColoresHub', 'topoVen', 'enlacesData', 'fwCapa'];
 ENTRADAS.forEach(id => $(id).addEventListener('input', render));
 // Las licencias se pintan en las dos pestañas: el centro del dimensionamiento y el BOM.
 const CAMPOS_SA = ['saLic', 'saNivel', 'saUsuarios', 'saPrivado', 'saIps', 'ctrlEquipos', 'ctrlSaie'];
@@ -197,6 +199,11 @@ function opcionesLicencia(p, m){
 }
 const filaDe = id => (ultimaEval ? ultimaEval.filas.find(f => f.m.id === id) : null) || null;
 // La suscripción de Secure Access, solo con la salida a Internet hacia un SSE.
+// El firewall dedicado (propuesta 3.2): solo con «Firewall dedicado aparte» y salida a Internet.
+function firewallDe(p){
+  if(p.seguridad !== 'desacoplada') return null;
+  return M.firewallDedicado(M.demanda(p), {capa:$('fwCapa').value, tls:p.tls, sesiones:(p.escala || {}).sesiones}, SFW);
+}
 function lineasSecureAccess(p){
   if(p.seguridad !== 'sse') return {filas:[], avisos:[]};
   return M.secureAccess({licencia:$('saLic').value, nivel:$('saNivel').value, usuarios:numDe('saUsuarios'),
@@ -227,6 +234,10 @@ function pintarControles(){
     ? 'Parte del tráfico de cada sucursal que sale en local y no llega al hub.'
     : 'Parte del tráfico de la sede que sale directo a Internet y no viaja por el overlay.';
   $('segHint').textContent = (M.SEGURIDAD[$('seguridad').value] || M.SEGURIDAD.ninguna).d;
+  // La capa del firewall dedicado solo cuenta (y viaja en el enlace) con «Firewall dedicado aparte».
+  const conFw = mode === 'link' && $('seguridad').value === 'desacoplada';
+  $('fwBlock').classList.toggle('hidden', !conFw);
+  $('fwBlock').toggleAttribute('data-inactivo', !conFw);
   $('fecPct').disabled = !$('chkFec').checked;
   $('poeW').disabled = !$('chkPoe').checked;
   // La extensión TLOC solo tiene sentido con dos routers.
@@ -449,7 +460,14 @@ function render(){
 function pintarAvisos(ev, p){
   const L = [];
   if(ev.tlsEnRouter) L.push('<div class="callout" role="note"><p><b>Descifrado TLS en el router: ninguna ficha lo publica.</b> Ningún Secure Router, Catalyst ni Meraki de este catálogo publica caudal con inspección TLS, así que no se deriva de otra cifra. Si la salida a Internet necesita descifrado, va en un <b>firewall dedicado</b> o en un servicio <b>SSE en la nube</b>: cambia «Seguridad de la salida a Internet».</p></div>');
-  if(p.seguridad === 'desacoplada' && ev.demanda.diaNeed > 0) L.push(`<div class="callout info" role="note"><p><b>Firewall dedicado.</b> El router solo enruta la salida local (${fmt(ev.demanda.diaNeed)} con margen); el firewall que la inspecciona se dimensiona aparte, por su capa de inspección — por ejemplo en el <a href="/dimensionador-fortinet-fortigate.html">dimensionador Fortinet</a>. Cisco Secure Firewall no está en este catálogo.</p></div>`);
+  if(p.seguridad === 'desacoplada' && ev.demanda.diaNeed > 0){
+    const fw = firewallDe(p);
+    const fila = f => `<tr><td>${esc(f.m.id)}</td><td class="n">${fmt(f.m[fw.k])}</td><td class="n">${Math.round(f.u * 100)} %</td><td><code>${esc(f.m.pid)}</code></td></tr>`;
+    L.push(`<div class="callout info" role="note"><p><b>Firewall dedicado: Cisco Secure Firewall.</b> El router solo enruta la salida local; la inspecciona un firewall aparte, dimensionado con su cifra de <b>${esc(fw.n)}</b> (${esc(fw.base)}) frente a ${fmt(fw.need)} con margen, los dos sentidos.
+      ${fw.elegido ? `Se propone el <b>${esc(fw.elegido.m.id)}</b>, que va al BOM con su licencia de Threat, Malware y URL.` : '<b>Ninguno de las series 1200, 3100 y 4200 llega</b>: varios equipos en clúster o consultar con Cisco.'}
+      ${fw.apartados.length ? ` ${fw.apartados.length} se apartan (${esc(fw.apartados[0].motivos[0])}${fw.apartados.length > 1 ? '…' : ''}).` : ''} Otra opción, el <a href="/dimensionador-fortinet-fortigate.html">dimensionador Fortinet</a>.</p>
+      ${fw.candidatos.length ? `<div class="scroll"><table><thead><tr><th>Equipo</th><th>${esc(fw.n)}</th><th>Uso</th><th>Referencia</th></tr></thead><tbody>${fw.candidatos.slice(0, 3).map(fila).join('')}</tbody></table></div>` : ''}</div>`);
+  }
   if(p.seguridad === 'sse' && ev.demanda.diaNeed > 0) L.push('<div class="callout info" role="note"><p><b>Seguridad en la nube.</b> La salida a Internet viaja cifrada hasta el servicio SSE, así que el router la cuenta en su capa IPsec. La suscripción de Cisco Secure Access (por usuario o por sede) va en las licencias y en el BOM, de su guía de pedido; cada túnel lleva 1 Gbps y pide otro de respaldo.</p></div>');
   if(ev.ha) L.push(`<div class="callout info" role="note"><p><b>Sede con dos routers.</b> Si uno cae, el otro lleva el enrutamiento de toda la sede (guía de diseño de Catalyst SD-WAN): cada router se dimensiona para todo el tráfico y el BOM lleva dos, con sus licencias y su soporte.${ev.ha.tloc ? ' Con extensión TLOC, los enlaces se alternan entre los dos routers y cada uno suma una interfaz hacia el otro (cobre de 1G, supuesto).' : ' Cada router va a todos los transportes, que es lo habitual: cada enlace ocupa un puerto en los dos.'}${ev.ha.tloc && ev.ha.celular ? ' <b>Un enlace celular no se puede extender por TLOC</b>: cada router necesita su propio módem.' : ''}</p></div>`);
   if(ev.enlacesCaudal) L.push(`<div class="callout" role="note"><p><b>El caudal no cabe en la entrega de los enlaces principales.</b> Se declaran ${fmt(ev.enlacesCaudal.bw)} por sentido y los principales entregan ${fmt(ev.enlacesCaudal.cabe)}: revisar la entrega de los enlaces o el caudal.</p></div>`);
@@ -703,6 +721,10 @@ function renderBom(){
   ];
   const lic = M.licencias(m, opcionesLicencia(p, m), LIC_G2, LIC_DNA);
   lic.filas.forEach(x => filas.push({...x, qty:x.qty * qty, nota:x.incluida ? `${x.nota} Incluida con el equipo.` : x.nota}));
+  // El firewall dedicado, uno por sede (su cifra ya es la de toda la salida a Internet).
+  const pf = M.piezasFirewall(firewallDe(p), anios);
+  pf.filas.forEach(x => filas.push({...x, qty:sedesQty, unit:null}));
+  lic.avisos.push(...pf.avisos);
   // Secure Access va por cliente y por usuario, no por equipo: su cantidad no se multiplica.
   const sa = lineasSecureAccess(p);
   sa.filas.forEach(x => filas.push({...x, unit:null}));
@@ -918,6 +940,7 @@ $('consolidadoCerrar').addEventListener('click', () => { $('modalConsolidado').h
   MOD_G2 = data.modulosG2 || [];
   MOD_C8K = data.modulosC8k || [];
   SA = data.secureAccess || null;
+  SFW = data.secureFirewall || null;
   CELULAR = data.celular || {};
   CTRL = data.controladoresSdwan || null;
   // Sin el mapa la página funciona igual: la ficha no pinta la tarjeta gráfica.

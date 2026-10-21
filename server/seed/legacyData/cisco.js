@@ -834,6 +834,36 @@ const CELULAR = {
   'NIM-LTEA-LA':     {red:'LTE CAT6', bajada:300, subida:50},
 };
 
+// Cisco Secure Firewall para la opción «Firewall dedicado» (2026-10-21, propuesta 3.2). Cifras de
+// Threat Defense de cada ficha: serie 1200 (tablas 6 y 8, 9-jul-2025), 3100 (tabla 2, 6-oct-2026) y
+// 4200 (tabla 1, 29-oct-2024), en Mbps: FW + AVC y FW + AVC + IPS con paquetes de 1.024 B, IPsec con
+// TCP de 1.024 B y Fastpath, y TLS con un 50 % de TLS 1.2 (AES256-SHA, RSA de 2.048). Referencias de
+// la «Cisco Network Security Ordering Guide» (oct-2026): el equipo con Threat Defense y la licencia de
+// Threat, Malware y URL (TMC); en la 1200 el plazo (1, 3 o 5 años) se elige en CCW, en la 3100 y la
+// 4200 va en la referencia. La ficha no dice si el caudal es de un sentido o la suma: se compara con
+// la suma de los dos (lo prudente). Malware y URL no tienen cifra propia en ninguna ficha.
+const FW = (id, serie, pid, tmc, fwAvc, ips, vpn, tls, sesiones, cps, peers, extra) =>
+  ({id, serie, pid, tmc, fwAvc, ips, vpn, tls, sesiones, cps, peers, ...(extra || {})});
+const SECURE_FIREWALL = {
+  bases:{fwAvc:'FW + AVC, 1.024 B', ips:'FW + AVC + IPS, 1.024 B', vpn:'IPsec, TCP de 1.024 B con Fastpath', tls:'50 % de TLS 1.2, AES256-SHA, RSA de 2.048'},
+  modelos:[
+    FW('Secure Firewall 1210CE', '1200', 'CSF1210CE-TD-K9', 'CSF1210CET-TMC', 6000, 6000, 5000, 1000, 200000, 35000, 200),
+    FW('Secure Firewall 1210CP', '1200', 'CSF1210CP-TD-K9', 'CSF1210CPT-TMC', 6000, 6000, 5000, 1000, 200000, 35000, 200, {poe:true}),
+    FW('Secure Firewall 1220CX', '1200', 'CSF1220CX-TD-K9', 'CSF1220CXT-TMC', 9000, 9000, 10000, 1500, 300000, 50000, 300),
+    FW('Secure Firewall 1230', '1200', 'CSF1230-TD-K9', 'CSF1230T-TMC', 13000, 9000, 13000, 2500, 400000, 50000, 500),
+    FW('Secure Firewall 1240', '1200', 'CSF1240-TD-K9', 'CSF1240T-TMC', 18000, 12000, 18000, 3200, 600000, 70000, 1000),
+    FW('Secure Firewall 1250', '1200', 'CSF1250-TD-K9', 'CSF1250T-TMC', 24000, 18000, 22000, 4100, 1000000, 100000, 1500),
+    FW('Secure Firewall 3105', '3100', 'FPR3105-NGFW-K9', 'L-FPR3105T-TMC-{n}Y', 10000, 10000, 5500, 3200, 1500000, 90000, 2000),
+    FW('Secure Firewall 3110', '3100', 'FPR3110-NGFW-K9', 'L-FPR3110T-TMC-{n}Y', 17000, 17000, 8000, 4800, 2000000, 130000, 3000),
+    FW('Secure Firewall 3120', '3100', 'FPR3120-NGFW-K9', 'L-FPR3120T-TMC-{n}Y', 21000, 21000, 10000, 6700, 4000000, 170000, 7000),
+    FW('Secure Firewall 3130', '3100', 'FPR3130-NGFW-K9', 'L-FPR3130T-TMC-{n}Y', 38000, 38000, 17800, 9100, 6000000, 240000, 15000),
+    FW('Secure Firewall 3140', '3100', 'FPR3140-NGFW-K9', 'L-FPR3140T-TMC-{n}Y', 45000, 45000, 22400, 11500, 10000000, 300000, 20000),
+    FW('Secure Firewall 4215', '4200', 'FPR4215-NGFW-K9', 'L-FPR4215T-TMC-{n}Y', 65000, 65000, 45000, 20000, 15000000, 350000, 20000),
+    FW('Secure Firewall 4225', '4200', 'FPR4225-NGFW-K9', 'L-FPR4225T-TMC-{n}Y', 80000, 80000, 80000, 30000, 30000000, 600000, 25000),
+    FW('Secure Firewall 4245', '4200', 'FPR4245-NGFW-K9', 'L-FPR4245T-TMC-{n}Y', 140000, 140000, 140000, 45000, 60000000, 800000, 30000),
+  ],
+};
+
 // Cisco Secure Access, la salida a Internet protegida en la nube (2026-10-21, propuesta 3.1).
 // Guía de pedido «Secure-Access-Sub» (actualizada el 20-oct-2026): una suscripción por cliente
 // (SECURE-ACCESS-SUB, sin precio propio), plazos de 12, 36 o 60 meses, licencia por usuario cubierto
@@ -915,4 +945,4 @@ const CLOUD_UNIFICATION_NOTE = 'Cisco unificó Meraki y Catalyst bajo "Cisco Net
 // la página del dimensionador.
 const SDWAN_COMPARISON_NOTE = 'Catalyst SD-WAN es un router con funciones de seguridad añadidas; Fortinet y Palo Alto son firewalls con routing añadido — por eso la visibilidad nativa de tráfico/aplicaciones y el enrutamiento consciente de aplicaciones de Cisco suelen calificar por debajo de Fortinet en reportes de usuarios, y la licencia/configuración es más compleja y costosa. A favor de Cisco: soporte nativo de Segment Routing sobre IPv6 (SRv6) para ingeniería de tráfico determinística en WANs multi-MPLS complejas, algo que Fortinet, Palo Alto y Aruba no igualan — ventaja real en entornos grandes con múltiples proveedores de transporte.';
 
-module.exports = { MODELS, PUERTOS, OPTICS, SECURE_ACCESS, CELULAR, CONTROLADORES_SDWAN, OPTIC_LABEL, PARTS_DESC, SMARTNET, DNA_DESC, LICENCIAS_G2, LICENCIAS_DNA, MODULOS_G2, MODULOS_C8K, CLOUD_UNIFICATION_NOTE, SDWAN_COMPARISON_NOTE };
+module.exports = { MODELS, PUERTOS, OPTICS, SECURE_ACCESS, SECURE_FIREWALL, CELULAR, CONTROLADORES_SDWAN, OPTIC_LABEL, PARTS_DESC, SMARTNET, DNA_DESC, LICENCIAS_G2, LICENCIAS_DNA, MODULOS_G2, MODULOS_C8K, CLOUD_UNIFICATION_NOTE, SDWAN_COMPARISON_NOTE };

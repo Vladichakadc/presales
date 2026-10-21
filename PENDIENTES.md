@@ -4,7 +4,8 @@ Registro vivo de lo que falta. **Al empezar una tarea se buscan aquí los puntos
 tocan, y al terminarla se actualiza**, y su contenido se resume al usuario al cerrar cada entrega — esa es la instrucción
 permanente que lo justifica (ver `CLAUDE.md`, sección *Instrucciones permanentes del dueño*).
 
-Última revisión: 2026-10-21, quincuagesimosegunda entrega (**El dimensionador Cisco elige la óptica de cada enlace por la fibra y la distancia, y se cierran los pendientes de puertos que tenían documento.** Encargo del dueño: «ejecuta y cierra pendientes y avanza con la mejora propuesta». Cada enlace de fibra declara su tipo de fibra y su tramo, y la óptica sale del alcance de la ficha de cada óptica (cinco fichas de Cisco y la guía de SFP de Meraki); de paso, el `QSFP-100G-ER4-S` del catálogo no existía (es la `QSFP-100G-ER4L-S`). Cerrados con su documento: el DSL del ISR 1116-4P, el portador de dos NIM en una ranura SM, las combinaciones de puertos del 12X4QC (tabla 5; tenía una jaula QSFP de más) y del C8570-G2 (bahías de su guía y 240 GE), el cobre de 10G en SFP+ de la serie 8300 de la G2 y la velocidad mínima de los mGig de la G2. Railway no desplegó la entrega anterior. Ver *Cerrado recientemente*, *Abierto: enlaces y puertos de Cisco* y *Vigilar: un push a `main` que Railway no vio*.)
+Última revisión: 2026-10-21, quincuagesimotercera entrega (**Las nueve propuestas de conectividad, SD-WAN y seguridad de Cisco, hechas o cerradas con su documento.** Encargo del dueño: «avanza con todo». El tramo se declara también en cobre (100 m en RJ-45; 100 y 30 m con los transceptores de cobre); el enlace celular elige su PIM por la categoría de la ficha; la sede con dos routers (y TLOC extension) duplica el equipo y reparte los enlaces; SD-WAN Manager, Validators y Controllers salen del número de equipos; AppQoE con DRE elige el nodo por conexiones; Cisco Secure Access entra al BOM por usuario o por sede; con «Firewall dedicado» se propone un Secure Firewall 1200, 3100 o 4200 por la cifra de su capa. Los NIM DSL están fuera de venta (EOL15805). Railway sigue sin desplegar desde `24287c2`. Ver *Cerrado recientemente*, *Abierto: enlaces y puertos de Cisco* y *Vigilar: un push a `main` que Railway no vio*.)
+Revisión anterior: 2026-10-21, quincuagesimosegunda entrega (**El dimensionador Cisco elige la óptica de cada enlace por la fibra y la distancia, y se cierran los pendientes de puertos que tenían documento.** Encargo del dueño: «ejecuta y cierra pendientes y avanza con la mejora propuesta». Cada enlace de fibra declara su tipo de fibra y su tramo, y la óptica sale del alcance de la ficha de cada óptica (cinco fichas de Cisco y la guía de SFP de Meraki); de paso, el `QSFP-100G-ER4-S` del catálogo no existía (es la `QSFP-100G-ER4L-S`). Cerrados con su documento: el DSL del ISR 1116-4P, el portador de dos NIM en una ranura SM, las combinaciones de puertos del 12X4QC (tabla 5; tenía una jaula QSFP de más) y del C8570-G2 (bahías de su guía y 240 GE), el cobre de 10G en SFP+ de la serie 8300 de la G2 y la velocidad mínima de los mGig de la G2. Railway no desplegó la entrega anterior. Ver *Cerrado recientemente*, *Abierto: enlaces y puertos de Cisco* y *Vigilar: un push a `main` que Railway no vio*.)
 Revisión anterior: 2026-10-21, quincuagesimoprimera entrega (**Enlaces WAN a puertos reales en el dimensionador Cisco.** Encargo del dueño: «avanza con la mejora propuesta» (la 1.1). Los 52 modelos traen sus puertos contados de su ficha (WAN, flex o LAN, medio y velocidad) y cada enlace declarado va a uno; si no cabe, se propone un módulo NIM de la guía o el equipo se aparta con su motivo, y cada fibra lleva su óptica en el BOM. Por el camino, la ficha corrigió dos textos del catálogo (ASR 1002-HX y Catalyst 8500-12X4QC). Ver *Cerrado recientemente* y *Abierto: enlaces y puertos de Cisco*.)
 Revisión anterior: 2026-10-21, quincuagésima entrega (**Túneles y sesiones BFD por topología en el dimensionador Cisco.** Encargo del dueño: «ejecuta pendientes y mejora propuesta». La única decisión abierta era la de las propuestas de Cisco, y su opción recomendada (2.1) era también la mejora propuesta: se hizo. Los túneles dejan de escribirse a ojo: salen de la topología (hub y radios o malla, sedes, hubs y transportes) y se comparan con los que publica cada ficha. El despliegue de la entrega anterior se confirmó (Railway no vio los pushes y se lanzó a mano). Ver *Cerrado recientemente*.)
 Revisión anterior: 2026-10-21, cuadragesimonovena entrega (**Licencias DNA y de seguridad de Cisco con fuente, el vigía contrasta las fichas de Cisco cada lunes, y propuestas de conectividad, SD-WAN y seguridad.** Encargo del dueño: «ejecuta la mejora propuesta y revisa si falta algún componente de seguridad, ya sea con licenciamiento DNA, o propón mejoras de conectividad, SD-WAN y seguridad». El vigía corre `npm run cisco --traer` cada lunes. El tier DNA sale del tráfico y del máximo de la plataforma; Premier, el término de 1 año y Essentials en 8500/ASR ya no se proponen; HSEC, LIC-SEC donde la guía lo niega, LIC-R-OP-SWM y la gestión del SD-WAN Manager entran en el BOM con su documento. Las propuestas, en `docs/propuestas-cisco-conectividad-sdwan-seguridad-2026-10-21.md`: ninguna implementada. Ver *Cerrado recientemente* y *Decisiones que necesitan al dueño*.)
@@ -1888,6 +1889,8 @@ Cisco. **Abierto, necesita al dueño**: lanzar el despliegue del último commit 
 («Deploy latest commit» en `presales-web`) o autorizar el conector de Railway en claude.ai para
 hacerlo desde la sesión. Después, la sonda tiene que salir en verde con `head_sha` `fab44b0` o
 posterior.
+La quincuagesimotercera entrega (propuestas de Cisco) llega a `main` con la misma advertencia: si
+Railway sigue sin crear su despliegue, producción sigue en `24287c2`.
 
 ## Vigilar: un despliegue sano cuyo `success` no llegó a GitHub (2026-10-02)
 
@@ -2035,18 +2038,16 @@ Lo que el HTML adjunto traía y **no** entró, con el motivo y lo que lo cerrar�
   un dato». ~~Decisión del dueño: retirarlos o integrarlos con la regla de datos.~~ **Decidido el
   2026-10-20** (ver *Decisiones que necesitan al dueño del producto*).
 
-## Abierto: enlaces y puertos de Cisco — lo que el reparto no cubre (2026-10-21, revisado el mismo día)
+## Abierto: enlaces y puertos de Cisco, y lo que dejan las propuestas (2026-10-21, revisado el mismo día)
 
-La quincuagesimosegunda entrega cerró con su documento el alcance del tramo (ópticas por fibra y
-distancia), el DSL del ISR 1116-4P, el portador C-SM-NIM-ADPT(R), las combinaciones del 12X4QC y
-del C8570-G2, el cobre de 10G en SFP+ (serie 8300 de la G2) y la velocidad mínima de los mGig de la
-G2 (ver *Cerrado recientemente*). Queda, dicho:
+La quincuagesimosegunda entrega cerró con su documento el alcance del tramo en fibra, el DSL del ISR
+1116-4P, el portador C-SM-NIM-ADPT(R), las combinaciones del 12X4QC y del C8570-G2, el cobre de 10G
+en SFP+ (serie 8300 de la G2) y la velocidad mínima de los mGig de la G2; la quincuagesimotercera,
+el alcance del cobre, el DSL por módulo (los NIM DSL están fuera de venta: EOL15805) y las nueve
+propuestas (ver *Cerrado recientemente*). Queda, dicho:
 - **Los módulos del ASR** (NIM del 1001-X, EPA del 1002-HX) y las tarjetas del 1006-X no están en
   el catálogo: un enlace que no cabe en los puertos fijos del ASR aparta el equipo, y el 1006-X no
   se comprueba. El ASR está fuera de venta: solo cuenta para el parque instalado.
-- **El DSL por módulo**: la guía de pedido de los Catalyst 8300/8200 lista NIM-VA-B, NIM-VAB-A,
-  NIM-VAB-M y NIM-4SHDSL-EA solo por referencia, sin su detalle; un enlace DSL aparta a quien no
-  tiene puerto DSL integrado (hoy, todos menos el ISR 1116-4P). Cerrarlo pide la ficha de esos NIM.
 - **El 10GBASE-T en SFP+** solo consta en la guía de hardware de la serie 8300 de la G2 (C8355-G2 y
   C8375-E-G2). En las demás familias un cobre de 10G sin RJ-45 de 10G se aparta, con el motivo de
   que el catálogo no trae su transceptor para ese equipo.
@@ -2061,6 +2062,21 @@ G2 (ver *Cerrado recientemente*). Queda, dicho:
 - **Las ópticas son las del catálogo**: si ninguna llega al tramo (una ZR de 100G, un BiDi, una
   1000BASE-EX), la línea va «consultar» y el equipo no se aparta. Ampliar el catálogo pide la ficha
   de la familia y, para Meraki, que su guía la dé para el equipo.
+- **El cobre sin cifra de su guía** (ISR 1000, ASR, Meraki) va contra los 100 m de la norma 802.3,
+  marcado como supuesto en la ficha del enlace.
+- **El Secure Firewall dedicado** sale como recomendación (tres candidatos, cifra de su capa, BOM con
+  su licencia TMC) pero no tiene ficha, figuras ni precio en el catálogo: sus cifras viven en
+  `SECURE_FIREWALL` y no en `Product`. La ficha no dice si su caudal es de un sentido o la suma: se
+  compara con la suma de los dos (lo prudente). Malware Defense y URL Filtering no tienen cifra
+  propia. Darle ficha completa pide sus guías de hardware (figuras) y decidir si entra al portal.
+- **El túnel de Secure Access** (1 Gbps por túnel, de su guía de usuario) no dice el sentido: se
+  compara con la salida a Internet de los dos sentidos sumados. Los tramos de precio por usuario
+  viven en CCW: la línea va sin precio.
+- **La interfaz de la extensión TLOC** se pide como un puerto de cobre de 1G libre en cada router
+  (supuesto: la guía de diseño no fija el medio). La alta disponibilidad solo existe en el modo de
+  sede; en hub, el clúster de hubs no se modela.
+- **AppQoE no publica caudal**: el nodo se elige por las conexiones DRE de su perfil y la página
+  avisa de que el caudal optimizado no tiene cifra.
 
 ## ~~Abierto~~ Cerrado: herramienta externa Cisco (2026-10-20)
 
@@ -2233,6 +2249,36 @@ que ya se comprobó y lo que cuesta cada opción.
     normalizar) se cerró el 2026-09-02 — ver *Cerrado recientemente*.
 
 ## Cerrado recientemente
+
+- **2026-10-21 · Las nueve propuestas de conectividad, SD-WAN y seguridad de Cisco, hechas o cerradas
+  con su documento (quincuagesimotercera entrega).** Encargo del dueño: «avanza con todo» (la mejora
+  propuesta, el alcance del cobre, y las siete propuestas que quedaban de
+  `docs/propuestas-cisco-conectividad-sdwan-seguridad-2026-10-21.md`). Los quince documentos se
+  trajeron por Actions (`traer-cisco-huawei.yml`) a ramas `fuente/*` y entran en `fuentes.js`.
+  **Cobre**: el tramo se declara también en cobre; un RJ-45 llega a 100 m (guías de hardware de los
+  Catalyst 8200/8300 y de la G2; donde la guía no lo dice, la norma 802.3, marcada como supuesto), la
+  GLC-T/GLC-TE y la MA-SFP-1GB-TX a 100 m y la SFP-10G-T-X a 30 m (sus fichas); un tramo al que el
+  cobre no llega aparta el equipo con el motivo «hace falta fibra». **1.2 Celular**: el enlace celular
+  declara bajada y subida, y el PIM se elige por la categoría de la ficha de los módulos WWAN (el pico
+  de la norma, no el caudal del operador). **1.3 Alta disponibilidad**: «Dos routers en la sede»
+  duplica el equipo y lo dimensiona para toda la sede (guía de diseño de Catalyst SD-WAN); con la
+  extensión TLOC (guía de configuración del 8300) los enlaces se alternan entre los dos y cada router
+  pide un puerto para la interfaz entre ellos; el BOM lleva cada pieza por router. **2.2
+  Controladores**: SD-WAN Manager (con o sin SAIE), Validators y Controllers por número de equipos
+  (recursos de la 20.18.x). **2.3 AppQoE**: con DRE, el nodo de servicio, su controlador y el perfil
+  salen de las conexiones optimizadas (guía de DRE); sin caudal publicado, se avisa. **3.1 Secure
+  Access**: la suscripción, la licencia por usuario (Essentials o Advantage, mínimo 50) o por sede
+  (Small, Medium o Large con su volumen de datos), SA-THRT donde hace falta, y los túneles de 1 Gbps
+  con su respaldo. **3.2 Secure Firewall**: con «Firewall dedicado aparte», el más pequeño de las
+  series 1200, 3100 o 4200 cuya cifra de la capa pedida (FW + AVC, FW + AVC + IPS o descifrado TLS,
+  de cada ficha) llega a la salida a Internet con margen, más las sesiones si se escriben; la página
+  enseña tres candidatos y el BOM lleva el equipo y su licencia TMC (guía de pedido de seguridad de
+  red). **3.3**: la premisa no se sostenía: la cifra de Threat Protection ya está medida con URLF y
+  AMP, y la página lo dice junto a los LIC-SEC. **DSL por módulo**: la ficha de los NIM DSL y el
+  boletín EOL15805 (último pedido, 1-ago-2026) dicen que NIM-VA-B, NIM-VAB-A, NIM-VAB-M y
+  NIM-4SHDSL-EA están fuera de venta: el desplegable de módulos los marca y un enlace DSL no los
+  propone. Pruebas del motor: de 39 a 46. Contraste: fila nueva de AppQoE (200 Mbps, 3.000
+  conexiones: el 8300-1N1S-6T, 31 %).
 
 - **2026-10-21 · Óptica por fibra y distancia en el dimensionador Cisco, y cerrados los pendientes de
   puertos que tenían documento.** Encargo del dueño: «ejecuta y cierra pendientes y avanza con la

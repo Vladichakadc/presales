@@ -362,7 +362,7 @@ test('túneles por topología en la evaluación: apartan con su cifra y la escri
 
 // ENLACES WAN A PUERTOS REALES (propuesta 1.1, 2026-10-21). Lo que evita: proponer un equipo con
 // el caudal justo y sin el puerto para un enlace, o cotizar ópticas a ojo.
-const { MODULOS_G2, MODULOS_C8K, OPTICS, SECURE_ACCESS, CELULAR, CONTROLADORES_SDWAN } = require('../server/seed/legacyData/cisco.js');
+const { MODULOS_G2, MODULOS_C8K, OPTICS, SECURE_ACCESS, SECURE_FIREWALL, CELULAR, CONTROLADORES_SDWAN } = require('../server/seed/legacyData/cisco.js');
 const CAT = { optics: OPTICS, modulosG2: MODULOS_G2, modulosC8k: MODULOS_C8K };
 const E = (...xs) => xs.map((x) => (typeof x === 'string' ? { tipo: 'internet', rol: 'principal', entrega: x } : x));
 const asig = (m, ...xs) => M.asignarEnlaces(typeof m === 'string' ? id(m) : m, E(...xs), CAT);
@@ -535,6 +535,9 @@ test('cobre con tramo: 100 m en un RJ-45 o con un 1000BASE-T, 30 m con el SFP-10
   // Donde la guía de hardware no da los 100 m (ISR, Meraki), es la norma: se avisa.
   const ev = M.evaluar(MODELS, { ...base, bwMbps: 50, plataforma: 'isr', enlaces: [c('cobre-1g', '0.05')], catalogo: CAT });
   assert.ok(ev.candidatos[0].avisos.some((x) => /los 100 m del cobre en su RJ-45 son la norma IEEE 802\.3/.test(x)), JSON.stringify(ev.candidatos[0].avisos));
+  // El resumen de apartados dice el porqué: el cobre, no la falta de puerto.
+  const ev150 = M.evaluar(MODELS, { ...base, bwMbps: 100, enlaces: [c('cobre-1g', '0.15')], catalogo: CAT });
+  assert.ok(M.resumenApartados(ev150.apartados).some((g) => /no llegan con cobre a algún tramo: hace falta fibra/.test(g.motivo)));
   // Sin tramo declarado no se comprueba nada.
   assert.strictEqual(M.asignarEnlaces(id('Catalyst 8300-1N1S-6T'), [c('cobre-1g')], CAT).asignados[0].tramoCobre, null);
 });
@@ -615,6 +618,31 @@ test('puertos mGig: la velocidad mínima tiene fuente en la G2 y es supuesto sol
       assert.strictEqual(!!g.velMinSupuesto, m.ser === 'Meraki MX', `${m.id}: velMinSupuesto donde no toca`);
     }
   }
+});
+
+// PROPUESTA 3.2 (2026-10-21): el firewall dedicado es un Cisco Secure Firewall, por la cifra de su capa.
+test('firewall dedicado: el Secure Firewall más pequeño que llega con la cifra de la capa pedida, nunca de otra', () => {
+  const d = (bw) => M.demanda({ ...base, bwMbps: bw, diaPct: 100 });
+  // 4 Gbps por sentido al 100 %: 10,4 Gbps con margen. Con IPS, el 1250 (18 Gbps de FW + AVC + IPS)…
+  const ips = M.firewallDedicado(d(4000), { capa: 'ips' }, SECURE_FIREWALL);
+  assert.strictEqual(ips.need, 10400);
+  assert.strictEqual(ips.elegido.m.id, 'Secure Firewall 1240');
+  // …el 1230 da 13 Gbps de FW + AVC pero solo 9 con IPS: sin IPS cumple, con IPS se aparta.
+  assert.strictEqual(M.firewallDedicado(d(4000), { capa: 'avc' }, SECURE_FIREWALL).elegido.m.id, 'Secure Firewall 1230');
+  assert.ok(ips.apartados.some((f) => f.m.id === 'Secure Firewall 1230' && /FW \+ AVC \+ IPS: 9\.000 Mbps frente a 10\.400/.test(f.motivos[0])));
+  // Con descifrado TLS manda su cifra: 10,4 Gbps de TLS solo los dan el 3140 y la serie 4200.
+  assert.strictEqual(M.firewallDedicado(d(4000), { tls: true }, SECURE_FIREWALL).elegido.m.id, 'Secure Firewall 3140');
+  // Las sesiones escritas también apartan: con 500.000 cumplen el 1240 (12 Gbps de IPS) y la 3100;
+  // el menor por su cifra de la capa es el 3105 (10 Gbps).
+  const ses = M.firewallDedicado(d(100), { capa: 'ips', sesiones: 500000 }, SECURE_FIREWALL);
+  assert.strictEqual(ses.elegido.m.id, 'Secure Firewall 3105');
+  assert.ok(ses.apartados.some((f) => f.m.id === 'Secure Firewall 1230' && /400\.000 sesiones con AVC frente a 500\.000/.test(f.motivos[0])));
+  // Al BOM: el equipo y su licencia TMC; la 3100 lleva el plazo en la referencia y 7 años no existen.
+  const pz = M.piezasFirewall(M.firewallDedicado(d(4000), { tls: true }, SECURE_FIREWALL), 7);
+  assert.deepStrictEqual(pz.filas.map((x) => x.sku), ['FPR3140-NGFW-K9', 'L-FPR3140T-TMC-5Y']);
+  assert.ok(pz.avisos.some((x) => /1, 3 o 5 años: se propone 5/.test(x)));
+  // Sin salida a Internet, nada.
+  assert.strictEqual(M.firewallDedicado(M.demanda(base), {}, SECURE_FIREWALL), null);
 });
 
 // PROPUESTA 2.3 (2026-10-21): AppQoE con DRE, por la guía de configuración (sin caudal publicado).

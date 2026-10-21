@@ -35,8 +35,9 @@ Los avisos de licencia salen también en la pestaña de BOM y en las notas del E
 
 ## 2. Propuestas
 
-Ordenadas por lo que evitan frente a lo que cuestan. **Hechas: la 2.1 (la recomendada) y la 1.1**;
-las demás siguen sin implementar.
+Ordenadas por lo que evitan frente a lo que cuestan. **Todas hechas el 2026-10-21**: la 2.1 (la
+recomendada) y la 1.1 primero; las otras siete con el encargo del dueño «avanza con todo», cada una
+con su documento, traído por Actions a `fuente/cisco-propuestas-2026-10-21` (ver cada apartado).
 
 ### Conectividad
 
@@ -59,7 +60,9 @@ SFP+), y lo que no cabe pide la NIM o el PIM de la guía de pedido, o aparta el 
 - *Documento*: las fichas que ya están en `fuentes.js`; los puertos combo, de la guía de hardware.
 - *Si se hace mal*: un puerto combo contado dos veces aprueba un equipo que no da los enlaces.
 
-**1.2 Celular por categoría.** El PIM hoy va «elegir uno» por región. La propuesta: el enlace
+**1.2 Celular por categoría. Hecha el 2026-10-21**: cada enlace celular declara bajada y subida, y
+el PIM de la guía de su familia se filtra por la categoría de la ficha «Cisco Wireless WAN Routers
+and Modules» (`CELULAR`; la nota dice que es el pico de la norma). Lo que decía: el PIM hoy va «elegir uno» por región. La propuesta: el enlace
 celular declara su caudal y el PIM se elige por categoría (LTE Cat 4/6/18, 5G), de la ficha de los
 PIM.
 - *Evita*: un respaldo 5G de 300 Mbps sobre un PIM Cat 4.
@@ -67,7 +70,11 @@ PIM.
 - *Documento*: «Cisco Pluggable Interface Modules Data Sheet» (no está en `fuentes.js`).
 - *Si se hace mal*: una cifra de la categoría (teórica del 3GPP) tomada como caudal real.
 
-**1.3 Alta disponibilidad por par de routers.** Casilla «sitio en HA»: dos equipos, licencias y
+**1.3 Alta disponibilidad por par de routers. Hecha el 2026-10-21** con la guía de diseño de
+Catalyst SD-WAN («WAN Edge Deployment»: si un router cae, el otro lleva la sede, así que cada uno se
+dimensiona para todo) y la de TLOC extension: casilla «Sede con dos routers» (el BOM lleva dos) y
+«Un transporte por router, con extensión TLOC» (enlaces alternados y una interfaz entre los dos; un
+celular no se extiende). Lo que decía: casilla «sitio en HA»: dos equipos, licencias y
 soporte por equipo, y el caudal de cada uno con un solo enlace activo en falla.
 - *Evita*: un BOM de una sede crítica con un solo equipo.
 - *Cuesta*: bajo (el BOM ya multiplica por cantidad); la regla de reparto en falla, documentarla.
@@ -98,7 +105,10 @@ modelo (`tuneles`, que ya está en el catálogo con su base: «Starting at IOS X
   infla la cifra; la casilla «colores que se ven entre sí» lo resuelve, y la manual sigue pudiendo
   pisar el cálculo.
 
-**2.2 Controladores (SD-WAN Manager, Validator y Controller).** Cuántas instancias y de qué tamaño
+**2.2 Controladores (SD-WAN Manager, Validator y Controller). Hecha el 2026-10-21** con los
+«Recommended Computing Resources» de la 20.18.x (25-sep-2026): con los equipos del overlay, las
+opciones de SD-WAN Manager de su tabla 2 (con o sin SAIE) y los Validators y Controllers de las
+tablas 5 y 6. Lo que decía: Cuántas instancias y de qué tamaño
 para N equipos, o la opción Cisco Hosted Cloud (ya en el BOM como opcional).
 - *Evita*: un proyecto de 300 sedes con un SD-WAN Manager de una instancia.
 - *Cuesta*: medio. Es una tabla por versión.
@@ -106,7 +116,11 @@ para N equipos, o la opción Cisco Hosted Cloud (ya en el BOM como opcional).
   Recommendations» (no está en `fuentes.js`).
 - *Si se hace mal*: una tabla de otra versión del software.
 
-**2.3 AppQoE y Cloud OnRamp.** La optimización TCP y DRE consumen CPU y tienen su propia cifra en
+**2.3 AppQoE y Cloud OnRamp. Hecha el 2026-10-21** con la guía de AppQoE (capítulo de DRE,
+10-mar-2026): ninguna ficha ni la guía publican caudal con optimización, así que no hay cifra; el
+requisito «Optimización TCP con DRE» aparta a quien la guía no da como nodo o controlador de
+servicio, o cuyo perfil no llega a las conexiones pedidas, y avisa del perfil y de la RAM y el disco
+que añade. Cloud OnRamp pide Advantage, que ya lo dice la licencia. Lo que decía: La optimización TCP y DRE consumen CPU y tienen su propia cifra en
 algunas fichas; Cloud OnRamp para SaaS y multicloud pide Advantage (ya lo dice la FAQ).
 - *Evita*: dimensionar con la capa SD-WAN un sitio que además optimiza.
 - *Cuesta*: medio, solo donde la ficha publique la cifra; donde no, aviso.
@@ -114,7 +128,9 @@ algunas fichas; Cloud OnRamp para SaaS y multicloud pide Advantage (ya lo dice l
 
 ### Seguridad
 
-**3.1 Cisco Secure Access (SSE) en el BOM.** Hoy la salida a un SSE dice «la suscripción va por
+**3.1 Cisco Secure Access (SSE) en el BOM. Hecha el 2026-10-21** con su guía de pedido (20-oct-2026)
+y la página de túneles de su guía de usuario: suscripción, licencia por usuario (mínimo 50) o, en SIA
+Essentials, por sede, SPA y SA-THRT, y los túneles de 1 Gbps con su respaldo. Lo que decía: Hoy la salida a un SSE dice «la suscripción va por
 usuario y no está en este catálogo». La propuesta: usuarios del sitio × referencia de Secure Access
 (Essentials o Advantage) y el número de túneles IPsec al SSE que pide el caudal de salida, con el
 límite por túnel que publique Cisco.
@@ -125,7 +141,11 @@ límite por túnel que publique Cisco.
 - *Si se hace mal*: un límite por túnel de Umbrella SIG (el producto anterior) aplicado a Secure
   Access.
 
-**3.2 Cisco Secure Firewall para «firewall dedicado».** Hoy remite al dimensionador de Fortinet.
+**3.2 Cisco Secure Firewall para «firewall dedicado». Hecha el 2026-10-21, como panel de
+recomendación**: las fichas de las series 1200, 3100 y 4200 y la guía de pedido de seguridad de red
+dan sus cifras por capa y sus referencias; con «Firewall dedicado aparte» se propone el más pequeño
+que llega con la cifra de su capa (FW + AVC, con IPS o TLS) y va al BOM con su licencia TMC. Sin ficha
+gráfica ni figuras de esos equipos (quedan en `PENDIENTES.md`). Lo que decía: Hoy remite al dimensionador de Fortinet.
 La propuesta: la serie 1200/3100/4200 con sus cifras por capa (firewall, AVC+IPS, VPN, TLS) y el
 mismo método de capas que Fortinet: se dimensiona con la capa que pide el perfil, nunca con otra.
 - *Evita*: que un proyecto todo Cisco salga con el firewall de otro fabricante.
@@ -134,7 +154,10 @@ mismo método de capas que Fortinet: se dimensiona con la capa que pide el perfi
 - *Documento*: las fichas de cada serie y su guía de pedido.
 - *Si se hace mal*: la cifra de firewall (paquetes grandes) usada para dimensionar IPS.
 
-**3.3 Threat Protection con URL y Malware Defense.** Las fichas de la G2 publican Threat
+**3.3 Threat Protection con URL y Malware Defense. Cerrada el 2026-10-21 sin aviso nuevo**: la
+premisa no se sostenía. Las fichas de la G2 y de los Catalyst 8200/8300/8500 definen Threat
+Protection como «DIA-NAT + NGFW + IPS + URLF + AMP»: la cifra ya incluye URL y Malware (el catálogo
+lo dice en `bases`); la página lo dice junto a los complementos LIC-SEC. Lo que decía: Las fichas de la G2 publican Threat
 Protection en EMIX; con URL Filtering y Malware Defense el caudal puede ser menor y no hay cifra.
 La propuesta: un aviso cuando se marcan esos complementos, sin derivar ninguna cifra.
 - *Evita*: que se lea la cifra de Threat como la del equipo con todo activado.

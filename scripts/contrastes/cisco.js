@@ -35,6 +35,9 @@
  *   · Un ISR de 50 Mbps con su enlace entregado por DSL (2026-10-21, cierre de los pendientes de
  *     puertos): solo el ISR 1116-4P tiene puerto DSL (ficha del ISR 1000, tabla 20); los otros
  *     cuatro ISR se apartan. Sin el enlace cumplían los cinco.
+ *   · Una sede de 200 Mbps con optimización TCP (DRE) para 3.000 conexiones (2026-10-21, propuesta
+ *     2.3): cumplen 15 de 30, los que la guía de AppQoE da como nodo con un perfil que llega o como
+ *     controlador de servicio; el 8200 (perfil S, 750 conexiones) y los que no constan se apartan.
  */
 const BASE_LINEA = [
   { n: 'Sede 800 Mbps por sentido, SD-WAN', esc: { bw: '800' },
@@ -55,6 +58,8 @@ const BASE_LINEA = [
     recomendado: 'Catalyst 8200L', utilizacion: '87 %', cumplen: '23' },
   { n: 'ISR de 50 Mbps con su enlace por DSL', esc: { bw: '50', plataforma: 'isr', enlaces: ['dsl'] },
     recomendado: 'ISR 1116-4P', utilizacion: '65 %', cumplen: '1' },
+  { n: 'Sede de 200 Mbps con DRE para 3.000 conexiones', esc: { bw: '200', appqoe: '3000' },
+    recomendado: 'Catalyst 8300-1N1S-6T', utilizacion: '31 %', cumplen: '15' },
 ];
 
 module.exports = {
@@ -80,6 +85,10 @@ module.exports = {
     if (x.celular) await p.check('#chk4g');
     if (x.tuneles) await p.fill('#tuneles', x.tuneles);
     if (x.dispositivos) await p.fill('#dispositivos', x.dispositivos);
+    if (x.appqoe) {
+      await p.check('#chkAppqoe');
+      await p.fill('#appqoeCon', x.appqoe);
+    }
     if (x.enlaces) {
       for (let i = 0; i < x.enlaces.length; i++) {
         await p.click('#btnAddEnlace');
