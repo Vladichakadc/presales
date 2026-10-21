@@ -4,7 +4,8 @@ Registro vivo de lo que falta. **Al empezar una tarea se buscan aquí los puntos
 tocan, y al terminarla se actualiza**, y su contenido se resume al usuario al cerrar cada entrega — esa es la instrucción
 permanente que lo justifica (ver `CLAUDE.md`, sección *Instrucciones permanentes del dueño*).
 
-Última revisión: 2026-10-21, cuadragesimonovena entrega (**Licencias DNA y de seguridad de Cisco con fuente, el vigía contrasta las fichas de Cisco cada lunes, y propuestas de conectividad, SD-WAN y seguridad.** Encargo del dueño: «ejecuta la mejora propuesta y revisa si falta algún componente de seguridad, ya sea con licenciamiento DNA, o propón mejoras de conectividad, SD-WAN y seguridad». El vigía corre `npm run cisco --traer` cada lunes. El tier DNA sale del tráfico y del máximo de la plataforma; Premier, el término de 1 año y Essentials en 8500/ASR ya no se proponen; HSEC, LIC-SEC donde la guía lo niega, LIC-R-OP-SWM y la gestión del SD-WAN Manager entran en el BOM con su documento. Las propuestas, en `docs/propuestas-cisco-conectividad-sdwan-seguridad-2026-10-21.md`: ninguna implementada. Ver *Cerrado recientemente* y *Decisiones que necesitan al dueño*.)
+Última revisión: 2026-10-21, quincuagésima entrega (**Túneles y sesiones BFD por topología en el dimensionador Cisco.** Encargo del dueño: «ejecuta pendientes y mejora propuesta». La única decisión abierta era la de las propuestas de Cisco, y su opción recomendada (2.1) era también la mejora propuesta: se hizo. Los túneles dejan de escribirse a ojo: salen de la topología (hub y radios o malla, sedes, hubs y transportes) y se comparan con los que publica cada ficha. El despliegue de la entrega anterior se confirmó (Railway no vio los pushes y se lanzó a mano). Ver *Cerrado recientemente*.)
+Revisión anterior: 2026-10-21, cuadragesimonovena entrega (**Licencias DNA y de seguridad de Cisco con fuente, el vigía contrasta las fichas de Cisco cada lunes, y propuestas de conectividad, SD-WAN y seguridad.** Encargo del dueño: «ejecuta la mejora propuesta y revisa si falta algún componente de seguridad, ya sea con licenciamiento DNA, o propón mejoras de conectividad, SD-WAN y seguridad». El vigía corre `npm run cisco --traer` cada lunes. El tier DNA sale del tráfico y del máximo de la plataforma; Premier, el término de 1 año y Essentials en 8500/ASR ya no se proponen; HSEC, LIC-SEC donde la guía lo niega, LIC-R-OP-SWM y la gestión del SD-WAN Manager entran en el BOM con su documento. Las propuestas, en `docs/propuestas-cisco-conectividad-sdwan-seguridad-2026-10-21.md`: ninguna implementada. Ver *Cerrado recientemente* y *Decisiones que necesitan al dueño*.)
 Revisión anterior: 2026-10-20, cuadragesimoctava entrega (**Cerrado también lo que había quedado «sin documento» en Cisco.** Cuatro vueltas más de transporte: la guía HTML de la 8200 dibuja el C8221-G2 y el C8231-E-G2 y dos traseras más; la licencia Meraki por suscripción tiene referencia oficial por clase y el BOM la lleva; los MX llevan sus ópticas MA-SFP en vez de las de Catalyst. Lo que Cisco no publica en ninguna edición queda dicho en su pestaña y fuera de los pendientes. Ver *Cerrado recientemente*.)
 Revisión anterior: 2026-10-20, cuadragesimoséptima entrega (**Cerrado lo que dejó abierto la entrega de Cisco, y hecha la mejora propuesta.** Encargo del dueño: «cierra lo que está abierto y ejecuta la mejora propuesta». Entran el C8355-G2-MX y el C8455-G2-MX con sus fichas y figuras, la trasera del C8650-G2, las figuras de tres ISR, el fin de venta del 8500-20X6C, los dispositivos del MX95/105, los módulos de los Catalyst 8300/8200 y la referencia SD-WAN+ de Meraki; lo que ningún documento publica queda dicho en su pestaña. Las dos decisiones abiertas se ejecutan con su opción recomendada (precios «~» a «Consultar», bloque de Gemini bajo la regla de datos). Y `npm run cisco` contrasta las fichas traídas celda a celda: 268 de 268 casan. Ver *Cerrado recientemente*.)
 Revisión anterior: 2026-10-20, cuadragesimosexta entrega (**Dimensionador Cisco rehecho con la herramienta externa del dueño, contrastada contra las fichas oficiales, y con las figuras frontal y trasera de cada equipo.** El catálogo pasa a 50 modelos: los 20 Secure Router (G2), los Catalyst 8000 con su fin de venta por boletín, los ISR 1000 releídos y los Meraki MX con sus fichas vigentes; cada cifra declara su base de medida. 58 figuras oficiales sin pérdida con el pie literal de cada cara. Motor puro (`cisco-motor.js`): overlay y salida local, cada uno contra la cifra de su capa, licencias G2 por clase, escala y requisitos que apartan con su motivo. Del adjunto entra el método, corregido; ningún precio ni referencia sin documento. Ver *Cerrado recientemente* y `docs/herramienta-externa-cisco-2026-10-20.md`.)
@@ -2041,7 +2042,9 @@ documento que se miró; si Cisco publica una edición nueva, `traer-cisco-huawei
 
 ## Decisiones que necesitan al dueño del producto
 
-- **Propuestas de conectividad, SD-WAN y seguridad del dimensionador Cisco (2026-10-21).** Encargo
+- **Propuestas de conectividad, SD-WAN y seguridad del dimensionador Cisco (2026-10-21).** **La
+  recomendada (2.1, túneles y BFD por topología) se hizo el 2026-10-21** con el encargo «ejecuta
+  pendientes y mejora propuesta»; **las otras ocho siguen abiertas** y no se hacen por silencio. Encargo
   del dueño: «mira qué propones». Nueve propuestas en
   `docs/propuestas-cisco-conectividad-sdwan-seguridad-2026-10-21.md`, cada una con qué evita, qué
   cuesta y qué documento pide: enlaces WAN a puertos reales, PIM por categoría, HA por par de
@@ -2186,6 +2189,25 @@ que ya se comprobó y lo que cuesta cada opción.
     normalizar) se cerró el 2026-09-02 — ver *Cerrado recientemente*.
 
 ## Cerrado recientemente
+
+- **2026-10-21 · Túneles y sesiones BFD por topología en el dimensionador Cisco (propuesta 2.1).**
+  Encargo del dueño: «ejecuta pendientes y mejora propuesta»; era la opción recomendada de la única
+  decisión abierta y la mejora propuesta de la entrega anterior. «Túneles simultáneos» era una cifra
+  escrita a ojo, y en un hub o en una sucursal en malla es el fallo más caro: pasa por caudal y se
+  queda corto en túneles. Ahora la sección 3 de la página tiene «Túneles según la topología» (hub y
+  radios o malla completa, sedes sin los hubs, hubs, transportes por sede y del hub, y si todos los
+  colores forman túnel entre sí). `tunelesTopologia` en `cisco-motor.js` cuenta los túneles de CADA
+  equipo con el rol que da el modo (una sede es una sucursal; un agregado o un hub, un hub): la
+  sucursal en hub y radios solo ve a los hubs; en malla, a las demás sedes y a los hubs; el hub, a
+  todas las sedes y a los demás hubs. Es aritmética, rotulada como supuesto en la pantalla y en la
+  memoria técnica; se compara con la cifra de túneles que ya publica cada ficha, y la escrita a mano
+  sigue mandando. En Catalyst SD-WAN la pantalla dice además una sesión BFD por túnel (el catálogo no
+  trae un tope de BFD); en Meraki, no. Con la topología apagada no cambia nada, y sus campos no
+  viajan en el enlace (`data-inactivo`). Ejemplo, fila nueva del contraste: una sucursal de 100 Mbps
+  en malla de 200 sedes con dos transportes pide 800 túneles, y los cinco C81xx-G2 (250) se apartan:
+  cumplen 25 de 30. **Por el camino**: el despliegue de la entrega anterior (`e45e7cb7`, commit
+  `554f8c2`) se confirmó en SUCCESS con `[seed]`, `[db]`, «Presales corriendo» y la sonda en verde,
+  lanzado a mano porque Railway no vio los pushes (*Vigilar*, arriba).
 
 - **2026-10-21 · Licencias DNA y de seguridad de Cisco con su documento, y el vigía contrasta las
   fichas de Cisco cada lunes.** Encargo del dueño: «ejecuta la mejora propuesta y revisa si hay algún

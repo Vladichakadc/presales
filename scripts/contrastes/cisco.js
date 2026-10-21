@@ -23,6 +23,9 @@
  *     con su fin de venta anunciado: recomendable hasta el 31-jul-2027).
  *   · Doble fuente, celular y 2.000 túneles: el más pequeño que confirma los tres es un
  *     Catalyst 8300 con su fin de venta anunciado, que sigue siendo recomendable hasta su fecha.
+ *   · Sucursal de 100 Mbps en una malla de 200 sedes con dos transportes (2026-10-21, túneles por
+ *     topología): 199 × 4 + 1 × 4 = 800 túneles. Los cinco C81xx-G2 publican 250 y se apartan:
+ *     cumplen 25 de los 30 que cumplen sin topología.
  */
 const BASE_LINEA = [
   { n: 'Sede 800 Mbps por sentido, SD-WAN', esc: { bw: '800' },
@@ -37,6 +40,8 @@ const BASE_LINEA = [
     recomendado: 'Cisco Secure Router C8650-G2', utilizacion: '65 %', cumplen: '2' },
   { n: 'Doble fuente, celular y 2.000 túneles', esc: { bw: '500', dual: true, celular: true, tuneles: '2000' },
     recomendado: 'Catalyst 8300-1N1S-6T', utilizacion: '76 %', cumplen: '7' },
+  { n: 'Sucursal de 100 Mbps en malla de 200 sedes con dos transportes', esc: { bw: '100', topologia: 'malla', topoSedes: '200', topoColores: '2' },
+    recomendado: 'Catalyst 8200L', utilizacion: '87 %', cumplen: '25' },
 ];
 
 module.exports = {
@@ -62,6 +67,11 @@ module.exports = {
     if (x.celular) await p.check('#chk4g');
     if (x.tuneles) await p.fill('#tuneles', x.tuneles);
     if (x.dispositivos) await p.fill('#dispositivos', x.dispositivos);
+    if (x.topologia) {
+      await p.selectOption('#topologia', x.topologia);
+      await p.fill('#topoSedes', x.topoSedes);
+      if (x.topoColores) await p.fill('#topoColores', x.topoColores);
+    }
     await p.fill('#bw', x.bw);
     await p.dispatchEvent('#bw', 'input');
     await pausa(p, 600);

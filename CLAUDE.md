@@ -451,7 +451,9 @@ Módulos compartidos:
   seguridad (reenvío, Threat Protection o IPsec hacia un SSE); la utilización es la **suma de las dos
   fracciones** (supuesto declarado). FEC y duplicación son supuestos; duplicar cuenta el flujo
   entero. El descifrado TLS en el router no tiene cifra: sin candidato. Escala publicada que no llega
-  y requisito que no consta apartan con su motivo; lo no publicado, avisa. En SD-WAN un modelo sin
+  y requisito que no consta apartan con su motivo; lo no publicado, avisa. Los túneles se escriben o
+  salen de la topología (`tunelesTopologia`: hub y radios o malla, sedes, hubs y transportes; el
+  rol lo da el modo), que es aritmética rotulada como supuesto; la cifra escrita manda. En SD-WAN un modelo sin
   cifra propia cae a IPsec y la lista lo marca. Licencias G2 por `clase` (S…2XL, guía de pedido) y
   segunda fuente `psu2`; los LIC-SEC no se proponen donde la guía los niega (`secAddon: false`), y en
   autónomo piden Routing Advantage y LIC-R-OP-SWM. **DNA** (`LICENCIAS_DNA`, FAQ de DNA y guía de

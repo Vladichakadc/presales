@@ -35,7 +35,9 @@
       declara quien dimensiona, nunca cifras de Cisco.
    4. Escala con lo que la ficha publica (túneles, rutas, sesiones de NAT, dispositivos
       recomendados de Meraki): una cifra publicada que no llega aparta el modelo con su motivo;
-      una que la ficha no publica no lo aparta, pero se avisa.
+      una que la ficha no publica no lo aparta, pero se avisa. Los túneles se pueden escribir o
+      derivar de la topología (`tunelesTopologia`, 2026-10-21): aritmética de sedes, hubs y
+      transportes, sin ninguna cifra nueva de Cisco; la escrita manda sobre la calculada.
    5. Requisitos de hardware (doble fuente, celular, NIM, SM, MACsec, PoE): un modelo que no
       confirma el requisito se aparta diciendo si es porque no lo tiene o porque no consta.
    6. Licencias de la G2 por la clase de la plataforma (guía de pedido, tablas 9 y 10).
@@ -197,6 +199,43 @@
     return { motivos, avisos, piezas };
   }
 
+  // Túneles de datos que levanta CADA equipo según la topología (propuesta 2.1 del 2026-10-21,
+  // ejecutada con el encargo del dueño «ejecuta pendientes y mejora propuesta»). Es aritmética,
+  // no una cifra de Cisco: cada par de transportes (colores) que se ven entre sí es un túnel, y
+  // con «cada color solo con el suyo» los pares son los colores comunes. El rol sale del modo:
+  // una sede es una sucursal; un agregado o un hub, un hub.
+  //   · Hub y radios: la sucursal solo con los hubs.
+  //   · Malla completa: la sucursal con las demás sedes y con los hubs.
+  //   · Hub, en las dos: con todas las sedes y con los demás hubs.
+  //   t = { topologia: 'hub'|'malla', sedes, hubs, colores, coloresHub, ven }
+  function tunelesTopologia(t, modo) {
+    if (!t || !['hub', 'malla'].includes(t.topologia)) return null;
+    const ent = (v, def) => { const n = Math.floor(num(v)); return n >= 1 ? n : def; };
+    const sedes = ent(t.sedes, 0);
+    if (!sedes) return null;
+    const esHub = modo === 'agg' || modo === 'hub';
+    // Vacío es un hub; 0 vale en una malla sin hubs. Si el equipo ES el hub, hay al menos uno.
+    const hubsDecl = t.hubs === '' || t.hubs == null ? 1 : Math.max(0, Math.floor(num(t.hubs)));
+    const hubs = esHub ? Math.max(1, hubsDecl) : hubsDecl;
+    const cs = ent(t.colores, 1), ch = ent(t.coloresHub, cs);
+    const ven = t.ven !== false;
+    const pares = (a, b) => (ven ? a * b : Math.min(a, b));
+    const pasos = [];
+    const pl = (n, uno, varios) => `${miles(n)} ${n === 1 ? uno : varios}`;
+    const sumar = (n, por, uno, varios) => {
+      if (n > 0 && por > 0) pasos.push({ n: `${pl(n, uno, varios)} × ${pl(por, 'par', 'pares')} de transportes`, v: n * por });
+    };
+    if (esHub) {
+      sumar(sedes, pares(cs, ch), 'sede', 'sedes');
+      sumar(hubs - 1, pares(ch, ch), 'hub más', 'hubs más');
+    } else {
+      if (t.topologia === 'malla') sumar(sedes - 1, pares(cs, cs), 'sede más', 'sedes más');
+      sumar(hubs, pares(cs, ch), 'hub', 'hubs');
+    }
+    const total = pasos.reduce((a, x) => a + x.v, 0);
+    return { topologia: t.topologia, rol: esHub ? 'hub' : 'sucursal', sedes, hubs, colores: cs, coloresHub: ch, ven, pasos, total };
+  }
+
   // Escala: una cifra publicada que no llega aparta; una que no se publica, avisa.
   function escala(m, e) {
     const motivos = [], avisos = [];
@@ -219,6 +258,10 @@
   // tráfico (la menor primero: el más pequeño que cumple).
   function evaluar(models, p) {
     const d = demanda(p);
+    // Los túneles escritos mandan; sin ellos, los que da la topología.
+    const topo = tunelesTopologia(p.topologia, d.modo);
+    const esc = { ...(p.escala || {}) };
+    if (!(num(esc.tuneles) > 0) && topo) esc.tuneles = topo.total;
     const plat = PLATAFORMAS[p.plataforma] || PLATAFORMAS.xe;
     const seg = SEGURIDAD[p.seguridad] || SEGURIDAD.ninguna;
     const tlsEnRouter = !!p.tls && p.seguridad === 'onbox' && d.diaNeed > 0;
@@ -235,7 +278,7 @@
         if (u > 1) motivos.push(`utilización del ${Math.round(u * 100)} %`);
       }
       const capEq = u ? d.total / u : null;
-      const es = escala(m, p.escala || {});
+      const es = escala(m, esc);
       const rq = requisitos(m, p.requisitos || {});
       motivos.push(...es.motivos, ...rq.motivos);
       avisos.push(...es.avisos, ...rq.avisos);
@@ -246,7 +289,7 @@
     });
     const candidatos = filas.filter((f) => f.ok).sort((a, b) => a.capEq - b.capEq);
     const apartados = filas.filter((f) => !f.ok);
-    return { demanda: d, plataforma: plat, seguridad: seg, tlsEnRouter, filas, candidatos, apartados };
+    return { demanda: d, plataforma: plat, seguridad: seg, tlsEnRouter, filas, candidatos, apartados, topo, tunelesManual: num((p.escala || {}).tuneles) > 0 };
   }
 
   // Los apartados agrupados por su primer motivo, con un rótulo sin cifras: la cifra de cada
@@ -436,6 +479,10 @@
     if (d.fec) L.push(`- FEC: +${Math.round(d.fec * 100)} % sobre el overlay.`);
     if (d.dup) L.push(`- Duplicación de paquetes: el ${Math.round(d.dup * 100)} % del overlay viaja dos veces.`);
     L.push(`- Margen de crecimiento: +${Math.round(d.head * 100)} %.`);
+    if (ev.topo) {
+      const t = ev.topo;
+      L.push(`- Túneles por topología (${t.topologia === 'malla' ? 'malla completa' : 'hub y radios'}, el equipo como ${t.rol}${t.ven ? '' : ', cada transporte solo con el suyo'}): ${t.pasos.map((x) => `${x.n} = ${miles(x.v)}`).join('; ')}; total **${miles(t.total)}**${ev.tunelesManual ? ' (manda la cifra escrita a mano)' : ''}.`);
+    }
     if (f) {
       L.push('', `## Equipo propuesto: ${f.m.id}`, '');
       L.push(`${f.m.fam || ''} · Serie ${f.m.ser}`, '');
@@ -465,6 +512,6 @@
 
   return {
     PLATAFORMAS, PERFILES, SEGURIDAD, PUERTOS_UTILES,
-    fmt, cifra, capaOverlay, demanda, requisitos, escala, evaluar, resumenApartados, licencias, traficoLicencia, tierDna, poolCgnat, memoria,
+    fmt, cifra, capaOverlay, demanda, requisitos, escala, tunelesTopologia, evaluar, resumenApartados, licencias, traficoLicencia, tierDna, poolCgnat, memoria,
   };
 });

@@ -61,7 +61,8 @@ grupo('critSeg', v => { crit = v; });
 
 const ENTRADAS = ['bw', 'unit', 'sites', 'conc', 'head', 'profile', 'plataforma', 'diaPct', 'seguridad', 'chkTls',
   'chkFec', 'fecPct', 'dupPct', 'tuneles', 'rutas', 'sesiones', 'dispositivos', 'cgnatUsuarios', 'cgnatBloque',
-  'chkRedund', 'chk4g', 'chkNim', 'chkSm', 'chkMacsec', 'chkPoe', 'poeW'];
+  'chkRedund', 'chk4g', 'chkNim', 'chkSm', 'chkMacsec', 'chkPoe', 'poeW',
+  'topologia', 'topoSedes', 'topoHubs', 'topoColores', 'topoColoresHub', 'topoVen'];
 ENTRADAS.forEach(id => $(id).addEventListener('input', render));
 // Las licencias se pintan en las dos pestañas: el centro del dimensionamiento y el BOM.
 ['licGestion', 'licNivel', 'licVpns', 'secUrl', 'secMalware', 'termYears'].forEach(id => $(id).addEventListener('input', () => { render(); }));
@@ -91,6 +92,8 @@ function parametros(){
     perfil:$('profile').value, plataforma:$('plataforma').value,
     seguridad:mode === 'link' ? $('seguridad').value : 'ninguna', tls:mode === 'link' && $('chkTls').checked,
     escala:{tuneles:numDe('tuneles'), rutas:numDe('rutas'), sesiones:numDe('sesiones'), dispositivos:numDe('dispositivos')},
+    topologia:{topologia:$('topologia').value, sedes:$('topoSedes').value, hubs:$('topoHubs').value,
+      colores:$('topoColores').value, coloresHub:$('topoColoresHub').value, ven:$('topoVen').checked},
     requisitos:{dualPsu:$('chkRedund').checked, celular:$('chk4g').checked, nim:$('chkNim').checked, sm:$('chkSm').checked,
       macsec:$('chkMacsec').checked, poe:$('chkPoe').checked, poeW:numDe('poeW')},
   };
@@ -135,6 +138,26 @@ function pintarControles(){
   $('segHint').textContent = (M.SEGURIDAD[$('seguridad').value] || M.SEGURIDAD.ninguna).d;
   $('fecPct').disabled = !$('chkFec').checked;
   $('poeW').disabled = !$('chkPoe').checked;
+  // Sin topología, sus campos no cuentan ni viajan en el enlace (estado.js salta `data-inactivo`).
+  const conTopo = !!$('topologia').value;
+  $('topoBlock').classList.toggle('hidden', !conTopo);
+  $('topoBlock').toggleAttribute('data-inactivo', !conTopo);
+}
+
+// Cuántos túneles levanta el equipo según la topología, con la cuenta escrita entera.
+function pintarTopologia(ev){
+  const t = ev && ev.topo, box = $('topoRes');
+  if(!t){
+    box.textContent = $('topologia').value
+      ? 'Falta el número de sedes de la red para calcular los túneles.'
+      : 'Cada par de transportes que se ven entre sí es un túnel. Es aritmética, no una cifra de Cisco: se compara con los túneles que publica cada ficha.';
+    return;
+  }
+  const meraki = ev.plataforma && /Meraki/.test(ev.plataforma.n);
+  box.innerHTML = `Como <b>${t.rol}</b> de una ${t.topologia === 'malla' ? 'malla completa' : 'red de hub y radios'}: `
+    + `${t.pasos.map(x => `${esc(x.n)}`).join(' + ') || 'ningún túnel'} = <b>${miles(t.total)} túneles</b>`
+    + `${meraki ? '' : `, y una sesión BFD por túnel (${miles(t.total)}; el catálogo no trae un tope de BFD por equipo)`}.`
+    + (ev.tunelesManual ? ' <span class="warn">Manda la cifra escrita en «Túneles simultáneos»: bórrala para usar esta.</span>' : '');
 }
 
 /* ── RENDER DEL DIMENSIONAMIENTO ── */
@@ -149,6 +172,8 @@ function render(){
     $('track').querySelectorAll('.dot,.tick,.pickLabel').forEach(e => e.remove());
     ['avisosMotor', 'apartados', 'tbody'].forEach(id => { $(id).innerHTML = ''; });
     $('distrib').hidden = true; $('cgnatBox').hidden = true;
+    // Los túneles por topología no dependen del caudal: se calculan igual.
+    pintarTopologia({topo:M.tunelesTopologia(p.topologia, p.modo), plataforma:M.PLATAFORMAS[p.plataforma], tunelesManual:p.escala.tuneles > 0});
     FICHA.render({vendor:VENDOR, contenedor:'verdict', candidatos:[], recomendado:null,
       vacioTitulo:'Ingrese valores para recomendar un equipo',
       vacioDetalle:'<p style="margin:0;font-size:13.5px">Escriba el <b>ancho de banda</b> del sitio para que el dimensionador proponga los modelos que cumplen.</p>'});
@@ -168,6 +193,7 @@ function render(){
   pintarAvisos(ev, p);
   pintarDistribucion(ev);
   pintarCgnat();
+  pintarTopologia(ev);
 
   if(!pick){
     sincronizarConBom(null);

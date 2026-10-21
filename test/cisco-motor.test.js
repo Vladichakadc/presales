@@ -307,3 +307,55 @@ test('el resumen de apartados agrupa por motivo con un rótulo legible, sin cifr
   assert.ok(res.every((g) => !/\bdel$/.test(g.motivo)), 'ningún rótulo acaba a medias');
   assert.strictEqual(res.reduce((t, g) => t + g.ids.length, 0), ev.apartados.length);
 });
+
+// TÚNELES POR TOPOLOGÍA (propuesta 2.1, 2026-10-21). El fallo que evita: un hub o una sucursal
+// en malla que pasa por caudal y se queda corta en túneles porque la cifra se escribía a ojo.
+test('túneles por topología: aritmética de sedes, hubs y transportes, con el rol del modo', () => {
+  const T = (t, modo = 'link') => M.tunelesTopologia(t, modo);
+  // Sucursal en malla de 200 sedes con dos transportes y un hub: 199 × 4 + 1 × 4.
+  assert.strictEqual(T({ topologia: 'malla', sedes: 200, hubs: 1, colores: 2 }).total, 800);
+  // En hub y radios la sucursal solo ve a los hubs.
+  assert.strictEqual(T({ topologia: 'hub', sedes: 200, hubs: 2, colores: 2 }).total, 8);
+  // El hub cuenta igual en las dos: todas las sedes más los otros hubs.
+  for (const topologia of ['hub', 'malla']) {
+    const h = T({ topologia, sedes: 200, hubs: 2, colores: 2 }, 'hub');
+    assert.deepStrictEqual([h.rol, h.total], ['hub', 804]);
+    assert.strictEqual(T({ topologia, sedes: 200, hubs: 2, colores: 2 }, 'agg').total, 804);
+  }
+  // Cada transporte solo con el suyo: los pares son los colores comunes, no el producto.
+  assert.strictEqual(T({ topologia: 'malla', sedes: 11, hubs: 0, colores: 3, ven: false }).total, 30);
+  // El hub con otro número de transportes que la sede.
+  assert.strictEqual(T({ topologia: 'hub', sedes: 10, hubs: 1, colores: 2, coloresHub: 3 }, 'hub').total, 60);
+  // Vacío es un hub; 0 vale en una malla sin hubs; el equipo que ES el hub cuenta al menos uno.
+  assert.strictEqual(T({ topologia: 'malla', sedes: 10, hubs: '', colores: 1 }).total, 10);
+  assert.strictEqual(T({ topologia: 'malla', sedes: 10, hubs: 0, colores: 1 }).total, 9);
+  assert.strictEqual(T({ topologia: 'hub', sedes: 10, hubs: 0, colores: 1 }, 'hub').total, 10);
+  // Sin topología o sin sedes no hay cálculo: no se inventa una red.
+  assert.strictEqual(T({ topologia: '', sedes: 10 }), null);
+  assert.strictEqual(T({ topologia: 'malla', sedes: '' }), null);
+  // La cuenta va escrita entera: lo que suman los pasos es el total.
+  const r = T({ topologia: 'malla', sedes: 200, hubs: 1, colores: 2 });
+  assert.strictEqual(r.pasos.reduce((a, x) => a + x.v, 0), r.total);
+  assert.match(r.pasos[0].n, /199 sedes más × 4 pares de transportes/);
+});
+
+test('túneles por topología en la evaluación: apartan con su cifra y la escrita a mano manda', () => {
+  const topologia = { topologia: 'malla', sedes: 200, hubs: 1, colores: 2 };
+  const ev = M.evaluar(MODELS, { ...base, topologia });
+  assert.strictEqual(ev.topo.total, 800);
+  const f8130 = ev.apartados.find((f) => f.m.id === 'Cisco Secure Router C8130-G2');
+  assert.ok(f8130 && f8130.motivos.includes('250 túneles frente a 800'), JSON.stringify(f8130 && f8130.motivos));
+  // El C8231-G2 publica 1.500 desde IOS XE 26.2.1 y 700 antes: cumple, pero lo avisa.
+  const f8231 = ev.filas.find((f) => f.m.id === 'Cisco Secure Router C8231-G2');
+  assert.ok(f8231.ok && f8231.avisos.some((a) => /700 antes de IOS XE 26\.2\.1/.test(a)));
+  // La cifra escrita pisa la calculada.
+  const manual = M.evaluar(MODELS, { ...base, topologia, escala: { tuneles: 100 } });
+  assert.ok(manual.tunelesManual);
+  assert.ok(!manual.apartados.some((f) => f.m.id === 'Cisco Secure Router C8130-G2' && f.motivos.some((x) => /túneles/.test(x))));
+  // Sin topología, nada cambia respecto a antes.
+  const sin = M.evaluar(MODELS, base);
+  assert.strictEqual(sin.topo, null);
+  // Y la memoria técnica la rotula como supuesto, con la cuenta.
+  const md = M.memoria(ev, { perfil: 'sdwan' });
+  assert.match(md, /Túneles por topología \(malla completa, el equipo como sucursal\): 199 sedes más × 4 pares de transportes = 796; 1 hub × 4 pares de transportes = 4; total \*\*800\*\*/);
+});

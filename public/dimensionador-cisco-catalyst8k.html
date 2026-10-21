@@ -280,6 +280,24 @@ tr.sel td{background:rgba(4,159,217,.07);font-weight:600}
     </div>
     <p class="hint">Vacío no comprueba. Una cifra publicada que no llega aparta el equipo; una que su ficha no publica no lo aparta, pero se avisa. «Dispositivos» se compara con el recomendado de Meraki.</p>
     <div class="field" style="margin-top:12px">
+      <label for="topologia">Túneles según la topología (opcional)</label>
+      <select id="topologia">
+        <option value="" selected>No calcular: escribo la cifra arriba</option>
+        <option value="hub">Hub y radios: las sucursales solo con los hubs</option>
+        <option value="malla">Malla completa: todas las sedes entre sí</option>
+      </select>
+      <div id="topoBlock" class="hidden" data-inactivo>
+        <div class="dos" style="margin-top:8px">
+          <div><label for="topoSedes">Sedes (sin los hubs)</label><input type="number" id="topoSedes" min="1" step="1" autocomplete="off"></div>
+          <div><label for="topoHubs">Hubs</label><input type="number" id="topoHubs" min="0" step="1" placeholder="1" autocomplete="off"></div>
+          <div><label for="topoColores">Transportes por sede</label><input type="number" id="topoColores" min="1" step="1" placeholder="1" autocomplete="off"></div>
+          <div><label for="topoColoresHub">Transportes del hub</label><input type="number" id="topoColoresHub" min="1" step="1" placeholder="= sede" autocomplete="off"></div>
+        </div>
+        <label class="check" style="margin-top:6px"><input type="checkbox" id="topoVen" checked> <span>Todos los transportes (colores) forman túnel entre sí, sin restringir por color</span></label>
+      </div>
+      <p class="hint" id="topoRes">Cada par de transportes que se ven entre sí es un túnel. Es aritmética, no una cifra de Cisco: se compara con los túneles que publica cada ficha.</p>
+    </div>
+    <div class="field" style="margin-top:12px">
       <label>Pool de NAT por bloques de puertos (opcional)</label>
       <div class="dos">
         <div><label for="cgnatUsuarios">Usuarios</label><input type="number" id="cgnatUsuarios" min="0" step="1" autocomplete="off"></div>

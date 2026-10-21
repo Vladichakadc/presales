@@ -35,7 +35,8 @@ Los avisos de licencia salen también en la pestaña de BOM y en las notas del E
 
 ## 2. Propuestas
 
-Ordenadas por lo que evitan frente a lo que cuestan. **La recomendada es la 2.1.**
+Ordenadas por lo que evitan frente a lo que cuestan. **La recomendada era la 2.1, ya hecha**; las
+demás siguen sin implementar.
 
 ### Conectividad
 
@@ -67,7 +68,10 @@ soporte por equipo, y el caudal de cada uno con un solo enlace activo en falla.
 
 ### SD-WAN
 
-**2.1 Túneles y sesiones BFD por topología (recomendada).** Hoy «túneles» es una casilla que
+**2.1 Túneles y sesiones BFD por topología (recomendada). Hecha el 2026-10-21** con el encargo del
+dueño «ejecuta pendientes y mejora propuesta»: `tunelesTopologia` en `cisco-motor.js`, el bloque
+«Túneles según la topología» en la sección 3 de la página, la cuenta en la memoria técnica y una fila
+nueva en el contraste. Lo que decía: hoy «túneles» es una casilla que
 escribe la persona. La propuesta: se derivan de la topología, que es aritmética y no necesita
 ninguna cifra nueva de Cisco:
 - *full mesh*: cada equipo levanta `(sedes − 1) × colores locales × colores remotos` túneles;
