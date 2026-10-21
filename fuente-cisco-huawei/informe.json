@@ -1,0 +1,17 @@
+[
+  {
+    "archivo": "cisco-dna-faq.html",
+    "para": "CISCO",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://www.cisco.com/c/en/us/products/collateral/software/one-wan-subscription/nb-06-dna-sw-rout-sub-faq-ctp-en.html",
+        "status": 200,
+        "bytes": 166072,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  }
+]
