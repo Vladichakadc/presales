@@ -43,6 +43,14 @@ name: vigia-fuentes
 #     dependencia ejecuta codigo al instalarse (sqlite3 no hace falta para leer un PDF);
 #   - su resultado es un artefacto que `publicar` valida campo a campo antes de escribirlo.
 # Si falla o no hay nada pendiente, `publicar` sigue igual que antes.
+#
+# CUARTO JOB, `contrastar_cisco` (2026-10-21). Las fichas de Cisco y Meraki son paginas dinamicas
+# (`estable: false`): su hash varia en cada peticion y el vigia no las deja nunca pendientes, asi
+# que el hash no avisaria de una cifra cambiada. Este job no espera a un «pendiente»: cada lunes
+# trae las fichas que cita el catalogo y corre `npm run cisco -- --traer`, que las contrasta celda
+# a celda SIN ESCRIBIR NADA. No instala nada (el comando solo usa fs, path y fetch, y lee
+# legacyData/), no tiene escritura ni guarda el token, y su resultado es un artefacto que
+# `publicar` valida antes de escribir: la URL de cada ficha tiene que ser una que fuentes.js declare.
 
 on:
   schedule:
@@ -172,11 +180,50 @@ jobs:
           path: ${{ runner.temp }}/matrix/matrix.json
           if-no-files-found: error
 
+  contrastar_cisco:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      # Sin `npm ci` a proposito: scripts/contrastar-cisco.js solo usa fs, path y fetch.
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: package.json
+
+      # Salida 1 es «algo difiere» y 2 «una ficha no se pudo usar»: las dos son lo que se quiere
+      # contar, asi que el paso no se pone en rojo por ellas; el JSON las lleva al issue.
+      - name: Contrastar las fichas de Cisco y Meraki con el catalogo
+        run: |
+          mkdir -p "$RUNNER_TEMP/cisco"
+          set +e
+          node scripts/contrastar-cisco.js --traer --json > "$RUNNER_TEMP/cisco/cisco.json"
+          codigo=$?
+          set -e
+          echo "Salida del contraste: $codigo"
+          node -e "const d = require(process.argv[1]); for (const f of d.fichas) console.log((f.error ? 'NO SE PUDO ' + f.error : 'casan ' + f.casan + ' difieren ' + f.difieren.length + ' sin leer ' + f.sinLeer.length) + ' :: ' + f.url)" "$RUNNER_TEMP/cisco/cisco.json" | tee "$RUNNER_TEMP/cisco/cisco.txt"
+          {
+            echo '## Contraste de las fichas de Cisco y Meraki'
+            echo '```'
+            cat "$RUNNER_TEMP/cisco/cisco.txt"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Guardar el contraste para el job que publica
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: cisco
+          path: ${{ runner.temp }}/cisco/cisco.json
+          if-no-files-found: error
+
   # Corre aunque `medir` falle: una corrida que no termina tiene que decirlo en el issue, que es
   # donde se mira. Un rojo que solo se ve entrando en Actions es como la vigia paso tres
   # semanas sin avisar.
   publicar:
-    needs: [medir, contrastar]
+    needs: [medir, contrastar, contrastar_cisco]
     if: ${{ !cancelled() }}
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -211,6 +258,14 @@ jobs:
         with:
           name: matrix
           path: ${{ runner.temp }}/matrix
+
+      - name: Bajar el contraste de las fichas de Cisco
+        id: bajar-cisco
+        if: ${{ needs.contrastar_cisco.result == 'success' }}
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: cisco
+          path: ${{ runner.temp }}/cisco
 
       - name: Validar lo medido y traer el lock
         id: validar
@@ -257,6 +312,8 @@ jobs:
           CONTRASTAR: ${{ needs.contrastar.result }}
           MATRIX_PENDIENTE: ${{ needs.contrastar.outputs.pendiente }}
           MATRIX_A_DEMANDA: ${{ needs.contrastar.outputs.ademanda }}
+          CONTRASTAR_CISCO: ${{ needs.contrastar_cisco.result }}
+          BAJAR_CISCO: ${{ steps.bajar-cisco.outcome }}
         with:
           script: |
             const fs = require('fs');
@@ -297,6 +354,16 @@ jobs:
                 matrix = r.error ? { error: r.error } : r.matrix;
               } catch (e) { matrix = { error: `no se pudo leer matrix.json: ${e.message}` }; }
             }
+            // El contraste de las fichas de Cisco y Meraki corre cada semana: validado antes de usarlo.
+            let cisco = null;
+            if (process.env.CONTRASTAR_CISCO !== 'success' || process.env.BAJAR_CISCO !== 'success') {
+              cisco = { error: `el job contrastar_cisco no terminó (${process.env.CONTRASTAR_CISCO || 'sin resultado'})` };
+            } else {
+              try {
+                const r = V.resumenCisco(JSON.parse(fs.readFileSync(`${process.env.RUNNER_TEMP}/cisco/cisco.json`, 'utf8')));
+                cisco = r.error ? { error: r.error } : r.cisco;
+              } catch (e) { cisco = { error: `no se pudo leer cisco.json: ${e.message}` }; }
+            }
             // Un paso que falla puede no dejar su salida: el resultado del paso manda.
             const estado = process.env.GUARDAR === 'failure' ? 'fallida' : (process.env.ESTADO_LOCK || 'sin-cambios');
             let enlace = null;
@@ -312,8 +379,8 @@ jobs:
               fallida: `No se pudo empujar la rama ${V.RAMA}: lo medido está en el artefacto de la corrida.`,
             };
             await core.summary.addHeading('Lock de esta corrida', 3).addRaw(resumen[estado] || 'El lock no cambió.').write();
-            if (!V.hayQueAvisar(inf, { estado }, matrix)) {
+            if (!V.hayQueAvisar(inf, { estado }, matrix, cisco)) {
               core.info('Ninguna fuente cambió ni quedó sin leer: no hace falta escribir en el issue.');
               return;
             }
-            await escribir(V.tituloIssue(inf, matrix), V.cuerpoIssue(inf, { estado, enlace }, matrix));
+            await escribir(V.tituloIssue(inf, matrix, cisco), V.cuerpoIssue(inf, { estado, enlace }, matrix, cisco));

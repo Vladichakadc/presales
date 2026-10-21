@@ -67,7 +67,23 @@ test('el contraste del Product Matrix instala sin scripts y solo cuando está pe
   assert.match(c, /if: \$\{\{ steps\.pendiente\.outputs\.pendiente == 'true' \}\}\n\s+run: npm ci --ignore-scripts/);
   assert.match(c, /path: \$\{\{ runner\.temp \}\}\/vigia/, 'lo medido va a runner.temp');
   // Y publicar no se cae si contrastar falla o no corre.
-  assert.match(jobs('vigia-fuentes.yml').publicar, /needs: \[medir, contrastar\]\n\s+if: \$\{\{ !cancelled\(\) \}\}/);
+  assert.match(jobs('vigia-fuentes.yml').publicar, /needs: \[medir, contrastar, contrastar_cisco\]\n\s+if: \$\{\{ !cancelled\(\) \}\}/);
+});
+
+// El contraste de las fichas de Cisco y Meraki (2026-10-21): trae contenido de fuera, así que no
+// escribe, no guarda el token y no instala nada; y no espera a un «pendiente», que una página
+// dinámica no llega a tener nunca.
+test('el contraste de las fichas de Cisco corre cada semana, sin escritura ni instalación', () => {
+  const c = jobs('vigia-fuentes.yml').contrastar_cisco;
+  assert.ok(c, 'existe el job contrastar_cisco');
+  assert.ok(!/: write/.test(c) && /persist-credentials: false/.test(c), 'sin escritura y sin guardar el token');
+  assert.ok(!/npm (?:ci|install)/.test(c), 'no instala nada');
+  assert.ok(!/needs:|pendiente/.test(c), 'no depende de que el vigía deje algo pendiente');
+  assert.match(c, /node scripts\/contrastar-cisco\.js --traer --json/);
+  assert.match(c, /name: cisco\n\s+path: \$\{\{ runner\.temp \}\}\/cisco\/cisco\.json/);
+  const p = jobs('vigia-fuentes.yml').publicar;
+  assert.match(p, /V\.resumenCisco\(/, 'publicar valida el artefacto antes de usarlo');
+  assert.match(p, /V\.cuerpoIssue\(inf, \{ estado, enlace \}, matrix, cisco\)/);
 });
 
 test('ningún workflow intenta crear un PR desde Actions, y las ramas se empujan con el script compartido', () => {
@@ -90,7 +106,7 @@ test('lo que corre en los jobs sin npm ci no necesita paquetes de npm', () => {
   const entradas = [
     'scripts/vigia-fuentes.js', 'scripts/vigia-publicar.js', 'test/e2e/limites-reglas.js', 'scripts/aviso-despliegue.js',
     'scripts/empujar-rama.js', 'scripts/publicar-datasheets.js', 'scripts/descargar-datasheets.js',
-    'scripts/importar-propuesta.js', 'scripts/leer-propuesta.js',
+    'scripts/importar-propuesta.js', 'scripts/leer-propuesta.js', 'scripts/contrastar-cisco.js',
     ...['huawei', 'cisco', 'fortinet', 'mikrotik', 'aruba', 'juniper', 'nokia'].map((v) => `server/seed/legacyData/${v}.js`),
   ];
   const vistos = new Set();

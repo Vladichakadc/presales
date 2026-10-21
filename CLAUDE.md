@@ -460,9 +460,10 @@ Módulos compartidos:
   SX ni la ZR. Módulos de la guía de pedido de cada familia: G2 (`MODULOS_G2`) y Catalyst 8300/8200
   (`MODULOS_C8K`, con sus límites de ranura). Figuras en `public/data/cisco-vistas-equipos.json`
   (sin pérdida, pie literal, `rearNota` donde no hay trasera). **`npm run cisco`** lee las fichas
-  HTML traídas (la carpeta de una rama `fuente/*`) y las contrasta con el catálogo celda a celda, en
-  la base que cada modelo declara; solo compara y falla cerrado (una ficha de la que no sale ninguna
-  celda es un 2, no un «todo casa»).
+  HTML traídas (la carpeta de una rama `fuente/*`, o de la red con `--traer`, que es como lo corre
+  el vigía cada lunes) y las contrasta con el catálogo celda a celda, en la base que cada modelo
+  declara; solo compara y falla cerrado (una ficha de la que no sale ninguna celda, o que no se pudo
+  traer, es un 2, no un «todo casa»).
 - **Juniper** (`juniper-motor.js`): SRX y Session Smart Router no se comparan. `fw` (paquetes
   grandes) se muestra y no dimensiona; manda la capa de inspección (`CAPAS`). El SSR se dimensiona
   por capa de cifrado en IMIX (`cap`/`capCif`/`capHmac`, de sus fichas; la de 1.500 B es portada),
@@ -536,7 +537,11 @@ Módulos compartidos:
   Matrix de Fortinet queda pendiente, el job **`contrastar`** del vigía corre `npm run matrix` sobre él (sin escritura ni
   token, `npm ci --ignore-scripts`) y el issue dice qué cifras cambiaron; `publicar` valida ese
   informe antes de escribirlo. A demanda, `contrastar_matrix` al lanzarlo a mano; en local,
-  `npm run matrix -- <pdf>`. Nada de eso escribe en `legacyData/`: el `--revisado` sigue siendo
+  `npm run matrix -- <pdf>`. Las fichas de Cisco y Meraki son páginas dinámicas que nunca quedan
+  pendientes, así que el job **`contrastar_cisco`** no espera a nada: cada lunes trae las fichas
+  que cita el catálogo (solo las que `fuentes.js` declara) y corre `npm run cisco -- --traer`, sin
+  escritura ni instalación; `publicar` valida su artefacto y el issue dice qué cifra cambió o qué
+  ficha no se pudo leer. Nada de eso escribe en `legacyData/`: el `--revisado` sigue siendo
   humano. **Un documento inalcanzable no es uno sin
   cambios**, y un 403 no prueba quién bloquea (`npm run candidatas`). Pasadas 4 semanas sin
   contrastar, `verificar` frena (`SEMANAS_TOLERADAS`).

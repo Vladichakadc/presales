@@ -294,3 +294,40 @@ test('una fuente retirada que sigue caída no avisa; si reaparece, sí', () => {
     for (const x of lista) if (x.retirada) assert.ok(/^\d{4}-\d{2}-\d{2}$/.test(x.retirada.fecha) && x.retirada.motivo, x.documento);
   }
 });
+
+// EL CONTRASTE DE LAS FICHAS DE CISCO (2026-10-21). Lo deja un job que trae páginas de fuera:
+// se valida antes de escribirlo, y la URL de cada ficha tiene que ser una que fuentes.js declare.
+test('el contraste de las fichas de Cisco se valida, y el issue dice qué cifra cambió o qué ficha no se leyó', () => {
+  const REALES = require('../server/seed/legacyData/fuentes.js').FUENTES;
+  const url = REALES.cisco.find((f) => /8200 Series Secure Router Data Sheet/.test(f.documento)).url;
+  const base = { fichas: [{ url, documento: 'x', error: null, casan: 56, difieren: [], sinLeer: [], sinColumna: [] }] };
+  const limpio = V.resumenCisco(copia(base)).cisco;
+  assert.ok(limpio.limpio && limpio.casan === 56);
+  assert.ok(!V.hayQueAvisar({ cambiados: [], inalcanzables: [] }, { estado: 'sin-cambios' }, null, limpio), 'todo casa: no hace falta escribir');
+  const cambio = copia(base);
+  cambio.fichas[0].difieren = [{ modelo: 'Cisco Secure Router C8211-G2', campo: 'fwd', catalogo: 5600, ficha: 6000, etiqueta: 'Forwarding (512B)' }];
+  const c = V.resumenCisco(cambio).cisco;
+  assert.ok(V.hayQueAvisar({ cambiados: [], inalcanzables: [] }, { estado: 'sin-cambios' }, null, c));
+  assert.match(V.tituloIssue({ cambiados: [], inalcanzables: [] }, null, c), /Fichas de Cisco y Meraki: 1 cifra/);
+  const cuerpo = V.cuerpoIssue({ cambiados: [], inalcanzables: [] }, null, null, c);
+  assert.match(cuerpo, /\| Cisco Secure Router C8211-G2 \| fwd \| 5600 \| 6000 \| Forwarding \(512B\) \|/);
+  assert.match(cuerpo, /Nada se ha escrito en el catálogo/);
+  // El documento sale de fuentes.js, no del artefacto.
+  assert.match(cuerpo, /8200 Series Secure Router Data Sheet|casan 56/);
+  // Una ficha que no se pudo traer, o que no dio ninguna celda, no es «sin cambios».
+  const caida = copia(base); caida.fichas[0].error = 'HTTP 403'; caida.fichas[0].casan = 0;
+  const cc = V.resumenCisco(caida).cisco;
+  assert.ok(!cc.limpio && V.hayQueAvisar({ cambiados: [], inalcanzables: [] }, null, null, cc));
+  assert.match(V.cuerpoIssue({ cambiados: [], inalcanzables: [] }, null, null, cc), /no se pudieron usar[\s\S]*HTTP 403/);
+  const vacia = copia(base); vacia.fichas[0].casan = 0;
+  assert.ok(!V.resumenCisco(vacia).cisco.limpio, 'una ficha sin ninguna celda avisa');
+  // Lo que solo un artefacto manipulado traería se rechaza.
+  const malos = [null, {}, { fichas: [] }, { fichas: [{ ...base.fichas[0], url: 'https://ejemplo.invalid/x' }] },
+    { fichas: [{ ...base.fichas[0], casan: -1 }] }, { fichas: [{ ...base.fichas[0], difieren: [{ modelo: '<script>', campo: 'fwd' }] }] },
+    { fichas: [{ ...base.fichas[0], sinColumna: ['../../x'] }] }];
+  for (const m of malos) assert.ok(V.resumenCisco(m).error, JSON.stringify(m));
+  // Y un job que no terminó también llega al issue.
+  const fallo = { error: 'el job contrastar_cisco no terminó (failure)' };
+  assert.ok(V.hayQueAvisar({ cambiados: [], inalcanzables: [] }, null, null, fallo));
+  assert.match(V.cuerpoIssue({ cambiados: [], inalcanzables: [] }, null, null, fallo), /no se pudo usar/);
+});

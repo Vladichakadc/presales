@@ -153,10 +153,12 @@ function informeDe(d, fuentes = fuentesPorClave()) {
   return { informe: { cambiados, inalcanzables, reaparecidas } };
 }
 
-function tituloIssue(inf, matrix) {
+function tituloIssue(inf, matrix, cisco) {
   if (inf.cambiados.length) return `Fuentes del catálogo: ${inf.cambiados.length} cambiaron`;
   if (matrix && !matrix.error && !matrix.limpio) return `Product Matrix de Fortinet: ${matrix.nDifieren} cifra(s) distintas del catálogo`;
   if (matrix && matrix.error) return 'Product Matrix de Fortinet: el contraste no se pudo usar';
+  if (cisco && !cisco.error && cisco.nDifieren) return `Fichas de Cisco y Meraki: ${cisco.nDifieren} cifra(s) distintas del catálogo`;
+  if (cisco && !cisco.limpio) return 'Fichas de Cisco y Meraki: el contraste no se pudo completar';
   if (inf.inalcanzables.length) return `Fuentes del catálogo: ${inf.inalcanzables.length} no se pudieron leer`;
   return 'Vigía de fuentes: no se pudo guardar lo medido';
 }
@@ -164,9 +166,10 @@ function tituloIssue(inf, matrix) {
 // Si hay que escribir en el issue. Además de un cambio o una fuente sin leer, un push que falló:
 // una corrida en rojo que no deja rastro donde se mira es como la vigía pasó tres semanas sin
 // avisar (2026-09-21 y 2026-09-28).
-const hayQueAvisar = (inf, lock, matrix) => inf.cambiados.length > 0 || inf.inalcanzables.length > 0 || (lock && lock.estado === 'fallida')
+const hayQueAvisar = (inf, lock, matrix, cisco) => inf.cambiados.length > 0 || inf.inalcanzables.length > 0 || (lock && lock.estado === 'fallida')
   || (inf.reaparecidas || []).length > 0
-  || !!(matrix && (matrix.error || !matrix.limpio));
+  || !!(matrix && (matrix.error || !matrix.limpio))
+  || !!(cisco && !cisco.limpio);
 
 // EL CONTRASTE DEL PRODUCT MATRIX (2026-10-14). Lo deja el job `contrastar`, que corrio
 // `npm run matrix` sobre un PDF de fortinet.com: es contenido de fuera y se valida aqui campo a
@@ -233,6 +236,70 @@ function seccionMatrix(m, url) {
   return l;
 }
 
+// EL CONTRASTE DE LAS FICHAS DE CISCO Y MERAKI (2026-10-21). Lo deja el job `contrastar_cisco`,
+// que trajo de cisco.com y documentation.meraki.com las fichas que cita el catálogo y corrió
+// `npm run cisco -- --traer`. Contenido de fuera: se valida aquí antes de escribirlo, y la URL
+// tiene que ser una que fuentes.js declare para Cisco, no la que diga el artefacto.
+const MODELO_CISCO = /^[A-Za-z0-9][A-Za-z0-9 .()\/-]{2,59}$/;
+function resumenCisco(d, fuentes = FUENTES) {
+  if (!esObjeto(d) || !Array.isArray(d.fichas)) return { error: 'cisco.json no trae la lista de fichas' };
+  if (!d.fichas.length || d.fichas.length > MAX_FILAS) return { error: 'cisco.json con un número de fichas imposible' };
+  const declaradas = new Set((fuentes.cisco || []).map((f) => f.url).filter(Boolean));
+  const fichas = [];
+  for (const f of d.fichas) {
+    if (!esObjeto(f) || !declaradas.has(f.url)) return { error: 'una ficha del contraste no es una fuente declarada de Cisco' };
+    if (!esEntero(f.casan)) return { error: 'una ficha sin el recuento de celdas que casan' };
+    for (const k of ['difieren', 'sinLeer', 'sinColumna']) if (!Array.isArray(f[k])) return { error: `una ficha sin la lista ${k}` };
+    if (f.error != null && typeof f.error !== 'string') return { error: 'el error de una ficha no es texto' };
+    const filas = (lista, campos) => {
+      const out = [];
+      for (const x of lista.slice(0, MAX_FILAS)) {
+        if (!esObjeto(x) || !MODELO_CISCO.test(x.modelo || '') || !CAMPO.test(x.campo || '')) return null;
+        out.push(Object.fromEntries([['modelo', x.modelo], ['campo', x.campo], ...campos.map((c) => [c, corto(x[c])])]));
+      }
+      return out;
+    };
+    const difieren = filas(f.difieren, ['catalogo', 'ficha', 'etiqueta']);
+    const sinLeer = filas(f.sinLeer, ['texto']);
+    if (!difieren || !sinLeer) return { error: 'una fila del contraste no tiene modelo o campo válidos' };
+    if (!f.sinColumna.every((x) => MODELO_CISCO.test(x))) return { error: 'un modelo sin columna con forma desconocida' };
+    const fuente = fuentes.cisco.find((x) => x.url === f.url);
+    fichas.push({ url: f.url, documento: fuente.documento, error: f.error ? corto(f.error) : null, casan: f.casan,
+      ninguna: !f.error && f.casan === 0 && !f.difieren.length && !f.sinLeer.length,
+      nDifieren: f.difieren.length, difieren, sinLeer, sinColumna: f.sinColumna.slice(0, MAX_FILAS) });
+  }
+  const suma = (k) => fichas.reduce((a, f) => a + (Array.isArray(f[k]) ? f[k].length : f[k] || 0), 0);
+  const nErrores = fichas.filter((f) => f.error || f.ninguna).length;
+  return { cisco: { fichas, nFichas: fichas.length, casan: suma('casan'), nDifieren: suma('nDifieren'), nSinLeer: suma('sinLeer'),
+    nSinColumna: suma('sinColumna'), nErrores,
+    limpio: !suma('nDifieren') && !suma('sinLeer') && !suma('sinColumna') && !nErrores } };
+}
+
+function seccionCisco(c) {
+  const l = ['## Contraste de las fichas de Cisco y Meraki (`npm run cisco`)', ''];
+  if (c.error) {
+    l.push(`El contraste no se pudo usar: \`${corto(c.error)}\`. Hay que traer las fichas y correrlo a mano: \`npm run cisco -- <carpeta>\`.`, '');
+    return l;
+  }
+  l.push(`${c.nFichas} fichas · casan ${c.casan} · difieren ${c.nDifieren} · sin leer ${c.nSinLeer} · modelos sin columna ${c.nSinColumna} · fichas que no se pudieron usar ${c.nErrores}`);
+  const dif = c.fichas.flatMap((f) => f.difieren.map((d) => ({ ...d, documento: f.documento })));
+  if (dif.length) {
+    l.push('', '| Modelo | Campo | Catálogo | Ficha | Fila |', '|---|---|---|---|---|');
+    for (const d of dif.slice(0, MAX_FILAS)) l.push(`| ${d.modelo} | ${d.campo} | ${d.catalogo} | ${d.ficha} | ${d.etiqueta} |`);
+  }
+  const sin = c.fichas.flatMap((f) => f.sinLeer.map((d) => `- ${d.modelo} ${d.campo}: «${d.texto}»`));
+  if (sin.length) l.push('', 'Celdas que no se pudieron leer (mirarlas a mano):', ...sin.slice(0, MAX_FILAS));
+  const col = c.fichas.flatMap((f) => f.sinColumna.map((m) => `- ${m}: su ficha (${f.documento}) ya no lo nombra en ninguna cabecera`));
+  if (col.length) l.push('', ...col.slice(0, MAX_FILAS));
+  const mal = c.fichas.filter((f) => f.error || f.ninguna);
+  if (mal.length) {
+    l.push('', 'Fichas que no se pudieron usar (esto **no** es «sin cambios»):');
+    for (const f of mal) l.push(`- ${f.documento}: ${f.error ? `\`${f.error}\`` : 'no dio ninguna celda (la maquetación o las etiquetas cambiaron)'}`, `  - ${f.url}`);
+  }
+  l.push('', 'Nada se ha escrito en el catálogo: cada diferencia se corrige a mano en `legacyData/cisco.js` citando la ficha, y la entrada de `fuentes.js` dice de qué fecha es.', '');
+  return l;
+}
+
 // Cuando la corrida no llega a publicarse: la medición no terminó, no se pudo bajar o no pasó la
 // validación. El motivo puede citar una clave del artefacto, así que va en código en línea.
 const TITULO_FALLO = 'Vigía de fuentes: la corrida no se publicó';
@@ -250,9 +317,10 @@ function cuerpoFallo(motivo, corrida) {
 // `lock` dice qué pasó con la medición de esta semana: {estado, enlace}. `estado` es el que
 // deja el paso de la rama (empujada, sin-cambios, retenida o fallida) y `enlace`, el PR
 // abierto o el enlace para abrirlo.
-function cuerpoIssue(inf, lock, matrix) {
+function cuerpoIssue(inf, lock, matrix, cisco) {
   const l = [];
   if (matrix) l.push(...seccionMatrix(matrix, matrix.url || 'la URL del Product Matrix'));
+  if (cisco && !cisco.limpio) l.push(...seccionCisco(cisco));
   if (inf.cambiados.length) {
     l.push('## Fuentes que cambiaron', '');
     l.push('El documento oficial ya no es el mismo que se usó para verificar el catálogo.');
@@ -334,5 +402,5 @@ if (require.main === module) {
 
 module.exports = {
   RAMA, TITULO_FALLO, fuentesPorClave, validarLock, informeDe, tituloIssue, hayQueAvisar, cuerpoIssue, cuerpoFallo, principal,
-  resumenMatrix,
+  resumenMatrix, resumenCisco,
 };

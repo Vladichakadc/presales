@@ -118,3 +118,40 @@ test('lectura de celdas: unidades, sufijos K y M, notas y texto alrededor', () =
   assert.deepStrictEqual(valor('-', 'mbps'), { noPublica: true });
   assert.strictEqual(valor('Yes', 'mbps'), null);
 });
+
+// DESDE EL VIGÍA (2026-10-21): `--traer` trae las fichas que el catálogo cita y fuentes.js
+// declara, y nunca otra; lo que no se puede traer o leer sale con su motivo y código 2.
+test('--traer: solo las fichas del catálogo que fuentes.js declara, de los dominios oficiales', () => {
+  const { fichasDeCatalogo } = require('../scripts/contrastar-cisco.js');
+  const { FUENTES } = require('../server/seed/legacyData/fuentes.js');
+  const lista = fichasDeCatalogo();
+  assert.ok(lista.length >= 15, `solo ${lista.length} fichas`);
+  const declaradas = new Set(FUENTES.cisco.map((f) => f.url));
+  for (const u of lista) {
+    assert.ok(declaradas.has(u), `${u} no está en fuentes.js`);
+    assert.match(new URL(u).hostname, /^(www\.cisco\.com|documentation\.meraki\.com)$/);
+  }
+  // Un modelo que citara una ficha no declarada, o de otro dominio, no entra en la lista.
+  const ajenos = [{ datasheet: 'https://ejemplo.invalid/ficha.html' }, { datasheet: lista[0] }];
+  assert.deepStrictEqual(fichasDeCatalogo(ajenos, { cisco: [{ url: 'https://ejemplo.invalid/ficha.html' }, { url: lista[0] }] }), [lista[0]]);
+});
+
+test('--traer: una ficha que casa, otra que no se puede traer y otra que ya no es una ficha', async () => {
+  const { traerYContrastar, resumenJson, codigoSalida } = require('../scripts/contrastar-cisco.js');
+  const ok = await traerYContrastar('https://www.cisco.com/a.html', async () => ({ ok: true, status: 200, text: async () => fichaG2() }));
+  assert.ok(ok.reconocida && !ok.error && ok.celdas.every((x) => x.estado === 'casa'));
+  const caida = await traerYContrastar('https://www.cisco.com/b.html', async () => ({ ok: false, status: 403 }));
+  assert.strictEqual(caida.error, 'HTTP 403');
+  const login = await traerYContrastar('https://www.cisco.com/c.html', async () => ({ ok: true, status: 200, text: async () => pagina('Log in - Cisco', '') }));
+  assert.match(login.error, /ya no se reconoce como ficha/);
+  const red = await traerYContrastar('https://www.cisco.com/d.html', async () => { throw new Error('ECONNRESET'); });
+  assert.strictEqual(red.error, 'ECONNRESET');
+  // Un solo fallo basta para el 2: «no se pudo leer» nunca es «todo casa».
+  assert.strictEqual(codigoSalida([ok]), 0);
+  assert.strictEqual(codigoSalida([ok, caida]), 2);
+  // El artefacto lleva lo que el issue necesita, sin el HTML.
+  const j = resumenJson([ok, caida]);
+  assert.deepStrictEqual(Object.keys(j.fichas[0]).sort(), ['casan', 'difieren', 'documento', 'error', 'sinColumna', 'sinLeer', 'url']);
+  assert.strictEqual(j.fichas[1].error, 'HTTP 403');
+  assert.ok(!JSON.stringify(j).includes('<table'));
+});

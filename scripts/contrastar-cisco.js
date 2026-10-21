@@ -38,12 +38,29 @@
 // del catalogo cuya `datasheet` es esa ficha y que no aparece en ninguna cabecera sale «sin
 // columna»: la ficha lo quito o lo renombro.
 //
+// DESDE EL VIGIA (2026-10-21, la mejora propuesta al cerrar la entrega anterior). Las fichas de
+// Cisco y Meraki son paginas dinamicas (`estable: false`): su HTML cambia en cada peticion, asi
+// que el vigia no las deja nunca pendientes y su hash no avisaria de una cifra cambiada. Por eso
+// el job `contrastar_cisco` de vigia-fuentes.yml no espera a un «pendiente»: cada lunes trae las
+// fichas que el catalogo cita y las contrasta. Este comando es el detector de cambios a nivel de
+// dato, que es lo que el hash no puede ser en una pagina dinamica:
+//
+//     node scripts/contrastar-cisco.js --traer [--json]
+//
+// Solo trae las URL que algun modelo cita como `datasheet` Y que fuentes.js declara, y solo de
+// www.cisco.com y documentation.meraki.com: nunca un documento que el artefacto diga. Una ficha
+// que no se puede traer, que ya no se reconoce como ficha o que no da ninguna celda sale con su
+// motivo y codigo 2; el issue lo dice.
+//
 // CODIGO DE SALIDA: 0 si todo casa; 1 si algo difiere, no se pudo leer o falta un modelo; 2 si no
-// hay ninguna ficha reconocida o una reconocida no dio ninguna celda.
+// hay ninguna ficha reconocida, una reconocida no dio ninguna celda o una ficha no se pudo traer.
 const fs = require('fs');
 const path = require('path');
 
 const { MODELS } = require('../server/seed/legacyData/cisco.js');
+const { FUENTES } = require('../server/seed/legacyData/fuentes.js');
+const TIEMPO_LIMITE = 60000;
+const HOSTS = new Set(['www.cisco.com', 'documentation.meraki.com']);
 
 const ENTIDADES = { nbsp: ' ', amp: '&', lt: '<', gt: '>', quot: '"', apos: "'" };
 function texto(html) {
@@ -266,24 +283,73 @@ function informe(res) {
 
 function codigoSalida(res) {
   const fichas = res.filter((r) => r.reconocida);
-  if (!fichas.length || fichas.some((r) => !r.celdas.length)) return 2;
+  if (!fichas.length || fichas.some((r) => !r.celdas.length) || res.some((r) => r.error)) return 2;
   const mal = fichas.some((r) => r.sinColumna.length || r.celdas.some((x) => x.estado !== 'casa'));
   return mal ? 1 : 0;
 }
 
-function main() {
-  const args = process.argv.slice(2);
-  const json = args.includes('--json');
-  const rutas = args.filter((a) => !a.startsWith('--'));
-  if (!rutas.length) {
-    console.error('Uso: npm run cisco -- <carpeta|ficha.html>... [--json]');
-    process.exit(2);
-  }
-  const res = archivos(rutas).map((f) => contrastar(fs.readFileSync(f, 'utf8'), f));
-  console.log(json ? JSON.stringify(res, null, 2) : informe(res));
-  process.exit(codigoSalida(res));
+// Las fichas que el catalogo cita y fuentes.js declara: la lista que el vigia contrasta.
+function fichasDeCatalogo(modelos = MODELS, fuentes = FUENTES) {
+  const declaradas = new Set((fuentes.cisco || []).map((f) => f.url).filter(Boolean));
+  const urls = [...new Set(modelos.map((m) => m.datasheet).filter(Boolean))];
+  return urls.filter((u) => declaradas.has(u) && HOSTS.has(new URL(u).hostname));
 }
 
-if (require.main === module) main();
+/* Trae una ficha y la contrasta. `traer` se inyecta en las pruebas. Un fallo no lanza: vuelve
+   con `error`, que cuenta como «no se pudo leer». */
+async function traerYContrastar(url, traer = fetch) {
+  const control = new AbortController();
+  const reloj = setTimeout(() => control.abort(), TIEMPO_LIMITE);
+  try {
+    const res = await traer(url, { redirect: 'follow', signal: control.signal,
+      headers: { 'User-Agent': 'presales-contrastar-cisco/1.0 (+catalogo interno)' } });
+    if (!res.ok) return { archivo: url, reconocida: false, error: `HTTP ${res.status}` };
+    const html = await res.text();
+    const r = contrastar(html, url);
+    if (!r.reconocida) return { ...r, error: 'la pagina ya no se reconoce como ficha (otro titulo o una pantalla intermedia)' };
+    return r;
+  } catch (e) {
+    return { archivo: url, reconocida: false, error: e.name === 'AbortError' ? 'tiempo agotado' : String(e.message || e) };
+  } finally {
+    clearTimeout(reloj);
+  }
+}
 
-module.exports = { contrastar, tablas, valor, codigos, codigoSalida, informe };
+// Lo que el job deja para `publicar`: corto, sin el HTML, y solo con lo que el issue necesita.
+function resumenJson(res) {
+  return { fichas: res.map((r) => ({
+    url: r.archivo, documento: r.documento || null, error: r.error || null,
+    casan: (r.celdas || []).filter((x) => x.estado === 'casa').length,
+    difieren: (r.celdas || []).filter((x) => x.estado === 'difiere')
+      .map((x) => ({ modelo: x.modelo, campo: x.campo, catalogo: x.catalogo, ficha: x.ficha, etiqueta: x.etiqueta })),
+    sinLeer: (r.celdas || []).filter((x) => x.estado === 'sin leer')
+      .map((x) => ({ modelo: x.modelo, campo: x.campo, texto: x.texto })),
+    sinColumna: r.sinColumna || [],
+  })) };
+}
+
+async function principal(args, traer = fetch) {
+  const json = args.includes('--json');
+  let res;
+  if (args.includes('--traer')) {
+    res = [];
+    for (const u of fichasDeCatalogo()) res.push(await traerYContrastar(u, traer));
+  } else {
+    const rutas = args.filter((a) => !a.startsWith('--'));
+    if (!rutas.length) {
+      console.error('Uso: npm run cisco -- <carpeta|ficha.html>... [--json]   ·   npm run cisco -- --traer [--json]');
+      return 2;
+    }
+    res = archivos(rutas).map((f) => contrastar(fs.readFileSync(f, 'utf8'), f));
+  }
+  if (json) console.log(JSON.stringify(args.includes('--traer') ? resumenJson(res) : res, null, 2));
+  else {
+    console.log(informe(res));
+    for (const r of res.filter((x) => x.error)) console.log(`NO SE PUDO LEER ${r.archivo}: ${r.error}`);
+  }
+  return codigoSalida(res);
+}
+
+if (require.main === module) principal(process.argv.slice(2)).then((c) => process.exit(c));
+
+module.exports = { contrastar, tablas, valor, codigos, codigoSalida, informe, fichasDeCatalogo, traerYContrastar, resumenJson, principal };
