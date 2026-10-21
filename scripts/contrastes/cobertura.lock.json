@@ -1,6 +1,6 @@
 {
  "medidoEn": {
-  "commit": "5aed124",
+  "commit": "554f8c2",
   "fecha": "2026-10-21"
  },
  "umbralRozado": 25,
@@ -162,9 +162,9 @@
   {
    "modulo": "dimensionador-cisco-catalyst8k.js",
    "estado": "ejercitado",
-   "total": 136,
-   "usadas": 105,
-   "pct": 77
+   "total": 138,
+   "usadas": 107,
+   "pct": 78
   },
   {
    "modulo": "mikrotik-motor.js",
@@ -176,8 +176,8 @@
   {
    "modulo": "dimensionador-fortinet-fortigate.js",
    "estado": "ejercitado",
-   "total": 284,
-   "usadas": 226,
+   "total": 283,
+   "usadas": 225,
    "pct": 80
   },
   {
@@ -209,18 +209,18 @@
    "pct": 81
   },
   {
-   "modulo": "cisco-motor.js",
-   "estado": "ejercitado",
-   "total": 44,
-   "usadas": 36,
-   "pct": 82
-  },
-  {
    "modulo": "fortinet-motor.js",
    "estado": "ejercitado",
    "total": 109,
    "usadas": 89,
    "pct": 82
+  },
+  {
+   "modulo": "cisco-motor.js",
+   "estado": "ejercitado",
+   "total": 50,
+   "usadas": 42,
+   "pct": 84
   },
   {
    "modulo": "dimensionador-huawei-netengine.js",
