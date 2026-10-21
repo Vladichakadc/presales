@@ -4,7 +4,8 @@ Registro vivo de lo que falta. **Al empezar una tarea se buscan aquí los puntos
 tocan, y al terminarla se actualiza**, y su contenido se resume al usuario al cerrar cada entrega — esa es la instrucción
 permanente que lo justifica (ver `CLAUDE.md`, sección *Instrucciones permanentes del dueño*).
 
-Última revisión: 2026-10-21, quincuagésima entrega (**Túneles y sesiones BFD por topología en el dimensionador Cisco.** Encargo del dueño: «ejecuta pendientes y mejora propuesta». La única decisión abierta era la de las propuestas de Cisco, y su opción recomendada (2.1) era también la mejora propuesta: se hizo. Los túneles dejan de escribirse a ojo: salen de la topología (hub y radios o malla, sedes, hubs y transportes) y se comparan con los que publica cada ficha. El despliegue de la entrega anterior se confirmó (Railway no vio los pushes y se lanzó a mano). Ver *Cerrado recientemente*.)
+Última revisión: 2026-10-21, quincuagesimoprimera entrega (**Enlaces WAN a puertos reales en el dimensionador Cisco.** Encargo del dueño: «avanza con la mejora propuesta» (la 1.1). Los 52 modelos traen sus puertos contados de su ficha (WAN, flex o LAN, medio y velocidad) y cada enlace declarado va a uno; si no cabe, se propone un módulo NIM de la guía o el equipo se aparta con su motivo, y cada fibra lleva su óptica en el BOM. Por el camino, la ficha corrigió dos textos del catálogo (ASR 1002-HX y Catalyst 8500-12X4QC). Ver *Cerrado recientemente* y *Abierto: enlaces y puertos de Cisco*.)
+Revisión anterior: 2026-10-21, quincuagésima entrega (**Túneles y sesiones BFD por topología en el dimensionador Cisco.** Encargo del dueño: «ejecuta pendientes y mejora propuesta». La única decisión abierta era la de las propuestas de Cisco, y su opción recomendada (2.1) era también la mejora propuesta: se hizo. Los túneles dejan de escribirse a ojo: salen de la topología (hub y radios o malla, sedes, hubs y transportes) y se comparan con los que publica cada ficha. El despliegue de la entrega anterior se confirmó (Railway no vio los pushes y se lanzó a mano). Ver *Cerrado recientemente*.)
 Revisión anterior: 2026-10-21, cuadragesimonovena entrega (**Licencias DNA y de seguridad de Cisco con fuente, el vigía contrasta las fichas de Cisco cada lunes, y propuestas de conectividad, SD-WAN y seguridad.** Encargo del dueño: «ejecuta la mejora propuesta y revisa si falta algún componente de seguridad, ya sea con licenciamiento DNA, o propón mejoras de conectividad, SD-WAN y seguridad». El vigía corre `npm run cisco --traer` cada lunes. El tier DNA sale del tráfico y del máximo de la plataforma; Premier, el término de 1 año y Essentials en 8500/ASR ya no se proponen; HSEC, LIC-SEC donde la guía lo niega, LIC-R-OP-SWM y la gestión del SD-WAN Manager entran en el BOM con su documento. Las propuestas, en `docs/propuestas-cisco-conectividad-sdwan-seguridad-2026-10-21.md`: ninguna implementada. Ver *Cerrado recientemente* y *Decisiones que necesitan al dueño*.)
 Revisión anterior: 2026-10-20, cuadragesimoctava entrega (**Cerrado también lo que había quedado «sin documento» en Cisco.** Cuatro vueltas más de transporte: la guía HTML de la 8200 dibuja el C8221-G2 y el C8231-E-G2 y dos traseras más; la licencia Meraki por suscripción tiene referencia oficial por clase y el BOM la lleva; los MX llevan sus ópticas MA-SFP en vez de las de Catalyst. Lo que Cisco no publica en ninguna edición queda dicho en su pestaña y fuera de los pendientes. Ver *Cerrado recientemente*.)
 Revisión anterior: 2026-10-20, cuadragesimoséptima entrega (**Cerrado lo que dejó abierto la entrega de Cisco, y hecha la mejora propuesta.** Encargo del dueño: «cierra lo que está abierto y ejecuta la mejora propuesta». Entran el C8355-G2-MX y el C8455-G2-MX con sus fichas y figuras, la trasera del C8650-G2, las figuras de tres ISR, el fin de venta del 8500-20X6C, los dispositivos del MX95/105, los módulos de los Catalyst 8300/8200 y la referencia SD-WAN+ de Meraki; lo que ningún documento publica queda dicho en su pestaña. Las dos decisiones abiertas se ejecutan con su opción recomendada (precios «~» a «Consultar», bloque de Gemini bajo la regla de datos). Y `npm run cisco` contrasta las fichas traídas celda a celda: 268 de 268 casan. Ver *Cerrado recientemente*.)
@@ -2022,6 +2023,25 @@ Lo que el HTML adjunto traía y **no** entró, con el motivo y lo que lo cerrar�
   un dato». ~~Decisión del dueño: retirarlos o integrarlos con la regla de datos.~~ **Decidido el
   2026-10-20** (ver *Decisiones que necesitan al dueño del producto*).
 
+## Abierto: enlaces y puertos de Cisco — lo que el reparto no cubre (2026-10-21)
+
+El reparto de enlaces a puertos (propuesta 1.1) es honesto con lo que sabe; esto queda fuera, dicho:
+- **El alcance del tramo** no se declara: cada fibra lleva su óptica «elegir una» entre las de la
+  familia (SR, LR, ER…). Elegirla sola pide la distancia por enlace y el alcance de cada óptica
+  como dato (hoy va en el texto `d`, y el de las multimodo depende del tipo de fibra).
+- **Las bahías del Catalyst 8500-12X4QC y el tope de 240 GE del 12X4QC y el C8570-G2** no se
+  modelan: se avisa al usar sus puertos.
+- **Los módulos del ASR** (NIM del 1001-X, EPA del 1002-HX) y las tarjetas del 1006-X no están en
+  el catálogo: un enlace que no cabe en los puertos fijos del ASR aparta el equipo, y el 1006-X no
+  se comprueba. El ASR está fuera de venta: solo cuenta para el parque instalado.
+- **El portador C-SM-NIM-ADPT(R)** (un NIM en una ranura SM) no se propone solo: hoy solo cuentan
+  las ranuras NIM.
+- **El DSL** del ISR 1116-4P no es un tipo de enlace: se avisa de que su segundo puerto WAN es DSL.
+- **Un cobre de 10G en una jaula SFP+** (transceptor 10GBASE-T) no se propone: el catálogo no trae
+  ese transceptor.
+- **Un puerto mGig admite 1G** por la norma 802.3bz: es un supuesto declarado en `cisco.js`; las
+  fichas solo dan la velocidad máxima.
+
 ## ~~Abierto~~ Cerrado: herramienta externa Cisco (2026-10-20)
 
 Todo lo que la entrega del dimensionador Cisco dejó abierto se cerró el mismo día, en dos tandas
@@ -2047,7 +2067,8 @@ documento que se miró; si Cisco publica una edición nueva, `traer-cisco-huawei
 
 - **Propuestas de conectividad, SD-WAN y seguridad del dimensionador Cisco (2026-10-21).** **La
   recomendada (2.1, túneles y BFD por topología) se hizo el 2026-10-21** con el encargo «ejecuta
-  pendientes y mejora propuesta»; **las otras ocho siguen abiertas** y no se hacen por silencio. Encargo
+  pendientes y mejora propuesta», **y la 1.1 (enlaces WAN a puertos reales) ese mismo día**, con
+  «avanza con la mejora propuesta»; **las otras siete siguen abiertas** y no se hacen por silencio. Encargo
   del dueño: «mira qué propones». Nueve propuestas en
   `docs/propuestas-cisco-conectividad-sdwan-seguridad-2026-10-21.md`, cada una con qué evita, qué
   cuesta y qué documento pide: enlaces WAN a puertos reales, PIM por categoría, HA por par de
@@ -2192,6 +2213,31 @@ que ya se comprobó y lo que cuesta cada opción.
     normalizar) se cerró el 2026-09-02 — ver *Cerrado recientemente*.
 
 ## Cerrado recientemente
+
+- **2026-10-21 · Enlaces WAN a puertos reales en el dimensionador Cisco (propuesta 1.1).** Encargo del
+  dueño: «avanza con la mejora propuesta». Hasta hoy el escenario era un caudal y unas casillas, y
+  un equipo con el caudal justo salía recomendado aunque no tuviera el puerto para el enlace.
+  **Datos** (`cisco.js`, `PUERTOS`): los 52 modelos con sus puertos contados de la ficha de cada
+  familia («Interfaces and slots» de la G2, tabla 2 de los Catalyst 8300, «Platforms and
+  configurations» del 8500, tablas de combinaciones WAN del ISR, tabla 5 del ASR, «WAN/LAN
+  Interface» de cada Meraki), en la forma que ya pinta `ficha.js`: uso WAN, LAN/WAN (los «Flex
+  L2/L3 Ports» de la tabla 1 de la guía de la serie 8100 y los convertibles de Meraki) o LAN, medio
+  y velocidad, con `velMin` solo donde la ficha da el rango. `maxWan` donde Meraki publica los
+  enlaces WAN que admite (MX67/68 2, MX75 3, MX85/95/105 4, C8355-G2-MX 3). Los módulos NIM con
+  puertos llevan los suyos (G2: guía de pedido, tabla 7; Catalyst 8200/8300: tabla 7 de sus fichas,
+  que además da la descripción que la guía de pedido no daba). **Motor** (`asignarEnlaces`): cada
+  enlace, declarado por su entrega (cobre o fibra y velocidad de la interfaz), va a un puerto, el
+  más exigente primero y al puerto que menos falta hace; un cobre de 1G puede ir a una jaula con el
+  transceptor 1000BASE-T del catálogo; si los fijos no bastan, un módulo NIM de la guía de la
+  familia (primero los WAN) y, si tampoco, el equipo se aparta con su motivo; un celular pide
+  módem. Cada fibra lleva su óptica «elegir una» en el BOM (en un módulo, las Cisco de su velocidad,
+  con el aviso de confirmar la compatibilidad), y el escenario avisa si el caudal no cabe en la
+  entrega de los principales. **Página**: editor «Enlaces WAN y puertos» en la sección 4, la ficha
+  dice a qué puerto va cada enlace, la memoria técnica también, y los avisos van al BOM y al Excel.
+  Sin enlaces no cambia nada. Fila nueva en el contraste: dos fibras de 10G en una sucursal de 100
+  Mbps dejan 22 de 30. **Por el camino**, la ficha corrigió dos textos del catálogo: el ASR 1002-HX
+  trae 8 × 10GE SFP+ y 8 × 1GE SFP (los 100GE solo por su ranura EPA) y el Catalyst 8500-12X4QC,
+  3 × 40GE y 2 × 40/100GE con un tope de 240 GE; y la ficha del ASR 1000 entra en `fuentes.js`.
 
 - **2026-10-21 · Túneles y sesiones BFD por topología en el dimensionador Cisco (propuesta 2.1).**
   Encargo del dueño: «ejecuta pendientes y mejora propuesta»; era la opción recomendada de la única

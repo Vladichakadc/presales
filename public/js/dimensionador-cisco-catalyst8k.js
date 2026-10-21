@@ -62,7 +62,7 @@ grupo('critSeg', v => { crit = v; });
 const ENTRADAS = ['bw', 'unit', 'sites', 'conc', 'head', 'profile', 'plataforma', 'diaPct', 'seguridad', 'chkTls',
   'chkFec', 'fecPct', 'dupPct', 'tuneles', 'rutas', 'sesiones', 'dispositivos', 'cgnatUsuarios', 'cgnatBloque',
   'chkRedund', 'chk4g', 'chkNim', 'chkSm', 'chkMacsec', 'chkPoe', 'poeW',
-  'topologia', 'topoSedes', 'topoHubs', 'topoColores', 'topoColoresHub', 'topoVen'];
+  'topologia', 'topoSedes', 'topoHubs', 'topoColores', 'topoColoresHub', 'topoVen', 'enlacesData'];
 ENTRADAS.forEach(id => $(id).addEventListener('input', render));
 // Las licencias se pintan en las dos pestañas: el centro del dimensionamiento y el BOM.
 ['licGestion', 'licNivel', 'licVpns', 'secUrl', 'secMalware', 'termYears'].forEach(id => $(id).addEventListener('input', () => { render(); }));
@@ -92,6 +92,7 @@ function parametros(){
     perfil:$('profile').value, plataforma:$('plataforma').value,
     seguridad:mode === 'link' ? $('seguridad').value : 'ninguna', tls:mode === 'link' && $('chkTls').checked,
     escala:{tuneles:numDe('tuneles'), rutas:numDe('rutas'), sesiones:numDe('sesiones'), dispositivos:numDe('dispositivos')},
+    enlaces:leerEnlaces(), catalogo:catalogoPuertos(),
     topologia:{topologia:$('topologia').value, sedes:$('topoSedes').value, hubs:$('topoHubs').value,
       colores:$('topoColores').value, coloresHub:$('topoColoresHub').value, ven:$('topoVen').checked},
     requisitos:{dualPsu:$('chkRedund').checked, celular:$('chk4g').checked, nim:$('chkNim').checked, sm:$('chkSm').checked,
@@ -100,6 +101,61 @@ function parametros(){
 }
 // El tier DNA sale del tráfico del escenario (todo el WAN en SD-WAN, solo el cifrado en
 // autónomo), y los módulos de voz piden Advantage: solo cuentan los del equipo que está en el BOM.
+/* ── ENLACES WAN Y PUERTOS (2026-10-21) ──
+   Filas {tipo, rol, entrega} en el campo oculto #enlacesData (JSON), que viaja en el enlace
+   compartido y en los perfiles. Vacío es el caso de siempre: sin enlaces no se comprueban puertos.
+   Las filas se repintan solo cuando el campo cambia por fuera (un enlace o un perfil cargado), para
+   no perder el foco al editar una. */
+const ENLACE_NUEVO = {tipo:'internet', rol:'principal', entrega:'cobre-1g'};
+let enlacesPintados = null;
+function leerEnlaces(){
+  try{ const v = JSON.parse($('enlacesData').value || '[]'); return Array.isArray(v) ? v : []; }
+  catch { return []; }
+}
+function escribirEnlaces(l){
+  $('enlacesData').value = l.length ? JSON.stringify(l) : '';
+  enlacesPintados = $('enlacesData').value;
+  // El evento despierta el volcado de ESTADO y el repintado (el campo está en ENTRADAS).
+  $('enlacesData').dispatchEvent(new Event('input', {bubbles:true}));
+}
+function catalogoPuertos(){ return {optics:OPTICS, modulosG2:MOD_G2, modulosC8k:MOD_C8K}; }
+function pintarEnlaces(){
+  const l = leerEnlaces();
+  enlacesPintados = $('enlacesData').value || '';
+  const opt = (mapa, v) => Object.entries(mapa).map(([k, t]) => `<option value="${esc(k)}"${k === v ? ' selected' : ''}>${esc(t)}</option>`).join('');
+  const entregas = Object.fromEntries(Object.entries(M.ENTREGAS).map(([k, e]) => [k, `Entrega: ${e.n}`]));
+  $('enlacesBox').innerHTML = l.length ? l.map((e, i) => `<div class="enlace-fila" data-i="${i}">
+    <span class="enl-n" aria-hidden="true">${i + 1}</span>
+    <select data-k="tipo" aria-label="Tipo del enlace ${i + 1}">${opt(M.TIPOS_ENLACE, e.tipo)}</select>
+    <select data-k="rol" aria-label="Rol del enlace ${i + 1}">${opt(M.ROLES_ENLACE, e.rol)}</select>
+    ${e.tipo === 'celular' ? '<span class="sku" style="flex:1 1 120px">Módem celular (integrado o PIM)</span>'
+      : `<select data-k="entrega" aria-label="Entrega del enlace ${i + 1}">${opt(entregas, e.entrega)}</select>`}
+    <button type="button" class="btn ghost enl-quitar" data-quitar="${i}" aria-label="Quitar el enlace ${i + 1}">×</button>
+  </div>`).join('') : '<p class="hint" style="margin:0">Sin enlaces declarados: los puertos no se comprueban.</p>';
+  $('btnAddEnlace').disabled = l.length >= M.MAX_ENLACES;
+}
+$('enlacesBox').addEventListener('input', e => {
+  const f = e.target.closest('.enlace-fila'); const k = e.target.dataset.k;
+  if(!f || !k) return;
+  const l = leerEnlaces(); l[+f.dataset.i][k] = e.target.value;
+  if(k === 'tipo' && e.target.value !== 'celular' && !l[+f.dataset.i].entrega) l[+f.dataset.i].entrega = ENLACE_NUEVO.entrega;
+  escribirEnlaces(l);
+  // Pasar a celular (o salir de él) cambia la fila: se repinta y el foco vuelve a su tipo.
+  if(k === 'tipo'){ pintarEnlaces(); const t = $('enlacesBox').querySelector(`.enlace-fila[data-i="${f.dataset.i}"] [data-k="tipo"]`); if(t) t.focus(); }
+});
+$('enlacesBox').addEventListener('click', e => {
+  const b = e.target.closest('[data-quitar]'); if(!b) return;
+  const l = leerEnlaces(); l.splice(+b.dataset.quitar, 1); escribirEnlaces(l); pintarEnlaces();
+  $('btnAddEnlace').focus();
+});
+$('btnAddEnlace').addEventListener('click', () => {
+  const l = leerEnlaces(); if(l.length >= M.MAX_ENLACES) return;
+  // El primero es el principal; los siguientes, respaldo del otro tipo: el caso habitual.
+  l.push(l.length ? {...ENLACE_NUEVO, tipo:l.some(x => x.tipo === 'mpls') ? 'internet' : 'mpls', rol:'respaldo'} : {...ENLACE_NUEVO});
+  escribirEnlaces(l); pintarEnlaces();
+  const ult = $('enlacesBox').querySelector('.enlace-fila:last-child select'); if(ult) ult.focus();
+});
+
 function modulosElegidos(m){
   if(!m || $('pickModel').value !== m.id) return [];
   const lista = modulosDe(m).lista;
@@ -163,6 +219,7 @@ function pintarTopologia(ev){
 /* ── RENDER DEL DIMENSIONAMIENTO ── */
 function render(){
   pintarControles();
+  if(($('enlacesData').value || '') !== enlacesPintados) pintarEnlaces();
   const p = parametros();
   // Sin ancho de banda no hay recomendación (regla de preventa 2026-09-13): es el dato mínimo
   // del dimensionamiento; sin él la página pide valores en vez de proponer un equipo a ciegas.
@@ -240,6 +297,22 @@ function render(){
     return `<ul style="margin:8px 0 0;padding-left:18px;font-size:13.5px">${L.map(x => `<li>${x}</li>`).join('')}</ul>`;
   };
 
+  // A qué puerto va cada enlace declarado, en el equipo de la ficha.
+  const seccionEnlaces = m => {
+    const f = filaDe(m.id), en = f && f.enlaces;
+    const filas = ev.enlaces.map(x => {
+      const rot = `Enlace ${x.n} · ${M.TIPOS_ENLACE[x.tipo]}, ${M.ROLES_ENLACE[x.rol].toLowerCase()}${x.e ? ` · ${x.e.n}` : ''}`;
+      const a = en && en.asignados.find(y => y.enlace === x.n), s = en && en.sinAsignar.find(y => y.enlace === x.n);
+      const v = x.tipo === 'celular' ? (m.lte ? 'Módem celular integrado' : m.pim ? 'Módulo PIM (va al BOM)' : '<span class="warn">sin módem celular</span>')
+        : a ? `${esc(M.rotuloPuerto(a))}${a.via === 'transceptor' ? ' · con transceptor de cobre' : ''}`
+        : s ? `<span class="warn">${esc(s.motivo)}</span>`
+        : en && en.modular ? 'Chasis modular: lo deciden las tarjetas (consultar)' : 'Puertos no contados: sin comprobar';
+      return [esc(rot), v, true];
+    });
+    const mods = en && en.modulos.length ? `Los puertos fijos no bastan: se propone ${en.modulos.map(x => `${esc(x.sku)} (${esc(x.d)})`).join(' y ')}, de la guía de pedido de su familia.` : null;
+    return {titulo:'Enlaces WAN y puertos', filas, nota:[mods, m.notaPuertos ? esc(m.notaPuertos) : null].filter(Boolean).join(' ') || null};
+  };
+
   const seccionesDe = m => {
     const s = SMARTNET[crit] || {};
     const amen = M.cifra(m, 'amenazas');
@@ -276,6 +349,7 @@ function render(){
         ...(m.datasheet ? [['Ficha oficial', `<a href="${esc(m.datasheet)}" target="_blank" rel="noopener">abrir la ficha de Cisco</a>`, true]] : []),
       ]},
       FICHA.seccionPuertos(m),
+      ...(ev.enlaces.length ? [seccionEnlaces(m)] : []),
       FICHA.seccionAlimentacion(m),
       {titulo:'Licenciamiento propuesto', filas:lic.filas.map(x => [esc(x.desc), x.sku ? `<code>${esc(x.sku)}</code>` : 'referencia en CCW', true]),
         nota:lic.avisos.length ? `<span class="warn">${lic.avisos.map(esc).join(' ')}</span>` : (m.lic === 'cswan' ? 'En la G2 la referencia sale de la clase de la plataforma; el término y el precio, de CCW.' : null)},
@@ -334,6 +408,7 @@ function pintarAvisos(ev, p){
   if(ev.tlsEnRouter) L.push('<div class="callout" role="note"><p><b>Descifrado TLS en el router: ninguna ficha lo publica.</b> Ningún Secure Router, Catalyst ni Meraki de este catálogo publica caudal con inspección TLS, así que no se deriva de otra cifra. Si la salida a Internet necesita descifrado, va en un <b>firewall dedicado</b> o en un servicio <b>SSE en la nube</b>: cambia «Seguridad de la salida a Internet».</p></div>');
   if(p.seguridad === 'desacoplada' && ev.demanda.diaNeed > 0) L.push(`<div class="callout info" role="note"><p><b>Firewall dedicado.</b> El router solo enruta la salida local (${fmt(ev.demanda.diaNeed)} con margen); el firewall que la inspecciona se dimensiona aparte, por su capa de inspección — por ejemplo en el <a href="/dimensionador-fortinet-fortigate.html">dimensionador Fortinet</a>. Cisco Secure Firewall no está en este catálogo.</p></div>`);
   if(p.seguridad === 'sse' && ev.demanda.diaNeed > 0) L.push('<div class="callout info" role="note"><p><b>Seguridad en la nube.</b> La salida a Internet viaja cifrada hasta el servicio SSE, así que el router la cuenta en su capa IPsec. La suscripción del servicio (Cisco Secure Access) va por usuario y no está en este catálogo: confirmarla con el distribuidor.</p></div>');
+  if(ev.enlacesCaudal) L.push(`<div class="callout" role="note"><p><b>El caudal no cabe en la entrega de los enlaces principales.</b> Se declaran ${fmt(ev.enlacesCaudal.bw)} por sentido y los principales entregan ${fmt(ev.enlacesCaudal.cabe)}: revisar la entrega de los enlaces o el caudal.</p></div>`);
   if(p.plataforma === 'asr') L.push('<div class="callout" role="note"><p><b>ASR 1000: fuera de venta.</b> Los tres modelos pasaron su último día de pedido; se evalúan como referencia de parque instalado y nunca se recomiendan.</p></div>');
   $('avisosMotor').innerHTML = L.join('');
 }
@@ -469,12 +544,7 @@ const PIM_SKUS = () => new Set([...MOD_G2, ...MOD_C8K].filter(x => x.en === 'pim
 // la de los Catalyst 8300/8200 (tabla 5), filtrada por lo que la tabla limita (solo 8300, SM de
 // doble ancho solo en el 2N2S). El ISR, el 8500 y el ASR no traen lista: «consultar».
 function modulosDe(m){
-  if(m.lic === 'cswan') return {lista:MOD_G2, fuente:'la guía de pedido de la G2 (tablas 7 y 8)', pim:'tabla 8'};
-  if(/^Catalyst 8[23]00/.test(m.id)){
-    const cabe = x => (!x.familia || m.id.startsWith(x.familia)) && (!x.ranuras || (m.sm || 0) >= x.ranuras);
-    return {lista:MOD_C8K.filter(cabe), fuente:'la guía de pedido de los Catalyst 8300/8200 (tabla 5)', pim:'tabla 5'};
-  }
-  return {lista:[], fuente:null, pim:null};
+  return M.modulosEquipo(m, catalogoPuertos());
 }
 
 function renderBom(){
@@ -507,7 +577,7 @@ function renderBom(){
     {cat:'Equipo', desc:m.id, sku:pidDe(m), qty, unit:m.elpN != null ? m.elpN : null,
      nota:`${m.fam} · Serie ${m.ser} · ${m.ports}${m.eolAnnounced ? (vencido(m) ? ' · FIN DE VENTA VENCIDO' : ' · FIN DE VENTA ANUNCIADO') : ''}`},
   ];
-  const rq = M.requisitos(m, p.requisitos);
+  const rq = M.requisitos(m, M.requisitosConEnlaces(p));
   for(const pz of rq.piezas){
     if(pz.pim){
       if($('modPim').value) continue;
@@ -538,6 +608,16 @@ function renderBom(){
       ? {cat:'Ópticas', desc:`${OPTIC_LABEL[k] || k} — ${o.sku}`, sku:o.bom || o.sku, qty:optQty * qty, unit:null, nota:o.d}
       : {cat:'Ópticas', desc:'Óptica — elegir el modelo', sku:null, qty:optQty * qty, unit:null, nota:'Elige la óptica en «Módulos y ópticas».'});
   }
+  // Lo que pide el reparto de los enlaces: módulos, ópticas y transceptores. Un módulo que ya se
+  // eligió a mano no se repite.
+  const enl = M.asignarEnlaces(m, p.enlaces, p.catalogo);
+  const aMano = new Set(['modNim', 'modSm', 'modPim'].map(id => $(id).value).filter(Boolean));
+  M.piezasEnlaces(enl).filter(pz => !(pz.moduloEnlace && aMano.has(pz.sku))).forEach(pz => filas.push({...pz, qty, unit:null}));
+  const avisosPuertos = [
+    ...enl.sinAsignar.map(x => x.motivo[0].toUpperCase() + x.motivo.slice(1) + '.'),
+    ...(enl.modular ? ['Chasis modular: los puertos de los enlaces dependen de las tarjetas que se pidan (consultar).'] : []),
+    ...(m.notaPuertos && enl.asignados.length ? [m.notaPuertos] : []),
+  ];
   const lic = M.licencias(m, opcionesLicencia(p, m), LIC_G2, LIC_DNA);
   lic.filas.forEach(x => filas.push({...x, qty:x.qty * qty, nota:x.incluida ? `${x.nota} Incluida con el equipo.` : x.nota}));
   const sn = SMARTNET[crit];
@@ -556,7 +636,7 @@ function renderBom(){
     <tr><td>${esc(M.cifra(m, 'amenazas').n)}</td><td class="n">${cifraHtml(m, 'amenazas')}</td></tr>
     <tr><td>Puertos y ranuras</td><td>${esc(m.ports)}</td></tr>
     </tbody></table></div>
-    ${lic.avisos.length ? `<ul class="hint" style="margin:10px 0 0;padding-left:18px">${lic.avisos.map(a => `<li class="warn">${esc(a)}</li>`).join('')}</ul>` : ''}
+    ${lic.avisos.length || avisosPuertos.length ? `<ul class="hint" style="margin:10px 0 0;padding-left:18px">${[...avisosPuertos, ...lic.avisos].map(a => `<li class="warn">${esc(a)}</li>`).join('')}</ul>` : ''}
     ${m.eolAnnounced ? `<p class="hint warn" style="margin-top:10px">${vencido(m) ? '<b>Fin de venta VENCIDO</b>' : 'Fin de venta anunciado'} (PID <code>${esc(m.eolAnnounced.pid)}</code>) — último día de pedido: <b>${esc(m.eolAnnounced.lastOrder)}</b>${vencido(m) ? ', ya pasado: solo referencia para parque instalado' : ''}.${m.eolAnnounced.sucesor ? ` Sucesor según el boletín: <b>${esc(m.eolAnnounced.sucesor)}</b>.` : ' El boletín no nombra un PID de reemplazo directo.'}${m.eolAnnounced.url ? ` <a href="${esc(m.eolAnnounced.url)}" target="_blank" rel="noopener">Boletín oficial</a>.` : ''}</p>` : ''}
     </section>`;
 
@@ -574,6 +654,7 @@ function renderBom(){
       '  Verificar referencia, termino y precio final en Cisco Commerce Workspace antes de cotizar.',
       m.eolAnnounced ? `  AVISO: fin de venta ${vencido(m) ? 'VENCIDO' : 'anunciado'} (${m.eolAnnounced.pid}), ultimo dia de pedido ${m.eolAnnounced.lastOrder}.` : null,
       m.eolAnnounced && m.eolAnnounced.sucesor ? `  Sucesor segun el boletin: ${m.eolAnnounced.sucesor}.` : null,
+      ...avisosPuertos.map(a => `  PUERTOS: ${a}`),
       ...lic.avisos.map(a => `  LICENCIAS: ${a}`),
     ].filter(n => n !== null),
   };

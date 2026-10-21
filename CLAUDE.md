@@ -453,7 +453,14 @@ Módulos compartidos:
   entero. El descifrado TLS en el router no tiene cifra: sin candidato. Escala publicada que no llega
   y requisito que no consta apartan con su motivo; lo no publicado, avisa. Los túneles se escriben o
   salen de la topología (`tunelesTopologia`: hub y radios o malla, sedes, hubs y transportes; el
-  rol lo da el modo), que es aritmética rotulada como supuesto; la cifra escrita manda. En SD-WAN un modelo sin
+  rol lo da el modo), que es aritmética rotulada como supuesto; la cifra escrita manda. **Enlaces WAN a
+  puertos reales** (`asignarEnlaces`): cada equipo trae sus `puertos` contados de su ficha (`uso`
+  WAN, LAN/WAN —los «Flex L2/L3» y los convertibles— o LAN, que nunca recibe un enlace; `velMin`
+  solo donde la ficha da el rango), y cada enlace declarado por su entrega (cobre o fibra y
+  velocidad de la interfaz) va a uno, el más exigente primero; un cobre de 1G puede ir a una jaula
+  con el transceptor 1000BASE-T del catálogo; si no cabe, un módulo NIM de la guía de su familia o
+  se aparta; el `maxWan` de Meraki manda; cada fibra lleva su óptica «elegir una». Sin enlaces no
+  se comprueba nada. En SD-WAN un modelo sin
   cifra propia cae a IPsec y la lista lo marca. Licencias G2 por `clase` (S…2XL, guía de pedido) y
   segunda fuente `psu2`; los LIC-SEC no se proponen donde la guía los niega (`secAddon: false`), y en
   autónomo piden Routing Advantage y LIC-R-OP-SWM. **DNA** (`LICENCIAS_DNA`, FAQ de DNA y guía de

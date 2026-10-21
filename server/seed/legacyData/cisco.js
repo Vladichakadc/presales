@@ -166,7 +166,7 @@ const MODELS = [
   {id:'Catalyst 8500-12X4QC',    ser:'Catalyst 8000', fam:'Hub DC / Edge de alto rendimiento', fwd:197000, ipsec:135000, sdwan:31900, amenazas:null, aps:null, redund:true, lte:false, bases:B_C85,
    tuneles:8000,
    psu:{tipo:'dos fuentes de serie (PWR-CH1-750WACR o PWR-CH1-950WDCR)', texto:'Ficha: «High-efficiency dual power supplies by default for power supply redundancy».'},
-   ports:'12x 10G SFP+ + 4x 40G QSFP · 1RU', nim:0, sm:0, optics:['sfp10g','qsfp40g','qsfp100g'], parts:['DNA-ADVANTAGE'], lic:'dna', dnaTierMax:'T3', datasheet:DS.c8500},
+   ports:'12x 1/10G SFP+ + 3x 40G QSFP+ + 2x 40/100G QSFP28 (240 GE simultáneos) · 1RU', nim:0, sm:0, optics:['sfp10g','qsfp40g','qsfp100g'], parts:['DNA-ADVANTAGE'], lic:'dna', dnaTierMax:'T3', datasheet:DS.c8500},
   {id:'Catalyst 8500-20X6C',     ser:'Catalyst 8000', fam:'Núcleo SD-WAN / DC de alta densidad', fwd:500000, ipsec:400000, sdwan:100000, amenazas:null, aps:null, redund:true, lte:false, bases:B_C85,
    tuneles:8000,
    psu:{tipo:'fuentes N+1 de serie (opción N+2): PWR-CH1-1100WAC o PWR-CH1-950WDC', texto:'Ficha: «N+1 redundancy (Option N+2 redundancy)».'},
@@ -263,7 +263,7 @@ const MODELS = [
   {id:'ASR 1001-X',       ser:'ASR 1000', fam:'WAN Edge compacto (2.5–20 Gbps)',        fwd:20000, ipsec:8000, sdwan:5000, aps:null, redund:true, lte:false, bases:B_ANT,
    ports:'6 GE integrados + 2 SFP+ · ESP escal.', nim:0, sm:0, optics:['sfp1g','sfp10g'], parts:['ASR1001X-10G-HA-BUN'], lic:'dna'},
   {id:'ASR 1002-HX',      ser:'ASR 1000', fam:'WAN Edge / DC gateway (35 Gbps)',        fwd:35000, ipsec:18000,sdwan:10000,aps:null, redund:true, lte:false, bases:B_ANT,
-   ports:'8 GE + 4x10GE SFP+ + 2x100GE QSFP28', nim:0, sm:0, optics:['sfp1g','sfp10g','qsfp100g'], parts:['ASR1002HX-HA-BUN'], lic:'dna'},
+   ports:'8x 1GE SFP + 8x 10GE SFP+ · 1 ranura EPA', nim:0, sm:0, optics:['sfp1g','sfp10g','qsfp100g'], parts:['ASR1002HX-HA-BUN'], lic:'dna'},
   {id:'ASR 1006-X',       ser:'ASR 1000', fam:'Core WAN modular (200 Gbps)',            fwd:200000,ipsec:78000,sdwan:20000,aps:null, redund:true, lte:false, bases:B_ANT,
    ports:'6 slots SPA · hasta 200GE · modular', nim:0, sm:0, optics:['sfp10g','qsfp40g','qsfp100g'], parts:['ASR1006X-HA-BUN'], lic:'dna'},
 
@@ -349,9 +349,105 @@ const PSU_SEGUNDA = {
   'Cisco Secure Router C8235-E-G2': {sku:'PWR-ADPT-150WAC', d:'Segunda fuente, adaptador externo de 150 W AC (PWR-ADPT-150WDC en continua), guía de pedido, tabla 3.'},
 };
 
+/* ══ PUERTOS DE DATOS POR EQUIPO (2026-10-21, propuesta 1.1: cada enlace WAN a un puerto real) ══
+   Contados de la ficha de cada familia, no del texto `ports`. Mismo formato que lee `ficha.js`
+   (`{n, vel, medios, uso}`, vel en GE): la ficha los pinta solos y un grupo con dos medios es un
+   puerto de medio compartido (combo), que cuenta una vez.
+   · uso: 'WAN' (puerto enrutado: «WAN Ports», o los L3 de los Catalyst, «for WAN or LAN»),
+     'LAN/WAN' (los «Flex L2/L3 Ports» de la G2 —guía de hardware de la serie 8100, tabla 1— y los
+     convertibles de Meraki) y 'LAN' (solo LAN: nunca recibe un enlace).
+   · velMin: la velocidad más baja que admite, solo donde la ficha lo dice («1/10», «SFP/SFP+»,
+     «10/25», «40/100», «2.5/1»). Un puerto multigigabit (mGig, 2,5G o 5G) admite también 1G: es
+     la norma 802.3bz (supuesto declarado; la ficha solo da la velocidad máxima). Un SFP+ que la
+     ficha da «no reducible a 1G» (ASR) no lleva velMin.
+   · Fuentes, por familia: fichas de las series 8100 a 8600 («Interfaces and slots»), de los
+     Catalyst 8200 («four built-in Ethernet WAN ports: two SFP and two RJ45»), 8300 («6 built-in
+     Layer 3 Ethernet ports for WAN or LAN… at least 2 SFP or SFP+ in addition to 4 RJ-45», tabla 2)
+     y 8500 («Platforms and configurations»), del ISR 1000 («1 copper/SFP Ethernet port + 1 copper
+     Ethernet port», tablas 1, 7, 13 y 20), del ASR 1000 (tabla 5) y de cada Meraki («WAN
+     Interface», «LAN Interface»). El ASR 1006-X es modular: sus puertos los dan las tarjetas. */
+const G = (n, vel, medios, uso, extra) => ({n, vel, medios, uso, ...(extra || {})});
+const RJ = (n, uso, vel = 1, extra) => G(n, vel, ['RJ45'], uso, extra);
+const MGIG = (n, vel, uso) => G(n, vel, ['RJ45'], uso, {velMin:1, mgig:true});
+const COMBO = (n, uso) => G(n, 1, ['RJ45', 'SFP'], uso);
+const SFP1 = (n, uso) => G(n, 1, ['SFP'], uso);
+const SFPP = (n, uso, dual = true) => G(n, 10, ['SFP+'], uso, dual ? {velMin:1} : null);
+const SFP28 = (n, uso) => G(n, 25, ['SFP28'], uso, {velMin:10});
+const QSFP40 = (n, uso) => G(n, 40, ['QSFP+'], uso);
+const QSFP28 = (n, uso) => G(n, 100, ['QSFP28'], uso, {velMin:40});
+const ISR_8P = [COMBO(1, 'WAN'), RJ(1, 'WAN'), RJ(8, 'LAN')];
+const C8200 = [RJ(2, 'WAN'), SFP1(2, 'WAN')];
+const C8300_6T = [RJ(4, 'WAN'), SFP1(2, 'WAN')];
+const C8300_4T2X = [RJ(4, 'WAN'), SFPP(2, 'WAN')];
+const SR8140 = [COMBO(2, 'WAN'), RJ(2, 'LAN/WAN'), RJ(6, 'LAN')];
+const SR8221 = [SFPP(2, 'WAN'), RJ(2, 'WAN'), RJ(2, 'LAN/WAN'), RJ(4, 'LAN')];
+const SR_E = [SFPP(2, 'WAN'), MGIG(2, 2.5, 'WAN')];
+const MX67 = [RJ(1, 'WAN'), RJ(1, 'LAN/WAN'), RJ(3, 'LAN')];
+const MX68 = [RJ(2, 'WAN'), RJ(10, 'LAN')];
+const MX95 = [SFPP(2, 'WAN'), MGIG(2, 2.5, 'WAN'), RJ(4, 'LAN'), SFPP(2, 'LAN')];
+const MX250 = [SFPP(2, 'WAN'), SFPP(8, 'LAN'), SFP1(8, 'LAN'), RJ(8, 'LAN')];
+const PUERTOS = {
+  'ISR 1111-8P': ISR_8P, 'ISR 1111X-8P': ISR_8P, 'ISR 1121X-8P': ISR_8P, 'ISR 1161X-8P': ISR_8P,
+  'ISR 1116-4P': [COMBO(1, 'WAN'), RJ(4, 'LAN')],
+  'Catalyst 8200L': C8200, 'Catalyst 8200': C8200,
+  'Catalyst 8300-1N1S-6T': C8300_6T, 'Catalyst 8300-2N2S-6T': C8300_6T,
+  'Catalyst 8300-1N1S-4T2X': C8300_4T2X, 'Catalyst 8300-2N2S-4T2X': C8300_4T2X,
+  'Catalyst 8500L-8S4X': [SFPP(4, 'WAN'), SFP1(8, 'WAN')],
+  'Catalyst 8500-12X': [SFPP(12, 'WAN')],
+  'Catalyst 8500-12X4QC': [SFPP(12, 'WAN'), QSFP40(3, 'WAN'), QSFP28(2, 'WAN')],
+  'Catalyst 8500-20X6C': [SFPP(20, 'WAN'), QSFP28(6, 'WAN')],
+  'Cisco Secure Router C8130-G2': [RJ(1, 'WAN'), COMBO(1, 'WAN'), RJ(2, 'LAN/WAN'), RJ(2, 'LAN')],
+  'Cisco Secure Router C8131-G2': [RJ(1, 'WAN'), COMBO(1, 'WAN'), RJ(2, 'LAN/WAN'), RJ(2, 'LAN')],
+  'Cisco Secure Router C8140-G2': SR8140, 'Cisco Secure Router C8151-G2': SR8140, 'Cisco Secure Router C8161-G2': SR8140,
+  'Cisco Secure Router C8211-G2': [COMBO(2, 'WAN'), RJ(2, 'LAN/WAN'), RJ(2, 'LAN')],
+  'Cisco Secure Router C8221-G2': SR8221, 'Cisco Secure Router C8225-G2': SR8221,
+  'Cisco Secure Router C8221L-G2': [RJ(2, 'WAN', 10), RJ(2, 'WAN'), RJ(2, 'LAN/WAN'), RJ(4, 'LAN')],
+  'Cisco Secure Router C8231-G2': [SFPP(2, 'WAN'), MGIG(2, 2.5, 'WAN'), MGIG(2, 2.5, 'LAN/WAN'), RJ(4, 'LAN')],
+  'Cisco Secure Router C8235-G2': [SFPP(2, 'WAN'), MGIG(2, 2.5, 'WAN'), MGIG(2, 2.5, 'LAN/WAN'), MGIG(4, 2.5, 'LAN')],
+  'Cisco Secure Router C8231-E-G2': SR_E, 'Cisco Secure Router C8235-E-G2': SR_E,
+  'Cisco Secure Router C8355-G2': [SFPP(2, 'WAN'), MGIG(2, 5, 'WAN'), MGIG(2, 5, 'LAN/WAN'), RJ(2, 'LAN/WAN'), SFPP(2, 'LAN')],
+  'Cisco Secure Router C8375-E-G2': [SFPP(2, 'WAN'), MGIG(4, 2.5, 'WAN')],
+  'Cisco Secure Router C8455-G2': [SFP1(8, 'WAN'), SFPP(2, 'WAN'), SFP28(2, 'WAN')],
+  'Cisco Secure Router C8475-G2': [SFP1(8, 'WAN'), SFPP(8, 'WAN'), SFP28(4, 'WAN')],
+  'Cisco Secure Router C8550-G2': [SFPP(12, 'WAN')],
+  'Cisco Secure Router C8570-G2': [SFPP(12, 'WAN'), QSFP40(2, 'WAN'), QSFP28(2, 'WAN')],
+  'Cisco Secure Router C8650-G2': [SFPP(20, 'WAN'), QSFP28(6, 'WAN')],
+  'ASR 1001-X': [SFP1(6, 'WAN'), SFPP(2, 'WAN', false)],
+  'ASR 1002-HX': [SFP1(8, 'WAN'), SFPP(8, 'WAN', false)],
+  'ASR 1006-X': null,
+  'Meraki MX67': MX67, 'Meraki MX67C': MX67, 'Meraki MX68': MX68, 'Meraki MX68CW': MX68,
+  'Meraki MX75': [SFP1(1, 'WAN'), RJ(2, 'WAN'), RJ(10, 'LAN')],
+  'Meraki MX85': [SFP1(2, 'WAN'), RJ(2, 'WAN'), RJ(8, 'LAN'), SFP1(2, 'LAN')],
+  'Meraki MX95': MX95, 'Meraki MX105': MX95,
+  'Meraki MX250': MX250, 'Meraki MX450': MX250,
+  'Cisco Secure Router C8111-G2-MX': [MGIG(2, 2.5, 'WAN'), RJ(4, 'LAN')],
+  'Cisco Secure Router C8121-G2-MX': [MGIG(2, 2.5, 'WAN'), RJ(10, 'LAN')],
+  'Cisco Secure Router C8355-G2-MX': [SFPP(2, 'WAN'), SFPP(2, 'LAN/WAN'), MGIG(4, 5, 'LAN'), RJ(2, 'LAN')],
+  'Cisco Secure Router C8455-G2-MX': [SFP28(2, 'WAN'), SFPP(2, 'LAN/WAN'), SFP1(8, 'LAN')],
+};
+// Enlaces WAN que el equipo admite a la vez, donde la ficha lo dice: Meraki «# of WAN uplinks» (MX75
+// 3; MX85, MX95 y MX105 4), «Dual WAN uplinks (with LAN conversion)» en los MX67/68 y «Up to 3 with
+// LAN/WAN conversion» en el C8355-G2-MX. Donde no consta, el límite son los puertos.
+const MAX_WAN = {
+  'Meraki MX67': 2, 'Meraki MX67C': 2, 'Meraki MX68': 2, 'Meraki MX68CW': 2,
+  'Meraki MX75': 3, 'Meraki MX85': 4, 'Meraki MX95': 4, 'Meraki MX105': 4,
+  'Cisco Secure Router C8355-G2-MX': 3,
+};
+// Restricciones de la ficha que el reparto de puertos no modela: se dicen cuando un enlace usa ese
+// tipo de puerto.
+const NOTA_PUERTOS = {
+  'Catalyst 8500-12X4QC': 'Admite 240 GE simultáneos, y un puerto de 100 GE deja sin los demás puertos de sus bahías (ficha, tablas 3 y figuras 5-6): confirmar la combinación.',
+  'Cisco Secure Router C8570-G2': '«Max 240GE ports can be enabled simultaneously» (ficha, tabla 3): confirmar la combinación.',
+  'ISR 1116-4P': 'El segundo puerto WAN es DSL (G.FAST, VDSL2 o ADSL2+ según la variante): no recibe un enlace Ethernet.',
+};
+
 for (const m of MODELS) {
   m.eolAnnounced = EOL_ANNOUNCED[m.id] || null;
   if (PSU_SEGUNDA[m.id]) m.psu2 = PSU_SEGUNDA[m.id];
+  // `undefined` es «no contado»; `null`, chasis modular (sus puertos los dan las tarjetas).
+  if (Object.prototype.hasOwnProperty.call(PUERTOS, m.id)) m.puertos = PUERTOS[m.id];
+  if (MAX_WAN[m.id]) m.maxWan = MAX_WAN[m.id];
+  if (NOTA_PUERTOS[m.id]) m.notaPuertos = NOTA_PUERTOS[m.id];
 }
 
 // Licencias de la línea G2 (guía de pedido, tablas 9 y 10). La referencia completa sale de la clase
@@ -410,11 +506,11 @@ const LICENCIAS_DNA = {
 // Módulos de la guía de pedido de la G2 (tabla 7, «Supported NIM and SM modules on the C8300 and
 // C8200 Series») y de celular (tabla 8). `en` dice qué tipo de ranura ocupa.
 const MODULOS_G2 = [
-  {sku:'C-NIM-WAN-2X', en:'nim', d:'2 puertos 1/10 Gbps SFP/SFP+ WAN, con WAN MACsec'},
-  {sku:'C-NIM-WAN-4S', en:'nim', d:'4 puertos 1 Gbps SFP WAN, con WAN MACsec'},
-  {sku:'C-NIM-4X',     en:'nim', d:'Switch de 4 puertos 1/10 Gbps SFP/SFP+, MACsec LAN/WAN y L3 opcional'},
-  {sku:'C-NIM-8T',     en:'nim', d:'Switch de 8 puertos 100 Mbps/1 Gbps, MACsec LAN/WAN y L3 opcional'},
-  {sku:'C-NIM-8M',     en:'nim', d:'Switch de 8 puertos 100M/1/2,5 Gbps, UPoE+, MACsec LAN/WAN y L3 opcional'},
+  {sku:'C-NIM-WAN-2X', en:'nim', d:'2 puertos 1/10 Gbps SFP/SFP+ WAN, con WAN MACsec', puertos:[SFPP(2, 'WAN')]},
+  {sku:'C-NIM-WAN-4S', en:'nim', d:'4 puertos 1 Gbps SFP WAN, con WAN MACsec', puertos:[SFP1(4, 'WAN')]},
+  {sku:'C-NIM-4X',     en:'nim', d:'Switch de 4 puertos 1/10 Gbps SFP/SFP+, MACsec LAN/WAN y L3 opcional', puertos:[SFPP(4, 'LAN/WAN')]},
+  {sku:'C-NIM-8T',     en:'nim', d:'Switch de 8 puertos 100 Mbps/1 Gbps, MACsec LAN/WAN y L3 opcional', puertos:[RJ(8, 'LAN/WAN')]},
+  {sku:'C-NIM-8M',     en:'nim', d:'Switch de 8 puertos 100M/1/2,5 Gbps, UPoE+, MACsec LAN/WAN y L3 opcional', puertos:[MGIG(8, 2.5, 'LAN/WAN')]},
   {sku:'C-SM-16P4M2X', en:'sm',  d:'Módulo switch Catalyst L2 de 22 puertos con ASIC UADP'},
   {sku:'C-SM-NIM-ADPT',en:'sm',  d:'Portador de 2 NIM en formato SM-X'},
   {sku:'P-5GS6-R16SA-GL', en:'pim', d:'5G Sub-6 GHz Pluggable — 5G SA Global'},
@@ -459,6 +555,21 @@ const MODULOS_C8K = (() => {
       lista.push(x);
     }
   }
+  // Descripción y puertos de los módulos Ethernet, de la tabla 7 de las fichas de los Catalyst 8200
+  // y 8300 («Modules supported»): la guía de pedido solo da la referencia. Los «Ethernet Layer 3
+  // modules» son WAN; los LAN/LANWAN con «Optional L3» pueden llevar un enlace; los NIM-ES2, no.
+  const DETALLE = {
+    'C-NIM-1X': {d:'1 puerto 10 Gbps SFP/SFP+ con WAN MACsec (L3)', puertos:[SFPP(1, 'WAN')]},
+    'C-NIM-1M': {d:'1 puerto 2,5/1 Gbps RJ-45 WAN con PoE de 90 W (L3)', puertos:[MGIG(1, 2.5, 'WAN')]},
+    'C-NIM-2T': {d:'2 puertos 100 Mbps/1 Gbps de modo dual RJ-45/SFP con WAN MACsec (L3)', puertos:[COMBO(2, 'WAN')]},
+    'C-NIM-4X': {d:'Switch de 4 puertos 1/10 Gbps SFP/SFP+, MACsec LAN/WAN y L3 opcional', puertos:[SFPP(4, 'LAN/WAN')]},
+    'C-NIM-8T': {d:'Switch de 8 puertos 100 Mbps/1 Gbps, MACsec LAN/WAN y L3 opcional', puertos:[RJ(8, 'LAN/WAN')]},
+    'C-NIM-8M': {d:'Switch de 8 puertos 100M/1/2,5 Gbps, UPoE, MACsec LAN/WAN y L3 opcional', puertos:[MGIG(8, 2.5, 'LAN/WAN')]},
+    'NIM-ES2-4': {d:'Switch LAN de 4 puertos Gigabit Ethernet'},
+    'NIM-ES2-8': {d:'Switch LAN de 8 puertos Gigabit Ethernet'},
+    'NIM-ES2-8-P': {d:'Switch LAN de 8 puertos Gigabit Ethernet con PoE'},
+  };
+  for (const x of lista) if (DETALLE[x.sku]) Object.assign(x, DETALLE[x.sku]);
   return lista;
 })();
 
@@ -583,4 +694,4 @@ const CLOUD_UNIFICATION_NOTE = 'Cisco unificó Meraki y Catalyst bajo "Cisco Net
 // la página del dimensionador.
 const SDWAN_COMPARISON_NOTE = 'Catalyst SD-WAN es un router con funciones de seguridad añadidas; Fortinet y Palo Alto son firewalls con routing añadido — por eso la visibilidad nativa de tráfico/aplicaciones y el enrutamiento consciente de aplicaciones de Cisco suelen calificar por debajo de Fortinet en reportes de usuarios, y la licencia/configuración es más compleja y costosa. A favor de Cisco: soporte nativo de Segment Routing sobre IPv6 (SRv6) para ingeniería de tráfico determinística en WANs multi-MPLS complejas, algo que Fortinet, Palo Alto y Aruba no igualan — ventaja real en entornos grandes con múltiples proveedores de transporte.';
 
-module.exports = { MODELS, OPTICS, OPTIC_LABEL, PARTS_DESC, SMARTNET, DNA_DESC, LICENCIAS_G2, LICENCIAS_DNA, MODULOS_G2, MODULOS_C8K, CLOUD_UNIFICATION_NOTE, SDWAN_COMPARISON_NOTE };
+module.exports = { MODELS, PUERTOS, OPTICS, OPTIC_LABEL, PARTS_DESC, SMARTNET, DNA_DESC, LICENCIAS_G2, LICENCIAS_DNA, MODULOS_G2, MODULOS_C8K, CLOUD_UNIFICATION_NOTE, SDWAN_COMPARISON_NOTE };

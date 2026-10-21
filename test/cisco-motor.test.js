@@ -359,3 +359,116 @@ test('túneles por topología en la evaluación: apartan con su cifra y la escri
   const md = M.memoria(ev, { perfil: 'sdwan' });
   assert.match(md, /Túneles por topología \(malla completa, el equipo como sucursal\): 199 sedes más × 4 pares de transportes = 796; 1 hub × 4 pares de transportes = 4; total \*\*800\*\*/);
 });
+
+// ENLACES WAN A PUERTOS REALES (propuesta 1.1, 2026-10-21). Lo que evita: proponer un equipo con
+// el caudal justo y sin el puerto para un enlace, o cotizar ópticas a ojo.
+const { MODULOS_G2, MODULOS_C8K, OPTICS } = require('../server/seed/legacyData/cisco.js');
+const CAT = { optics: OPTICS, modulosG2: MODULOS_G2, modulosC8k: MODULOS_C8K };
+const E = (...xs) => xs.map((x) => (typeof x === 'string' ? { tipo: 'internet', rol: 'principal', entrega: x } : x));
+const asig = (m, ...xs) => M.asignarEnlaces(typeof m === 'string' ? id(m) : m, E(...xs), CAT);
+
+test('puertos: todos los equipos los tienen contados (o son modulares) y con la forma de ficha.js', () => {
+  const MEDIOS = new Set(['RJ45', 'SFP', 'SFP+', 'SFP28', 'QSFP+', 'QSFP28']);
+  for (const m of MODELS) {
+    if (m.puertos === null) { assert.match(m.id, /ASR 1006-X/, `${m.id}: modular sin serlo`); continue; }
+    assert.ok(Array.isArray(m.puertos) && m.puertos.length, `${m.id}: sin puertos contados`);
+    for (const g of m.puertos) {
+      assert.ok(Number.isInteger(g.n) && g.n > 0 && g.vel > 0, `${m.id}: grupo sin cantidad o velocidad`);
+      assert.ok(g.medios.length && g.medios.every((x) => MEDIOS.has(x)), `${m.id}: medio desconocido ${g.medios}`);
+      assert.ok(['WAN', 'LAN/WAN', 'LAN'].includes(g.uso), `${m.id}: uso ${g.uso}`);
+      if (g.velMin != null) assert.ok(g.velMin < g.vel, `${m.id}: velMin ${g.velMin} ≥ vel ${g.vel}`);
+    }
+    assert.ok(m.puertos.some((g) => g.uso === 'WAN'), `${m.id}: ningún puerto WAN`);
+  }
+});
+
+test('reparto: el más exigente primero, WAN antes que flex, y lo que no cabe aparta con su motivo', () => {
+  // C8211-G2: dos combo WAN. Fibra y cobre de 1G caben; una fibra de 10G, no.
+  const a = asig('Cisco Secure Router C8211-G2', 'fibra-1g', 'cobre-1g');
+  assert.deepStrictEqual(a.asignados.map((x) => [x.enlace, x.medio, x.puerto.uso]), [[1, 'SFP', 'WAN'], [2, 'RJ45', 'WAN']]);
+  assert.deepStrictEqual(asig('Cisco Secure Router C8211-G2', 'fibra-10g').sinAsignar.map((x) => x.motivo), ['sin puerto para el enlace 1 (fibra de 10G)']);
+  // Un puerto de solo LAN nunca recibe un enlace: el C8355-G2 tiene dos SFP+ LAN que no cuentan.
+  const c8355 = asig('Cisco Secure Router C8355-G2', 'fibra-10g', 'fibra-10g', 'fibra-10g');
+  assert.deepStrictEqual(c8355.sinAsignar.map((x) => x.enlace), [3]);
+  // El flex (LAN/WAN) se usa cuando los WAN se acaban.
+  const c8211 = asig('Cisco Secure Router C8211-G2', 'cobre-1g', 'cobre-1g', 'cobre-1g');
+  assert.deepStrictEqual(c8211.asignados.map((x) => x.puerto.uso), ['WAN', 'WAN', 'LAN/WAN']);
+  // Un SFP+ que la ficha da «no reducible a 1G» (ASR) no recibe una fibra de 1G.
+  const asr = asig('ASR 1001-X', ...Array(7).fill('fibra-1g'));
+  assert.deepStrictEqual(asr.sinAsignar.map((x) => x.enlace), [7]);
+});
+
+test('reparto: módulo NIM de la guía cuando los fijos no bastan, y transceptor de cobre en una jaula', () => {
+  const e = asig('Cisco Secure Router C8231-E-G2', 'fibra-10g', 'fibra-10g', 'fibra-10g');
+  assert.deepStrictEqual(e.modulos.map((x) => [x.sku, x.enlaces]), [['C-NIM-WAN-2X', [3]]]);
+  assert.strictEqual(e.asignados[2].puerto.modulo, 'C-NIM-WAN-2X');
+  // En el 8300-6T, la fibra de 10G va al C-NIM-1X (WAN), no a un switch con L3 opcional.
+  assert.deepStrictEqual(asig('Catalyst 8300-1N1S-6T', 'fibra-10g').modulos.map((x) => x.sku), ['C-NIM-1X']);
+  // El C-NIM-1X es solo del 8300: el 8200 se queda sin puerto de 10G... salvo el switch C-NIM-4X.
+  assert.deepStrictEqual(asig('Catalyst 8200', 'fibra-10g').modulos.map((x) => x.sku), ['C-NIM-4X']);
+  // Sin ranura NIM no hay módulo: el C8231-G2 con tres fibras de 10G aparta el tercero.
+  assert.deepStrictEqual(asig('Cisco Secure Router C8231-G2', 'fibra-10g', 'fibra-10g', 'fibra-10g').sinAsignar.map((x) => x.enlace), [3]);
+  // Tercer cobre en el Catalyst 8200 (2 RJ-45 + 2 SFP): a una jaula SFP, con GLC-T/GLC-TE.
+  const c8200 = asig('Catalyst 8200', 'cobre-1g', 'cobre-1g', 'cobre-1g');
+  assert.deepStrictEqual(c8200.asignados.map((x) => x.via), ['nativo', 'nativo', 'transceptor']);
+  assert.deepStrictEqual(c8200.asignados[2].transceptores.map((o) => o.sku), ['GLC-T', 'GLC-TE']);
+  // Si el catálogo no trae transceptor de cobre para la familia, lo dice así.
+  assert.match(asig('Catalyst 8500-12X', 'cobre-1g').sinAsignar[0].motivo, /jaulas de 1G, pero el catálogo no trae su transceptor de cobre/);
+});
+
+test('reparto: el límite de enlaces WAN de Meraki, el chasis modular y el celular', () => {
+  const mx = asig('Meraki MX67', 'cobre-1g', 'cobre-1g', 'cobre-1g');
+  assert.deepStrictEqual(mx.asignados.map((x) => x.puerto.uso), ['WAN', 'LAN/WAN']);
+  assert.deepStrictEqual(mx.sinAsignar.map((x) => x.motivo), ['admite 2 enlaces WAN a la vez']);
+  const asr = asig('ASR 1006-X', 'fibra-10g');
+  assert.ok(asr.modular && !asr.sinAsignar.length);
+  // Un celular no ocupa puerto: pide módem, que es el requisito de celular de siempre.
+  const cel = { tipo: 'celular', rol: 'respaldo' };
+  assert.strictEqual(asig('Cisco Secure Router C8211-G2', cel).asignados.length, 0);
+  assert.strictEqual(M.requisitosConEnlaces({ enlaces: E('cobre-1g', cel) }).celular, true);
+  assert.ok(!M.requisitosConEnlaces({ enlaces: E('cobre-1g') }).celular);
+});
+
+test('piezas del reparto: módulo propuesto, óptica «elegir una» de su familia y transceptor', () => {
+  const pz = M.piezasEnlaces(asig('Cisco Secure Router C8231-E-G2', 'fibra-10g', 'fibra-10g', 'fibra-10g', 'cobre-1g'));
+  assert.ok(pz.some((x) => x.sku === 'C-NIM-WAN-2X' && /para el enlace 3/.test(x.desc)));
+  const opt = pz.filter((x) => /^Óptica de 10G/.test(x.desc));
+  assert.strictEqual(opt.length, 3);
+  assert.ok(opt.every((x) => x.sku === null && /SFP-10G-SR, SFP-10G-LR/.test(x.nota)));
+  // Meraki lleva sus MA-SFP, nunca las de Catalyst.
+  const mxo = M.piezasEnlaces(asig('Meraki MX85', 'fibra-1g'));
+  assert.match(mxo[0].nota, /MA-SFP-1GB-SX/);
+  assert.doesNotMatch(mxo[0].nota, /GLC-/);
+  // Un puerto de módulo lleva las ópticas Cisco de su velocidad, con el aviso de confirmarlas: el
+  // 8200L solo lista ópticas de 1G (las de sus jaulas fijas) y el C-NIM-4X es de 1/10G.
+  const mod = M.piezasEnlaces(asig('Catalyst 8200L', 'fibra-10g'));
+  const o10 = mod.find((x) => /^Óptica de 10G/.test(x.desc));
+  assert.ok(o10 && /SFP-10G-SR/.test(o10.nota) && /Va en el C-NIM-4X: confirmar su compatibilidad/.test(o10.nota), JSON.stringify(mod));
+  // Una velocidad sin óptica en el catálogo de la familia: consultar, sin referencia inventada.
+  const c8455 = M.piezasEnlaces(asig('Cisco Secure Router C8455-G2', 'fibra-25g'));
+  assert.ok(c8455[0].sku === null && /no trae ópticas de esta velocidad/.test(c8455[0].nota));
+});
+
+test('enlaces en la evaluación: apartan agrupados, el celular pide módem y sin enlaces nada cambia', () => {
+  const sin = M.evaluar(MODELS, base);
+  const vacio = M.evaluar(MODELS, { ...base, enlaces: [], catalogo: CAT });
+  assert.deepStrictEqual(vacio.candidatos.map((f) => f.m.id), sin.candidatos.map((f) => f.m.id));
+  const dos10 = M.evaluar(MODELS, { ...base, bwMbps: 100, enlaces: E('fibra-10g', { tipo: 'mpls', rol: 'respaldo', entrega: 'fibra-10g' }), catalogo: CAT });
+  const g = M.resumenApartados(dos10.apartados).find((x) => /no tienen puerto para algún enlace WAN/.test(x.motivo));
+  assert.ok(g && g.ids.includes('Cisco Secure Router C8211-G2'), JSON.stringify(M.resumenApartados(dos10.apartados)));
+  assert.ok(dos10.candidatos.every((f) => f.enlaces.sinAsignar.length === 0));
+  // La fila lleva las ópticas de sus dos enlaces como piezas.
+  assert.ok(dos10.candidatos[0].piezas.filter((x) => /^Óptica de 10G/.test(x.desc)).length === 2);
+  // Un enlace celular aparta a quien no tiene módem ni ranura PIM.
+  const cel = M.evaluar(MODELS, { ...base, bwMbps: 100, enlaces: E('cobre-1g', { tipo: 'celular', rol: 'respaldo' }), catalogo: CAT });
+  assert.ok(cel.candidatos.every((f) => f.m.lte || f.m.pim));
+  // El caudal por sentido que no cabe en la entrega de los principales se dice en el escenario.
+  assert.deepStrictEqual(M.evaluar(MODELS, { ...base, bwMbps: 2000, enlaces: E('cobre-1g'), catalogo: CAT }).enlacesCaudal, { bw: 2000, cabe: 1000 });
+  assert.strictEqual(M.evaluar(MODELS, { ...base, bwMbps: 800, enlaces: E('cobre-1g'), catalogo: CAT }).enlacesCaudal, null);
+  // El 8200L cumple: sus jaulas son de 1G, pero su ranura NIM admite el C-NIM-4X (1/10G con L3
+  // opcional), y la memoria técnica dice a qué puerto va cada enlace.
+  assert.strictEqual(dos10.candidatos[0].m.id, 'Catalyst 8200L');
+  assert.deepStrictEqual(dos10.candidatos[0].enlaces.modulos.map((x) => x.sku), ['C-NIM-4X']);
+  const md = M.memoria(dos10, { perfil: 'sdwan' });
+  assert.match(md, /## Enlaces WAN y puertos[\s\S]*Enlace 1: Internet, principal, fibra de 10G → SFP\+ LAN\/WAN de 10G en el C-NIM-4X/);
+});

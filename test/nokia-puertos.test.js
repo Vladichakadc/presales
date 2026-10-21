@@ -89,11 +89,13 @@ test('los otros seis fabricantes no reciben un panel vacío: el texto libre se m
   // así que la sección los enseña y DICE que no están estructurados. Decirlo es la diferencia
   // entre «este equipo no tiene puertos» y «el catálogo no sabe contarlos» — la misma
   // distinción que protege `redund` y el `noAplica` del comparador.
+  // Cisco dejó de ser uno de ellos el 2026-10-21 (puertos contados de sus fichas): el caso de
+  // texto libre lo da ahora Huawei, y la prueba de abajo vigila los de Cisco.
   const { FICHA } = cargar('public/js/ficha.js');
-  const cisco = require('../server/seed/legacyData/cisco.js').MODELS[0];
-  const sec = FICHA.seccionPuertos(cisco);
+  const huawei = require('../server/seed/legacyData/huawei.js').MODELS[0];
+  const sec = FICHA.seccionPuertos(huawei);
   assert.ok(sec.filas.length === 1 && sec.filas[0][0] === 'Interfaces');
-  assert.ok(sec.filas[0][1].includes(cisco.ports), 'el texto del catálogo, tal cual');
+  assert.ok(sec.filas[0][1].includes(huawei.ports), 'el texto del catálogo, tal cual');
   assert.match(sec.nota, /<b>como texto<\/b>/, 'y se declara que no es dato estructurado');
   assert.match(sec.nota, /no se puede contrastar la densidad/);
 
@@ -104,6 +106,24 @@ test('los otros seis fabricantes no reciben un panel vacío: el texto libre se m
   const s100 = FICHA.seccionPuertos(f100);
   assert.strictEqual(s100.filas[0][0], 'Interfaces');
   assert.strictEqual(s100.filas[0][1], f100.ifaces.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'));
+});
+
+// Los puertos de Cisco (2026-10-21, contados de cada ficha para asignar los enlaces WAN) se pintan
+// con su uso y su medio; un combo RJ-45/SFP es un puerto de medio compartido, y el chasis modular
+// (ASR 1006-X, `puertos: null`) vuelve al texto, que dice que no hay densidad.
+test('los puertos estructurados de Cisco se pintan enteros, con el combo como medio compartido', () => {
+  const { FICHA } = cargar('public/js/ficha.js');
+  const { MODELS } = require('../server/seed/legacyData/cisco.js');
+  for (const m of MODELS.filter((x) => Array.isArray(x.puertos))) {
+    const sec = FICHA.seccionPuertos(m);
+    assert.strictEqual(sec.filas.length, m.puertos.length, m.id);
+    assert.ok(sec.filas.every(([k, v]) => !/undefined|NaN/.test(k + v)), m.id);
+  }
+  const c8211 = FICHA.seccionPuertos(MODELS.find((x) => x.id === 'Cisco Secure Router C8211-G2'));
+  assert.deepStrictEqual([...c8211.filas[0]], ['Puertos de WAN', '2 × 1GE RJ45 o SFP']);
+  assert.match(c8211.nota, /medio compartido/);
+  const asr = FICHA.seccionPuertos(MODELS.find((x) => x.id === 'ASR 1006-X'));
+  assert.strictEqual(asr.filas[0][0], 'Interfaces');
 });
 
 // Hasta el 2026-10-02 aquí había `includes('GE')` sobre el 30G, y pasaba con «undefined ×

@@ -35,12 +35,15 @@ Los avisos de licencia salen también en la pestaña de BOM y en las notas del E
 
 ## 2. Propuestas
 
-Ordenadas por lo que evitan frente a lo que cuestan. **La recomendada era la 2.1, ya hecha**; las
-demás siguen sin implementar.
+Ordenadas por lo que evitan frente a lo que cuestan. **Hechas: la 2.1 (la recomendada) y la 1.1**;
+las demás siguen sin implementar.
 
 ### Conectividad
 
-**1.1 Enlaces WAN reales, cada uno a un puerto del equipo.** Hoy el escenario es un caudal y unas
+**1.1 Enlaces WAN reales, cada uno a un puerto del equipo. Hecha el 2026-10-21** con el encargo
+del dueño «avanza con la mejora propuesta»: `puertos` de los 52 modelos contados de sus fichas,
+`asignarEnlaces` en el motor, el editor «Enlaces WAN y puertos» en la sección 4 y una fila nueva en
+el contraste. Lo que decía: hoy el escenario es un caudal y unas
 casillas (celular, NIM, SM). Aruba y MikroTik ya tienen un constructor de enlaces: filas
 `{principal/respaldo, Internet/MPLS/celular, bajada, subida, medio}`; un respaldo ocupa puerto pero
 no suma; el caudal es el peor escenario de falla; cada enlace va a un puerto real (cobre, SFP,
