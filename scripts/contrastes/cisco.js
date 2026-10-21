@@ -27,8 +27,14 @@
  *     topología): 199 × 4 + 1 × 4 = 800 túneles. Los cinco C81xx-G2 publican 250 y se apartan:
  *     cumplen 25 de los 30 que cumplen sin topología.
  *   · La misma sucursal con dos enlaces entregados en fibra de 10G (2026-10-21, enlaces a puertos
- *     reales): ocho modelos sin jaula de 10G libre ni ranura para un módulo se apartan; el 8200L
- *     sigue, con un C-NIM-4X de su guía de pedido para los dos enlaces.
+ *     reales): los modelos sin jaula de 10G libre ni ranura para un módulo se apartan; el 8200L
+ *     sigue, con un C-NIM-4X de su guía de pedido para los dos enlaces. Cumplían 22; desde el
+ *     cierre de pendientes del mismo día cumplen 23: el módulo propuesto es el que lleva más
+ *     enlaces, y el 8300-1N1S-6T entra con un C-NIM-4X donde antes pedía dos C-NIM-1X y no tenía
+ *     segunda ranura NIM.
+ *   · Un ISR de 50 Mbps con su enlace entregado por DSL (2026-10-21, cierre de los pendientes de
+ *     puertos): solo el ISR 1116-4P tiene puerto DSL (ficha del ISR 1000, tabla 20); los otros
+ *     cuatro ISR se apartan. Sin el enlace cumplían los cinco.
  */
 const BASE_LINEA = [
   { n: 'Sede 800 Mbps por sentido, SD-WAN', esc: { bw: '800' },
@@ -46,7 +52,9 @@ const BASE_LINEA = [
   { n: 'Sucursal de 100 Mbps en malla de 200 sedes con dos transportes', esc: { bw: '100', topologia: 'malla', topoSedes: '200', topoColores: '2' },
     recomendado: 'Catalyst 8200L', utilizacion: '87 %', cumplen: '25' },
   { n: 'Sucursal de 100 Mbps con dos enlaces en fibra de 10G', esc: { bw: '100', enlaces: ['fibra-10g', 'fibra-10g'] },
-    recomendado: 'Catalyst 8200L', utilizacion: '87 %', cumplen: '22' },
+    recomendado: 'Catalyst 8200L', utilizacion: '87 %', cumplen: '23' },
+  { n: 'ISR de 50 Mbps con su enlace por DSL', esc: { bw: '50', plataforma: 'isr', enlaces: ['dsl'] },
+    recomendado: 'ISR 1116-4P', utilizacion: '65 %', cumplen: '1' },
 ];
 
 module.exports = {

@@ -329,6 +329,7 @@ async function dimensionadorOptics(vendorId, { bomAsString = false } = {}) {
       bom: bomAsString ? (o.bomCodes && o.bomCodes[0]) || '' : (o.bomCodes || []),
       d: o.description,
       price: o.priceNumeric, // null en Huawei/Cisco; sus paginas no lo leen
+      ...(Array.isArray(o.reach) ? { alcance: o.reach } : {}),
     }));
     opticLabel[cat.code] = OPTIC_LABEL[cat.code] || cat.label;
   }

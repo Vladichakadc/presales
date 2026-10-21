@@ -133,6 +133,7 @@ tr.sel td{background:rgba(4,159,217,.07);font-weight:600}
 .enlace-fila{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-bottom:6px;padding:6px;border:1px solid var(--rule);border-radius:2px;background:#fff}
 .enlace-fila .enl-n{font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:600;color:var(--steel);min-width:18px}
 .enlace-fila select{flex:1 1 120px;min-width:0;width:auto}
+.enlace-fila input{flex:0 1 96px;min-width:0;width:auto}
 .enlace-fila .enl-quitar{flex:0 0 auto;padding:4px 9px}
 .bom-acciones{display:flex;gap:6px;flex-wrap:wrap}
 .pillc{display:inline-block;font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.06em;text-transform:uppercase;padding:1px 4px;border-radius:2px;background:var(--paper);color:var(--steel)}
@@ -317,7 +318,7 @@ tr.sel td{background:rgba(4,159,217,.07);font-weight:600}
       <input type="hidden" id="enlacesData">
       <div id="enlacesBox" role="group" aria-labelledby="enlacesLbl"></div>
       <button type="button" class="btn ghost" id="btnAddEnlace" style="margin-top:6px">+ Añadir enlace</button>
-      <p class="hint">Cada enlace va a un puerto real del equipo, contado de su ficha: los WAN primero, luego los flex o convertibles; los de solo LAN, nunca. La <b>entrega</b> es cómo lo da el operador (cobre o fibra y la velocidad de la interfaz), no lo contratado. Un respaldo también ocupa puerto; un celular pide módem. Si no cabe, se propone un módulo NIM de la guía de pedido o se aparta el equipo. Sin enlaces, los puertos no se comprueban.</p>
+      <p class="hint">Cada enlace va a un puerto real del equipo, contado de su ficha: los WAN primero, luego los flex o convertibles; los de solo LAN, nunca. La <b>entrega</b> es cómo lo da el operador (cobre o fibra y la velocidad de la interfaz), no lo contratado. Un respaldo también ocupa puerto; un celular pide módem. Si no cabe, se propone un módulo NIM de la guía de pedido (sin ranura NIM, en el portador de una ranura SM) o se aparta el equipo. Un enlace DSL va al puerto DSL del equipo. En un enlace de fibra, el <b>tipo de fibra</b> y la <b>distancia del tramo</b> eligen la óptica por el alcance de su ficha; sin ellos, va «elegir una». Sin enlaces, los puertos no se comprueban.</p>
     </div>
     <div class="field">
       <div class="checks">

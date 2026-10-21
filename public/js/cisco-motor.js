@@ -247,10 +247,21 @@
      · Un cobre de 1G puede ir a una jaula que admita 1G con el transceptor 1000BASE-T del catálogo
        (GLC-T/GLC-TE; MA-SFP-1GB-TX en Meraki), que va al BOM.
      · Si los puertos fijos no bastan y queda una ranura NIM, se propone el módulo de la guía de
-       pedido de su familia que lo admite (primero los WAN, luego los LAN/WAN con L3); si tampoco,
-       el equipo se aparta con su motivo. Un chasis modular (ASR 1006-X) no se comprueba: se dice.
-     · Cada enlace de fibra lleva su óptica en el BOM, «elegir una» entre las de la familia: el
-       alcance del tramo decide y aquí no se declara.
+       pedido de su familia que lo admite y lleva más de los enlaces que faltan (a igualdad, primero
+       los WAN, luego los LAN/WAN con L3, y el de menos puertos). Sin ranura NIM y con una SM libre,
+       el portador de dos NIM de la familia (C-SM-NIM-ADPT en la G2, C-SM-NIM-ADPTR en el 8300). Si
+       tampoco, el equipo se aparta con su motivo. Un chasis modular (ASR 1006-X) no se comprueba.
+     · Un enlace DSL va al puerto DSL integrado (`dsl`, ISR 1116-4P) y un puerto DSL no recibe un
+       enlace Ethernet. Un cobre de 10G va a una SFP+ con el transceptor 10GBASE-T donde la guía de
+       hardware lo da (`sfp10gt`, serie 8300 de la G2).
+     · Lo que la ficha admite a la vez (`combinaciones`: tabla 5 del 12X4QC; bahías y 240 GE del
+       C8570-G2) aparta el equipo si los enlaces no caben en ninguna.
+     · Cada enlace de fibra lleva su óptica en el BOM. Con el tipo de fibra y la distancia del tramo
+       declarados (2026-10-21), la elige `elegirOptica` con el alcance de la ficha de cada óptica: la
+       primera del catálogo que llega (van de menor a mayor alcance), antes la que no exige nada
+       (RS-FEC, cable de acondicionamiento). Sin alguno de los dos va «elegir una», diciendo qué falta; si ninguna
+       llega, va «consultar» con un aviso: las ópticas del catálogo no son todas las de Cisco, así
+       que el equipo no se aparta por eso.
      · Un enlace celular no ocupa puerto Ethernet: pide módem integrado o PIM (el requisito de
        celular que ya existía). */
   const TIPOS_ENLACE = { internet: 'Internet', mpls: 'MPLS / privado', celular: 'Celular (4G/5G)' };
@@ -265,17 +276,25 @@
     'fibra-25g': { medio: 'fibra', vel: 25, n: 'fibra de 25G' },
     'fibra-40g': { medio: 'fibra', vel: 40, n: 'fibra de 40G' },
     'fibra-100g': { medio: 'fibra', vel: 100, n: 'fibra de 100G' },
+    // Va a un puerto DSL integrado (`dsl` del equipo); su velocidad la da la línea, no la interfaz.
+    dsl: { medio: 'dsl', vel: null, n: 'DSL (ADSL2+/VDSL2)' },
+  };
+  // Tipos de fibra de un enlace: los de la tabla de cableado de las fichas de las ópticas.
+  const FIBRAS = {
+    smf: 'monomodo G.652', om1: 'multimodo OM1', om2: 'multimodo OM2', om3: 'multimodo OM3', om4: 'multimodo OM4',
   };
   const MAX_ENLACES = 8;
   const JAULAS = ['SFP', 'SFP+', 'SFP28', 'QSFP+', 'QSFP28'];
   // Velocidad de cada categoría de óptica del catálogo; los cables directos no son la óptica de un enlace.
-  const VEL_OPTICA = { sfp1g: 1, mxsfp1g: 1, mxg2sfp1g: 1, sfp10g: 10, mxsfp10g: 10, mxg2sfp10g: 10, mxsfp25g: 25, qsfp40g: 40, qsfp100g: 100 };
-  const COBRE_SFP = /1000BASE-T\b/;
+  const VEL_OPTICA = { sfp1g: 1, mxsfp1g: 1, mxg2sfp1g: 1, sfp10g: 10, sfp10gt: 10, mxsfp10g: 10, mxg2sfp10g: 10, mxsfp25g: 25, qsfp40g: 40, qsfp100g: 100 };
+  // Transceptores de cobre: 1000BASE-T en una jaula de 1G y 10GBASE-T en una SFP+.
+  const COBRE_SFP = /\b(1000|10G)BASE-T\b/;
+  const VEL_COBRE_SFP = [1, 10];
   const fmtVel = (g) => `${String(g).replace('.', ',')}G`;
   // Orden lexicográfico de dos claves de preferencia: la menor gana.
   const antes = (a, b) => { for (let k = 0; k < a.length; k++) if (a[k] !== b[k]) return a[k] < b[k]; return false; };
   // Orden de reparto: lo que menos puertos admiten va primero.
-  const ORDEN_ENTREGA = ['fibra-100g', 'fibra-40g', 'fibra-25g', 'fibra-10g', 'cobre-10g', 'cobre-5g', 'cobre-2.5g', 'fibra-1g', 'cobre-1g'];
+  const ORDEN_ENTREGA = ['dsl', 'fibra-100g', 'fibra-40g', 'fibra-25g', 'fibra-10g', 'cobre-10g', 'cobre-5g', 'cobre-2.5g', 'fibra-1g', 'cobre-1g'];
 
   // Los enlaces declarados, normalizados y numerados; lo que no se entiende se descarta.
   function enlacesValidos(enlaces) {
@@ -284,7 +303,11 @@
       const tipo = TIPOS_ENLACE[x.tipo] ? x.tipo : 'internet';
       const rol = ROLES_ENLACE[x.rol] ? x.rol : 'principal';
       const ent = tipo === 'celular' ? null : ENTREGAS[x.entrega] ? x.entrega : null;
-      return { n: i + 1, tipo, rol, entrega: ent, e: ent ? ENTREGAS[ent] : null };
+      // La fibra y el tramo solo cuentan en una entrega de fibra.
+      const fib = !!ent && ENTREGAS[ent].medio === 'fibra';
+      const km = fib ? num(x.km) : 0;
+      return { n: i + 1, tipo, rol, entrega: ent, e: ent ? ENTREGAS[ent] : null,
+        fibra: fib && FIBRAS[x.fibra] ? x.fibra : null, km: km > 0 ? km : null };
     }).filter((x) => x.tipo === 'celular' || x.e);
   }
   // Un enlace celular pide módem: suma el requisito de celular a lo que ya pedía el escenario.
@@ -309,12 +332,13 @@
 
   // Cómo entra un enlace en un puerto, o null si no entra.
   function admite(pu, e, conTransceptor) {
+    if (e.medio === 'dsl' || pu.medios.includes('DSL')) return e.medio === 'dsl' && pu.medios.includes('DSL') ? { via: 'nativo', medio: 'DSL' } : null;
     const min = pu.velMin != null ? pu.velMin : pu.vel;
     const rango = e.vel <= pu.vel && e.vel >= min;
     const jaula = pu.medios.find((x) => JAULAS.includes(x));
     if (e.medio === 'cobre') {
       if (pu.medios.includes('RJ45') && rango) return { via: 'nativo', medio: 'RJ45' };
-      if (e.vel === 1 && conTransceptor && jaula && rango) return { via: 'transceptor', medio: jaula };
+      if (VEL_COBRE_SFP.includes(e.vel) && conTransceptor && jaula && rango) return { via: 'transceptor', medio: jaula };
       return null;
     }
     return jaula && rango ? { via: 'optica', medio: jaula } : null;
@@ -330,29 +354,77 @@
   function opticasDe(m, vel, OPTICS, enModulo) {
     return categorias(m, vel, enModulo).flatMap((k) => ((OPTICS && OPTICS[k]) || []).filter((o) => !COBRE_SFP.test(o.d || '')));
   }
-  function transceptoresCobre(m, OPTICS, enModulo) {
-    return categorias(m, 1, enModulo).flatMap((k) => ((OPTICS && OPTICS[k]) || []).filter((o) => COBRE_SFP.test(o.d || '')));
+  function transceptoresCobre(m, vel, OPTICS, enModulo) {
+    return categorias(m, vel, enModulo).flatMap((k) => ((OPTICS && OPTICS[k]) || []).filter((o) => COBRE_SFP.test(o.d || '')));
+  }
+
+  // Distancia legible: «300 m», «1,5 km».
+  const fmtKm = (km) => (km < 1 ? `${miles(km * 1000)} m` : `${String(Math.round(km * 1000) / 1000).replace('.', ',')} km`);
+  // La óptica que llega al tramo, con el alcance de su ficha en esa fibra: la primera del catálogo
+  // que llega (cada familia va de menor a mayor alcance, el estándar de cada fibra antes que el
+  // alternativo: SR antes que LRM), salvo que solo llegue pidiendo algo (`segunda`: RS-FEC, un
+  // cable de acondicionamiento) y otra llegue sin eso. Sin fibra o sin distancia no se elige:
+  // «elegir una», con lo que falte. Devuelve { lista, elegida, tramo, falta, noLlega }.
+  function elegirOptica(opticas, fibra, km) {
+    const todas = opticas || [];
+    if (!todas.length) return { lista: todas, elegida: null };
+    if (!fibra) return { lista: todas, elegida: null, falta: km ? 'el tipo de fibra' : 'el tipo de fibra y la distancia del tramo' };
+    const enFibra = todas.filter((o) => (o.alcance || []).some((t) => t.fibra === fibra));
+    if (!km) return { lista: enFibra, elegida: null, falta: 'la distancia del tramo', noLlega: enFibra.length ? null : { max: null } };
+    const m = km * 1000;
+    let mejor = null, max = null;
+    enFibra.forEach((o, i) => {
+      // De cada óptica, el tramo que llega con menos condiciones y menor alcance.
+      let t = null;
+      for (const x of o.alcance) {
+        if (x.fibra !== fibra) continue;
+        if (!max || x.m > max.m) max = { sku: o.bom || o.sku, m: x.m };
+        if (m < (x.desde || 0) || m > x.m) continue;
+        if (!t || antes([x.segunda ? 1 : 0, x.m], [t.segunda ? 1 : 0, t.m])) t = x;
+      }
+      if (!t) return;
+      const clave = [t.segunda ? 1 : 0, i];
+      if (!mejor || antes(clave, mejor.clave)) mejor = { o, t, clave };
+    });
+    // `llega`: el alcance de la elegida en esa fibra (el de su ficha, no el del tramo que se usa).
+    if (mejor) return { lista: [mejor.o], elegida: mejor.o, tramo: mejor.t, llega: Math.max(...mejor.o.alcance.filter((t) => t.fibra === fibra).map((t) => t.m)) };
+    return { lista: [], elegida: null, noLlega: { max } };
+  }
+  // Por qué no hay óptica: «ninguna … llega a 90 km en monomodo (G.652); la de más alcance, …».
+  function motivoOptica(a) {
+    const al = a.alcance;
+    if (!al || !al.noLlega) return null;
+    const donde = `en ${FIBRAS[al.fibra]}`;
+    if (!al.noLlega.max) return `ninguna óptica de ${fmtVel(ENTREGAS[a.entrega].vel)} del catálogo para este equipo va ${donde}`;
+    return `ninguna óptica de ${fmtVel(ENTREGAS[a.entrega].vel)} del catálogo para este equipo llega a ${fmtKm(al.km)} ${donde} (la de más alcance, ${al.noLlega.max.sku}: ${fmtKm(al.noLlega.max.m / 1000)})`;
   }
 
   // Reparto de los enlaces en los puertos de un equipo. `cat` = { optics, modulosG2, modulosC8k }.
   function asignarEnlaces(m, enlaces, cat) {
     const c = cat || {};
     const lista = enlacesValidos(enlaces).filter((x) => x.tipo !== 'celular');
-    const res = { asignados: [], sinAsignar: [], modulos: [], modular: false, sinDato: false };
+    const res = { asignados: [], sinAsignar: [], modulos: [], modular: false, sinDato: false, combinacion: null };
     if (!lista.length) return res;
     if (m.puertos === null) { res.modular = true; return res; }
     if (!Array.isArray(m.puertos)) { res.sinDato = true; return res; }
-    const cobre = transceptoresCobre(m, c.optics, false);
-    const cobreModulo = transceptoresCobre(m, c.optics, true);
-    const conCobre = (pu) => (pu.modulo ? cobreModulo : cobre).length > 0;
+    // Transceptores de cobre por velocidad, en los puertos fijos y en los de un módulo.
+    const cobreDe = (vel, enModulo) => transceptoresCobre(m, vel, c.optics, enModulo);
     const libres = [];
-    const sumar = (grupos, modulo) => grupos.forEach((g) => {
+    // `ref` es el módulo de `res.modulos` que trae el puerto: dos NIM iguales son dos módulos.
+    const sumar = (grupos, modulo, ref) => grupos.forEach((g) => {
       if (g.uso === 'LAN') return;
-      for (let i = 0; i < g.n; i++) libres.push({ ...g, modulo: modulo || null });
+      for (let i = 0; i < g.n; i++) libres.push({ ...g, modulo: modulo || null, ref: ref == null ? null : ref });
     });
     sumar(m.puertos);
+    if (m.dsl) libres.push({ n: 1, vel: null, medios: ['DSL'], uso: 'WAN', dsl: m.dsl, modulo: null, ref: null });
     let nimLibres = Math.max(0, Math.floor(num(m.nim)));
-    const candidatosModulo = modulosEquipo(m, c).lista.filter((x) => x.en === 'nim' && Array.isArray(x.puertos))
+    let smLibres = Math.max(0, Math.floor(num(m.sm)));
+    const mods = modulosEquipo(m, c).lista;
+    // El portador de dos NIM en una ranura SM (C-SM-NIM-ADPT en la G2, C-SM-NIM-ADPTR en el
+    // Catalyst 8300): solo si la guía de la familia lo lista y queda una ranura SM.
+    const portador = mods.find((x) => x.en === 'sm' && /^C-SM-NIM-ADPTR?$/.test(x.sku));
+    let abierto = null;
+    const candidatosModulo = mods.filter((x) => x.en === 'nim' && Array.isArray(x.puertos))
       .sort((a, b) => (a.puertos.every((g) => g.uso === 'WAN') ? 0 : 1) - (b.puertos.every((g) => g.uso === 'WAN') ? 0 : 1)
         || a.puertos.reduce((t, g) => t + g.n, 0) - b.puertos.reduce((t, g) => t + g.n, 0));
     const orden = [...lista].sort((a, b) => ORDEN_ENTREGA.indexOf(a.entrega) - ORDEN_ENTREGA.indexOf(b.entrega) || a.n - b.n);
@@ -362,66 +434,136 @@
     const mejor = (e) => {
       let elegido = null;
       libres.forEach((pu, i) => {
-        const a = admite(pu, e.e, conCobre(pu));
+        const a = admite(pu, e.e, cobreDe(e.e.vel, !!pu.modulo).length > 0);
         if (!a) return;
-        const clave = [pu.uso === 'WAN' ? 0 : 1, a.via === 'transceptor' ? 1 : 0, pu.vel, pu.medios.length > 1 ? 1 : 0];
+        const clave = [pu.uso === 'WAN' ? 0 : 1, a.via === 'transceptor' ? 1 : 0, pu.vel || 0, pu.medios.length > 1 ? 1 : 0];
         if (!elegido || antes(clave, elegido.clave)) elegido = { i, a, clave };
       });
       return elegido;
     };
+    // Una ranura NIM para un módulo: la del chasis o, sin ella, un hueco del portador.
+    const ranuraNim = () => {
+      if (nimLibres > 0) { nimLibres -= 1; return { ok: true, en: null }; }
+      if (!portador) return { ok: false };
+      if (!abierto || !abierto.huecos) {
+        if (smLibres <= 0) return { ok: false };
+        smLibres -= 1;
+        abierto = { sku: portador.sku, d: portador.d, enlaces: [], portador: true, huecos: 2 };
+        res.modulos.push(abierto);
+      }
+      abierto.huecos -= 1;
+      return { ok: true, en: abierto };
+    };
     for (const e of orden) {
       if (sobran.has(e.n)) { res.sinAsignar.push({ enlace: e.n, motivo: `admite ${m.maxWan} enlaces WAN a la vez` }); continue; }
       let el = mejor(e);
-      if (!el && nimLibres > 0) {
-        const mod = candidatosModulo.find((x) => x.puertos.some((g) => g.uso !== 'LAN' && admite(g, e.e, cobreModulo.length > 0)));
-        if (mod) {
-          nimLibres -= 1;
-          res.modulos.push({ sku: mod.sku, d: mod.d, enlaces: [] });
-          sumar(mod.puertos, mod.sku);
+      if (!el) {
+        // El módulo que admite este enlace y, de los que faltan por repartir, a más: un C-NIM-4X
+        // lleva tres fibras de 10G en una sola ranura donde tres C-NIM-1X pedirían un portador.
+        const cabe = (mod, x) => mod.puertos.some((g) => g.uso !== 'LAN' && admite(g, x.e, cobreDe(x.e.vel, true).length > 0));
+        const resto = orden.slice(orden.indexOf(e)).filter((x) => !sobran.has(x.n));
+        const cubre = (mod) => Math.min(resto.filter((x) => cabe(mod, x)).length, mod.puertos.filter((g) => g.uso !== 'LAN').reduce((t, g) => t + g.n, 0));
+        const mod = candidatosModulo.filter((x) => cabe(x, e)).reduce((a, x) => (!a || cubre(x) > cubre(a) ? x : a), null);
+        const r = mod ? ranuraNim() : { ok: false };
+        if (r.ok) {
+          res.modulos.push({ sku: mod.sku, d: mod.d, enlaces: [], ...(r.en ? { dentro: r.en } : {}) });
+          sumar(mod.puertos, mod.sku, res.modulos.length - 1);
           el = mejor(e);
         }
       }
       if (!el) {
-        // Un cobre de 1G que cabría en una jaula si el catálogo trajera su transceptor: se dice así.
-        const falta = e.e.medio === 'cobre' && e.e.vel === 1 && !cobre.length && libres.some((pu) => admite(pu, ENTREGAS['fibra-1g'], false));
-        res.sinAsignar.push({ enlace: e.n, motivo: `sin puerto para el enlace ${e.n} (${e.e.n})${falta ? ': tiene jaulas de 1G, pero el catálogo no trae su transceptor de cobre' : ''}` });
+        // Un cobre que cabría en una jaula si el catálogo trajera su transceptor: se dice así.
+        const jaulaDe = { 1: 'fibra-1g', 10: 'fibra-10g' }[e.e.vel];
+        const falta = e.e.medio === 'cobre' && jaulaDe && !cobreDe(e.e.vel, false).length && libres.some((pu) => admite(pu, ENTREGAS[jaulaDe], false));
+        const porque = falta ? `: tiene jaulas de ${fmtVel(e.e.vel)}, pero el catálogo no trae su transceptor de cobre${e.e.vel === 10 ? ' 10GBASE-T para este equipo' : ''}` : '';
+        res.sinAsignar.push({ enlace: e.n, motivo: `sin puerto para el enlace ${e.n} (${e.e.n})${porque}` });
         continue;
       }
       const pu = libres.splice(el.i, 1)[0];
-      if (pu.modulo) res.modulos.find((x) => x.sku === pu.modulo && x.enlaces).enlaces.push(e.n);
+      if (pu.ref != null) {
+        const mo = res.modulos[pu.ref];
+        mo.enlaces.push(e.n);
+        if (mo.dentro && !mo.dentro.enlaces.includes(e.n)) mo.dentro.enlaces.push(e.n);
+      }
       const fibra = e.e.medio === 'fibra';
+      const al = fibra ? elegirOptica(opticasDe(m, e.e.vel, c.optics, !!pu.modulo), e.fibra, e.km) : null;
       res.asignados.push({
         enlace: e.n, tipo: e.tipo, rol: e.rol, entrega: e.entrega,
-        puerto: { uso: pu.uso, medios: pu.medios, vel: pu.vel, modulo: pu.modulo },
+        puerto: { uso: pu.uso, medios: pu.medios, vel: pu.vel, modulo: pu.modulo, ...(pu.dsl ? { dsl: pu.dsl } : {}),
+          ...(pu.ref != null && res.modulos[pu.ref].dentro ? { portador: res.modulos[pu.ref].dentro.sku } : {}) },
         via: el.a.via, medio: el.a.medio,
-        opticas: fibra ? opticasDe(m, e.e.vel, c.optics, !!pu.modulo) : null,
-        transceptores: el.a.via === 'transceptor' ? (pu.modulo ? cobreModulo : cobre) : null,
+        opticas: al ? al.lista : null,
+        alcance: al ? { ...al, fibra: e.fibra, km: e.km } : null,
+        transceptores: el.a.via === 'transceptor' ? cobreDe(e.e.vel, !!pu.modulo) : null,
       });
+    }
+    // Lo que la ficha admite a la vez: sus combinaciones de puertos (tabla 5 del 12X4QC) o un tope
+    // de GE habilitados. Cuenta lo asignado a los puertos fijos.
+    const fijos = res.asignados.filter((a) => !a.puerto.modulo && a.puerto.vel);
+    const comb = m.combinaciones;
+    if (comb && fijos.length) {
+      const n = { sfp: 0, q40: 0, q100: 0 };
+      for (const a of fijos) {
+        const v = ENTREGAS[a.entrega].vel;
+        if (v === 100) n.q100 += 1; else if (v === 40) n.q40 += 1; else n.sfp += 1;
+      }
+      if (!comb.lista.some((k) => n.sfp <= k.sfp && n.q40 <= k.q40 && n.q100 <= k.q100)) res.combinacion = { ...n, fuente: comb.fuente };
+      const ge = fijos.reduce((t, a) => t + ENTREGAS[a.entrega].vel, 0);
+      if (comb.maxGE && ge > comb.maxGE) res.excedeGE = { ge, max: comb.maxGE };
+    }
+    for (const mo of res.modulos) {
+      if (mo.dentro) mo.enPortador = mo.dentro.sku;
+      delete mo.dentro; delete mo.huecos;
     }
     res.asignados.sort((a, b) => a.enlace - b.enlace);
     res.sinAsignar.sort((a, b) => a.enlace - b.enlace);
     return res;
+  }
+  // Por qué la combinación de puertos no cabe, con las cuentas.
+  function motivoCombinacion(en) {
+    if (en && en.combinacion) {
+      const n = en.combinacion;
+      const partes = [n.q100 && `${n.q100}×100G`, n.q40 && `${n.q40}×40G`, n.sfp && `${n.sfp}×SFP+`].filter(Boolean).join(' + ');
+      return `la combinación de puertos ${partes} no está entre las que admite a la vez (${n.fuente})`;
+    }
+    if (en && en.excedeGE) return `los enlaces suman ${miles(en.excedeGE.ge)} GE de puertos y la ficha admite ${miles(en.excedeGE.max)} GE a la vez`;
+    return null;
   }
 
   // Lo que el reparto añade al BOM: módulos propuestos, ópticas y transceptores de cobre.
   function piezasEnlaces(r) {
     const piezas = [];
     for (const mo of (r && r.modulos) || []) {
-      piezas.push({ cat: 'Módulos', desc: `${mo.d} — para ${mo.enlaces.length > 1 ? 'los enlaces' : 'el enlace'} ${mo.enlaces.join(' y ')}`, sku: mo.sku,
-        nota: 'Lo propone el reparto de enlaces: los puertos fijos no bastan. Módulo de la guía de pedido de la familia; precio en CCW.', moduloEnlace: true });
+      const para = `${mo.enlaces.length > 1 ? 'los enlaces' : 'el enlace'} ${mo.enlaces.join(' y ')}`;
+      piezas.push(mo.portador
+        ? { cat: 'Módulos', desc: `${mo.d} — para el NIM ${mo.enlaces.length > 1 ? `de los enlaces ${mo.enlaces.join(' y ')}` : `del enlace ${mo.enlaces[0]}`}`, sku: mo.sku,
+          nota: 'Lo propone el reparto de enlaces: no queda ranura NIM y sí una SM, donde este portador aloja dos NIM (guía de pedido de la familia). Precio en CCW.', moduloEnlace: true }
+        : { cat: 'Módulos', desc: `${mo.d} — para ${para}`, sku: mo.sku,
+          nota: `Lo propone el reparto de enlaces: los puertos fijos no bastan. Módulo de la guía de pedido de la familia${mo.enPortador ? `, en el portador ${mo.enPortador}` : ''}; precio en CCW.`, moduloEnlace: true });
     }
     for (const a of (r && r.asignados) || []) {
       const lista = (a.opticas || a.transceptores || []).map((o) => o.sku);
-      if (a.opticas) {
+      const enModulo = a.puerto.modulo ? ` Va en el ${a.puerto.modulo}: confirmar su compatibilidad en la matriz de Cisco.` : '';
+      const al = a.alcance;
+      if (a.opticas && al && al.elegida) {
+        const o = al.elegida, t = al.tramo;
+        piezas.push({ cat: 'Ópticas', desc: `Óptica de ${fmtVel(ENTREGAS[a.entrega].vel)} para el enlace ${a.enlace}: tramo de ${fmtKm(al.km)} en ${FIBRAS[al.fibra]}`,
+          sku: o.bom || o.sku,
+          nota: `${o.d}. La elige el alcance de su ficha: el tramo es de ${fmtKm(al.km)} y llega a ${fmtKm(al.llega / 1000)} en ${FIBRAS[al.fibra]}${t.nota ? `; ${t.nota}` : ''}.${enModulo}` });
+      } else if (a.opticas && al && al.noLlega) {
+        piezas.push({ cat: 'Ópticas', desc: `Óptica de ${fmtVel(ENTREGAS[a.entrega].vel)} para el enlace ${a.enlace} — consultar`, sku: null,
+          nota: `${motivoOptica(a)[0].toUpperCase()}${motivoOptica(a).slice(1)}: consultar con Cisco.` });
+      } else if (a.opticas) {
         piezas.push({ cat: 'Ópticas', desc: `Óptica de ${fmtVel(ENTREGAS[a.entrega].vel)} para el enlace ${a.enlace}${lista.length > 1 ? ' — elegir una' : ''}`,
           sku: lista.length === 1 ? (a.opticas[0].bom || a.opticas[0].sku) : null,
           nota: lista.length
-            ? `${lista.join(', ')}: la elige el alcance del tramo.${a.puerto.modulo ? ` Va en el ${a.puerto.modulo}: confirmar su compatibilidad en la matriz de Cisco.` : ''}`
+            ? `${lista.join(', ')}: la elige el alcance del tramo${al && al.falta ? ` (falta ${al.falta})` : ''}.${enModulo}`
             : 'El catálogo no trae ópticas de esta velocidad para este equipo: consultar la matriz de compatibilidad de Cisco.' });
       } else if (a.transceptores) {
-        piezas.push({ cat: 'Ópticas', desc: `Transceptor de cobre 1000BASE-T para el enlace ${a.enlace}${lista.length > 1 ? ' — elegir uno' : ''}`,
+        const diez = ENTREGAS[a.entrega].vel === 10;
+        piezas.push({ cat: 'Ópticas', desc: `Transceptor de cobre ${diez ? '10GBASE-T' : '1000BASE-T'} para el enlace ${a.enlace}${lista.length > 1 ? ' — elegir uno' : ''}`,
           sku: lista.length === 1 ? (a.transceptores[0].bom || a.transceptores[0].sku) : null,
-          nota: `El enlace llega en cobre y va a una jaula ${a.medio}: ${lista.join(' o ')}.` });
+          nota: `El enlace llega en cobre y va a una jaula ${a.medio}: ${lista.join(' o ')}.${diez ? ` ${a.transceptores[0].d}: el cableado del operador no puede pasar de ahí.` : ''}` });
       }
     }
     return piezas;
@@ -429,6 +571,7 @@
   // Rótulo de un puerto asignado: «SFP+ WAN de 10G (en el C-NIM-WAN-2X)».
   function rotuloPuerto(a) {
     const pu = a.puerto;
+    if (pu.medios.includes('DSL')) return `Puerto DSL ${pu.uso} (${pu.dsl})`;
     const medio = pu.medios.length > 1 ? `${a.medio} (combo ${pu.medios.join('/')})` : pu.medios[0];
     return `${medio} ${pu.uso} de ${fmtVel(pu.vel)}${pu.modulo ? ` en el ${pu.modulo}` : ''}`;
   }
@@ -438,7 +581,8 @@
   function enlacesFrenteCaudal(p) {
     if (!p || (p.modo && p.modo !== 'link') || num(p.dirMult, 1) !== 2) return null;
     const prin = enlacesValidos(p.enlaces).filter((x) => x.rol === 'principal' && x.e);
-    if (!prin.length) return null;
+    // Un DSL no declara velocidad de interfaz: con uno entre los principales no se puede afirmar.
+    if (!prin.length || prin.some((x) => !x.e.vel)) return null;
     const cabe = prin.reduce((t, x) => t + x.e.vel * 1000, 0);
     const bw = num(p.bwMbps);
     return bw > cabe ? { bw, cabe } : null;
@@ -493,9 +637,19 @@
       avisos.push(...es.avisos, ...rq.avisos);
       const en = asignarEnlaces(m, p.enlaces, p.catalogo);
       motivos.push(...en.sinAsignar.map((x) => x.motivo));
+      if (motivoCombinacion(en)) motivos.push(motivoCombinacion(en));
       if (en.modular) avisos.push('Chasis modular: los puertos de los enlaces dependen de las tarjetas que se pidan (consultar).');
       if (en.sinDato) avisos.push('Los puertos de este equipo no están contados: los enlaces no se comprueban.');
-      for (const mo of en.modulos) avisos.push(`Los puertos fijos no bastan: ${mo.enlaces.length > 1 ? 'los enlaces' : 'el enlace'} ${mo.enlaces.join(' y ')} van en un ${mo.sku} (${mo.d}).`);
+      for (const mo of en.modulos) {
+        avisos.push(mo.portador
+          ? `No queda ranura NIM: el ${mo.sku} (${mo.d}) ocupa una ranura SM y aloja el NIM ${mo.enlaces.length > 1 ? `de los enlaces ${mo.enlaces.join(' y ')}` : `del enlace ${mo.enlaces[0]}`}.`
+          : `Los puertos fijos no bastan: ${mo.enlaces.length > 1 ? 'los enlaces' : 'el enlace'} ${mo.enlaces.join(' y ')} van en un ${mo.sku} (${mo.d})${mo.enPortador ? `, dentro del ${mo.enPortador}` : ''}.`);
+      }
+      for (const a of en.asignados) {
+        const mo = motivoOptica(a), al = a.alcance;
+        if (mo) avisos.push(`Enlace ${a.enlace}: ${mo}; consultar con Cisco.`);
+        else if (al && al.tramo && al.tramo.segunda) avisos.push(`Enlace ${a.enlace}: la ${al.elegida.bom || al.elegida.sku} a ${fmtKm(al.km)} ${al.tramo.nota}.`);
+      }
       if (m.notaPuertos && en.asignados.length) avisos.push(m.notaPuertos);
       if (co.cae) avisos.push('Sin cifra SD-WAN propia: se dimensiona con su IPsec, que no incluye DPI ni FNF.');
       if (/1\.400 B/.test(co.base || '')) avisos.push(`Su cifra de ${co.n} está medida con paquetes de 1.400 B: con tráfico real (IMIX) rinde menos.`);
@@ -519,6 +673,7 @@
     [/^PoE de/, 'no llegan a la potencia PoE pedida'],
     [/^sin puerto para el enlace/, 'no tienen puerto para algún enlace WAN'],
     [/enlaces WAN a la vez/, 'admiten menos enlaces WAN de los declarados'],
+    [/combinación de puertos|GE a la vez/, 'no admiten esa combinación de puertos a la vez'],
   ];
   function resumenApartados(apartados) {
     const grupos = new Map();
@@ -721,8 +876,10 @@
       for (const x of ev.enlaces) {
         const a = en ? en.asignados.find((y) => y.enlace === x.n) : null;
         const s = en ? en.sinAsignar.find((y) => y.enlace === x.n) : null;
-        const destino = x.tipo === 'celular' ? 'módem celular (integrado o PIM)' : a ? rotuloPuerto(a) : s ? s.motivo : 'sin comprobar';
-        L.push(`- Enlace ${x.n}: ${TIPOS_ENLACE[x.tipo]}, ${ROLES_ENLACE[x.rol].toLowerCase()}${x.e ? `, ${x.e.n}` : ''} → ${destino}`);
+        const optica = a && a.alcance ? (a.alcance.elegida ? `, óptica ${a.alcance.elegida.bom || a.alcance.elegida.sku}` : a.alcance.noLlega ? `, ${motivoOptica(a)}` : '') : '';
+        const tramo = x.fibra && x.km ? `, ${fmtKm(x.km)} en ${FIBRAS[x.fibra]}` : '';
+        const destino = x.tipo === 'celular' ? 'módem celular (integrado o PIM)' : a ? `${rotuloPuerto(a)}${optica}` : s ? s.motivo : 'sin comprobar';
+        L.push(`- Enlace ${x.n}: ${TIPOS_ENLACE[x.tipo]}, ${ROLES_ENLACE[x.rol].toLowerCase()}${x.e ? `, ${x.e.n}` : ''}${tramo} → ${destino}`);
       }
     }
     const res = resumenApartados(ev.apartados);
@@ -740,8 +897,8 @@
 
   return {
     PLATAFORMAS, PERFILES, SEGURIDAD, PUERTOS_UTILES,
-    TIPOS_ENLACE, ROLES_ENLACE, ENTREGAS, MAX_ENLACES,
+    TIPOS_ENLACE, ROLES_ENLACE, ENTREGAS, FIBRAS, MAX_ENLACES, elegirOptica, motivoOptica, fmtKm,
     fmt, cifra, capaOverlay, demanda, requisitos, escala, tunelesTopologia, evaluar,
-    enlacesValidos, requisitosConEnlaces, modulosEquipo, asignarEnlaces, piezasEnlaces, rotuloPuerto, enlacesFrenteCaudal, resumenApartados, licencias, traficoLicencia, tierDna, poolCgnat, memoria,
+    enlacesValidos, requisitosConEnlaces, modulosEquipo, asignarEnlaces, motivoCombinacion, piezasEnlaces, rotuloPuerto, enlacesFrenteCaudal, resumenApartados, licencias, traficoLicencia, tierDna, poolCgnat, memoria,
   };
 });

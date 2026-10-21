@@ -102,8 +102,9 @@ function parametros(){
 // El tier DNA sale del tráfico del escenario (todo el WAN en SD-WAN, solo el cifrado en
 // autónomo), y los módulos de voz piden Advantage: solo cuentan los del equipo que está en el BOM.
 /* ── ENLACES WAN Y PUERTOS (2026-10-21) ──
-   Filas {tipo, rol, entrega} en el campo oculto #enlacesData (JSON), que viaja en el enlace
-   compartido y en los perfiles. Vacío es el caso de siempre: sin enlaces no se comprueban puertos.
+   Filas {tipo, rol, entrega, fibra, km} en el campo oculto #enlacesData (JSON), que viaja en el
+   enlace compartido y en los perfiles. La fibra y el tramo solo se piden en una entrega de fibra: con
+   los dos, el motor elige la óptica por el alcance de su ficha. Vacío es el caso de siempre: sin enlaces no se comprueban puertos.
    Las filas se repintan solo cuando el campo cambia por fuera (un enlace o un perfil cargado), para
    no perder el foco al editar una. */
 const ENLACE_NUEVO = {tipo:'internet', rol:'principal', entrega:'cobre-1g'};
@@ -119,17 +120,21 @@ function escribirEnlaces(l){
   $('enlacesData').dispatchEvent(new Event('input', {bubbles:true}));
 }
 function catalogoPuertos(){ return {optics:OPTICS, modulosG2:MOD_G2, modulosC8k:MOD_C8K}; }
+const esFibra = e => e.tipo !== 'celular' && M.ENTREGAS[e.entrega] && M.ENTREGAS[e.entrega].medio === 'fibra';
 function pintarEnlaces(){
   const l = leerEnlaces();
   enlacesPintados = $('enlacesData').value || '';
   const opt = (mapa, v) => Object.entries(mapa).map(([k, t]) => `<option value="${esc(k)}"${k === v ? ' selected' : ''}>${esc(t)}</option>`).join('');
   const entregas = Object.fromEntries(Object.entries(M.ENTREGAS).map(([k, e]) => [k, `Entrega: ${e.n}`]));
+  const fibras = {'':'Fibra sin definir', ...Object.fromEntries(Object.entries(M.FIBRAS).map(([k, t]) => [k, t[0].toUpperCase() + t.slice(1)]))};
   $('enlacesBox').innerHTML = l.length ? l.map((e, i) => `<div class="enlace-fila" data-i="${i}">
     <span class="enl-n" aria-hidden="true">${i + 1}</span>
     <select data-k="tipo" aria-label="Tipo del enlace ${i + 1}">${opt(M.TIPOS_ENLACE, e.tipo)}</select>
     <select data-k="rol" aria-label="Rol del enlace ${i + 1}">${opt(M.ROLES_ENLACE, e.rol)}</select>
     ${e.tipo === 'celular' ? '<span class="sku" style="flex:1 1 120px">Módem celular (integrado o PIM)</span>'
       : `<select data-k="entrega" aria-label="Entrega del enlace ${i + 1}">${opt(entregas, e.entrega)}</select>`}
+    ${esFibra(e) ? `<select data-k="fibra" aria-label="Tipo de fibra del enlace ${i + 1}">${opt(fibras, e.fibra || '')}</select>
+    <input type="number" data-k="km" min="0" step="any" value="${esc(e.km ?? '')}" placeholder="Tramo km" aria-label="Distancia del tramo del enlace ${i + 1} en km" autocomplete="off">` : ''}
     <button type="button" class="btn ghost enl-quitar" data-quitar="${i}" aria-label="Quitar el enlace ${i + 1}">×</button>
   </div>`).join('') : '<p class="hint" style="margin:0">Sin enlaces declarados: los puertos no se comprueban.</p>';
   $('btnAddEnlace').disabled = l.length >= M.MAX_ENLACES;
@@ -137,11 +142,19 @@ function pintarEnlaces(){
 $('enlacesBox').addEventListener('input', e => {
   const f = e.target.closest('.enlace-fila'); const k = e.target.dataset.k;
   if(!f || !k) return;
-  const l = leerEnlaces(); l[+f.dataset.i][k] = e.target.value;
-  if(k === 'tipo' && e.target.value !== 'celular' && !l[+f.dataset.i].entrega) l[+f.dataset.i].entrega = ENLACE_NUEVO.entrega;
+  const l = leerEnlaces(), fila = l[+f.dataset.i];
+  const antes = esFibra(fila);
+  fila[k] = e.target.value;
+  if(k === 'tipo' && e.target.value !== 'celular' && !fila.entrega) fila.entrega = ENLACE_NUEVO.entrega;
+  // Sin fibra, la fibra y el tramo no significan nada: no viajan en el enlace.
+  if(!esFibra(fila)){ delete fila.fibra; delete fila.km; }
+  for(const c of ['fibra', 'km']) if(fila[c] === '') delete fila[c];
   escribirEnlaces(l);
-  // Pasar a celular (o salir de él) cambia la fila: se repinta y el foco vuelve a su tipo.
-  if(k === 'tipo'){ pintarEnlaces(); const t = $('enlacesBox').querySelector(`.enlace-fila[data-i="${f.dataset.i}"] [data-k="tipo"]`); if(t) t.focus(); }
+  // Pasar a celular o cambiar de cobre a fibra cambia la fila: se repinta y el foco vuelve al campo.
+  if(k === 'tipo' || (k === 'entrega' && antes !== esFibra(fila))){
+    pintarEnlaces();
+    const t = $('enlacesBox').querySelector(`.enlace-fila[data-i="${f.dataset.i}"] [data-k="${k}"]`); if(t) t.focus();
+  }
 });
 $('enlacesBox').addEventListener('click', e => {
   const b = e.target.closest('[data-quitar]'); if(!b) return;
@@ -303,8 +316,11 @@ function render(){
     const filas = ev.enlaces.map(x => {
       const rot = `Enlace ${x.n} · ${M.TIPOS_ENLACE[x.tipo]}, ${M.ROLES_ENLACE[x.rol].toLowerCase()}${x.e ? ` · ${x.e.n}` : ''}`;
       const a = en && en.asignados.find(y => y.enlace === x.n), s = en && en.sinAsignar.find(y => y.enlace === x.n);
+      const al = a && a.alcance, mo = a && M.motivoOptica(a);
+      const optica = al && al.elegida ? ` · ${esc(al.elegida.bom || al.elegida.sku)} (${esc(M.fmtKm(al.km))} en ${esc(M.FIBRAS[al.fibra])})`
+        : mo ? ` · <span class="warn">${esc(mo)}</span>` : '';
       const v = x.tipo === 'celular' ? (m.lte ? 'Módem celular integrado' : m.pim ? 'Módulo PIM (va al BOM)' : '<span class="warn">sin módem celular</span>')
-        : a ? `${esc(M.rotuloPuerto(a))}${a.via === 'transceptor' ? ' · con transceptor de cobre' : ''}`
+        : a ? `${esc(M.rotuloPuerto(a))}${a.via === 'transceptor' ? ' · con transceptor de cobre' : ''}${optica}`
         : s ? `<span class="warn">${esc(s.motivo)}</span>`
         : en && en.modular ? 'Chasis modular: lo deciden las tarjetas (consultar)' : 'Puertos no contados: sin comprobar';
       return [esc(rot), v, true];
@@ -615,6 +631,8 @@ function renderBom(){
   M.piezasEnlaces(enl).filter(pz => !(pz.moduloEnlace && aMano.has(pz.sku))).forEach(pz => filas.push({...pz, qty, unit:null}));
   const avisosPuertos = [
     ...enl.sinAsignar.map(x => x.motivo[0].toUpperCase() + x.motivo.slice(1) + '.'),
+    ...enl.asignados.filter(a => M.motivoOptica(a)).map(a => `Enlace ${a.enlace}: ${M.motivoOptica(a)}; consultar con Cisco.`),
+    ...(M.motivoCombinacion(enl) ? [`${M.motivoCombinacion(enl)[0].toUpperCase()}${M.motivoCombinacion(enl).slice(1)}.`] : []),
     ...(enl.modular ? ['Chasis modular: los puertos de los enlaces dependen de las tarjetas que se pidan (consultar).'] : []),
     ...(m.notaPuertos && enl.asignados.length ? [m.notaPuertos] : []),
   ];

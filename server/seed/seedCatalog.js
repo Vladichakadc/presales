@@ -168,6 +168,7 @@ async function seedOpticsAndParts(vendorId, OPTICS, PARTS, partsAreDescOnly) {
         bomCodes: Array.isArray(o.bom) ? o.bom : (o.bom ? [o.bom] : []),
         description: o.d,
         priceNumeric: o.price != null ? o.price : null,
+        reach: Array.isArray(o.alcance) ? o.alcance : null,
       });
     }
   }

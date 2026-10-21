@@ -43,7 +43,11 @@ las demás siguen sin implementar.
 **1.1 Enlaces WAN reales, cada uno a un puerto del equipo. Hecha el 2026-10-21** con el encargo
 del dueño «avanza con la mejora propuesta»: `puertos` de los 52 modelos contados de sus fichas,
 `asignarEnlaces` en el motor, el editor «Enlaces WAN y puertos» en la sección 4 y una fila nueva en
-el contraste. Lo que decía: hoy el escenario es un caudal y unas
+el contraste. Ampliada el mismo día (encargo «ejecuta y cierra pendientes y avanza con la mejora
+propuesta»): cada enlace de fibra declara el tipo de fibra y el tramo, y la óptica sale del alcance
+de su ficha (`elegirOptica`); el DSL, el portador de dos NIM en una ranura SM, las combinaciones de
+puertos del 12X4QC y del C8570-G2 y el SFP+ 10GBASE-T de la serie 8300 entraron con su documento.
+Lo que decía: hoy el escenario es un caudal y unas
 casillas (celular, NIM, SM). Aruba y MikroTik ya tienen un constructor de enlaces: filas
 `{principal/respaldo, Internet/MPLS/celular, bajada, subida, medio}`; un respaldo ocupa puerto pero
 no suma; el caudal es el peor escenario de falla; cada enlace va a un puerto real (cobre, SFP,

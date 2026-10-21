@@ -449,6 +449,151 @@ test('piezas del reparto: módulo propuesto, óptica «elegir una» de su famili
   assert.ok(c8455[0].sku === null && /no trae ópticas de esta velocidad/.test(c8455[0].nota));
 });
 
+// ÓPTICA POR ALCANCE (2026-10-21). El alcance de cada óptica es el de la tabla de cableado de su
+// ficha; con la fibra y la distancia del tramo, el motor elige la primera que llega.
+const elegida = (cat, fibra, km) => { const r = M.elegirOptica(OPTICS[cat], fibra, km); return r.elegida ? r.elegida.sku : r; };
+
+test('óptica por alcance: la primera que llega en esa fibra, y la que exige algo solo si no hay otra', () => {
+  // 1G: SX en multimodo mientras llega (OM1 275 m); más allá, la LX/LH con su cable de acondicionamiento.
+  assert.strictEqual(elegida('sfp1g', 'om2', 0.3), 'GLC-SX-MMD');
+  const lx = M.elegirOptica(OPTICS.sfp1g, 'om1', 0.5);
+  assert.strictEqual(lx.elegida.sku, 'GLC-LH-SMD');
+  assert.ok(lx.tramo.segunda && /acondicionamiento de modo/.test(lx.tramo.nota));
+  assert.strictEqual(elegida('sfp1g', 'smf', 5), 'GLC-LH-SMD');
+  assert.strictEqual(elegida('sfp1g', 'smf', 40), 'GLC-ZX-SMD');
+  // 10G en monomodo: LR hasta 10 km, ER hasta 40 (de 30 a 40 es enlace de ingeniería), y la ZR con
+  // el atenuador que su ficha pide por tramo.
+  assert.strictEqual(elegida('sfp10g', 'smf', 3), 'SFP-10G-LR');
+  const er = M.elegirOptica(OPTICS.sfp10g, 'smf', 35);
+  assert.ok(er.elegida.sku === 'SFP-10G-ER' && /enlace de ingeniería/.test(er.tramo.nota));
+  const zr = M.elegirOptica(OPTICS.sfp10g, 'smf', 42);
+  assert.ok(zr.elegida.sku === 'SFP-10G-ZR' && /atenuador de 5 dB/.test(zr.tramo.nota));
+  assert.ok(!/atenuador/.test(M.elegirOptica(OPTICS.sfp10g, 'smf', 60).tramo.nota));
+  // 100G: la ER4-Lite llega a 30 km sola y a 40 con el FEC del equipo.
+  assert.ok(!M.elegirOptica(OPTICS.qsfp100g, 'smf', 25).tramo.segunda);
+  assert.ok(M.elegirOptica(OPTICS.qsfp100g, 'smf', 35).tramo.segunda);
+});
+
+test('óptica por alcance: lo que falta se dice y lo que no llega no se inventa', () => {
+  // Sin distancia, la lista se estrecha a las que van en esa fibra; sin fibra, no se estrecha.
+  const sinKm = M.elegirOptica(OPTICS.sfp10g, 'om3', null);
+  assert.deepStrictEqual(sinKm.lista.map((o) => o.sku), ['SFP-10G-SR']);
+  assert.strictEqual(sinKm.falta, 'la distancia del tramo');
+  assert.strictEqual(M.elegirOptica(OPTICS.sfp10g, null, 5).falta, 'el tipo de fibra');
+  // Nada llega: la de más alcance en esa fibra, para decirlo.
+  assert.deepStrictEqual(M.elegirOptica(OPTICS.sfp10g, 'smf', 90).noLlega, { max: { sku: 'SFP-10G-ZR', m: 80000 } });
+  assert.deepStrictEqual(M.elegirOptica(OPTICS.sfp10g, 'om1', 0.05).noLlega, { max: { sku: 'SFP-10G-SR-S', m: 33 } });
+  // 40G en OM1: ninguna óptica del catálogo va en esa fibra.
+  assert.deepStrictEqual(M.elegirOptica(OPTICS.qsfp40g, 'om1', null).noLlega, { max: null });
+  // Meraki: los G2-MX no llevan la MA-SFP-10GB-ZR; la LRM va en multimodo solo en ellos.
+  assert.strictEqual(elegida('mxsfp10g', 'smf', 60), 'MA-SFP-10GB-ZR');
+  assert.strictEqual(M.elegirOptica(OPTICS.mxg2sfp10g, 'smf', 60).noLlega.max.sku, 'MA-SFP-10GB-ER');
+  assert.strictEqual(elegida('mxg2sfp10g', 'om1', 0.1), 'MA-SFP-10GB-LRM');
+  assert.ok(M.elegirOptica(OPTICS.mxsfp10g, 'om1', 0.1).noLlega);
+  // En OM3 manda la SR aunque la LRM también llegue: es la primera de la lista.
+  assert.strictEqual(elegida('mxg2sfp10g', 'om3', 0.2), 'MA-SFP-10GB-SR');
+  // 25G del C8455-G2-MX: sin FEC la CSR llega a 30 m en OM3; más allá, lo que pide RS-FEC.
+  assert.strictEqual(elegida('mxsfp25g', 'om3', 0.025), 'SFP-10/25G-CSR-S');
+  assert.ok(/RS-FEC/.test(M.elegirOptica(OPTICS.mxsfp25g, 'om4', 0.3).tramo.nota));
+});
+
+test('óptica por alcance en el reparto: la pieza lleva su referencia, o «consultar» con su motivo', () => {
+  const f = (entrega, fibra, km) => ({ tipo: 'internet', rol: 'principal', entrega, fibra, km });
+  const r = M.asignarEnlaces(id('Cisco Secure Router C8231-E-G2'), [f('fibra-10g', 'smf', '12'), f('fibra-10g', 'smf', '90'), f('fibra-10g', 'om3')], CAT);
+  const pz = M.piezasEnlaces(r).filter((x) => /^Óptica de 10G/.test(x.desc));
+  assert.strictEqual(pz[0].sku, 'SFP-10G-ER-I');
+  assert.match(pz[0].desc, /para el enlace 1: tramo de 12 km en monomodo G\.652/);
+  // La nota da el alcance de la óptica (40 km), no el del tramo que se usa (hasta 30 km).
+  assert.match(pz[0].nota, /el tramo es de 12 km y llega a 40 km en monomodo G\.652/);
+  assert.ok(pz[1].sku === null && /— consultar/.test(pz[1].desc) && /llega a 90 km en monomodo G\.652 \(la de más alcance, SFP-10G-ZR: 80 km\)/.test(pz[1].nota), pz[1].nota);
+  assert.ok(pz[2].sku === 'SFP-10G-SR-S' && /falta la distancia del tramo/.test(pz[2].nota), JSON.stringify(pz[2]));
+  // En la evaluación, lo que no llega avisa sin apartar (el catálogo no trae todas las ópticas de
+  // Cisco) y la memoria técnica cita el tramo y la óptica.
+  const ev = M.evaluar(MODELS, { ...base, bwMbps: 100, plataforma: 'xe', enlaces: [f('fibra-10g', 'smf', '90')], catalogo: CAT });
+  const c = ev.candidatos[0];
+  assert.ok(c && c.avisos.some((x) => /^Enlace 1: ninguna óptica de 10G del catálogo/.test(x)), JSON.stringify(c && c.avisos));
+  const ok = M.evaluar(MODELS, { ...base, bwMbps: 100, enlaces: [f('fibra-10g', 'smf', '12')], catalogo: CAT });
+  assert.match(M.memoria(ok, { perfil: 'sdwan' }), /Enlace 1: Internet, principal, fibra de 10G, 12 km en monomodo G\.652 → .*óptica SFP-10G-ER-I/);
+  // La fibra y el tramo solo cuentan en una entrega de fibra.
+  assert.deepStrictEqual(M.enlacesValidos([{ entrega: 'cobre-1g', fibra: 'smf', km: 3 }]).map((x) => [x.fibra, x.km]), [[null, null]]);
+});
+
+// LO QUE EL REPARTO NO CUBRÍA (2026-10-21), cerrado con su documento.
+test('reparto: el DSL del ISR 1116-4P recibe un enlace DSL y nunca uno Ethernet', () => {
+  const r = asig('ISR 1116-4P', 'cobre-1g', 'dsl');
+  assert.deepStrictEqual(r.sinAsignar, []);
+  assert.strictEqual(M.rotuloPuerto(r.asignados[1]), 'Puerto DSL WAN (ADSL2/VDSL2+, Annex B/J sobre RDSI)');
+  assert.match(asig('ISR 1116-4P', 'cobre-1g', 'cobre-1g').sinAsignar[0].motivo, /sin puerto para el enlace 2/);
+  assert.match(asig('ISR 1111-8P', 'dsl').sinAsignar[0].motivo, /sin puerto para el enlace 1 \(DSL/);
+  // Un DSL entre los principales no declara velocidad: no se afirma que el caudal no cabe.
+  assert.strictEqual(M.enlacesFrenteCaudal({ ...base, bwMbps: 5000, enlaces: E('dsl') }), null);
+});
+
+test('reparto: el módulo que lleva más enlaces, y sin ranura NIM, el portador en una ranura SM', () => {
+  const diez = (n) => Array.from({ length: n }, () => 'fibra-10g');
+  // Tres fibras de 10G en el 8300-1N1S-6T (sin SFP+ fijos): un C-NIM-4X las lleva en su única
+  // ranura NIM; tres C-NIM-1X habrían pedido el portador.
+  assert.deepStrictEqual(asig('Catalyst 8300-1N1S-6T', ...diez(3)).modulos.map((x) => x.sku), ['C-NIM-4X']);
+  // Con cinco ya no basta la ranura NIM: el C-SM-NIM-ADPTR va en la SM y aloja el NIM del quinto.
+  const r = asig('Catalyst 8300-1N1S-6T', ...diez(5));
+  assert.deepStrictEqual(r.sinAsignar, []);
+  assert.deepStrictEqual(r.modulos.map((x) => x.sku), ['C-NIM-4X', 'C-SM-NIM-ADPTR', 'C-NIM-1X']);
+  assert.deepStrictEqual(r.modulos[1].enlaces, [5]);
+  assert.strictEqual(r.modulos[2].enPortador, 'C-SM-NIM-ADPTR');
+  const pz = M.piezasEnlaces(r);
+  assert.ok(pz.some((x) => x.sku === 'C-SM-NIM-ADPTR' && /para el NIM del enlace 5$/.test(x.desc)), JSON.stringify(pz.map((x) => x.desc)));
+  assert.ok(pz.some((x) => x.sku === 'C-NIM-1X' && /en el portador C-SM-NIM-ADPTR/.test(x.nota)));
+  // El 8200 no tiene ranura SM: cuatro caben en su C-NIM-4X y el quinto no.
+  assert.strictEqual(asig('Catalyst 8200', ...diez(5)).sinAsignar.length, 1);
+  // G2: el C8375-E-G2 (2 SFP+ fijos, 1 NIM, 1 SM) usa el C-SM-NIM-ADPT de su guía.
+  const g2 = asig('Cisco Secure Router C8375-E-G2', ...diez(7));
+  assert.deepStrictEqual(g2.sinAsignar, []);
+  assert.deepStrictEqual(g2.modulos.map((x) => x.sku), ['C-NIM-4X', 'C-SM-NIM-ADPT', 'C-NIM-WAN-2X']);
+});
+
+test('reparto: el 12X4QC solo admite las combinaciones de la tabla 5 de su ficha', () => {
+  const c = (...xs) => M.motivoCombinacion(asig('Catalyst 8500-12X4QC', ...xs));
+  // Con un 100G en la bahía 1 no queda nada más en las bahías 0 y 1: dos de 100G van solos.
+  assert.match(c('fibra-100g', 'fibra-100g', 'fibra-10g'), /2×100G \+ 1×SFP\+ no está entre las que admite a la vez \(tabla 5 de su ficha\)/);
+  assert.strictEqual(c('fibra-100g', 'fibra-100g'), null);
+  assert.strictEqual(c('fibra-100g', 'fibra-40g', 'fibra-10g'), null);
+  assert.strictEqual(c('fibra-40g', 'fibra-40g', 'fibra-40g', 'fibra-10g'), null);
+  // 1×100G + 3×40G es una combinación (sin SFP+); con un SFP+ más, ya no.
+  assert.strictEqual(c('fibra-100g', 'fibra-40g', 'fibra-40g'), null);
+  assert.match(c('fibra-100g', 'fibra-40g', 'fibra-40g', 'fibra-10g'), /1×100G \+ 2×40G \+ 1×SFP\+ no está entre/);
+  // El C8570-G2: las mismas bahías (su guía) y el tope de 240 GE de su ficha, sin la nota del 12X4QC.
+  const g = (...xs) => M.motivoCombinacion(asig('Cisco Secure Router C8570-G2', ...xs));
+  assert.strictEqual(g('fibra-100g', 'fibra-100g', 'fibra-10g', 'fibra-10g'), null);
+  assert.match(g('fibra-100g', 'fibra-100g', 'fibra-10g', 'fibra-10g', 'fibra-10g', 'fibra-10g', 'fibra-10g'), /suman 250 GE de puertos y la ficha admite 240 GE a la vez/);
+  // Las dos bahías en 100G dejan sin los QSFP de 40G de la bahía 2.
+  assert.match(g('fibra-100g', 'fibra-100g', 'fibra-40g', 'fibra-40g'), /2×100G \+ 2×40G no está entre las que admite a la vez \(bahías de su guía de hardware\)/);
+  // Tabla 3: cuatro jaulas QSFP (2 de 40/100G y 2 de 40G), no cinco.
+  const qsfp = id('Catalyst 8500-12X4QC').puertos.filter((g) => /QSFP/.test(g.medios[0])).reduce((t, g) => t + g.n, 0);
+  assert.strictEqual(qsfp, 4);
+  // En la evaluación, aparta con su grupo.
+  const ev = M.evaluar(MODELS, { ...base, bwMbps: 1000, plataforma: 'xe', enlaces: E('fibra-100g', 'fibra-100g', 'fibra-10g'), catalogo: CAT });
+  assert.ok(M.resumenApartados(ev.apartados).some((g) => /no admiten esa combinación de puertos/.test(g.motivo) && g.ids.includes('Catalyst 8500-12X4QC')));
+});
+
+test('reparto: un cobre de 10G va a una SFP+ con el 10GBASE-T solo donde la guía de hardware lo da', () => {
+  const r = asig('Cisco Secure Router C8355-G2', 'cobre-10g');
+  assert.strictEqual(r.asignados[0].via, 'transceptor');
+  const pz = M.piezasEnlaces(r)[0];
+  assert.ok(pz.sku === 'SFP-10G-T-X' && /10GBASE-T/.test(pz.desc) && /30 m/.test(pz.nota), JSON.stringify(pz));
+  assert.match(asig('Cisco Secure Router C8231-G2', 'cobre-10g').sinAsignar[0].motivo, /tiene jaulas de 10G, pero el catálogo no trae su transceptor de cobre 10GBASE-T/);
+  // Un 1000BASE-T no es una óptica, ni el 10GBASE-T: no salen como óptica de fibra.
+  assert.ok(M.asignarEnlaces(id('Cisco Secure Router C8355-G2'), E('fibra-10g'), CAT).asignados[0].opticas.every((o) => !/BASE-T\b/.test(o.d)));
+});
+
+test('puertos mGig: la velocidad mínima tiene fuente en la G2 y es supuesto solo en los Meraki', () => {
+  for (const m of MODELS) {
+    for (const g of m.puertos || []) {
+      if (!g.mgig) continue;
+      assert.strictEqual(!!g.velMinSupuesto, m.ser === 'Meraki MX', `${m.id}: velMinSupuesto donde no toca`);
+    }
+  }
+});
+
 test('enlaces en la evaluación: apartan agrupados, el celular pide módem y sin enlaces nada cambia', () => {
   const sin = M.evaluar(MODELS, base);
   const vacio = M.evaluar(MODELS, { ...base, enlaces: [], catalogo: CAT });

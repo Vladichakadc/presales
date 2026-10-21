@@ -456,11 +456,19 @@ Módulos compartidos:
   rol lo da el modo), que es aritmética rotulada como supuesto; la cifra escrita manda. **Enlaces WAN a
   puertos reales** (`asignarEnlaces`): cada equipo trae sus `puertos` contados de su ficha (`uso`
   WAN, LAN/WAN —los «Flex L2/L3» y los convertibles— o LAN, que nunca recibe un enlace; `velMin`
-  solo donde la ficha da el rango), y cada enlace declarado por su entrega (cobre o fibra y
-  velocidad de la interfaz) va a uno, el más exigente primero; un cobre de 1G puede ir a una jaula
-  con el transceptor 1000BASE-T del catálogo; si no cabe, un módulo NIM de la guía de su familia o
-  se aparta; el `maxWan` de Meraki manda; cada fibra lleva su óptica «elegir una». Sin enlaces no
-  se comprueba nada. En SD-WAN un modelo sin
+  solo donde la ficha o la guía de hardware da el rango; en los mGig de Meraki es supuesto,
+  `velMinSupuesto`), y cada enlace declarado por su entrega (cobre, fibra o DSL y velocidad de la
+  interfaz) va a uno, el más exigente primero; un cobre de 1G puede ir a una jaula con el
+  transceptor 1000BASE-T del catálogo, y uno de 10G a una SFP+ con el 10GBASE-T solo donde la guía
+  de hardware lo da (`sfp10gt`); un DSL, al puerto `dsl` (ISR 1116-4P); si no cabe, el módulo NIM
+  de la guía de su familia que lleve más enlaces (sin ranura NIM, en el portador C-SM-NIM-ADPT(R)
+  de una ranura SM) o se aparta; el `maxWan` de Meraki manda, y las `combinaciones` (tabla 5 del
+  12X4QC; bahías y 240 GE del C8570-G2) apartan lo que la ficha no admite a la vez. **Cada fibra
+  lleva su óptica por alcance** (`elegirOptica`): con el tipo de fibra (OM1…OM4, monomodo) y el
+  tramo en km, la primera de la lista que llega según el `alcance` de la ficha de la óptica (en
+  `OPTICS`, columna `reach` de `Optic`), antes la que no pide RS-FEC ni cable de acondicionamiento;
+  sin los dos datos, «elegir una»; si ninguna llega, «consultar» y aviso, sin apartar (el catálogo
+  no trae todas las ópticas de Cisco). Sin enlaces no se comprueba nada. En SD-WAN un modelo sin
   cifra propia cae a IPsec y la lista lo marca. Licencias G2 por `clase` (S…2XL, guía de pedido) y
   segunda fuente `psu2`; los LIC-SEC no se proponen donde la guía los niega (`secAddon: false`), y en
   autónomo piden Routing Advantage y LIC-R-OP-SWM. **DNA** (`LICENCIAS_DNA`, FAQ de DNA y guía de

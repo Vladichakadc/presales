@@ -166,7 +166,7 @@ const MODELS = [
   {id:'Catalyst 8500-12X4QC',    ser:'Catalyst 8000', fam:'Hub DC / Edge de alto rendimiento', fwd:197000, ipsec:135000, sdwan:31900, amenazas:null, aps:null, redund:true, lte:false, bases:B_C85,
    tuneles:8000,
    psu:{tipo:'dos fuentes de serie (PWR-CH1-750WACR o PWR-CH1-950WDCR)', texto:'Ficha: «High-efficiency dual power supplies by default for power supply redundancy».'},
-   ports:'12x 1/10G SFP+ + 3x 40G QSFP+ + 2x 40/100G QSFP28 (240 GE simultáneos) · 1RU', nim:0, sm:0, optics:['sfp10g','qsfp40g','qsfp100g'], parts:['DNA-ADVANTAGE'], lic:'dna', dnaTierMax:'T3', datasheet:DS.c8500},
+   ports:'12x 1/10G SFP+ + 2x 40G QSFP+ + 2x 40/100G QSFP28 (240 GE simultáneos) · 1RU', nim:0, sm:0, optics:['sfp10g','qsfp40g','qsfp100g'], parts:['DNA-ADVANTAGE'], lic:'dna', dnaTierMax:'T3', datasheet:DS.c8500},
   {id:'Catalyst 8500-20X6C',     ser:'Catalyst 8000', fam:'Núcleo SD-WAN / DC de alta densidad', fwd:500000, ipsec:400000, sdwan:100000, amenazas:null, aps:null, redund:true, lte:false, bases:B_C85,
    tuneles:8000,
    psu:{tipo:'fuentes N+1 de serie (opción N+2): PWR-CH1-1100WAC o PWR-CH1-950WDC', texto:'Ficha: «N+1 redundancy (Option N+2 redundancy)».'},
@@ -233,11 +233,11 @@ const MODELS = [
   {id:'Cisco Secure Router C8355-G2', ser:'Secure Router (G2)', fam:'Hub regional SD-WAN, 4x 10G y 4x mGig 5G', clase:'L', fwd:38000, ipsec:20000, sdwan:8700, amenazas:3900, aps:null, redund:true, lte:false, bases:B_G2,
    tuneles:4000, tunelesNota:'3.500 antes de IOS XE 26.2.1', rutas:2000000, nat:1500000, pim:true, poe:120, poeNota:'con la fuente PWR-CC1-230WAC',
    psu:{watts:45, tipo:'entrada de alimentación doble; de serie dos adaptadores externos de 110 W AC', texto:'Consumo típico 45 W con la fuente por defecto y sin módulos. La ficha técnica rotula la fila como «Power Supply (Default - Dual PSU)» y el panel del equipo trae entrada doble. Como mejora se ofrecen fuentes de 230 W AC con PoE (presupuesto PoE 120 W).'},
-   ports:'4x 10G SFP+ + 4x 5G mGig + 2 GE · 1 PIM · 16 GB', nim:0, sm:0, optics:['sfp1g','sfp10g'], parts:PIM, elp:'$15,552.28', elpN:15552.28, lic:'cswan', datasheet:DS.sr8300},
+   ports:'4x 10G SFP+ + 4x 5G mGig + 2 GE · 1 PIM · 16 GB', nim:0, sm:0, optics:['sfp1g','sfp10g','sfp10gt'], parts:PIM, elp:'$15,552.28', elpN:15552.28, lic:'cswan', datasheet:DS.sr8300},
   {id:'Cisco Secure Router C8375-E-G2', ser:'Secure Router (G2)', fam:'Hub regional modular (NIM + SM + PIM)', clase:'L', fwd:38000, ipsec:20000, sdwan:12000, amenazas:7000, aps:null, redund:true, lte:false, bases:B_G2,
    tuneles:4000, tunelesNota:'3.500 antes de IOS XE 26.2.1', rutas:2000000, nat:1500000, pim:true, poe:360, poeNota:'con la fuente PWR-CC1-760WAC', macsec:'nim',
    psu:{watts:55, tipo:'dos fuentes internas (FRU) de 400 W AC por defecto; 760 W AC con PoE o 500 W DC', texto:'Ficha: «Power Supply (Default - Dual PSU)»; consumo típico 55 W con la fuente por defecto y sin módulos.'},
-   ports:'2x 10G SFP+ + 4x 2,5G mGig · 1 NIM · 1 SM · 1 PIM · 1RU', nim:1, sm:1, optics:['sfp1g','sfp10g'], parts:PIM, lic:'cswan', datasheet:DS.sr8300},
+   ports:'2x 10G SFP+ + 4x 2,5G mGig · 1 NIM · 1 SM · 1 PIM · 1RU', nim:1, sm:1, optics:['sfp1g','sfp10g','sfp10gt'], parts:PIM, lic:'cswan', datasheet:DS.sr8300},
   {id:'Cisco Secure Router C8455-G2', ser:'Secure Router (G2)', fam:'Internet edge / campus, familia 8400', clase:'XL', fwd:67000, ipsec:31000, sdwan:15500, amenazas:9500, aps:null, redund:null, lte:false, bases:B_G2,
    tuneles:6000, tunelesNota:'3.500 antes de IOS XE 26.2.1', rutas:5800000, nat:null, pim:false,
    psu:{tipo:'250 W AC (PWR-CH1-250WAC) por defecto; 400 W DC u HVDC', texto:'La ficha da el peso «with 2x AC power supplies and fan tray» y la guía de pedido una sola referencia de fuente por defecto: cuántas vienen de serie no consta. Confirmar en CCW antes de prometer redundancia.'},
@@ -357,9 +357,12 @@ const PSU_SEGUNDA = {
      'LAN/WAN' (los «Flex L2/L3 Ports» de la G2 —guía de hardware de la serie 8100, tabla 1— y los
      convertibles de Meraki) y 'LAN' (solo LAN: nunca recibe un enlace).
    · velMin: la velocidad más baja que admite, solo donde la ficha lo dice («1/10», «SFP/SFP+»,
-     «10/25», «40/100», «2.5/1»). Un puerto multigigabit (mGig, 2,5G o 5G) admite también 1G: es
-     la norma 802.3bz (supuesto declarado; la ficha solo da la velocidad máxima). Un SFP+ que la
-     ficha da «no reducible a 1G» (ASR) no lleva velMin.
+     «10/25», «40/100», «2.5/1»). Un puerto multigigabit (mGig, 2,5G o 5G) admite también 1G: en
+     la G2 lo dicen sus guías de hardware (8200: «1000BASE-T… 2.5GBASE-T»; 8300: el C8375-E-G2,
+     «100BASE-TX, 1000BASE-T, and 2500BASE_T», y el C8355-G2 hasta «5000BASE-T»); en los Meraki
+     (MX95/MX105, C8111/C8121-G2-MX) sigue siendo la norma 802.3bz, supuesto declarado
+     (`velMinSupuesto`): sus fichas solo dan la velocidad máxima. Un SFP+ que la ficha da «no
+     reducible a 1G» (ASR) no lleva velMin.
    · Fuentes, por familia: fichas de las series 8100 a 8600 («Interfaces and slots»), de los
      Catalyst 8200 («four built-in Ethernet WAN ports: two SFP and two RJ45»), 8300 («6 built-in
      Layer 3 Ethernet ports for WAN or LAN… at least 2 SFP or SFP+ in addition to 4 RJ-45», tabla 2)
@@ -369,6 +372,7 @@ const PSU_SEGUNDA = {
 const G = (n, vel, medios, uso, extra) => ({n, vel, medios, uso, ...(extra || {})});
 const RJ = (n, uso, vel = 1, extra) => G(n, vel, ['RJ45'], uso, extra);
 const MGIG = (n, vel, uso) => G(n, vel, ['RJ45'], uso, {velMin:1, mgig:true});
+const MGIG_MX = (n, vel, uso) => G(n, vel, ['RJ45'], uso, {velMin:1, mgig:true, velMinSupuesto:true});
 const COMBO = (n, uso) => G(n, 1, ['RJ45', 'SFP'], uso);
 const SFP1 = (n, uso) => G(n, 1, ['SFP'], uso);
 const SFPP = (n, uso, dual = true) => G(n, 10, ['SFP+'], uso, dual ? {velMin:1} : null);
@@ -384,7 +388,7 @@ const SR8221 = [SFPP(2, 'WAN'), RJ(2, 'WAN'), RJ(2, 'LAN/WAN'), RJ(4, 'LAN')];
 const SR_E = [SFPP(2, 'WAN'), MGIG(2, 2.5, 'WAN')];
 const MX67 = [RJ(1, 'WAN'), RJ(1, 'LAN/WAN'), RJ(3, 'LAN')];
 const MX68 = [RJ(2, 'WAN'), RJ(10, 'LAN')];
-const MX95 = [SFPP(2, 'WAN'), MGIG(2, 2.5, 'WAN'), RJ(4, 'LAN'), SFPP(2, 'LAN')];
+const MX95 = [SFPP(2, 'WAN'), MGIG_MX(2, 2.5, 'WAN'), RJ(4, 'LAN'), SFPP(2, 'LAN')];
 const MX250 = [SFPP(2, 'WAN'), SFPP(8, 'LAN'), SFP1(8, 'LAN'), RJ(8, 'LAN')];
 const PUERTOS = {
   'ISR 1111-8P': ISR_8P, 'ISR 1111X-8P': ISR_8P, 'ISR 1121X-8P': ISR_8P, 'ISR 1161X-8P': ISR_8P,
@@ -394,7 +398,9 @@ const PUERTOS = {
   'Catalyst 8300-1N1S-4T2X': C8300_4T2X, 'Catalyst 8300-2N2S-4T2X': C8300_4T2X,
   'Catalyst 8500L-8S4X': [SFPP(4, 'WAN'), SFP1(8, 'WAN')],
   'Catalyst 8500-12X': [SFPP(12, 'WAN')],
-  'Catalyst 8500-12X4QC': [SFPP(12, 'WAN'), QSFP40(3, 'WAN'), QSFP28(2, 'WAN')],
+  // Tabla 3 de su ficha: «12-port 1/10GE, 2-port 40/100GE, 2-port 40GE» (4 jaulas QSFP; el texto
+  // «3x 40GE ports» de la misma ficha son las tres de la bahía 2 a 40G, una de ellas 40/100).
+  'Catalyst 8500-12X4QC': [SFPP(12, 'WAN'), QSFP40(2, 'WAN'), QSFP28(2, 'WAN')],
   'Catalyst 8500-20X6C': [SFPP(20, 'WAN'), QSFP28(6, 'WAN')],
   'Cisco Secure Router C8130-G2': [RJ(1, 'WAN'), COMBO(1, 'WAN'), RJ(2, 'LAN/WAN'), RJ(2, 'LAN')],
   'Cisco Secure Router C8131-G2': [RJ(1, 'WAN'), COMBO(1, 'WAN'), RJ(2, 'LAN/WAN'), RJ(2, 'LAN')],
@@ -420,9 +426,9 @@ const PUERTOS = {
   'Meraki MX85': [SFP1(2, 'WAN'), RJ(2, 'WAN'), RJ(8, 'LAN'), SFP1(2, 'LAN')],
   'Meraki MX95': MX95, 'Meraki MX105': MX95,
   'Meraki MX250': MX250, 'Meraki MX450': MX250,
-  'Cisco Secure Router C8111-G2-MX': [MGIG(2, 2.5, 'WAN'), RJ(4, 'LAN')],
-  'Cisco Secure Router C8121-G2-MX': [MGIG(2, 2.5, 'WAN'), RJ(10, 'LAN')],
-  'Cisco Secure Router C8355-G2-MX': [SFPP(2, 'WAN'), SFPP(2, 'LAN/WAN'), MGIG(4, 5, 'LAN'), RJ(2, 'LAN')],
+  'Cisco Secure Router C8111-G2-MX': [MGIG_MX(2, 2.5, 'WAN'), RJ(4, 'LAN')],
+  'Cisco Secure Router C8121-G2-MX': [MGIG_MX(2, 2.5, 'WAN'), RJ(10, 'LAN')],
+  'Cisco Secure Router C8355-G2-MX': [SFPP(2, 'WAN'), SFPP(2, 'LAN/WAN'), MGIG_MX(4, 5, 'LAN'), RJ(2, 'LAN')],
   'Cisco Secure Router C8455-G2-MX': [SFP28(2, 'WAN'), SFPP(2, 'LAN/WAN'), SFP1(8, 'LAN')],
 };
 // Enlaces WAN que el equipo admite a la vez, donde la ficha lo dice: Meraki «# of WAN uplinks» (MX75
@@ -435,10 +441,32 @@ const MAX_WAN = {
 };
 // Restricciones de la ficha que el reparto de puertos no modela: se dicen cuando un enlace usa ese
 // tipo de puerto.
-const NOTA_PUERTOS = {
-  'Catalyst 8500-12X4QC': 'Admite 240 GE simultáneos, y un puerto de 100 GE deja sin los demás puertos de sus bahías (ficha, tablas 3 y figuras 5-6): confirmar la combinación.',
-  'Cisco Secure Router C8570-G2': '«Max 240GE ports can be enabled simultaneously» (ficha, tabla 3): confirmar la combinación.',
-  'ISR 1116-4P': 'El segundo puerto WAN es DSL (G.FAST, VDSL2 o ADSL2+ según la variante): no recibe un enlace Ethernet.',
+const NOTA_PUERTOS = {};
+// Combinaciones de puertos que el equipo admite a la vez (`combinaciones`): cuántos puertos SFP+
+// (de 1 o 10G), de 40G y de 100G como mucho en cada una, y de dónde sale la lista. Lo que no cabe en
+// ninguna aparta el equipo; el «breakout» 4x10G no se modela (la ficha del 12X4QC dice que no va
+// en SD-WAN). `maxGE`: lo que la ficha deja habilitar a la vez, sumando la velocidad de cada enlace.
+// · Catalyst 8500-12X4QC: tabla 5 de su ficha («Maximum ports configurations»), con su nota: con la
+//   bahía 1 en 100G no queda ningún otro puerto de las bahías 0 y 1. Todas suman 240 GE o menos.
+// · C8570-G2: su guía de hardware («Bay configuration», 9-sep-2025) da las mismas bahías —0: 8 SFP+;
+//   1: 4 SFP+ o 1 QSFP de 40 o 100G; 2: 1x 100G o 3x 40G— y su ficha, «max 240GE ports can be
+//   enabled simultaneously». La nota del 12X4QC sobre la bahía 1 en 100G no está en sus documentos:
+//   no se le aplica; manda el tope de 240 GE.
+const COMBINACIONES = {
+  'Catalyst 8500-12X4QC': {fuente:'tabla 5 de su ficha', lista:[
+    {sfp:12, q40:0, q100:0}, {sfp:8, q40:4, q100:0}, {sfp:0, q40:0, q100:2}, {sfp:0, q40:3, q100:1},
+    {sfp:8, q40:1, q100:1}, {sfp:12, q40:0, q100:1}, {sfp:12, q40:3, q100:0},
+  ]},
+  'Cisco Secure Router C8570-G2': {fuente:'bahías de su guía de hardware', maxGE:240, lista:[
+    {sfp:12, q40:3, q100:0}, {sfp:12, q40:0, q100:1}, {sfp:8, q40:4, q100:0}, {sfp:8, q40:1, q100:1},
+    {sfp:8, q40:3, q100:1}, {sfp:8, q40:0, q100:2},
+  ]},
+};
+// Puerto DSL integrado (`dsl`): ISR 1116-4P, tabla 20 de la ficha del ISR 1000 («WAN interface
+// combinations»: la última cifra del PID es la combinación; la 6 es «1 copper/SFP Ethernet port + 1
+// ADSL2/VDSL2+ port (Annex B/J ISDN)»). Recibe un enlace con entrega DSL, nunca uno Ethernet.
+const DSL = {
+  'ISR 1116-4P': 'ADSL2/VDSL2+, Annex B/J sobre RDSI',
 };
 
 for (const m of MODELS) {
@@ -448,6 +476,8 @@ for (const m of MODELS) {
   if (Object.prototype.hasOwnProperty.call(PUERTOS, m.id)) m.puertos = PUERTOS[m.id];
   if (MAX_WAN[m.id]) m.maxWan = MAX_WAN[m.id];
   if (NOTA_PUERTOS[m.id]) m.notaPuertos = NOTA_PUERTOS[m.id];
+  if (COMBINACIONES[m.id]) m.combinaciones = COMBINACIONES[m.id];
+  if (DSL[m.id]) m.dsl = DSL[m.id];
 }
 
 // Licencias de la línea G2 (guía de pedido, tablas 9 y 10). La referencia completa sale de la clase
@@ -565,6 +595,9 @@ const MODULOS_C8K = (() => {
     'C-NIM-4X': {d:'Switch de 4 puertos 1/10 Gbps SFP/SFP+, MACsec LAN/WAN y L3 opcional', puertos:[SFPP(4, 'LAN/WAN')]},
     'C-NIM-8T': {d:'Switch de 8 puertos 100 Mbps/1 Gbps, MACsec LAN/WAN y L3 opcional', puertos:[RJ(8, 'LAN/WAN')]},
     'C-NIM-8M': {d:'Switch de 8 puertos 100M/1/2,5 Gbps, UPoE, MACsec LAN/WAN y L3 opcional', puertos:[MGIG(8, 2.5, 'LAN/WAN')]},
+    // El portador lo describe el texto de la guía de pedido (sección D): «allows two NIMs to be
+    // housed together in one single-wide SM slot».
+    'C-SM-NIM-ADPTR': {d:'Portador de 2 NIM en una ranura SM de ancho simple'},
     'NIM-ES2-4': {d:'Switch LAN de 4 puertos Gigabit Ethernet'},
     'NIM-ES2-8': {d:'Switch LAN de 8 puertos Gigabit Ethernet'},
     'NIM-ES2-8-P': {d:'Switch LAN de 8 puertos Gigabit Ethernet con PoE'},
@@ -573,62 +606,123 @@ const MODULOS_C8K = (() => {
   return lista;
 })();
 
+// Alcance de cada óptica por tipo de fibra, en metros (2026-10-21), de la tabla de cableado de la
+// ficha de su familia, traídas por Actions a fuente/cisco-opticas-2026-10-21: 1G «Cisco SFP Modules
+// for Gigabit Ethernet Applications» (tabla 2), 10G «Cisco 10GBASE SFP+ Modules» (tabla 3 y sus
+// notas), 40G «Cisco 40GBASE QSFP Modules» y 100G «Cisco 100GBASE QSFP-100G Modules». Fibras: om1
+// (62,5 µm), om2 (50 µm), om3, om4 y smf (G.652). Cada tramo: hasta `m` metros (desde `desde`, si
+// la nota cambia con la distancia), `nota` con lo que la ficha añade y `segunda` si la ficha exige
+// algo al equipo o al cableado (RS-FEC, cable de acondicionamiento): el motor la elige solo si
+// ninguna otra llega sin eso. El orden de cada lista es el de preferencia (de menor a mayor
+// alcance, el estándar de cada fibra antes que el alternativo): el motor toma la primera que
+// llega. La ficha da alcances, no la compatibilidad con cada router.
+const T = (fibra, m, nota, extra) => ({fibra, m, ...(nota ? {nota} : {}), ...(extra || {})});
+const MM = ['om1', 'om2', 'om3', 'om4'];
+const ACONDICIONADOR = 'en multimodo lleva un cable de acondicionamiento de modo (mode-conditioning patch cord), que la ficha exige sea cual sea el tramo';
 const OPTICS = {
   sfp1g: [
-    {sku:'GLC-SX-MMD',  bom:'SFP-1GE-SX',   d:'1000BASE-SX · multimodo · LC · 550 m'},
-    {sku:'GLC-LH-SMD',  bom:'SFP-1GE-LH',   d:'1000BASE-LX/LH · monomodo · LC · 10 km'},
-    {sku:'GLC-ZX-SMD',  bom:'SFP-1GE-ZX',   d:'1000BASE-ZX · monomodo · LC · 70 km'},
+    {sku:'GLC-SX-MMD',  bom:'SFP-1GE-SX',   d:'1000BASE-SX · multimodo · LC · 275 m (OM1) a 1 km (OM3/OM4)',
+      alcance:[T('om1', 275), T('om2', 550), T('om3', 1000), T('om4', 1000)]},
+    {sku:'GLC-LH-SMD',  bom:'SFP-1GE-LH',   d:'1000BASE-LX/LH · monomodo · LC · 10 km (550 m en multimodo con cable de acondicionamiento)',
+      alcance:[T('smf', 10000), ...MM.map((f) => T(f, 550, ACONDICIONADOR, {segunda:true}))]},
+    {sku:'GLC-ZX-SMD',  bom:'SFP-1GE-ZX',   d:'1000BASE-ZX · monomodo · LC · unos 70 km',
+      alcance:[T('smf', 70000, 'unos 70 km según la pérdida del enlace (presupuesto óptico de 21 dB); con una pérdida de tramo menor de 8 dB, la ficha pide un atenuador de 10 dB en recepción en cada extremo')]},
     {sku:'GLC-T',       bom:'SFP-1GE-T',     d:'1000BASE-T · cobre · RJ45 · 100 m'},
     {sku:'GLC-TE',      bom:'SFP-GE-T',      d:'1000BASE-T enhanced · cobre · RJ45 · para ISR/Catalyst'},
   ],
   sfp10g: [
-    {sku:'SFP-10G-SR',   bom:'SFP-10G-SR-S', d:'10GBASE-SR · multimodo · LC · 300 m'},
-    {sku:'SFP-10G-LR',   bom:'SFP-10G-LR-S', d:'10GBASE-LR · monomodo · LC · 10 km'},
-    {sku:'SFP-10G-ER',   bom:'SFP-10G-ER-I', d:'10GBASE-ER · monomodo · LC · 40 km'},
-    {sku:'SFP-10G-ZR',   bom:'SFP-10G-ZR',   d:'10GBASE-ZR · monomodo · LC · 80 km'},
+    {sku:'SFP-10G-SR',   bom:'SFP-10G-SR-S', d:'10GBASE-SR · multimodo · LC · 33 m (OM1) a 400 m (OM4)',
+      alcance:[T('om1', 33), T('om2', 82), T('om3', 300), T('om4', 400)]},
+    {sku:'SFP-10G-LR',   bom:'SFP-10G-LR-S', d:'10GBASE-LR · monomodo · LC · 10 km', alcance:[T('smf', 10000)]},
+    {sku:'SFP-10G-ER',   bom:'SFP-10G-ER-I', d:'10GBASE-ER · monomodo · LC · 40 km',
+      alcance:[T('smf', 30000), T('smf', 40000, 'más de 30 km es un enlace de ingeniería (IEEE 802.3ae): calcular el presupuesto óptico', {desde:30000})]},
+    {sku:'SFP-10G-ZR',   bom:'SFP-10G-ZR',   d:'10GBASE-ZR · monomodo · LC · unos 80 km',
+      alcance:[
+        T('smf', 5000, 'con un atenuador de 15 dB (15216 ATT LC 15=) por debajo de 5 km'),
+        T('smf', 25000, 'con un atenuador de 10 dB (15216 ATT LC 10=) entre 5 y 25 km', {desde:5000}),
+        T('smf', 45000, 'con un atenuador de 5 dB (15216 ATT LC 5=) entre 25 y 45 km', {desde:25000}),
+        T('smf', 80000, 'unos 80 km: alcance aproximado de la ficha', {desde:45000}),
+      ]},
+  ],
+  // SFP+ de cobre 10GBASE-T: solo en la G2 de la serie 8300, cuya guía de hardware lo lista en su
+  // tabla de cableado («Gigabit Ethernet SFP+, copper · RJ-45 · 10GBASE-T · Category 6, Category
+  // 7»); la referencia y su alcance son los de la ficha de 10G (tabla 1, «up to 30 meters»).
+  sfp10gt: [
+    {sku:'SFP-10G-T-X', bom:'SFP-10G-T-X', d:'10GBASE-T · cobre · RJ45 · hasta 30 m (CAT6A/CAT7) · 100M/1G/10G'},
   ],
   qsfp40g: [
-    {sku:'QSFP-40G-SR4', bom:'QSFP-40G-SR4-S',d:'40GBASE-SR4 · multimodo · MPO · 150 m'},
-    {sku:'QSFP-40G-LR4', bom:'QSFP-40G-LR4-S',d:'40GBASE-LR4 · monomodo · LC · 10 km'},
+    {sku:'QSFP-40G-SR4', bom:'QSFP-40G-SR4-S',d:'40GBASE-SR4 · multimodo · MPO de 12 fibras · 100 m (OM3) y 150 m (OM4)',
+      alcance:[T('om3', 100, 'MPO de 12 fibras en paralelo'), T('om4', 150, 'MPO de 12 fibras en paralelo')]},
+    {sku:'QSFP-40G-LR4', bom:'QSFP-40G-LR4-S',d:'40GBASE-LR4 · monomodo · LC · 10 km', alcance:[T('smf', 10000)]},
   ],
   qsfp100g: [
-    {sku:'QSFP-100G-SR4-S', bom:'QSFP-100G-SR4-S',d:'100GBASE-SR4 · multimodo · MPO · 100 m'},
-    {sku:'QSFP-100G-LR4-S', bom:'QSFP-100G-LR4-S',d:'100GBASE-LR4 · monomodo · LC · 10 km'},
-    {sku:'QSFP-100G-ER4-S', bom:'QSFP-100G-ER4-S',d:'100GBASE-ER4 · monomodo · LC · 40 km'},
+    {sku:'QSFP-100G-SR4-S', bom:'QSFP-100G-SR4-S',d:'100GBASE-SR4 · multimodo · MPO de 12 fibras · 70 m (OM3) y 100 m (OM4)',
+      alcance:[T('om3', 70, 'MPO de 12 fibras en paralelo'), T('om4', 100, 'MPO de 12 fibras en paralelo')]},
+    {sku:'QSFP-100G-LR4-S', bom:'QSFP-100G-LR4-S',d:'100GBASE-LR4 · monomodo · LC · 10 km', alcance:[T('smf', 10000)]},
+    // La ficha de 100G no trae un «QSFP-100G-ER4-S» (lo que había aquí): su óptica de 40 km es la
+    // ER4-Lite, que llega a 30 km sin FEC y a 40 km con el FEC del equipo.
+    {sku:'QSFP-100G-ER4L-S', bom:'QSFP-100G-ER4L-S',d:'100GBASE ER4-Lite · monomodo · LC · 30 km (40 km con FEC en el equipo)',
+      alcance:[T('smf', 30000), T('smf', 40000, 'necesita FEC en el puerto del equipo (sin FEC llega a 30 km)', {desde:30000, segunda:true})]},
   ]
 };
 
 // Ópticas de Meraki (2026-10-20). Los MX no llevan las GLC/SFP-10G de Catalyst: sus fichas y la
 // guía «Small-Form Factor Pluggable (SFP) and Stacking Accessories» de documentation.meraki.com
-// (revisada el 2-oct-2026) dan las MA-SFP, con su estándar, su alcance y con qué equipo van. Las
-// categorías van por familia porque la compatibilidad no es la misma: los G2-MX no admiten la
-// MA-SFP-1GB-SX ni la MA-SFP-10GB-ZR. Las de 25 Gbps solo las publica la ficha del C8455-G2-MX,
-// sin alcance: la descripción no lo pone.
+// (revisada el 2-oct-2026) dan las MA-SFP, con su estándar, su alcance por tipo de fibra y con qué
+// equipo van. Las categorías van por familia porque la compatibilidad no es la misma: los G2-MX no
+// admiten la MA-SFP-1GB-SX ni la MA-SFP-10GB-ZR, y la MA-SFP-10GB-LRM solo va en multimodo en los
+// G2-MX (en los MX, la guía la da solo en monomodo). Las de 25 Gbps solo las publica la ficha del
+// C8455-G2-MX; su alcance sale de la ficha «Cisco 25GBASE SFP28 Modules» (tabla 2 y el texto de
+// cada módulo, traída el 2026-10-21 a fuente/cisco-opticas-2026-10-21).
 const MX_1G = [
-  {sku:'MA-SFP-1GB-SX',   bom:'MA-SFP-1GB-SX',   d:'1000BASE-SX · multimodo · 850 nm · 220 m (OM1) a 1 km (OM4)'},
-  {sku:'MA-SFP-1GB-LX10', bom:'MA-SFP-1GB-LX10', d:'1000BASE-LX10 · monomodo · 1310 nm · 10 km (550 m en multimodo con cable de acondicionamiento)'},
+  {sku:'MA-SFP-1GB-SX',   bom:'MA-SFP-1GB-SX',   d:'1000BASE-SX · multimodo · 850 nm · 220 m (OM1) a 1 km (OM4)',
+    alcance:[T('om1', 220), T('om2', 550), T('om3', 550), T('om4', 1000)]},
+  {sku:'MA-SFP-1GB-LX10', bom:'MA-SFP-1GB-LX10', d:'1000BASE-LX10 · monomodo · 1310 nm · 10 km (550 m en multimodo con cable de acondicionamiento)',
+    alcance:[T('smf', 10000), ...MM.map((f) => T(f, 550, 'en multimodo lleva un cable LC de acondicionamiento de modo', {segunda:true}))]},
   {sku:'MA-SFP-1GB-TX',   bom:'MA-SFP-1GB-TX',   d:'1000BASE-T · cobre RJ45 · 100 m'},
 ];
+const LRM_SMF = T('smf', 300, '10GBASE-LRM es de multimodo; la guía de Meraki lo admite en monomodo hasta 300 m', {segunda:true});
 const MX_10G = [
-  {sku:'MA-SFP-10GB-SR',  bom:'MA-SFP-10GB-SR',  d:'10GBASE-SR · multimodo · 850 nm · 26 m (OM1) a 400 m (OM4)'},
-  {sku:'MA-SFP-10GB-LR',  bom:'MA-SFP-10GB-LR',  d:'10GBASE-LR · monomodo · 1310 nm · 10 km'},
-  {sku:'MA-SFP-10GB-LRM', bom:'MA-SFP-10GB-LRM', d:'10GBASE-LRM · 1310 nm · 220 m en multimodo, 300 m en monomodo'},
-  {sku:'MA-SFP-10GB-ER',  bom:'MA-SFP-10GB-ER',  d:'10GBASE-ER · monomodo · 1550 nm · 40 km'},
-  {sku:'MA-SFP-10GB-ZR',  bom:'MA-SFP-10GB-ZR',  d:'10GBASE-ZR · monomodo · 1550 nm · 80 km'},
+  {sku:'MA-SFP-10GB-SR',  bom:'MA-SFP-10GB-SR',  d:'10GBASE-SR · multimodo · 850 nm · 26 m (OM1) a 400 m (OM4)',
+    alcance:[T('om1', 26), T('om2', 82), T('om3', 300), T('om4', 400)]},
+  {sku:'MA-SFP-10GB-LR',  bom:'MA-SFP-10GB-LR',  d:'10GBASE-LR · monomodo · 1310 nm · 10 km', alcance:[T('smf', 10000)]},
+  {sku:'MA-SFP-10GB-LRM', bom:'MA-SFP-10GB-LRM', d:'10GBASE-LRM · 1310 nm · 300 m en monomodo', alcance:[LRM_SMF]},
+  {sku:'MA-SFP-10GB-ER',  bom:'MA-SFP-10GB-ER',  d:'10GBASE-ER · monomodo · 1550 nm · 40 km', alcance:[T('smf', 40000)]},
+  {sku:'MA-SFP-10GB-ZR',  bom:'MA-SFP-10GB-ZR',  d:'10GBASE-ZR · monomodo · 1550 nm · 80 km', alcance:[T('smf', 80000)]},
 ];
+// La LRM de los G2-MX: la guía la da también en OM1, OM2 (a 500 MHz·km) y OM3, 220 m; en OM4 no.
+const LRM_G2 = {...MX_10G[2], d:'10GBASE-LRM · 1310 nm · 220 m en multimodo (OM1 a OM3), 300 m en monomodo',
+  alcance:[T('om1', 220), T('om2', 220, 'OM2 de 500 MHz·km'), T('om3', 220), LRM_SMF]};
+const RS_FEC = 'requiere RS-FEC en el puerto del equipo';
 Object.assign(OPTICS, {
   mxsfp1g: MX_1G,
   mxg2sfp1g: MX_1G.filter((o) => o.sku !== 'MA-SFP-1GB-SX'),
   mxsfp10g: MX_10G,
-  mxg2sfp10g: MX_10G.filter((o) => o.sku !== 'MA-SFP-10GB-ZR'),
+  mxg2sfp10g: MX_10G.filter((o) => o.sku !== 'MA-SFP-10GB-ZR').map((o) => (o.sku === 'MA-SFP-10GB-LRM' ? LRM_G2 : o)),
   mxdac10g: [
     {sku:'MA-CBL-TA-1M', bom:'MA-CBL-TA-1M', d:'10GSFP+Cu · twinax pasivo · 1 m'},
     {sku:'MA-CBL-TA-3M', bom:'MA-CBL-TA-3M', d:'10GSFP+Cu · twinax pasivo · 3 m'},
   ],
+  // A 25G, la ficha de cada módulo da el alcance según el FEC del puerto: el del C8455-G2-MX no
+  // consta, así que lo que pide FEC va como segunda opción y con su nota.
   mxsfp25g: [
-    {sku:'SFP-25G-SR-S',     bom:'SFP-25G-SR-S',     d:'Módulo para los puertos SFP28 de 25 Gbps (ficha del C8455-G2-MX)'},
-    {sku:'SFP-10/25G-CSR-S', bom:'SFP-10/25G-CSR-S', d:'Módulo para los puertos SFP28 de 25 Gbps (ficha del C8455-G2-MX)'},
-    {sku:'SFP-10/25G-LR-S',  bom:'SFP-10/25G-LR-S',  d:'Módulo para los puertos SFP28 de 25 Gbps (ficha del C8455-G2-MX)'},
+    {sku:'SFP-25G-SR-S',     bom:'SFP-25G-SR-S',     d:'25GBASE-SR · multimodo · 70 m (OM3) y 100 m (OM4), con RS-FEC en el equipo',
+      alcance:[T('om3', 70, RS_FEC, {segunda:true}), T('om4', 100, RS_FEC, {segunda:true})]},
+    {sku:'SFP-10/25G-CSR-S', bom:'SFP-10/25G-CSR-S', d:'10/25GBASE-CSR · multimodo · a 25G, 30/50 m (OM3/OM4) sin FEC y 300/400 m con RS-FEC',
+      alcance:[
+        T('om3', 30), T('om4', 50),
+        T('om3', 70, 'requiere BASE-R FEC (o RS-FEC) en el puerto del equipo', {segunda:true}),
+        T('om4', 100, 'requiere BASE-R FEC (o RS-FEC) en el puerto del equipo', {segunda:true}),
+        T('om2', 70, RS_FEC, {segunda:true}),
+        T('om3', 300, `${RS_FEC}; según la calidad de la fibra`, {segunda:true}),
+        T('om4', 400, `${RS_FEC}; según la calidad de la fibra`, {segunda:true}),
+      ]},
+    {sku:'SFP-10/25G-LR-S',  bom:'SFP-10/25G-LR-S',  d:'10/25GBASE-LR · monomodo · a 25G, 1,5 km sin FEC y 10 km con RS-FEC',
+      alcance:[
+        T('smf', 1500, 'según la calidad de la fibra'),
+        T('smf', 3500, 'requiere BASE-R FEC (o RS-FEC) en el puerto del equipo; según la calidad de la fibra', {segunda:true}),
+        T('smf', 10000, RS_FEC, {segunda:true}),
+      ]},
   ],
   mxdac25g: ['1M', '3M', '5M'].flatMap((l) => [
     {sku:`SFP-H25G-CU${l}`, bom:`SFP-H25G-CU${l}`, d:`Cable de cobre de 25 Gbps, ${l.replace('M', ' m')} (ficha del C8455-G2-MX, «SFP-H25G-CU1M/3M/5M»)`},
@@ -636,7 +730,7 @@ Object.assign(OPTICS, {
   ]),
 });
 
-const OPTIC_LABEL = {sfp1g:'1GE — SFP / GLC', sfp10g:'10GE — SFP+', qsfp40g:'40GE — QSFP+', qsfp100g:'100GE — QSFP28',
+const OPTIC_LABEL = {sfp1g:'1GE — SFP / GLC', sfp10g:'10GE — SFP+', sfp10gt:'10GE — SFP+ de cobre (10GBASE-T)', qsfp40g:'40GE — QSFP+', qsfp100g:'100GE — QSFP28',
   mxsfp1g:'1GE — SFP Meraki', mxg2sfp1g:'1GE — SFP Meraki (G2-MX)', mxsfp10g:'10GE — SFP+ Meraki', mxg2sfp10g:'10GE — SFP+ Meraki (G2-MX)',
   mxdac10g:'10GE — twinax Meraki', mxsfp25g:'25GE — SFP28 (C8455-G2-MX)', mxdac25g:'25GE — cable (C8455-G2-MX)'};
 
