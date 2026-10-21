@@ -1,0 +1,227 @@
+[
+  {
+    "archivo": "cisco-pim-wwan.html",
+    "para": "CISCO",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://www.cisco.com/c/en/us/solutions/collateral/enterprise-networks/4g-lte-solutions/datasheet-c78-743503.html",
+        "status": 200,
+        "bytes": 292689,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "cisco-pim-overview.pdf",
+    "para": "CISCO",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://www.cisco.com/c/en/us/td/docs/routers/iot-antennas/cellular-pluggable-modules/b-cellular-pluggable-interface-module-configuration-guide/m-pluggable-module-overview.pdf",
+        "status": 200,
+        "bytes": 1423310,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "cisco-sdwan-design.html",
+    "para": "CISCO",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://www.cisco.com/c/en/us/td/docs/solutions/CVD/SDWAN/cisco-sdwan-design-guide.html",
+        "status": 200,
+        "bytes": 496615,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "cisco-tloc-ext.html",
+    "para": "CISCO",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://www.cisco.com/c/en/us/td/docs/routers/sdwan/17-x/systems-interfaces/systems-interfaces-guide-17-x/tloc-extension.html",
+        "status": 200,
+        "bytes": 85161,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "cisco-sdwan-recursos.html",
+    "para": "CISCO",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://www.cisco.com/c/en/us/td/docs/routers/sdwan/release/notes/compatibility-and-server-recommendations/ch-server-recs-20-18-combined11.html",
+        "status": 200,
+        "bytes": 263390,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "cisco-appqoe-dre.html",
+    "para": "CISCO",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://www.cisco.com/c/en/us/td/docs/routers/sdwan/26x-later/appqoe/appqoe-configuration-guide/tcp-optimization-with-dre.html",
+        "status": 200,
+        "bytes": 442805,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "cisco-sr8300-scg.html",
+    "para": "CISCO",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://www.cisco.com/c/en/us/td/docs/routers/secure-routers/sec-8300-series/software-config-guide/secure-8300-series-scg/overview.html",
+        "status": 200,
+        "bytes": 60659,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "cisco-sa-og.html",
+    "para": "CISCO",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://www.cisco.com/c/en/us/products/collateral/security/secure-access/secure-access-sub-og.html",
+        "status": 200,
+        "bytes": 168922,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "cisco-sa-tuneles.html",
+    "para": "CISCO",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://docs.sse.cisco.com/sse-user-guide/docs/secure-access-network-tunnels",
+        "status": 200,
+        "bytes": 1607,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "cisco-fw1200-ds.html",
+    "para": "CISCO",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://www.cisco.com/c/en/us/products/collateral/security/firewalls/secure-firewall-1200-series-ds.html",
+        "status": 200,
+        "bytes": 229721,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "cisco-fw3100-ds.html",
+    "para": "CISCO",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://www.cisco.com/c/en/us/products/collateral/security/firewalls/secure-firewall-3100-series-ds.html",
+        "status": 200,
+        "bytes": 254648,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "cisco-fw4200-ds.html",
+    "para": "CISCO",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://www.cisco.com/c/en/us/products/collateral/security/firewalls/secure-firewall-4200-ds.html",
+        "status": 200,
+        "bytes": 194922,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "cisco-netsec-og.pdf",
+    "para": "CISCO",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://www.cisco.com/c/en/us/products/collateral/security/secure-firewall/guide-c07-737902.pdf",
+        "status": 200,
+        "bytes": 12769114,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "cisco-nim-dsl-ds.html",
+    "para": "CISCO",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://www.cisco.com/c/en/us/products/collateral/routers/4000-series-integrated-services-routers-isr/datasheet-c78-733645.html",
+        "status": 200,
+        "bytes": 131159,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "cisco-nim-dsl-eol.html",
+    "para": "CISCO",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://www.cisco.com/c/en/us/products/collateral/interfaces-modules/network-modules/select-wan-interface-modules-eol.html",
+        "status": 200,
+        "bytes": 122958,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  }
+]

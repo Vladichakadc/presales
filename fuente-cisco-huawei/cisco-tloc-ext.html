@@ -1,0 +1,2012 @@
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!DOCTYPE html>
+<html xmlns:fb="//www.facebook.com/2008/fbml" xmlns:og="//opengraphprotocol.org/schema/" lang="en" xml:lang="en"  class="no-touch no-js">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<head>
+    <meta charset="utf-8">
+    <meta name="HandheldFriendly" content="True" />
+    <meta name="MobileOptimized" content="320" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="rei" content="3/2/2022 10.39am est" />
+
+    
+        <script tyle="text/javascript" src="/content/dam/cdc/j/cdcrSwitch.js"></script>
+        <script type="text/javascript"> 
+            if (typeof cdc === "undefined"){
+                cdc = {};
+            }
+            cdc.localizedLang="en/us";
+
+            if (window.cdcext === undefined) { window.cdcext = {}; }
+            cdcext.customEnvironment = "prod";
+            if (window.cdclocale === undefined) { window.cdclocale = {}; }
+            cdclocale.locale = cdc.localizedLang=="en/us"?"en_us":cdc.localizedLang;
+
+        </script> 
+         
+    
+    
+
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+<script src="/c/dam/cdc/t/ctm-core.js"></script>
+<script>
+    window['adrum-start-time'] = new Date().getTime();
+    window.environ = "prod" ;
+</script>
+
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<script>
+    if (window.cpe === undefined) {
+        window.cpe = {};
+    }
+
+    cpe.accountName = "prod";
+    cpe.config = ["cinf","dsc","pps"];
+    cpe.hideMethod = "elements";
+
+    window.targetGlobalSettings = JSON.parse('{\x22timeout\x22:4000}');
+    window.targetPageParamsAll = () => JSON.parse('{\x22entity\x22:\x22{\\\x22id\\\x22:\\\x221771931901541162\\\x22,\\\x22categoryId\\\x22:\\\x22\\\x22}\x22}');
+
+    
+    const bullseyeLibrary = `/etc.clientlibs/cisco-cdc/clientlibs/clientlib-external/resources/external/bullseye.js`;
+
+    import(bullseyeLibrary);
+</script>
+<script src="/etc.clientlibs/cisco-cdc/clientlibs/clientlib-external/resources/regional-mbox/regional-mbox.js"></script>
+    
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+        <title>Cisco Catalyst SD-WAN Systems and Interfaces Configuration Guide, Cisco IOS XE Catalyst SD-WAN Release 17.x - TLOC Extension [Cisco SD-WAN] - Cisco</title>
+    
+    
+    
+    
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <meta http-equiv="Content-type" content="text/html;charset=UTF-8"  />
+    <meta name="description" content="Outlines TLOC extension concepts, operation over IPv6, configuration procedures, and verification methods, providing a comprehensive overview of feature history, principles, limitations, and practical deployment for SD-WAN environments."  />
+    <meta name="title" content="Cisco Catalyst SD-WAN Systems and Interfaces Configuration Guide, Cisco IOS XE Catalyst SD-WAN Release 17.x - TLOC Extension [Cisco SD-WAN]"  />
+    <meta name="documentId" content="1771931901515161"  />
+    <meta name="templateName" content="book"  />
+    <meta property="fb:app_id" content="156494687694418"  />
+    <meta name="ioContentSource" content="WEM"  />
+    <meta name="docType" content="TSD Products Configuration Guide Chapter"  />
+    <meta name="concept" content="Cisco SD-WAN"  />
+    <meta name="iaPath" content="cisco.com#Products#Cisco Products#Routers#Software-Defined WAN (SD-WAN)#Cisco SD-WAN"  />
+    <meta name="contentType" content="cisco.com#US#preSales"  />
+    <meta name="locale" content="US"  />
+    <meta name="language" content="en"  />
+    <meta name="country" content="US"  />
+    <meta name="CCID_Page" content="cc001772"  />
+    <meta name="date" content="Fri Oct 16 05:13:44 PDT 2026"  />
+    <meta name="accessLevel" content="Customer"  />
+    <meta name="accessLevel" content="Guest"  />
+    <meta name="accessLevel" content="Partner"  />
+    <meta name="entitlementExpression" content="contains( &quot;0,1,2,3,4,7&quot; , $profileField[3] )"  />
+    <meta property="og:site_name" content="Cisco"  />
+    <meta property="og:type" content="website"  />
+    <meta property="og:title" content="Cisco Catalyst SD-WAN Systems and Interfaces Configuration Guide, Cisco IOS XE Catalyst SD-WAN Release 17.x - TLOC Extension [Cisco SD-WAN]"  />
+    <meta property="og:description" content="Outlines TLOC extension concepts, operation over IPv6, configuration procedures, and verification methods, providing a comprehensive overview of feature history, principles, limitations, and practical deployment for SD-WAN environments."  />
+    <meta property="og:url" content="https://www.cisco.com/c/en/us/td/docs/routers/sdwan/17-x/systems-interfaces/systems-interfaces-guide-17-x/tloc-extension.html"  />
+    <link rel="canonical" href="https://www.cisco.com/c/en/us/td/docs/routers/sdwan/17-x/systems-interfaces/systems-interfaces-guide-17-x/tloc-extension.html"/>
+	
+
+    
+ 
+    
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <script src="/etc.clientlibs/clientlibs/granite/jquery.min.js"></script>
+<script src="/etc.clientlibs/clientlibs/granite/utils.min.js"></script>
+<script src="/etc.clientlibs/clientlibs/granite/jquery/granite.min.js"></script>
+<script src="/etc.clientlibs/foundation/clientlibs/jquery.min.js"></script>
+<script src="/etc.clientlibs/foundation/clientlibs/shared.min.js"></script>
+<script src="/etc.clientlibs/cq/personalization/clientlib/underscore.min.js"></script>
+<script src="/etc.clientlibs/cq/personalization/clientlib/personalization/kernel.min.js"></script>
+<script src="/etc.clientlibs/cq/personalization/clientlib/personalization/kernel.min.js"></script>
+<script type="text/javascript">
+    $CQ(function() {
+        CQ_Analytics.SegmentMgr.loadSegments("\/etc\/segmentation");
+        CQ_Analytics.ClientContextUtils.init("\/c\/dnc\/etc\/clientcontext\/default", "\/content\/en\/us\/td\/docs\/routers\/sdwan\/17\u002Dx\/systems\u002Dinterfaces\/systems\u002Dinterfaces\u002Dguide\u002D17\u002Dx\/tloc\u002Dextension");
+
+        
+    });
+</script>
+
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      <link rel="stylesheet" href="/etc/designs/cdc/clientlibs/responsive/css/cisco-sans.min.css" type="text/css">
+
+
+
+    
+
+
+
+
+
+
+
+
+
+
+
+
+    <script src="/etc/designs/cdc/clientlibs/responsive/js/foundation.min.js"></script>
+
+    <link rel="stylesheet" href="/etc/designs/cdc/clientlibs/responsive/css/books.min.css" type="text/css">
+
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+       
+
+    <script>
+        sessionStorage.setItem("logOutIntermediateMessage", 'You are being logged out.');
+    </script>
+    
+    
+	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- Custom JSON LD For Products Type -->
+
+    
+    <script type="application/ld+json">
+        [
+           
+            {
+          "@context": "http://www.schema.org",                                                                        
+          "@type": "WebPage",
+          "name": "TLOC Extension",  		  
+          "url": "https://www.cisco.com/c/en/us/td/docs/routers/sdwan/17-x/systems-interfaces/systems-interfaces-guide-17-x/tloc-extension.html",
+          "description": "Outlines TLOC extension concepts, operation over IPv6, configuration procedures, and verification methods, providing a comprehensive overview of feature history, principles, limitations, and practical deployment for SD-WAN environments.",
+          "publisher": {
+              "@type": "Corporation",
+                 "name": "Cisco"
+            }
+        }]
+    </script>
+<!-- End Custom JSON LD For Products Type -->
+
+<!-- Video JSON LD -->
+
+
+
+
+<!-- End Video JSON LD -->
+
+    
+
+                                <script>!function(e){var n="https://s.go-mpulse.net/boomerang/";if("False"=="True")e.BOOMR_config=e.BOOMR_config||{},e.BOOMR_config.PageParams=e.BOOMR_config.PageParams||{},e.BOOMR_config.PageParams.pci=!0,n="https://s2.go-mpulse.net/boomerang/";if(window.BOOMR_API_key="GKZXC-NS3SU-A7VFH-HKBHM-U7LKH",function(){function e(){if(!i){var e=document.createElement("script");e.id="boomr-scr-as",e.src=window.BOOMR.url,e.async=!0,o.parentNode.appendChild(e),i=!0}}function t(e){i=!0;var n,t,a,r,d=document,O=window;if(window.BOOMR.snippetMethod=e?"if":"i",t=function(e,n){var t=d.createElement("script");t.id=n||"boomr-if-as",t.src=window.BOOMR.url,BOOMR_lstart=(new Date).getTime(),e=e||d.body,e.appendChild(t)},!window.addEventListener&&window.attachEvent&&navigator.userAgent.match(/MSIE [67]\./))return window.BOOMR.snippetMethod="s",void t(o.parentNode,"boomr-async");a=document.createElement("IFRAME"),a.src="about:blank",a.title="",a.role="presentation",a.loading="eager",r=(a.frameElement||a).style,r.width=0,r.height=0,r.border=0,r.display="none",o.parentNode.appendChild(a);try{O=a.contentWindow,d=O.document.open()}catch(_){n=document.domain,a.src="javascript:var d=document.open();d.domain='"+n+"';void(0);",O=a.contentWindow,d=O.document.open()}if(n)d._boomrl=function(){this.domain=n,t()},d.write("<bo"+"dy onload='document._boomrl();'>");else if(O._boomrl=function(){t()},O.addEventListener)O.addEventListener("load",O._boomrl,!1);else if(O.attachEvent)O.attachEvent("onload",O._boomrl);d.close()}function a(e){window.BOOMR_onload=e&&e.timeStamp||(new Date).getTime()}if(!window.BOOMR||!window.BOOMR.version&&!window.BOOMR.snippetExecuted){window.BOOMR=window.BOOMR||{},window.BOOMR.snippetStart=(new Date).getTime(),window.BOOMR.snippetExecuted=!0,window.BOOMR.snippetVersion=12,window.BOOMR.url=n+"GKZXC-NS3SU-A7VFH-HKBHM-U7LKH";var o=document.currentScript||document.getElementsByTagName("script")[0],i=!1,r=document.createElement("link");if(r.relList&&"function"==typeof r.relList.supports&&r.relList.supports("preload")&&"as"in r)window.BOOMR.snippetMethod="p",r.href=window.BOOMR.url,r.rel="preload",r.as="script",r.addEventListener("load",e),r.addEventListener("error",function(){t(!0)}),setTimeout(function(){if(!i)t(!0)},3e3),BOOMR_lstart=(new Date).getTime(),o.parentNode.appendChild(r);else t(!1);if(window.addEventListener)window.addEventListener("load",a,!1);else if(window.attachEvent)window.attachEvent("onload",a)}}(),"".length>0)if(e&&"performance"in e&&e.performance&&"function"==typeof e.performance.setResourceTimingBufferSize)e.performance.setResourceTimingBufferSize();!function(){if(BOOMR=e.BOOMR||{},BOOMR.plugins=BOOMR.plugins||{},!BOOMR.plugins.AK){var n=""=="true"?1:0,t="",a="vtl6o6fydupha2wywphq-f-7bd5be1c4-clientnsv4-s.akamaihd.net",o="false"=="true"?2:1,i={"ak.v":"41","ak.cp":"117370","ak.ai":parseInt("271834",10),"ak.ol":"0","ak.cr":22,"ak.ipv":4,"ak.proto":"http/1.1","ak.rid":"45fc667","ak.r":51284,"ak.a2":n,"ak.m":"dsca","ak.n":"essl","ak.cport":7168,"ak.gh":"23.54.116.103","ak.quicv":"","ak.tlsv":"tls1.3","ak.0rtt":"","ak.0rtt.ed":"","ak.csrc":"-","ak.acc":"bbr","ak.t":"1792586703","ak.ak":"hOBiQwZUYzCg5VSAfCLimQ==8FwPPcGvz+/yHtr8zHNlkf7q5FWoT3ueIic4Q05PLllSO9evpgwtx3cpT/oGQA8Lef5kHcUAev4PgJERIOVIg7BkNUFG1B1ccg/PecX1NuO75fZkFSs4rT45MhAbeQwMdodjiHnXux6R4+wKK7u7rmVt7Dstrv/97BTwZ2m3z0uJHXeb8zxn0oZ4ij8L8kJBxBk/y2aVz1lJTDdyQfzIiZ/X+zAzO+wsgxZdivYFOq88IgagyznFnRtIdpCWeIrSiElKqs0HI9DIfFjvMpKy/kcNX9vB296bM+RXQ+lxDFhRHaCJPsvoQPtjDp2DxStVakKcFkv+z6puG1mze1xiLqh/bI41coWX8iWAPMSC1TcdSpzNuWy1j1G4ZlvMk+H0xupIdehREPjPnNnnII8to9NK+obpFXdVjboaEu534Ew=","ak.pv":"553","ak.dpoabenc":"","ak.tf":o};if(""!==t)i["ak.ruds"]=t;var r={i:!1,av:function(n){var t="http.initiator";if(n&&(!n[t]||"spa_hard"===n[t]))i["ak.feo"]=void 0!==e.aFeoApplied?1:0,BOOMR.addVar(i)},rv:function(){var e=["ak.cport","ak.cr","ak.csrc","ak.gh","ak.ipv","ak.m","ak.n","ak.ol","ak.proto","ak.quicv","ak.tlsv","ak.0rtt","ak.0rtt.ed","ak.r","ak.acc","ak.t","ak.tf"];BOOMR.removeVar(e)}};BOOMR.plugins.AK={akVars:i,akDNSPreFetchDomain:a,init:function(){if(!r.i){var e=BOOMR.subscribe;e("before_beacon",r.av,null,null),e("onbeacon",r.rv,null,null),r.i=!0}return this},is_complete:function(){return!0}}}}()}(window);</script></head>
+
+<body id="wcq" class="fw-res cdc-support cdc-books cdc-high-density cdc-full-width cdc-transform
+">
+    
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div id="fw-skiplinks">
+    <ul class="container">
+        <li><a id="skiplink-content" href="#fw-content">Skip to content</a></li>
+        <li><a id="skiplink-search" href="#">Skip to search</a></li>
+        <li><a id="skiplink-footer" href="#fw-footer-v2" class="last">Skip to footer</a></li>
+    </ul>
+</div>
+
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <script type="module" src="/site/web-components/us/en/cdc-header.js"></script>
+    <cdc-header></cdc-header>
+    <nav class="fw-c-header__seo-links" aria-hidden="true" style="display:none">
+        <ul>
+            <li><a tabindex="-1" href="https://www.cisco.com/site/us/en/index.html">Cisco.com Worldwide</a></li>
+            <li><a tabindex="-1" href="/site/us/en/products/index.html">Products and Services</a></li>
+            <li><a tabindex="-1" href="https://www.cisco.com/site/us/en/solutions/index.html">Solutions</a></li>
+            <li><a tabindex="-1" href="/c/en/us/support/index.html">Support</a></li>
+            <li><a tabindex="-1" href="/site/us/en/learn/index.html">Learn</a></li>
+            <li><a tabindex="-1" href="/site/us/en/about/sitemap.html">Explore Cisco</a></li>
+            <li><a tabindex="-1" href="/site/us/en/buy/index.html">How to Buy</a></li>
+            <li><a tabindex="-1" href="https://www.cisco.com/site/us/en/partners/index.html">Partners Home</a></li>                
+            <li><a tabindex="-1" href="/site/us/en/partners/360-partner-program/partner-program/index.html">Partner Program</a></li>
+            <li><a tabindex="-1" href="https://www.cisco.com/site/us/en/partners/support-help/index.html">Support</a></li>
+            <li><a tabindex="-1" href="/site/us/en/partners/360-partner-program/tools-training/index.html">Tools</a></li>
+            <li><a tabindex="-1" href="https://locatr.cloudapps.cisco.com/WWChannels/LOCATR/pf/index.jsp#/">Find a Cisco Partner</a></li>
+            <li><a tabindex="-1" href="https://www.cisco.com/site/us/en/partners/connect-with-a-partner/index.html">Meet our Partners</a></li>
+            <li><a tabindex="-1" href="https://www.cisco.com/site/us/en/partners/index.html">Become a Cisco Partner</a></li>
+
+        </ul>
+    </nav>
+
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div id="fw-content" class="container grid">
+    
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+   
+
+
+
+
+
+
+
+
+<div class="row full blowout" data-owner="ID">
+	<div class="col full ">
+        
+            
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<nav id="fw-breadcrumb" class="data-based user-driven-nav" aria-label="breadcrumbs" data-owner="ID">
+
+   
+    <ul itemscope itemtype="//schema.org/BreadcrumbList">
+        <li aria-hidden="true"><a href='#' class="skip"><span></span></a></li>
+        <li itemprop='itemListElement' itemscope itemtype='//schema.org/ListItem'><a itemprop='item' href='/c/en/us/index.html'><span itemprop='name'>Home</span><meta itemprop='position' content='1' /></a><span class='caret'></span></li><li itemprop='itemListElement' itemscope itemtype='//schema.org/ListItem'><a itemprop='item' href='/c/en/us/support/index.html'><span itemprop='name'>Support</span><meta itemprop='position' content='2' /></a><span class='caret'></span></li><li itemprop='itemListElement' itemscope itemtype='//schema.org/ListItem'><a itemprop='item' href='/c/en/us/support/all-products.html'><span itemprop='name'>Product Support</span><meta itemprop='position' content='3' /></a><span class='caret'></span></li><li itemprop='itemListElement' itemscope itemtype='//schema.org/ListItem'><a itemprop='item' href='/c/en/us/support/routers/category.html'><span itemprop='name'>Routers</span><meta itemprop='position' content='4' /></a><span class='caret'></span></li><li itemprop='itemListElement' itemscope itemtype='//schema.org/ListItem'><a itemprop='item' href='/c/en/us/support/routers/sd-wan/series.html'><span itemprop='name'>Cisco SD-WAN</span><meta itemprop='position' content='5' /></a><span class='caret'></span></li><li itemprop='itemListElement' itemscope itemtype='//schema.org/ListItem'><a itemprop='item' href='/c/en/us/support/routers/sd-wan/products-installation-and-configuration-guides-list.html'><span itemprop='name'>Configuration Guides</span><meta itemprop='position' content='6' /></a><span class='caret'></span></li>
+    </ul>
+</nav>
+<script>
+    if (window.cdc === undefined) { window.cdc = {}; }
+    if (cdc.breadcrumb === undefined) {
+        cdc.breadcrumb = (function () {
+            let clone = document.querySelector('#fw-breadcrumb').cloneNode(true);
+
+            let appendClone = function () {
+                let hasBreadcrumb = document.querySelector('#fw-breadcrumb') !== null,
+                    firstMarquee = document.querySelectorAll('.dmc-mq')[0];
+
+                if (!hasBreadcrumb && firstMarquee !== undefined) {
+                    firstMarquee.querySelector('.frame .inset').insertBefore(this.clone, firstMarquee.querySelector('.frame .inset').firstElementChild);
+                }
+            };
+
+            return {
+                clone: clone,
+                appendClone: appendClone
+            }
+        }());
+    }
+    //DE380224
+    var anchorChild = document.getElementsByTagName("a");
+    for(var i=0; i<anchorChild.length; i++){ 
+        if(anchorChild[i].getAttribute("itemprop")=="item")  {  
+            if ( anchorChild[i].href.includes("%3Clocale%3E") ){
+                let anchorChildHREF = anchorChild[i].href;
+                let docLocale = document.querySelector('meta[name="locale"]').getAttribute('content');
+                let docLanguage = document.querySelector('meta[name="language"]').getAttribute('content');
+                
+                var docSeparator;
+                
+                if ((docLocale.toLowerCase() == "us") && (docLanguage.toLowerCase() == "en")) {
+                    docSeparator="/";
+                } else {
+                    docSeparator="_";
+                }
+                
+                let anchorURLReplace = docLanguage.toLowerCase() + docSeparator + docLocale.toLowerCase();
+                anchorChildHREF = anchorChildHREF.replace("%3Clocale%3E", anchorURLReplace);
+                anchorChild[i].setAttribute('href', anchorChildHREF);
+            }
+        }
+    }
+</script>
+
+        
+		        <h1 id="fw-pagetitle" class="" data-owner="ID">Cisco Catalyst SD-WAN Systems and Interfaces Configuration Guide, Cisco IOS XE Catalyst SD-WAN Release 17.x</h1>
+		
+	</div>
+</div>
+     <!--googleon: index--><!--googleon: snippet-->
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+   <!-- have to do this for _g.I18n to be defined in preview and publish modes -->
+  
+  <script type="text/javascript">
+      // initialize dictionary for i18n
+      cdc.util.ensureNamespace("cdc.rc");
+    cdc.rc.eotkeys = {
+        showOnly5Products : "Show Only 5 Products",       
+        showAllRowsProducts : "Show All nRows Products",
+        supportCommunityUrl : "https://community.cisco.com/t5/technology-and-support/ct-p/technology-support",
+        supportCommunity : "Cisco Community",
+        thankYou : "Thank You",
+        viewersAlso : "Customers Also Viewed", 
+        show : "Show", 
+        more : "More", 
+        showOnly3Documents: "Show Only 3 Documents"
+      };
+  </script>
+
+
+
+<div class="row blowout full visitedlinks">
+    <div class="col full">
+        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+    <div class="disclaimers techdocs">
+        
+        <div class="disclaimerButtons">
+        <div class="aboutBias">
+            <button aria-expanded="false" >Bias-Free Language</button>
+        </div>
+        
+        </div>
+        
+        <div class="biasfreeContent panel">
+            <h3>Bias-Free Language</h3>
+            <p>The documentation set for this product strives to use bias-free language. For the purposes of this documentation set, bias-free is defined as language that does not imply discrimination based on age, disability, gender, racial identity, ethnic identity, sexual orientation, socioeconomic status, and intersectionality. Exceptions may be present in the documentation due to language that is hardcoded in the user interfaces of the product software, language used based on RFP documentation, or language that is used by a referenced third-party product. <a href="https://www.cisco.com/site/us/en/about/purpose/social-impact/inclusive-language-policy.html" aria-label="Learn more about Bias Free Language">Learn more</a> about how Cisco is using Inclusive Language.</p>
+        </div>
+        
+    </div><!-- disclaimers -->
+ 
+        
+
+
+
+
+
+
+
+
+
+
+
+
+
+<script>
+    /* this is needed for the translation selector */
+    if (typeof(cdc) == "undefined") cdc={};
+    if (typeof(cdc.translations) == "undefined") cdc.translations={};
+    var bookTitle = 'Book Title Page';
+</script>
+
+<span id="actionBar-top"></span>
+<section id="actionBar" class="noprint base-blowout">
+    <span class="icons">
+        
+      <button class="bookToc simpleOverlay-trigger" id="onlyforTrigger" aria-haspopup="dialog"> <!--US140575-->
+            Book Contents
+        </button>
+         <div class="bookToc simpleOverlay-content">
+            <div role="heading" aria-level="2" class="title" id="book-toc-region-title">Book Contents</div>
+               <!--googleoff: index--><!--googleoff: snippet-->  
+               <div class="content" role="region" aria-labelledby="book-toc-region-title">
+                  
+
+
+
+<ul id="bookToc">
+    <li><a href="/c/en/us/td/docs/routers/sdwan/17-x/systems-interfaces/systems-interfaces-guide-17-x/authentication.html">Authentication</a></li>
+<li><a href="/c/en/us/td/docs/routers/sdwan/17-x/systems-interfaces/systems-interfaces-guide-17-x/radius-tacacs.html">RADIUS and TACACS</a></li>
+<li><a href="/c/en/us/td/docs/routers/sdwan/17-x/systems-interfaces/systems-interfaces-guide-17-x/users-and-access.html">Users and Access</a></li>
+<li><a href="/c/en/us/td/docs/routers/sdwan/17-x/systems-interfaces/systems-interfaces-guide-17-x/password-management.html">Password Management</a></li>
+<li><a href="/c/en/us/td/docs/routers/sdwan/17-x/systems-interfaces/systems-interfaces-guide-17-x/role-based-access-control.html">Role-Based Access Control</a></li>
+<li><a href="/c/en/us/td/docs/routers/sdwan/17-x/systems-interfaces/systems-interfaces-guide-17-x/system-logging.html">System Logging</a></li>
+<li><a href="/c/en/us/td/docs/routers/sdwan/17-x/systems-interfaces/systems-interfaces-guide-17-x/device-tagging.html">Device Tagging</a></li>
+<li><a href="/c/en/us/td/docs/routers/sdwan/17-x/systems-interfaces/systems-interfaces-guide-17-x/config-devices.html">Configure Devices</a></li>
+<li><a href="/c/en/us/td/docs/routers/sdwan/17-x/systems-interfaces/systems-interfaces-guide-17-x/basic-settings-sdwan-manager.html">Basic Settings for Cisco SD-WAN Manager</a></li>
+<li><a href="/c/en/us/td/docs/routers/sdwan/17-x/systems-interfaces/systems-interfaces-guide-17-x/vpn.html">VPN</a></li>
+<li><a href="/c/en/us/td/docs/routers/sdwan/17-x/systems-interfaces/systems-interfaces-guide-17-x/tloc.html">TLOC</a></li>
+<li><a href="/c/en/us/td/docs/routers/sdwan/17-x/systems-interfaces/systems-interfaces-guide-17-x/tloc-extension.html">TLOC Extension</a></li>
+<li><a href="/c/en/us/td/docs/routers/sdwan/17-x/systems-interfaces/systems-interfaces-guide-17-x/network-hierarchy-management.html">Network Hierarchy Management</a></li>
+<li><a href="/c/en/us/td/docs/routers/sdwan/17-x/systems-interfaces/systems-interfaces-guide-17-x/resource-management-and-collectors.html">Resource Management and Collectors in a Network Hierarchy</a></li>
+<li><a href="/c/en/us/td/docs/routers/sdwan/17-x/systems-interfaces/systems-interfaces-guide-17-x/wireless-mgmt.html">Wireless Management</a></li>
+<li><a href="/c/en/us/td/docs/routers/sdwan/17-x/systems-interfaces/systems-interfaces-guide-17-x/configure-cellular-gateway.html">Cellular Gateway</a></li>
+<li><a href="/c/en/us/td/docs/routers/sdwan/17-x/systems-interfaces/systems-interfaces-guide-17-x/cisco-unified-communications-voice-services.html">Cisco Unified Communications Voice Services</a></li>
+<li><a href="/c/en/us/td/docs/routers/sdwan/17-x/systems-interfaces/systems-interfaces-guide-17-x/cisco-unified-border-element.html">Cisco Unified Border Element</a></li>
+<li><a href="/c/en/us/td/docs/routers/sdwan/17-x/systems-interfaces/systems-interfaces-guide-17-x/onboarding-cisco-thousandeyes-agent.html">Onboarding ThousandEyes Agent and Onboarding Tests</a></li>
+<li><a href="/c/en/us/td/docs/routers/sdwan/17-x/systems-interfaces/systems-interfaces-guide-17-x/monitoring-with-thousandeyes.html">Monitoring with Cisco ThousandEyes</a></li>
+<li><a href="/c/en/us/td/docs/routers/sdwan/17-x/systems-interfaces/systems-interfaces-guide-17-x/etherchann.html">EtherChannels</a></li>
+<li><a href="/c/en/us/td/docs/routers/sdwan/17-x/systems-interfaces/systems-interfaces-guide-17-x/network-interfaces.html">Network Interfaces</a></li>
+<li><a href="/c/en/us/td/docs/routers/sdwan/17-x/systems-interfaces/systems-interfaces-guide-17-x/bandwidth-reference-values-for-network-interfaces.html">Bandwidth Utilization Reference Values </a></li>
+<li><a href="/c/en/us/td/docs/routers/sdwan/17-x/systems-interfaces/systems-interfaces-guide-17-x/loopback-interfaces.html">Loopback Interfaces</a></li>
+<li><a href="/c/en/us/td/docs/routers/sdwan/17-x/systems-interfaces/systems-interfaces-guide-17-x/subinterfaces.html">Subinterfaces</a></li>
+<li><a href="/c/en/us/td/docs/routers/sdwan/17-x/systems-interfaces/systems-interfaces-guide-17-x/dynamic-interfaces.html">Dynamic Interfaces</a></li>
+<li><a href="/c/en/us/td/docs/routers/sdwan/17-x/systems-interfaces/systems-interfaces-guide-17-x/vpn-ethernet-interface.html">VPN Ethernet Interface</a></li>
+<li><a href="/c/en/us/td/docs/routers/sdwan/17-x/systems-interfaces/systems-interfaces-guide-17-x/cellular-interfaces.html">Cellular Interfaces</a></li>
+<li><a href="/c/en/us/td/docs/routers/sdwan/17-x/systems-interfaces/systems-interfaces-guide-17-x/vrrp-interface-tracking.html">VRRP Interface Tracking</a></li>
+<li><a href="/c/en/us/td/docs/routers/sdwan/17-x/systems-interfaces/systems-interfaces-guide-17-x/vpn-interface-bridge.html">VPN Interface Bridge</a></li>
+<li><a href="/c/en/us/td/docs/routers/sdwan/17-x/systems-interfaces/systems-interfaces-guide-17-x/dsl-ipoe.html">DSL IPoE</a></li>
+<li><a href="/c/en/us/td/docs/routers/sdwan/17-x/systems-interfaces/systems-interfaces-guide-17-x/dsl-pppoa.html">DSL PPPoA</a></li>
+<li><a href="/c/en/us/td/docs/routers/sdwan/17-x/systems-interfaces/systems-interfaces-guide-17-x/dsl-pppoe.html">DSL PPPoE</a></li>
+<li><a href="/c/en/us/td/docs/routers/sdwan/17-x/systems-interfaces/systems-interfaces-guide-17-x/vpn-interface-ethernet-pppoe.html">VPN Interface Ethernet PPPoE</a></li>
+<li><a href="/c/en/us/td/docs/routers/sdwan/17-x/systems-interfaces/systems-interfaces-guide-17-x/vpn-interface-gre.html">VPN Interface GRE</a></li>
+<li><a href="/c/en/us/td/docs/routers/sdwan/17-x/systems-interfaces/systems-interfaces-guide-17-x/vpn-interface-ipsec.html">VPN Interface IPsec</a></li>
+<li><a href="/c/en/us/td/docs/routers/sdwan/17-x/systems-interfaces/systems-interfaces-guide-17-x/vpn-interface-multilink.html">VPN Interface Multilink</a></li>
+<li><a href="/c/en/us/td/docs/routers/sdwan/17-x/systems-interfaces/systems-interfaces-guide-17-x/vpn-interface-svi.html">VPN Interface SVI</a></li>
+<li><a href="/c/en/us/td/docs/routers/sdwan/17-x/systems-interfaces/systems-interfaces-guide-17-x/vpn-interface-t1-e1.html">VPN Interface T1/E1</a></li>
+<li><a href="/c/en/us/td/docs/routers/sdwan/17-x/systems-interfaces/systems-interfaces-guide-17-x/ip-directed-broadcast.html">IP Directed Broadcast</a></li>
+<li><a href="/c/en/us/td/docs/routers/sdwan/17-x/systems-interfaces/systems-interfaces-guide-17-x/layer2-vpn.html">Layer 2 VPN</a></li>
+<li><a href="/c/en/us/td/docs/routers/sdwan/17-x/systems-interfaces/systems-interfaces-guide-17-x/vfr-and-underlay-fragmentation.html">VFR and Underlay Fragmentation</a></li>
+<li><a href="/c/en/us/td/docs/routers/sdwan/17-x/systems-interfaces/systems-interfaces-guide-17-x/pppoe.html">PPPoE</a></li>
+<li><a href="/c/en/us/td/docs/routers/sdwan/17-x/systems-interfaces/systems-interfaces-guide-17-x/gre-in-udp.html">GRE-in-UDP</a></li>
+<li><a href="/c/en/us/td/docs/routers/sdwan/17-x/systems-interfaces/systems-interfaces-guide-17-x/track-static-routes-for-service-vpns.html">Track Static Routes for Service VPNs</a></li>
+<li><a href="/c/en/us/td/docs/routers/sdwan/17-x/systems-interfaces/systems-interfaces-guide-17-x/vdsl-and-gshdsl.html">VDSL and GSHDSL</a></li>
+<li><a href="/c/en/us/td/docs/routers/sdwan/17-x/systems-interfaces/systems-interfaces-guide-17-x/network-slicing.html">Network Slicing</a></li>
+<li><a href="/c/en/us/td/docs/routers/sdwan/17-x/systems-interfaces/systems-interfaces-guide-17-x/csc.html">Carrier Supporting Carrier</a></li>
+<li><a href="/c/en/us/td/docs/routers/sdwan/17-x/systems-interfaces/systems-interfaces-guide-17-x/tcp-mss-and-clear-dont-fragment.html">TCP MSS and Clear Dont Fragment</a></li>
+<li><a href="/c/en/us/td/docs/routers/sdwan/17-x/systems-interfaces/systems-interfaces-guide-17-x/hot-standby-router-protocol.html">Hot Standby Router Protocol</a></li>
+<li><a href="/c/en/us/td/docs/routers/sdwan/17-x/systems-interfaces/systems-interfaces-guide-17-x/ip-dhcp-smart-relay.html">IP DHCP Smart-Relay</a></li>
+<li><a href="/c/en/us/td/docs/routers/sdwan/17-x/systems-interfaces/systems-interfaces-guide-17-x/dhcp-vendor-option-support.html">DHCP Vendor Option Support</a></li>
+<li><a href="/c/en/us/td/docs/routers/sdwan/17-x/systems-interfaces/systems-interfaces-guide-17-x/geofencing.html">Geofencing</a></li>
+<li><a href="/c/en/us/td/docs/routers/sdwan/17-x/systems-interfaces/systems-interfaces-guide-17-x/multitenancy.html">Multitenancy</a></li>
+<li><a href="/c/en/us/td/docs/routers/sdwan/17-x/systems-interfaces/systems-interfaces-guide-17-x/tenant-mgmt.html">Multitenancy Tenant Management</a></li>
+<li><a href="/c/en/us/td/docs/routers/sdwan/17-x/systems-interfaces/systems-interfaces-guide-17-x/multitenant-wan-edge-devices.html">Multitenant WAN Edge Devices</a></li>
+<li><a href="/c/en/us/td/docs/routers/sdwan/17-x/systems-interfaces/systems-interfaces-guide-17-x/multitenancy-migration.html">Multitenancy Migration</a></li>
+<li><a href="/c/en/us/td/docs/routers/sdwan/17-x/systems-interfaces/systems-interfaces-guide-17-x/multitenancy-disaster-recovery.html">Multitenancy Disaster Recovery</a></li>
+<li><a href="/c/en/us/td/docs/routers/sdwan/17-x/systems-interfaces/systems-interfaces-guide-17-x/dashboard-multitenancy.html">Multitenancy Dashboard</a></li>
+<li><a href="/c/en/us/td/docs/routers/sdwan/17-x/systems-interfaces/systems-interfaces-guide-17-x/assign-controllers-tenants.html">Assigning SD-WAN Controllers to Tenants in a Multitenancy Environment</a></li>
+<li><a href="/c/en/us/td/docs/routers/sdwan/17-x/systems-interfaces/systems-interfaces-guide-17-x/dynamic-on-demand-tunnels.html">Dynamic On-Demand Tunnels</a></li>
+<li><a href="/c/en/us/td/docs/routers/sdwan/17-x/systems-interfaces/systems-interfaces-guide-17-x/ipv6-functionality.html">IPv6 Functionality</a></li>
+<li><a href="/c/en/us/td/docs/routers/sdwan/17-x/systems-interfaces/systems-interfaces-guide-17-x/ipv6-in-dual-stack.html">IPv6 in a Dual Stack Environment</a></li>
+<li><a href="/c/en/us/td/docs/routers/sdwan/17-x/systems-interfaces/systems-interfaces-guide-17-x/cli-templates-for-cisco-ios-xe-catalyst-sd-wan-devices.html">CLI Templates for Cisco IOS XE Catalyst SD-WAN Devices</a></li>
+<li><a href="/c/en/us/td/docs/routers/sdwan/17-x/systems-interfaces/systems-interfaces-guide-17-x/cli-add-on-feature-templates.html">Feature history for CLI add-on feature templates</a></li>
+<li><a href="/c/en/us/td/docs/routers/sdwan/17-x/systems-interfaces/systems-interfaces-guide-17-x/configuration-and-monitoring-of-p-lte-450-mhz-modules.html">Configuring and Monitoring P-LTE-450 MHz Modules</a></li>
+
+</ul>
+
+
+               </div>
+               <!--googleon: index--><!--googleon: snippet-->               
+            </div>
+
+        
+    
+        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class='versionddcontainer chapter'></div>
+<script type="text/html" class="versionstemp">
+            <div class="versionsdd">
+                <button class="versionbutton" role="combobox" aria-haspopup="listbox" aria-expanded="false" aria-controls="versionlist" aria-label="Version/Release"><label></label></button>
+                <ul id="versionlist" class="versionlist" role="listbox" aria-label="Version/Release options">
+                <%
+                    let pageUrl = window.location.pathname.replace("/content/","/c/").toLowerCase();
+                    if (true) pageUrl = pageUrl.substring(0,pageUrl.lastIndexOf("/"))+".html";
+                    for(let i=0; i< data.length; i++) {
+                        let item = data[i],
+                            myurl = item.linkUrl,
+                            urlm = myurl.replace("/content/","/c/");;
+                            mytitle = item.linkTitle;
+                            myclass= urlm.toLowerCase() == pageUrl ? "class=\"selected\"":""; 
+                            isSelected = urlm.toLowerCase() == pageUrl ? "true" : "false";
+%>
+                    <li role="option" aria-selected="${isSelected}"><a href="${myurl}" ${myclass}>${mytitle}</a></li>
+<%
+                  }   %>
+                </ul>
+             </div>
+</script>
+    
+        <span class="utilities">
+          <button title="Search in this Book" class="mobileSearch simpleOverlay-trigger" aria-haspopup="dialog">
+            Search
+          </button>
+          <div class="mobileSearch simpleOverlay-content">
+            <div class="title">Find Matches in This Book</div>
+              <!--googleoff: index--><!--googleoff: snippet-->  
+              <div class="content">
+                <form id="mobileBooksearch" class="chapter">
+                   <input type="search" name="booksearchPhrase" placeholder='Find Matches in This Book'/><button class="submit" aria-label="Search"></button>
+                   <button class="clear"><img src="/etc/designs/cdc/fw/i/ic_clear_gray.png" alt="Clear Contents of Search"/></button>
+                </form>
+                <div id="overlayResults" role="region" aria-live="polite" >
+                   <!-- important, keep this results div begin end on same line in here -->
+                   <div class="results"></div>
+                </div>
+              </div>
+              <!--googleon: index--><!--googleon: snippet-->
+          </div>
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="noprint" id="saveModule">
+
+<script type="text/javascript">
+    cdc.util.ensureNamespace("cdc.rc.savedoc");
+    cdc.rc.savedoc.isLoggedIn = false;
+    cdc.rc.savedoc.save = "Save";
+    cdc.rc.savedoc.saved = "Saved";
+</script>
+
+    <button class="save" aria-expanded="false" aria-label="Save">
+        <label>Save</label>
+    </button>    
+
+</div> 
+    <div class="saveDocumentMessage login cdc-expandPanel"  role="region" aria-live="polite">
+        <a href="/c/login/index.html?referer=/c/en/us/td/docs/routers/sdwan/17-x/systems-interfaces/systems-interfaces-guide-17-x/tloc-extension.html">Log in</a> to Save Content
+    </div>
+
+
+          <!-- Translation Selctor -->
+          <!-- Translation Selector is used on EOT and Books pages. if a page has a locale of en_US then it will provide a list of avaible translations, if its a translated page (non english locale) then provide the link to the english locale. -->
+
+
+ 
+
+
+ 
+          <div class="translations simpleOverlay-content" role="dialog" id="dialogt" aria-labelledby="translation-dialog-title" aria-modal="true">
+            <!-- Intentionally adding tabindex="0" to heading for dialog focus management per requirements -->
+            <div role="heading" class="title" id="translation-dialog-title" tabindex="0">Available Languages</div>
+               <!--googleoff: index--><!--googleoff: snippet--> 
+            <script language="javascript">                    
+                cdc.translations.map = "{en-us=https://www.cisco.com/c/en/us/td/docs/routers/sdwan/17-x/systems-interfaces/systems-interfaces-guide-17-x/tloc-extension.html, x-default=https://www.cisco.com/c/en/us/td/docs/routers/sdwan/17-x/systems-interfaces/systems-interfaces-guide-17-x/tloc-extension.html}";//storing the map for use in the JS
+                cdc.translations.locale="en_us";
+            </script>
+            <div class="content">
+              <div class="availableLanguagesList">
+                  <ul id="translationsList">
+                  </ul> 
+              </div>
+            </div>
+            <!--googleon: index--><!--googleon: snippet-->
+          </div>
+          
+          
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+<script>
+    // stored value for overlay label to use in js
+    var downloadOPtionLabel = 'Download Options',
+    	bookSearchlabel = 'Find Matches in This Book',
+    	translationsLabel = 'Translations',
+    	bookConentLabel= 'Book Contents';
+</script>
+
+
+        
+
+
+
+        <button title="Document Download Options" id="dwnld-button" class="downloadOptions simpleOverlay-trigger" aria-haspopup="dialog" aria-expanded="false">
+            Download
+        </button>
+        <div class="downloadOptions simpleOverlay-content default_dialog" role="dialog" id="dialogd" aria-labelledby="dialog-title" aria-modal="true">
+            <!-- Intentionally adding tabindex="0" to heading for dialog focus management per requirements -->
+            <div role="heading" class="title" id="dialog-title" tabindex="0">Download Options</div>
+            <!--googleoff: index--><!--googleoff: snippet-->  
+            <div class="content">
+                <header>
+
+                    <h3 class="h4"> Book Title</h3>
+                    <p>Cisco Catalyst SD-WAN Systems and Interfaces Configuration Guide, Cisco IOS XE Catalyst SD-WAN Release 17.x</p>
+                    <p class="h4"> Chapter Title</p>
+                    <h3>TLOC Extension</h3>
+
+                </header>
+                <ul>
+
+                        <li >    
+                            <a href="/c/en/us/td/docs/routers/sdwan/17-x/systems-interfaces/systems-interfaces-guide-17-x.pdf" class="pdfIcon">PDF - Complete Book 
+                            <span>(9.18 MB)</span></a>
+
+                                   <a href="/c/en/us/td/docs/routers/sdwan/17-x/systems-interfaces/systems-interfaces-guide-17-x/tloc-extension.pdf" class="chapter">PDF - This Chapter <span>(1.12 MB)</span></a>
+                                                            
+                            <p>View with Adobe Reader on a variety of devices</p>
+                        </li>                                  
+              </ul>
+            </div>
+            <!--googleon: index--><!--googleon: snippet-->
+        </div>
+
+          <button title="Print Friendly Page" class="print simpleOverlay-trigger">
+              Print
+          </button>
+        </span> 
+    </span>
+    <form id="booksearch" tabindex="0" class="chapter">
+       <input type="search" name="booksearchPhrase" placeholder='Find Matches in This Book'/><button class="submit" aria-label="Search"></button>
+       <button class="clear"><img src="/etc/designs/cdc/fw/i/ic_clear_gray.png" alt="Clear Contents of Search"/></button>
+    </form>
+      <div id="searchresult" role="region" aria-live="polite"><button class="close" title="Close search results panel" aria-label="Close search results panel"><span></span><span></span></button>
+         <span class="headArrow"></span>
+         <h2>Results</h2>
+         <div class="matches">
+         </div>
+         <div class="results">
+         </div>
+      </div>
+      <div id="searchResultChapterTitle"></div>
+</section>
+<script type="text/html" id="navigateMatchesTemplate">
+   <div>
+      <button class="up on" title="Scroll to previous matched word" aria-label="Scroll to previous matched word"><span></span></button>
+      <button class="up off" title="Previous Match Not Available" aria-label="Previous Match Not Available"><span></span></button>
+      <span class="matchlabel">Matches</span>
+      <button class="down on" title="Scroll to next matched word" aria-label="Scroll to next matched word"><span></span></button>
+      <button class="down off" title="Next Match Not Available" aria-label="Next Match Not Available"><span></span></button>
+   </div>
+</script>
+<script type="text/html" id="noChapterMatchTemplate">
+   <p>There are no Matches in this chapter.</p>
+</script>
+<script type="text/html" id="searchResultsListTemplate">
+   <p class="h3">Chapters with Matches</p>
+   <ul tabindex="-1">
+<% var i = 0;
+    while ( modelData.links[i] ) {  %>
+      <li>
+<%     curpage = (window.location.pathname.indexOf(modelData.links[i].href) > -1 )?true:false;
+        if ( i === modelData.curpage ) {
+            if ( ! jQuery('.mobileSearch').css("display") == "block") { %>
+               <span class="currentIndicator"></span>${modelData.links[i].title}
+<%         } else {                %>
+               <span class="currentIndicator"></span><button class="curpage" data-href="${modelData.links[i].url}?bookSearch=true${modelData.wcm}">${modelData.links[i].title}</button>
+<%         }
+        } else {  %>
+            <button data-href="${modelData.links[i].url}?bookSearch=true${modelData.wcm}">${modelData.links[i].title}</button>
+<%     }  %>            
+      </li> 
+<% i++;
+    } %>
+   </ul> 
+</script>      
+<script type="text/html" id="noBookMatchTemplate">
+   <p class="head">No matches found in this book</p>
+   <p>This feature looks for an exact match of what you entered in the box.</p>
+   <p>If you entered several words, try reducing the entry to one or two and search again.</p>
+</script>
+<script type="text/html" id="errorTemplate">
+   <p>Search is currently unavailable due to technical issues. We are working to resolve the problem as quickly as possible.</p>
+</script>
+<script type="text/html" id="mobileSearchFooterTemplate">
+   <div id="mobileSearchFooter">
+      <button class="mobileSearch" title="Search in this Book"></button>
+      <button class="closeFooter" aria-label="Close Find Matches in This Book"><span></span><span></span></button>
+      <div class="matches"> 
+      </div>
+   </div>   
+</script>
+ 
+    </div>
+</div>
+<div class="row blowout narrow-wide-v2 flip visitedlinks">
+    <div class="col narrow-v2">
+        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+              <div id="documentInfo">
+                  <dl>
+                     
+                      <dt>Updated:</dt><dd> October 5, 2026</dd>
+                     
+                  </dl>
+                    
+              </div>
+
+ 
+    </div>
+    <div id="chapterTitleDiv" class="col wide-v2 indent-at-xlarge">
+        <!-- this will be chapter title for chapters or header for TOC for books -->
+        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h2 class="chapter-title">Chapter: TLOC Extension </h2>  
+    
+
+    </div>
+</div>
+<div class="row blowout wide-narrow-v2 visitedlinks">
+    <div id="pageContentDiv" class="col wide-v2 indent-at-xlarge" role="main">
+        
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+
+        
+
+    
+ 
+ 
+
+<div id="chapterToc" class="base-blowout">
+    <button><span></span>Chapter Contents</button>
+    <div>
+    
+<ul>
+<li><a href="#tloc-extension">TLOC Extension</a></li>
+<li><a href="#feature-history-for-tloc-extension">Feature history for TLOC extension</a></li>
+<li><a href="#tloc-extension">TLOC extension</a>
+<ul>
+<li><a href="#tloc-extension-over-ipv6">TLOC extension over IPv6</a></li>
+<li><a href="#limitations-for-tloc-extension-over-ipv6">Limitations for TLOC extension over IPv6</a></li>
+</ul></li>
+<li><a href="#how-tloc-extension-over-ipv6-works">How TLOC extension over IPv6 works</a></li>
+<li><a href="#configure-tloc-extension">Configure TLOC extension using CLI commands</a></li>
+<li><a href="#verify-tloc-extension">Verify TLOC extension</a></li></ul>
+    <button id="chapterToc-close">Close<span></span></button>
+    </div>
+</div>
+
+ 
+    <div id="chapterContent">
+    
+                  <h1 class="title topictitle1" id="ariaid-title1">TLOC Extension</h1>
+                  <section class="body ct_refbody">
+                     
+                     
+                  </section>
+                  <!-- minitoc start -->
+                  <nav role="navigation" class="related-links">
+                     <ul class="ullinks">
+                        <li class="link ulchildlink"><a href="#feature-history-for-tloc-extension">Feature history for TLOC extension</a></li>
+                        <li class="link ulchildlink"><a href="#tloc-extension">TLOC extension</a></li>
+                        <li class="link ulchildlink"><a href="#how-tloc-extension-over-ipv6-works">How TLOC extension over IPv6 works</a></li>
+                        <li class="link ulchildlink"><a href="#configure-tloc-extension">Configure TLOC extension using CLI commands</a></li>
+                        <li class="link ulchildlink"><a href="#verify-tloc-extension">Verify TLOC extension</a></li>
+                     </ul>
+                  </nav>
+                  <!-- minitoc end -->
+                  <article class="topic ct_reference nested1" aria-labelledby="ariaid-title2" lang="en-US" id="feature-history-for-tloc-extension">
+                     <h2 class="title topictitle2" id="ariaid-title2">Feature history for TLOC extension</h2>
+                     <section class="body ct_refbody">
+                        
+                        <section class="section objective" id="feature-history-for-tloc-extension__d149975e75">
+                           
+                           <table width="100%" border="1" class="table lookup_table frame-all" id="feature-history-for-tloc-extension__fht">
+                              <caption><span class="table--title-label tabletitle">Table 1. </span><span class="tabletitle">Feature History</span></caption>
+                              <colgroup>
+                                 <col style="width:25%">
+                                 <col style="width:25%">
+                                 <col style="width:50%">
+                              </colgroup>
+                              <thead class="thead">
+                                 
+                                 <tr>
+                                    
+                                    <th font-weight="bold" class="entry colsep-1 rowsep-1" id="feature-history-for-tloc-extension__fht__entry__1">
+                                       
+                                       <p class="p">Feature Name</p>
+                                       
+                                    </th>
+                                    
+                                    <th font-weight="bold" class="entry colsep-1 rowsep-1" id="feature-history-for-tloc-extension__fht__entry__2">
+                                       
+                                       <p class="p">Release Information</p>
+                                       
+                                    </th>
+                                    
+                                    <th font-weight="bold" class="entry colsep-1 rowsep-1" id="feature-history-for-tloc-extension__fht__entry__3">
+                                       
+                                       <p class="p">Description</p>
+                                       
+                                    </th>
+                                    
+                                 </tr>
+                                 
+                              </thead>
+                              <tbody class="tbody">
+                                 
+                                 <tr>
+                                    
+                                    <td class="entry colsep-1 rowsep-1" headers="feature-history-for-tloc-extension__fht__entry__1 ">
+                                       
+                                       <p class="p">TLOC Extension Over IPv6</p>
+                                       
+                                    </td>
+                                    
+                                    <td class="entry colsep-1 rowsep-1" headers="feature-history-for-tloc-extension__fht__entry__2 ">
+                                       
+                                       <p class="p"><span class="ph">Cisco IOS XE Catalyst SD-WAN Release 17.11.1a</span></p>
+                                       
+                                       <p class="p"><span class="ph">Cisco vManage Release 20.11.1</span></p>
+                                       
+                                    </td>
+                                    
+                                    <td class="entry colsep-1 rowsep-1" headers="feature-history-for-tloc-extension__fht__entry__3 ">
+                                       
+                                       <p class="p">This feature enables the support of TLOC extension for IPv6. In the previous releases, TLOC extension was supported only for
+                                          IPv4. 
+                                       </p>
+                                       
+                                    </td>
+                                    
+                                 </tr>
+                                 
+                              </tbody>
+                           </table>
+                           
+                        </section>
+                        
+                     </section>
+                     <!-- minitoc start -->
+                     <nav role="navigation" class="related-links"></nav>
+                     <!-- minitoc end -->
+                  </article>
+                  <article class="topic ct_concept nested1" aria-labelledby="ariaid-title3" lang="en-US" id="tloc-extension">
+                     <h2 class="title topictitle2" id="ariaid-title3">TLOC extension</h2>
+                     <section class="body ct_conbody">
+                        
+                        <section class="section definition" id="tloc-extension__d149975e171">
+                           
+                           <p class="p">A TLOC Extension is a <span class="ph">Cisco Catalyst SD-WAN</span> feature that
+                           </p>
+                           
+                           <ul class="ul">
+                              
+                              <li class="li">
+                                 
+                                 <p class="p">enables a device to access the opposite WAN transport connected to a neighboring device using a TLOC extension interface,
+                                    and
+                                 </p>
+                                 
+                              </li>
+                              
+                              <li class="li">
+                                 
+                                 <p class="p">addresses scenarios where devices cannot connect directly to a single transport and only one device can connect to each transport.</p>
+                                 
+                              </li>
+                              
+                           </ul>
+                           
+                        </section>
+                        
+                        <section class="section reference-info" id="tloc-extension__d149975e195">
+                           <h3 class="title sectiontitle">Benefits of TLOC extension</h3>
+                           
+                           
+                           <p class="p">There are scenarios when <span class="ph">Cisco IOS XE Catalyst SD-WAN device</span>s cannot connect to a single transport directly and only one device can connect to a single transport. A switch is connected
+                              to each transport and the devices connect to each transport through the switches. TLOC extension provides the following benefits:
+                           </p>
+                           
+                           <ul class="ul">
+                              
+                              <li class="li">
+                                 
+                                 <p class="p">Eliminates the need for additional switches at branch locations.</p>
+                                 
+                              </li>
+                              
+                              <li class="li">
+                                 
+                                 <p class="p">Reduces overall solution costs and simplifies network management.</p>
+                                 
+                              </li>
+                              
+                           </ul>
+                           
+                        </section>
+                        
+                     </section>
+                     <!-- minitoc start -->
+                     <nav role="navigation" class="related-links">
+                        <ul class="ullinks">
+                           <li class="link ulchildlink"><a href="#tloc-extension-over-ipv6">TLOC extension over IPv6</a></li>
+                           <li class="link ulchildlink"><a href="#limitations-for-tloc-extension-over-ipv6">Limitations for TLOC extension over IPv6</a></li>
+                        </ul>
+                     </nav>
+                     <!-- minitoc end -->
+                     <article class="topic ct_concept nested2" aria-labelledby="ariaid-title4" lang="en-US" id="tloc-extension-over-ipv6">
+                        <h3 class="title topictitle3" id="ariaid-title4">TLOC extension over IPv6</h3>
+                        <section class="body ct_conbody">
+                           
+                           <section class="section definition" id="tloc-extension-over-ipv6__d149975e261">
+                              
+                              <p class="p">From <span class="ph">Cisco IOS XE Catalyst SD-WAN Release 17.11.1a</span> TLOC extension over IPv6 works only if the underlay supports IPv6 addressing on both the <span class="ph">Cisco IOS XE Catalyst SD-WAN device</span>s connecting each other.
+                              </p>
+                              
+                              <section class="sectiondiv sub-definition">
+                                 
+                                 <p class="p">In the earlier releases, TLOC extension was supported only over IPv4 interfaces.</p>
+                                 
+                              </section>
+                              
+                           </section>
+                           
+                           <section class="section reference-info" id="tloc-extension-over-ipv6__d149975e279">
+                              <h4 class="title sectiontitle">Supported configurations</h4>
+                              
+                              
+                              <p class="p">This feature supports the following requirements:</p>
+                              
+                              <ul class="ul">
+                                 
+                                 <li class="li">
+                                    
+                                    <p class="p">Implicit IPv6 ACL on TLOC tunnel interface.</p>
+                                    
+                                 </li>
+                                 
+                                 <li class="li">
+                                    
+                                    <p class="p">Private and public color TLOC interfaces.</p>
+                                    
+                                 </li>
+                                 
+                                 <li class="li">
+                                    
+                                    <p class="p">Dual stack support. When both IPv4 and IPv6 are configured, the tunnel is built on top of either IPv4 or IPv6, based on the
+                                       configuration. 
+                                    </p>
+                                    
+                                 </li>
+                                 
+                                 <li class="li">
+                                    
+                                    <p class="p">NAT66 support. The limitations of NAT66 also applies to the TLOC extended interface.</p>
+                                    
+                                 </li>
+                                 
+                                 <li class="li">
+                                    
+                                    <p class="p">Only the Layer 2 setup supports IPv6 TLOC extension. The following interface types supports IPv6 TLOC extension:</p>
+                                    
+                                    <ul class="ul">
+                                       
+                                       <li class="li">
+                                          
+                                          <p class="p">Physical interface</p>
+                                          
+                                       </li>
+                                       
+                                       <li class="li">
+                                          
+                                          <p class="p">Physical sub-interface</p>
+                                          
+                                       </li>
+                                       
+                                       <li class="li">
+                                          
+                                          <p class="p">Loopback interface</p>
+                                          
+                                       </li>
+                                       
+                                    </ul>
+                                    
+                                 </li>
+                                 
+                                 <li class="li">
+                                    
+                                    <p class="p">Loopback TLOC interface that is bound to either:</p>
+                                    
+                                    <ul class="ul">
+                                       
+                                       <li class="li">
+                                          
+                                          <p class="p">The WAN transport circuit.</p>
+                                          
+                                       </li>
+                                       
+                                       <li class="li">
+                                          
+                                          <p class="p">An extended WAN interface between two <span class="ph">Cisco IOS XE Catalyst SD-WAN device</span>s. 
+                                          </p>
+                                          
+                                       </li>
+                                       
+                                    </ul>
+                                    
+                                 </li>
+                                 
+                              </ul>
+                              
+                           </section>
+                           
+                        </section>
+                        <!-- minitoc start -->
+                        <nav role="navigation" class="related-links"></nav>
+                        <!-- minitoc end -->
+                     </article>
+                     <article class="topic ct_principle nested2" aria-labelledby="ariaid-title5" lang="en-US" id="limitations-for-tloc-extension-over-ipv6">
+                        <h3 class="title topictitle3" id="ariaid-title5">Limitations for TLOC extension over IPv6</h3>
+                        <section class="body ct_principle_body">
+                           
+                           <section class="principle_statement">
+                              
+                              <h2 class="sectiontitle">
+                                 <section class="principle_statement/title">SIG </section>
+                              </h2>
+                              
+                              <section class="principle_article">
+                                 
+                                 <p class="p">Secure Internet Gateway (SIG) is not supported on TLOC extension over IPv6.</p>
+                                 
+                              </section>
+                              
+                           </section>
+                           
+                           <section class="principle_statement">
+                              
+                              <h2 class="sectiontitle">
+                                 <section class="principle_statement/title">NAT64</section>
+                              </h2>
+                              
+                              <section class="principle_article">
+                                 
+                                 <p class="p">NAT64 is not supported for TLOC extension over IPv6.</p>
+                                 
+                              </section>
+                              
+                           </section>
+                           
+                           <section class="principle_statement">
+                              
+                              <h2 class="sectiontitle">
+                                 <section class="principle_statement/title">Layer 3 Connectivity</section>
+                              </h2>
+                              
+                              <section class="principle_article">
+                                 
+                                 <p class="p">TLOC extension over IPv6 is not supported for Layer 3 connections.</p>
+                                 
+                              </section>
+                              
+                           </section>
+                           
+                           <section class="principle_statement">
+                              
+                              <h2 class="sectiontitle">
+                                 <section class="principle_statement/title">Control connection persistence</section>
+                              </h2>
+                              
+                              <section class="principle_article">
+                                 
+                                 <p class="p">When a TLOC configuration is extended to a peer interface and then to the internet service provider, the extended control
+                                    connections remain active on the peer interface even after the TLOC extension configuration is removed.
+                                 </p>
+                                 
+                              </section>
+                              
+                           </section>
+                           
+                           <section class="principle_statement">
+                              
+                              <h2 class="sectiontitle">
+                                 <section class="principle_statement/title">Extender interface configuration</section>
+                              </h2>
+                              
+                              <section class="principle_article">
+                                 
+                                 <p class="p">In TLOC extension, the extender interface is part of the <span class="ph">Cisco Catalyst SD-WAN</span>. However, configuring a tunnel-interface under the extender interface is optional.
+                                 </p>
+                                 
+                              </section>
+                              
+                           </section>
+                           
+                        </section>
+                        <!-- minitoc start -->
+                        <nav role="navigation" class="related-links"></nav>
+                        <!-- minitoc end -->
+                     </article>
+                  </article>
+                  <article class="topic ct_process nested1" aria-labelledby="ariaid-title6" lang="en-US" id="how-tloc-extension-over-ipv6-works">
+                     <h2 class="title topictitle2" id="ariaid-title6">How TLOC extension over IPv6 works</h2>
+                     <section class="body ct_process_body">
+                        
+                        <section class="process_summary">
+                           <h2 class="sectiontitle">Summary</h2>
+                           
+                           <p class="p">The key components involved in TLOC extension over IPv6 are:</p>
+                           
+                           <ul class="ul">
+                              
+                              <li class="li">
+                                 
+                                 <p class="p">Establish TLOC extension interfaces: Each <span class="ph">Cisco IOS XE Catalyst SD-WAN device</span> configures a TLOC-extension interface to enable access to the transport network of its neighboring SD-WAN device.
+                                 </p>
+                                 
+                              </li>
+                              
+                              <li class="li">
+                                 
+                                 <p class="p">Access opposite transport via neighbor.</p>
+                                 
+                              </li>
+                              
+                           </ul>
+                           
+                        </section>
+                        
+                        <section class="process_workflow">
+                           <h2 class="sectiontitle">Workflow</h2>
+                           
+                           <figure class="fig fignone">
+                              <figcaption><span class="fig--title-label">Figure 1. </span>TLOC extension
+                              </figcaption>
+                              
+                              <img class="image" src="/c/dam/en/us/td/i/300001-400000/350001-360000/357001-358000/357986.jpg">
+                              
+                           </figure>
+                           
+                           <p class="p">This process outlines how TLOC extension interfaces facilitate transport access and redundancy between two <span class="ph">Cisco IOS XE Catalyst SD-WAN device</span>s.
+                           </p>
+                           
+                           <ol class="ol process_stages">
+                              
+                              <li>
+                                 SD-WAN device 1 accesses the internet transport through the TLOC-extension interface on SD-WAN device 2, in addition to its
+                                 direct MPLS connection. 
+                                 
+                              </li>
+                              
+                              <li>
+                                 SD-WAN device 2 accesses the MPLS transport through the TLOC-extension interface on SD-WAN device 1, in addition to its direct
+                                 internet connection.
+                                 
+                              </li>
+                              
+                           </ol>
+                           
+                        </section>
+                        
+                        <section class="result">
+                           <h2 class="sectiontitle">Result</h2>
+                           
+                           <p class="p">TLOC extension over IPv6 achieves redundancy in a dual-device deployment scenario with only one circuit connection on each
+                              device. 
+                           </p>
+                           
+                        </section>
+                        
+                     </section>
+                     <!-- minitoc start -->
+                     <nav role="navigation" class="related-links"></nav>
+                     <!-- minitoc end -->
+                  </article>
+                  <article class="topic ct_task nested1 no_summary_steps" aria-labelledby="ariaid-title7" lang="en-US" id="configure-tloc-extension">
+                     <h2 class="title topictitle2" id="ariaid-title7">Configure TLOC extension using CLI commands</h2>
+                     <section class="body ct_taskbody">
+                        
+                        <section class="section purpose" id="configure-tloc-extension__d149975e583">
+                           
+                           <p class="p">Follow these steps to configure TLOC extension using CLI commands:</p>
+                           
+                        </section>
+                        
+                        <section class="tasklabel">
+                           <h3 font-weight="bold" class="sectiontitle tasklabel cB_Bold">Procedure</h3>
+                        </section>
+                        <hr noshade>
+                        <table class="stepTable" border="0">
+                           <tbody>
+                              
+                              <tr class="li step">
+                                 <td align="left" valign="top" border="0" width="10%">
+                                    <p><b>Step&nbsp;1</b></p>
+                                 </td>
+                                 <td align="left" valign="top" border="0">
+                                    <p class="ph cmd">Enter global configuration mode, and configure an interface.</p>
+                                    <section class="itemgroup stepxmp">
+                                       <section class="tasklabel">
+                                          <h3 font-weight="bold" class="sectiontitle tasklabel cB_Bold">Example:</h3>
+                                       </section>
+                                       <pre class="pre codeblock"><code>Device# config-transaction </code></pre>
+                                       </section>
+                                 </td>
+                              </tr>
+                              
+                              <tr class="li step">
+                                 <td align="left" valign="top" border="0" width="10%">
+                                    <p><b>Step&nbsp;2</b></p>
+                                 </td>
+                                 <td align="left" valign="top" border="0">
+                                    <p class="ph cmd">Enter SD-WAN configuration mode.</p>
+                                    <section class="itemgroup stepxmp">
+                                       <section class="tasklabel">
+                                          <h3 font-weight="bold" class="sectiontitle tasklabel cB_Bold">Example:</h3>
+                                       </section>
+                                       <pre class="pre codeblock"><code>Device(config)# sdwan</code></pre>
+                                       </section>
+                                 </td>
+                              </tr>
+                              
+                              <tr class="li step">
+                                 <td align="left" valign="top" border="0" width="10%">
+                                    <p><b>Step&nbsp;3</b></p>
+                                 </td>
+                                 <td align="left" valign="top" border="0">
+                                    <p class="ph cmd">in the SD-WAN configuration mode, configure an interface type such as, Gigabit Ethernet.</p>
+                                    <section class="itemgroup stepxmp">
+                                       <section class="tasklabel">
+                                          <h3 font-weight="bold" class="sectiontitle tasklabel cB_Bold">Example:</h3>
+                                       </section>
+                                       <pre class="pre codeblock"><code>Device(config-sdwan)# interface GigabitEthernet3 
+</code></pre>
+                                       </section>
+                                 </td>
+                              </tr>
+                              
+                              <tr class="li step">
+                                 <td align="left" valign="top" border="0" width="10%">
+                                    <p><b>Step&nbsp;4</b></p>
+                                 </td>
+                                 <td align="left" valign="top" border="0">
+                                    <p class="ph cmd">Configure tunnel interface.</p>
+                                    <section class="itemgroup stepxmp">
+                                       <section class="tasklabel">
+                                          <h3 font-weight="bold" class="sectiontitle tasklabel cB_Bold">Example:</h3>
+                                       </section>
+                                       <pre class="pre codeblock"><code>Device(config-interface-GigabitEthernet3)# tunnel-interface</code></pre>
+                                       </section>
+                                 </td>
+                              </tr>
+                              
+                              <tr class="li step">
+                                 <td align="left" valign="top" border="0" width="10%">
+                                    <p><b>Step&nbsp;5</b></p>
+                                 </td>
+                                 <td align="left" valign="top" border="0">
+                                    <p class="ph cmd">Configure encapsulation, color, allowed services for TLOC.</p>
+                                    <section class="itemgroup stepxmp">
+                                       <section class="tasklabel">
+                                          <h3 font-weight="bold" class="sectiontitle tasklabel cB_Bold">Example:</h3>
+                                       </section>
+                                       <pre class="pre codeblock"><code>
+Device(config-interface-GigabitEthernet3)# tunnel-interface
+Device(config-interface-GigabitEthernet3)# encapsulation ipsec
+Device(config-interface-GigabitEthernet3)# color color
+Device(config-interface-GigabitEthernet3)# exit</code></pre>
+                                       </section>
+                                 </td>
+                              </tr>
+                              
+                              <tr class="li step">
+                                 <td align="left" valign="top" border="0" width="10%">
+                                    <p><b>Step&nbsp;6</b></p>
+                                 </td>
+                                 <td align="left" valign="top" border="0">
+                                    <p class="ph cmd">In the global configuration mode, configure an interface.</p>
+                                    <section class="itemgroup stepxmp">
+                                       <section class="tasklabel">
+                                          <h3 font-weight="bold" class="sectiontitle tasklabel cB_Bold">Example:</h3>
+                                       </section>
+                                       <pre class="pre codeblock"><code>
+Device# config-transaction 
+Device(config)# ip route 0.0.0.0 0.0.0.0 ip-address</code></pre>
+                                       </section>
+                                 </td>
+                              </tr>
+                              
+                              <tr class="li step">
+                                 <td align="left" valign="top" border="0" width="10%">
+                                    <p><b>Step&nbsp;7</b></p>
+                                 </td>
+                                 <td align="left" valign="top" border="0">
+                                    <p class="ph cmd">On device 2, the LTE WAN connection is on GigabitEthernet1 and this transport is extended to device 1 GigabitEthernet3 TLOC
+                                       interface.
+                                    </p>
+                                    <section class="itemgroup stepxmp">
+                                       <section class="tasklabel">
+                                          <h3 font-weight="bold" class="sectiontitle tasklabel cB_Bold">Example:</h3>
+                                       </section>
+                                       <pre class="pre codeblock"><code>
+Device(config-sdwan)# tloc-extension GigabitEthernet1</code></pre>
+                                       </section>
+                                 </td>
+                              </tr>
+                              
+                              <tr class="li step">
+                                 <td align="left" valign="top" border="0" width="10%">
+                                    <p><b>Step&nbsp;8</b></p>
+                                 </td>
+                                 <td align="left" valign="top" border="0">
+                                    <p class="ph cmd">Configure NAT routes on GigabitEthernet1 for data traffic to reach back to device 1 through device 2 for GigabitEthernet3
+                                       subnet. 
+                                    </p>
+                                 </td>
+                              </tr>
+                              
+                           </tbody>
+                        </table>
+                        <hr noshade>
+                        
+                        <section class="example" id="configure-tloc-extension__d149975e683">
+                           
+                           <p class="p">The following example describes how TLOC extension is configured on a network interface.</p>
+                           <pre class="pre codeblock"><code>
+On Device1,
+Configure TLOC interface on VPN 0
+sdwan
+interface GigabitEthernet3
+  tunnel-interface
+   encapsulation ipsec
+   color custom1
+   no allow-service bgp
+   allow-service dhcp
+   allow-service dns
+   allow-service icmp
+   no allow-service sshd
+   no allow-service netconf
+   no allow-service ntp
+   no allow-service ospf
+   no allow-service stun
+   allow-service https
+   no allow-service snmp
+   no allow-service bfd
+  exit
+
+  Configure default route via this TLOC interface with nexthop 
+  to L2 connected interface of the peer (ED2 Gig3).
+
+  ip route 0.0.0.0 0.0.0.0 10.1.19.16
+
+ On Device2,
+LTE WAN connection is on Gig1 and this transport is extended to ED1 Gig3 TLOC interface(custom1).
+ sdwan
+ int GigabitEthernet3
+ tloc-extension GigabitEthernet1
+Configure NAT routes on Gig1 or appropriate routes for data traffic to reach back to ED1 via ED2 for Gig3 subnet.
+
+</code></pre>
+                           </section>
+                        
+                     </section>
+                     <!-- minitoc start -->
+                     <nav role="navigation" class="related-links"></nav>
+                     <!-- minitoc end -->
+                  </article>
+                  <article class="topic ct_reference nested1" aria-labelledby="ariaid-title8" lang="en-US" id="verify-tloc-extension">
+                     <h2 class="title topictitle2" id="ariaid-title8">Verify TLOC extension</h2>
+                     <section class="body ct_refbody">
+                        
+                        
+                        <section class="section" id="verify-tloc-extension__d149975e717">
+                           
+                           <p class="p">The following is a sample output of the commands to verify if TLOC extension is configured on a network interface.</p>
+                           <pre class="pre codeblock"><code>
+Device# <kbd class="userinput"><b class="ph userinput">show sdwan control connections</b></kbd>
+PEER                                          PEER                                          CONTROLLER
+PEER    PEER PEER            SITE       DOMAIN PEER                                    PRIV  PEER                                    
+PUB                                           GROUP
+TYPE    PROT SYSTEM IP       ID         ID     PRIVATE IP                              PORT  PUBLIC IP                               
+PORT  ORGANIZATION            LOCAL COLOR     PROXY STATE UPTIME      ID
+--------------------------------------------------------------------------------------------------------
+vsmart  dtls 172.16.255.19   100        1      2001:a0:5::13                           
+12455 2001:a0:5::13                           12455 vIPtela Inc Regression  custom1             No    up
+0:01:23:06 0
+vsmart  dtls 172.16.255.20   200        1      2001:a0:c::14                           12456
+2001:a0:c::14                           12456 vIPtela Inc Regression  custom1             No    up
+0:01:23:06 0
+</code></pre>
+                           <pre class="pre codeblock"><code>
+Device# <kbd class="userinput"><b class="ph userinput">show sdwan bfd sessions</b></kbd>
+                                        SOURCE TLOC      REMOTE TLOC
+DST PUBLIC                      DST PUBLIC         DETECT      TX
+  SYSTEM IP        SITE ID     STATE       COLOR            COLOR            SOURCE IP
+IP                                              PORT        ENCAP  MULTIPLIER  INTERVAL(msec  UPTIME
+TRANSITIONS
+---------------------------------------------------------------------------------------------------------
+172.16.255.14    400         up          custom1             lte              2001:a0:15::10
+2001:a1:e::e                               12346       ipsec  7           1000
+0:00:05:50  3     </code></pre>
+                           </section>
+                        
+                     </section>
+                     <!-- minitoc start -->
+                     <nav role="navigation" class="related-links"></nav>
+                     <!-- minitoc end -->
+                  </article>
+               </article>
+            </article>
+         </main>
+      
+
+</div> 
+ 
+    </div>
+    <div class="col narrow-v2">
+        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="rightRailComponent noprint base-blowout">
+    <div class="eotPersonalization">
+        <section id="eotTDCampaign"></section>
+    </div>    
+    <div class="eot-feedback-container">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="eot-feedback">
+  <h3>Was this Document Helpful?</h3>
+  <span class="eot-feedback-btnwrap">
+    <button class="eot-feedback-btn eot-feedback-btn-yes" aria-label="Was this Document Helpful?? Yes">Yes</button>
+    <button class="eot-feedback-btn eot-feedback-btn-no" aria-label="Was this Document Helpful?? No">No</button>
+  </span>
+  <span lang="en" class="eot-feedback-olwrap">
+    
+      <a href="javascript: void(0);" class="eot-feedback-ol" onclick="window.open('https://ciscocx.qualtrics.com/jfe/form/SV_be0fHnqDoKM7sto?Ref=' + location.href + '&resize=false', 'feedback', 'width=650, height=460, scrollbars=1, menubar=1, resizable=1'); return false;">
+      <img id="feedback_img" border="0" style="cursor: pointer;" title="Feedback" src="//www.cisco.com/c/dam/cdc/i/Feedback_OceanBlue.png" alt="Feedback">Feedback</a>
+    
+  </span>
+</div>
+
+
+</div>
+			
+    <div class="showComponent">
+	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="eot-vav">
+  <ul>
+  </ul>
+</div>
+    </div>
+			
+    <div class="letUsHelp">
+	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="eotLetUsHelp">
+    <h3>Contact Cisco</h3>
+    <ul>
+      <li><a id="eotLetUsHelpProdDocUrl" href="https://mycase.cloudapps.cisco.com/start?prodDocUrl=">Open a Support Case <img src="/etc/designs/cdc/fw/i/icon_lock_small.png" alt="login required"/></a></li>
+        <li>(Requires a <a href="//www.cisco.com/c/en/us/services/order-services.html">Cisco Service Contract</a>)</li>
+    </ul>
+</div>
+
+
+<script>
+    jQuery(document).ready(function() {
+        var getURL=jQuery("#eotLetUsHelpProdDocUrl").attr("href"), 
+            domInd = location.href.indexOf('cisco.com') ;
+        if ( domInd > -1 && domInd < location.href.search(/\w\/\w/) ) {
+            getURL += encodeURI(location.href);
+        }
+		jQuery("#eotLetUsHelpProdDocUrl").attr("href",getURL);
+    });
+</script>
+
+
+    </div>
+
+    <div id="eotRightRailMBox"><!--MBox-->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- IT:components/mbox/banner-mbox:V0.0.0 -->
+
+
+
+<div>
+    <div class="mboxDefault"></div>   
+    <script type="text/javascript">
+        var test="";
+        if(test!=undefined && test.trim().length>0){
+           mboxCreate('en-us_dg_support_bookchapters','type=default','');
+        }else{
+           mboxCreate('en-us_dg_support_bookchapters','type=default');
+        }
+       
+    </script>
+</div>
+<!--MBox--></div>
+			
+    <div class="showComponent">
+	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
+
+	<script type="text/javascript">
+			    var eottdatp = document.getElementsByClassName('eot-tdatp');
+			    if (eottdatp && eottdatp.style) {
+        			eottdatp.style.display="none";
+			    }
+        		  </script>
+  	
+
+
+    </div>
+			
+    <div></div>
+
+</div>
+
+
+    </div>
+</div>
+
+     <!--googleoff: index--><!--googleoff: snippet-->
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- end: responsive fat footer re-use wrapper-->
+
+</div>
+
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        <script type="module" src="/site/web-components/us/en/cdc-footer.js"></script>
+        <cdc-footer></cdc-footer>
+    
+
+<script type="text/javascript">
+    if(document.querySelector('#privacy-manager')!=null){
+        document.querySelector('#privacy-manager').href='#cookies';
+    }
+  </script>   
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div id="fw-overlay"></div>
+
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+<script src="/etc/designs/cdc/clientlibs/responsive/js/books.min.js"></script>
+
+<script src="/etc/designs/cdc/fw/m/books_metricsrule.js" type="text/javascript" async></script>
+    
+    
+
+    <!-- SiteCatalyst code version: H.24.4. -->
+    <noscript><img src="//cisco.112.2o7.net/b/ss/cisco-mobile/5/12345" width="2" height="2" border="0" alt=""/></noscript>
+
+</body>
+</html>
