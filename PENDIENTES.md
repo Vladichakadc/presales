@@ -1889,8 +1889,16 @@ Cisco. **Abierto, necesita al dueño**: lanzar el despliegue del último commit 
 («Deploy latest commit» en `presales-web`) o autorizar el conector de Railway en claude.ai para
 hacerlo desde la sesión. Después, la sonda tiene que salir en verde con `head_sha` `fab44b0` o
 posterior.
-La quincuagesimotercera entrega (propuestas de Cisco) llega a `main` con la misma advertencia: si
-Railway sigue sin crear su despliegue, producción sigue en `24287c2`.
+**Y con `fa7f6db`** (quincuagesimotercera entrega, 22:55 UTC): `verificar` y `pantallas` en verde a
+las 23:05 y ni despliegue ni sonda. **Cómo se mira sin el conector**: la API pública de GitHub
+(`api.github.com/repos/Vladichakadc/presales/deployments`, que el proxy deja pasar) lista los
+despliegues que crea `railway-app[bot]`, y Railway crea el suyo al recibir el push, segundos después
+y antes de esperar a CI (`60a0178`: push y despliegue a las 03:27). El último es el de `24287c2`
+(03:30): desde entonces Railway no ve los pushes a `main`, que apunta a la integración de GitHub del
+servicio (la app de Railway sin acceso al repositorio, o la fuente del servicio desconectada) más
+que a CI. Lo que lo cierra sigue siendo del dueño: en Railway, `presales-web` → *Settings* →
+*Source*, comprobar que sigue conectado a `Vladichakadc/presales` y `main`, y lanzar «Deploy latest
+commit»; o autorizar el conector de Railway en claude.ai.
 
 ## Vigilar: un despliegue sano cuyo `success` no llegó a GitHub (2026-10-02)
 
