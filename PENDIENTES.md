@@ -1872,6 +1872,9 @@ configuración del servicio era la de siempre (`main`, `checkSuites: true`). Se 
 siguiente commit real. Si vuelve a pasar, la señal es esa: CI en verde y `list-deployments` sin
 una fila del commit. Las herramientas del conector no lo arreglan: `redeploy` repite el build
 anterior (otro commit) y `create-deployment` crea un servicio nuevo.
+**Volvió solo** el mismo día: el push de `60a0178` (03:27 UTC) creó su despliegue en espera de CI,
+como siempre. La causa no se supo; el agente de Railway, lanzado para diagnosticar, agotó el tiempo
+del conector.
 
 ## Vigilar: un despliegue sano cuyo `success` no llegó a GitHub (2026-10-02)
 
