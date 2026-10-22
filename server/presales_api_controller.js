@@ -1,3 +1,4 @@
+
 /**
  * @file presales_api_controller.js
  * @description Controlador y Rutas Backend Express v4 + Sequelize/SQLite + ExcelJS
@@ -15,10 +16,9 @@
 
 const sizingEngine = require('../public/js/sizing_engine');
 
-const FABRICANTES_IMPORTABLES = ['HUAWEI', 'ARUBA'];
-
 function createPresalesHandlers(dependencies = {}) {
   const { ProductModel = null, ExcelJS = null, vendorIds = {} } = dependencies;
+  const fabricantesImportables = ['HUAWEI', 'ARUBA'];
 
   async function handleHuaweiSizing(req, res) {
     try {
@@ -117,8 +117,8 @@ function createPresalesHandlers(dependencies = {}) {
   async function handleCatalogImport(req, res) {
     try {
       const { fabricante, items = [] } = req.body || {};
-      if (typeof fabricante !== 'string' || !FABRICANTES_IMPORTABLES.includes(fabricante.toUpperCase())) {
-        return res.status(400).json({ ok: false, error: 'fabricante no permitido: ' + FABRICANTES_IMPORTABLES.join(', ') });
+      if (typeof fabricante !== 'string' || !fabricantesImportables.includes(fabricante.toUpperCase())) {
+        return res.status(400).json({ ok: false, error: 'fabricante no permitido: ' + fabricantesImportables.join(', ') });
       }
       if (!fabricante || !Array.isArray(items) || items.length === 0) {
         return res.status(400).json({
