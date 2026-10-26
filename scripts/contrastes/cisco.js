@@ -38,6 +38,11 @@
  *   · Una sede de 200 Mbps con optimización TCP (DRE) para 3.000 conexiones (2026-10-21, propuesta
  *     2.3): cumplen 15 de 30, los que la guía de AppQoE da como nodo con un perfil que llega o como
  *     controlador de servicio; el 8200 (perfil S, 750 conexiones) y los que no constan se apartan.
+ *   · Una sede de 100 Mbps en SD-WAN con su enlace por DSL (2026-10-26, variantes de la 8100): solo
+ *     las cuatro con DSL integrado (C8130-VAI/VAP-G2 y C8151-CVAI/CVAP-G2, tablas 10 y 15 de su
+ *     ficha) lo reciben; las demás no tienen puerto DSL y los NIM DSL están fuera de venta. Hasta
+ *     ese día ningún equipo de IOS XE SD-WAN lo recibía. 260 Mbps de SD-WAN contra 900: 29 %.
+ *     Las seis variantes no cambian las demás filas.
  */
 const BASE_LINEA = [
   { n: 'Sede 800 Mbps por sentido, SD-WAN', esc: { bw: '800' },
@@ -59,7 +64,8 @@ const BASE_LINEA = [
   { n: 'ISR de 50 Mbps con su enlace por DSL', esc: { bw: '50', plataforma: 'isr', enlaces: ['dsl'] },
     recomendado: 'ISR 1116-4P', utilizacion: '65 %', cumplen: '1' },
   { n: 'Sede de 200 Mbps con DRE para 3.000 conexiones', esc: { bw: '200', appqoe: '3000' },
-    recomendado: 'Catalyst 8300-1N1S-6T', utilizacion: '31 %', cumplen: '15' },
+    recomendado: 'Catalyst 8300-1N1S-6T', utilizacion: '31 %', cumplen: '15' },  { n: 'Sede de 100 Mbps en SD-WAN con su enlace por DSL', esc: { bw: '100', enlaces: ['dsl'] },
+    recomendado: 'Cisco Secure Router C8130-VAI-G2', utilizacion: '29 %', cumplen: '4' },
 ];
 
 module.exports = {

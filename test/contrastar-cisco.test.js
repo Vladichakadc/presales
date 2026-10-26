@@ -104,7 +104,9 @@ test('Meraki: la cabecera con colspan, «-» casa con null y el texto «up to N 
     ${fila('Throughput', 'C8130-G2/ C8130-VAI-G2')}
     ${fila('Threat Protection** (EMIX)', '-')}
   </table>`), 'c8100.html');
-  assert.deepStrictEqual(sinTp.celdas.map((x) => [x.campo, x.estado]), [['amenazas', 'casa']]);
+  // Desde el 2026-10-26 la columna nombra dos modelos del catálogo (el C8130-VAI-G2 entró con su
+  // modelo base), y se contrastan los dos.
+  assert.deepStrictEqual(sinTp.celdas.map((x) => [x.campo, x.estado]), [['amenazas', 'casa'], ['amenazas', 'casa']]);
 });
 
 test('lectura de celdas: unidades, sufijos K y M, notas y texto alrededor', () => {

@@ -460,7 +460,9 @@ Módulos compartidos:
   `velMinSupuesto`), y cada enlace declarado por su entrega (cobre, fibra o DSL y velocidad de la
   interfaz) va a uno, el más exigente primero; un cobre de 1G puede ir a una jaula con el
   transceptor 1000BASE-T del catálogo, y uno de 10G a una SFP+ con el 10GBASE-T solo donde la guía
-  de hardware lo da (`sfp10gt`); un DSL, al puerto `dsl` (ISR 1116-4P); si no cabe, el módulo NIM
+  de hardware lo da (`sfp10gt`; la jaula XGSPON/10GBASE-T de las 8100 VAI/VAP y CVAI/CVAP solo
+  admite ese transceptor o la ONT XGSPON: `soloCobre`); un DSL, al puerto `dsl` (ISR 1116-4P y esas
+  cuatro 8100; los NIM DSL están fuera de venta); si no cabe, el módulo NIM
   de la guía de su familia que lleve más enlaces (sin ranura NIM, en el portador C-SM-NIM-ADPT(R)
   de una ranura SM) o se aparta; el `maxWan` de Meraki manda, y las `combinaciones` (tabla 5 del
   12X4QC; bahías y 240 GE del C8570-G2) apartan lo que la ficha no admite a la vez. **Cada fibra

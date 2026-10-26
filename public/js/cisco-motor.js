@@ -372,6 +372,9 @@
     const min = pu.velMin != null ? pu.velMin : pu.vel;
     const rango = e.vel <= pu.vel && e.vel >= min;
     const jaula = pu.medios.find((x) => JAULAS.includes(x));
+    // Una jaula que solo admite un transceptor de cobre (`soloCobre`: la XGSPON/10GBASE-T de las
+    // 8100 VAI/VAP) nunca recibe una óptica.
+    if (pu.soloCobre && e.medio !== 'cobre') return null;
     if (e.medio === 'cobre') {
       if (pu.medios.includes('RJ45') && rango) return { via: 'nativo', medio: 'RJ45' };
       if (VEL_COBRE_SFP.includes(e.vel) && conTransceptor && jaula && rango) return { via: 'transceptor', medio: jaula };
@@ -552,6 +555,7 @@
       res.asignados.push({
         enlace: e.n, tipo: e.tipo, rol: e.rol, entrega: e.entrega,
         puerto: { uso: pu.uso, medios: pu.medios, vel: pu.vel, modulo: pu.modulo, ...(pu.dsl ? { dsl: pu.dsl } : {}),
+          ...(pu.rotulo ? { rotulo: pu.rotulo } : {}),
           ...(pu.ref != null && res.modulos[pu.ref].dentro ? { portador: res.modulos[pu.ref].dentro.sku } : {}) },
         via: el.a.via, medio: el.a.medio,
         opticas: al ? al.lista : null,
@@ -671,7 +675,7 @@
     const pu = a.puerto;
     if (pu.medios.includes('DSL')) return `Puerto DSL ${pu.uso} (${pu.dsl})`;
     const medio = pu.medios.length > 1 ? `${a.medio} (combo ${pu.medios.join('/')})` : pu.medios[0];
-    return `${medio} ${pu.uso} de ${fmtVel(pu.vel)}${pu.modulo ? ` en el ${pu.modulo}` : ''}`;
+    return `${medio} ${pu.uso} de ${fmtVel(pu.vel)}${pu.rotulo ? ` (${pu.rotulo})` : ''}${pu.modulo ? ` en el ${pu.modulo}` : ''}`;
   }
 
   // Escenario: la entrega de los enlaces principales tiene que llevar el caudal por sentido. Un

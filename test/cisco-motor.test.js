@@ -611,6 +611,35 @@ test('reparto: un cobre de 10G va a una SFP+ con el 10GBASE-T solo donde la guí
   assert.ok(M.asignarEnlaces(id('Cisco Secure Router C8355-G2'), E('fibra-10g'), CAT).asignados[0].opticas.every((o) => !/BASE-T\b/.test(o.d)));
 });
 
+// Variantes de la 8100 (2026-10-26): DSL integrado en un producto vigente y 10G en cobre.
+test('reparto 8100: el DSL de las VAI/VAP, la jaula XGSPON/10GBASE-T solo con cobre y el 10GBASE-T de las H', () => {
+  // DSL vigente: la VAI lo recibe en su puerto integrado (el ISR 1116-4P ya no es el único).
+  const dsl = asig('Cisco Secure Router C8130-VAI-G2', 'dsl', 'cobre-10g');
+  assert.deepStrictEqual(dsl.sinAsignar, []);
+  assert.strictEqual(M.rotuloPuerto(dsl.asignados[0]), 'Puerto DSL WAN (VDSL2/ADSL2+, Annex B/J sobre RDSI)');
+  assert.strictEqual(SR('C8130-VAP-G2').dsl, 'VDSL2/ADSL2+, Annex A sobre POTS');
+  // El cobre de 10G va a la jaula con el SFP-10G-T-X, y el rótulo dice qué admite esa jaula.
+  assert.strictEqual(dsl.asignados[1].via, 'transceptor');
+  assert.match(M.rotuloPuerto(dsl.asignados[1]), /XGSPON\/10GBASE-T: SFP-10G-ONT20-I o SFP-10G-T-X/);
+  assert.ok(M.piezasEnlaces(dsl).some((x) => x.sku === 'SFP-10G-T-X'));
+  // Esa jaula nunca recibe una óptica: una fibra de 10G no tiene dónde ir.
+  assert.match(asig('Cisco Secure Router C8151-CVAI-G2', 'fibra-10g').sinAsignar[0].motivo, /sin puerto para el enlace 1 \(fibra de 10G\)/);
+  // Las H traen el 10GBASE-T en RJ-45 nativo, sin transceptor, y no tienen DSL.
+  const h = asig('Cisco Secure Router C8130H-G2', 'cobre-10g', 'cobre-1g');
+  assert.deepStrictEqual(h.sinAsignar, []);
+  assert.strictEqual(h.asignados.find((a) => a.enlace === 1).via, 'nativo');
+  assert.match(asig('Cisco Secure Router C8151H-C-G2', 'dsl').sinAsignar[0].motivo, /sin puerto para el enlace 1 \(DSL/);
+  // Las cifras son las de su modelo base (columnas compartidas de las tablas 12 y 13 de la ficha).
+  for (const [v, b] of [['C8130-VAI-G2', 'C8130-G2'], ['C8130H-G2', 'C8130-G2'], ['C8151-CVAP-G2', 'C8151-G2'], ['C8151H-C-G2', 'C8151-G2']]) {
+    for (const k of ['fwd', 'ipsec', 'sdwan', 'amenazas', 'tuneles', 'rutas', 'nat']) assert.strictEqual(SR(v)[k], SR(b)[k], `${v} ${k}`);
+  }
+  // El 5G RedCap va integrado (sin PIM), y la guía de pedido niega los complementos de seguridad a
+  // las 8130 sin Threat Protection.
+  assert.ok(SR('C8151H-C-G2').lte && !SR('C8151H-C-G2').pim);
+  for (const v of ['C8130-VAI-G2', 'C8130-VAP-G2', 'C8130H-G2']) assert.strictEqual(SR(v).secAddon, false, v);
+  assert.notStrictEqual(SR('C8151-CVAI-G2').secAddon, false);
+});
+
 test('puertos mGig: la velocidad mínima tiene fuente en la G2 y es supuesto solo en los Meraki', () => {
   for (const m of MODELS) {
     for (const g of m.puertos || []) {

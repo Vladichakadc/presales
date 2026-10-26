@@ -57,9 +57,15 @@ module.exports = [
   // Secure Router (G2) y Meraki MX (2026-10-20): las cifras las pone el dimensionador; el precio
   // solo donde consta en el export de CCW (C8355-G2). El resto sale «Consultar» y total «—».
   {vendor:'Cisco',  color:'#049FD9', model:'Cisco Secure Router C8130-G2', seg:'Sucursal pequeña', spec:'{fwd} FWD · IPsec {ipsec} · SD-WAN {sdwan} · 6 GE', elp:'Consultar', elpN:null},
+  {vendor:'Cisco',  color:'#049FD9', model:'Cisco Secure Router C8130-VAI-G2', seg:'Sucursal pequeña + DSL (Annex B/J)', spec:'{fwd} FWD · IPsec {ipsec} · SD-WAN {sdwan} · 5 GE + DSL + XGSPON/10GBASE-T', elp:'Consultar', elpN:null},
+  {vendor:'Cisco',  color:'#049FD9', model:'Cisco Secure Router C8130-VAP-G2', seg:'Sucursal pequeña + DSL (Annex A)', spec:'{fwd} FWD · IPsec {ipsec} · SD-WAN {sdwan} · 5 GE + DSL + XGSPON/10GBASE-T', elp:'Consultar', elpN:null},
+  {vendor:'Cisco',  color:'#049FD9', model:'Cisco Secure Router C8130H-G2', seg:'Sucursal pequeña, WAN 10GBASE-T', spec:'{fwd} FWD · IPsec {ipsec} · SD-WAN {sdwan} · 5 GE + 10GBASE-T', elp:'Consultar', elpN:null},
   {vendor:'Cisco',  color:'#049FD9', model:'Cisco Secure Router C8131-G2', seg:'Sucursal pequeña + Threat Protection', spec:'{fwd} FWD · IPsec {ipsec} · SD-WAN {sdwan} · 6 GE', elp:'Consultar', elpN:null},
   {vendor:'Cisco',  color:'#049FD9', model:'Cisco Secure Router C8140-G2', seg:'Sucursal pequeña', spec:'{fwd} FWD · IPsec {ipsec} · SD-WAN {sdwan} · 10 GE', elp:'Consultar', elpN:null},
   {vendor:'Cisco',  color:'#049FD9', model:'Cisco Secure Router C8151-G2', seg:'Sucursal pequeña + 5G/LTE', spec:'{fwd} FWD · IPsec {ipsec} · SD-WAN {sdwan} · 10 GE + 1 PIM', elp:'Consultar', elpN:null},
+  {vendor:'Cisco',  color:'#049FD9', model:'Cisco Secure Router C8151-CVAI-G2', seg:'Sucursal pequeña + DSL (Annex B/J) + 5G', spec:'{fwd} FWD · IPsec {ipsec} · SD-WAN {sdwan} · 9 GE + DSL + XGSPON/10GBASE-T + 5G RedCap', elp:'Consultar', elpN:null},
+  {vendor:'Cisco',  color:'#049FD9', model:'Cisco Secure Router C8151-CVAP-G2', seg:'Sucursal pequeña + DSL (Annex A) + 5G', spec:'{fwd} FWD · IPsec {ipsec} · SD-WAN {sdwan} · 9 GE + DSL + XGSPON/10GBASE-T + 5G RedCap', elp:'Consultar', elpN:null},
+  {vendor:'Cisco',  color:'#049FD9', model:'Cisco Secure Router C8151H-C-G2', seg:'Sucursal pequeña, WAN 10GBASE-T + 5G', spec:'{fwd} FWD · IPsec {ipsec} · SD-WAN {sdwan} · 9 GE + 10GBASE-T + 5G RedCap', elp:'Consultar', elpN:null},
   {vendor:'Cisco',  color:'#049FD9', model:'Cisco Secure Router C8161-G2', seg:'Sucursal pequeña + PoE + 5G/LTE', spec:'{fwd} FWD · IPsec {ipsec} · SD-WAN {sdwan} · 10 GE (6 PoE) + 1 PIM', elp:'Consultar', elpN:null},
   {vendor:'Cisco',  color:'#049FD9', model:'Cisco Secure Router C8211-G2', seg:'Sucursal mediana de entrada', spec:'{fwd} FWD · IPsec {ipsec} · SD-WAN {sdwan} · 6 GE', elp:'Consultar', elpN:null},
   {vendor:'Cisco',  color:'#049FD9', model:'Cisco Secure Router C8221-G2', seg:'Sucursal mediana, WAN 10G', spec:'{fwd} FWD · IPsec {ipsec} · SD-WAN {sdwan} · 2x 10G SFP+ + 8 GE', elp:'Consultar', elpN:null},

@@ -1016,7 +1016,8 @@
     const cantidad = p.cantidad != null ? p.cantidad : p.n;
     const veloc = p.veloc != null ? p.veloc : p.vel;
     if (!(Number.isFinite(cantidad) && cantidad > 0 && Number.isFinite(veloc) && veloc > 0)) return null;
-    return { cantidad, veloc, uso: p.uso || null, medios: Array.isArray(p.medios) && p.medios.length ? p.medios : null };
+    return { cantidad, veloc, uso: p.uso || null, medios: Array.isArray(p.medios) && p.medios.length ? p.medios : null,
+      rotulo: typeof p.rotulo === 'string' && p.rotulo ? p.rotulo : null };
   }
   function seccionPuertos(m) {
     if (!m) return { titulo: PUERTOS_TIT, filas: [] };
@@ -1049,7 +1050,8 @@
           titulo: PUERTOS_TIT,
           filas: grupos.map((g) => [
             g.uso ? 'Puertos de ' + esc(g.uso) : g.medios && g.medios.length > 1 ? 'Puertos de medio compartido' : 'Puertos',
-            g.cantidad + ' × ' + g.veloc + 'GE' + (g.medios ? ' ' + g.medios.map(esc).join(' o ') : ''),
+            g.cantidad + ' × ' + g.veloc + 'GE' + (g.medios ? ' ' + g.medios.map(esc).join(' o ') : '')
+              + (g.rotulo ? ' (' + esc(g.rotulo) + ')' : ''),
           ]),
           // Un par compartido es UN puerto con dos medios: se usa con uno o con el otro, nunca
           // con los dos. Es la misma regla que las configuraciones alternativas de arriba.

@@ -181,6 +181,23 @@ const MODELS = [
    tuneles:250, rutas:280000, nat:100000, pim:false, sdwanDesde:'IOS XE 26.2.1',
    psu:{watts:16, tipo:'adaptador externo (PWR-CC1-30WAC por defecto)'},
    ports:'1 GE + 1 GE RJ45/SFP WAN · 2 GE flex · 2 GE LAN', nim:0, sm:0, optics:['sfp1g'], parts:[], lic:'cswan', datasheet:DS.sr8100},
+  // Variantes de la ficha de la serie 8100 (tablas 10, 12 y 13; incorporadas el 2026-10-26): el DSL
+  // integrado (VAI: Annex B/J sobre RDSI; VAP: Annex A sobre POTS), la jaula XGSPON/10GBASE-T (solo
+  // SFP-10G-ONT20-I o SFP-10G-T-X, tabla 10 de su guía de hardware) y el 10GBASE-T nativo de las «H».
+  // Mismas cifras que su modelo base (columnas compartidas de las tablas 12 y 13); sin complementos de
+  // seguridad las 8130 (guía de pedido: «do not support Threat, URL Filtering, and Malware Defense»).
+  {id:'Cisco Secure Router C8130-VAI-G2', ser:'Secure Router (G2)', fam:'Sucursal pequeña con DSL (Annex B/J) y XGSPON/10GBASE-T', clase:'S', fwd:1900, ipsec:1500, sdwan:900, amenazas:null, aps:null, redund:false, lte:false, bases:B_G2, secAddon:false,
+   tuneles:250, rutas:280000, nat:100000, pim:false, sdwanDesde:'IOS XE 26.2.1',
+   psu:{watts:23, tipo:'adaptador externo (PWR-CC1-66WAC por defecto)'},
+   ports:'1 GE RJ45/SFP + 1 DSL + 1 XGSPON/10GBASE-T WAN · 2 GE flex · 2 GE LAN', nim:0, sm:0, optics:['sfp1g', 'sfp10gt'], parts:[], lic:'cswan', datasheet:DS.sr8100},
+  {id:'Cisco Secure Router C8130-VAP-G2', ser:'Secure Router (G2)', fam:'Sucursal pequeña con DSL (Annex A) y XGSPON/10GBASE-T', clase:'S', fwd:1900, ipsec:1500, sdwan:900, amenazas:null, aps:null, redund:false, lte:false, bases:B_G2, secAddon:false,
+   tuneles:250, rutas:280000, nat:100000, pim:false, sdwanDesde:'IOS XE 26.2.1',
+   psu:{watts:23, tipo:'adaptador externo (PWR-CC1-66WAC por defecto)'},
+   ports:'1 GE RJ45/SFP + 1 DSL + 1 XGSPON/10GBASE-T WAN · 2 GE flex · 2 GE LAN', nim:0, sm:0, optics:['sfp1g', 'sfp10gt'], parts:[], lic:'cswan', datasheet:DS.sr8100},
+  {id:'Cisco Secure Router C8130H-G2', ser:'Secure Router (G2)', fam:'Sucursal pequeña con WAN 10GBASE-T', clase:'S', fwd:1900, ipsec:1500, sdwan:900, amenazas:null, aps:null, redund:false, lte:false, bases:B_G2, secAddon:false,
+   tuneles:250, rutas:280000, nat:100000, pim:false, sdwanDesde:'IOS XE 26.2.1',
+   psu:{watts:22, tipo:'adaptador externo (PWR-CC1-66WAC por defecto)'},
+   ports:'1 GE RJ45/SFP + 1 10GBASE-T WAN · 2 GE flex · 2 GE LAN', nim:0, sm:0, optics:['sfp1g'], parts:[], lic:'cswan', datasheet:DS.sr8100},
   {id:'Cisco Secure Router C8131-G2', ser:'Secure Router (G2)', fam:'Sucursal pequeña con Threat Protection', clase:'S', fwd:1900, ipsec:1500, sdwan:900, amenazas:1000, aps:null, redund:false, lte:false, bases:B_G2,
    tuneles:250, rutas:500000, nat:100000, pim:false,
    psu:{watts:16, tipo:'adaptador externo (PWR-CC1-30WAC por defecto)'},
@@ -193,6 +210,18 @@ const MODELS = [
    tuneles:250, rutas:500000, nat:100000, pim:true,
    psu:{watts:23, tipo:'adaptador externo (PWR-CC1-66WAC por defecto)'},
    ports:'2 GE RJ45/SFP WAN · 2 GE flex · 6 GE LAN · 1 PIM', nim:0, sm:0, optics:['sfp1g'], parts:PIM, lic:'cswan', datasheet:DS.sr8100},
+  {id:'Cisco Secure Router C8151-CVAI-G2', ser:'Secure Router (G2)', fam:'Sucursal pequeña con DSL (Annex B/J), XGSPON/10GBASE-T y 5G RedCap', clase:'S', fwd:5600, ipsec:1500, sdwan:900, amenazas:1000, aps:null, redund:false, lte:true, bases:B_G2,
+   tuneles:250, rutas:500000, nat:100000, pim:false,
+   psu:{watts:27, tipo:'adaptador externo (PWR-CC1-66WAC por defecto)'},
+   ports:'1 GE RJ45/SFP + 1 DSL + 1 XGSPON/10GBASE-T WAN · 2 GE flex · 6 GE LAN · 5G RedCap integrado', nim:0, sm:0, optics:['sfp1g', 'sfp10gt'], parts:[], lic:'cswan', datasheet:DS.sr8100},
+  {id:'Cisco Secure Router C8151-CVAP-G2', ser:'Secure Router (G2)', fam:'Sucursal pequeña con DSL (Annex A), XGSPON/10GBASE-T y 5G RedCap', clase:'S', fwd:5600, ipsec:1500, sdwan:900, amenazas:1000, aps:null, redund:false, lte:true, bases:B_G2,
+   tuneles:250, rutas:500000, nat:100000, pim:false,
+   psu:{watts:27, tipo:'adaptador externo (PWR-CC1-66WAC por defecto)'},
+   ports:'1 GE RJ45/SFP + 1 DSL + 1 XGSPON/10GBASE-T WAN · 2 GE flex · 6 GE LAN · 5G RedCap integrado', nim:0, sm:0, optics:['sfp1g', 'sfp10gt'], parts:[], lic:'cswan', datasheet:DS.sr8100},
+  {id:'Cisco Secure Router C8151H-C-G2', ser:'Secure Router (G2)', fam:'Sucursal pequeña con WAN 10GBASE-T y 5G RedCap', clase:'S', fwd:5600, ipsec:1500, sdwan:900, amenazas:1000, aps:null, redund:false, lte:true, bases:B_G2,
+   tuneles:250, rutas:500000, nat:100000, pim:false,
+   psu:{watts:25, tipo:'adaptador externo (PWR-CC1-66WAC por defecto)'},
+   ports:'1 GE RJ45/SFP + 1 10GBASE-T WAN · 2 GE flex · 6 GE LAN · 5G RedCap integrado', nim:0, sm:0, optics:['sfp1g'], parts:[], lic:'cswan', datasheet:DS.sr8100},
   {id:'Cisco Secure Router C8161-G2', ser:'Secure Router (G2)', fam:'Sucursal pequeña con PoE y PIM 5G/LTE', clase:'S', fwd:5600, ipsec:1500, sdwan:900, amenazas:1000, aps:null, redund:false, lte:false, bases:B_G2,
    tuneles:250, rutas:500000, nat:100000, pim:true, poe:80, poeNota:'6 GE LAN, 4 PoE y 2 PoE+ (ficha)',
    psu:{watts:25, tipo:'adaptador externo (PWR-CC1-150WAC por defecto)'},
@@ -379,6 +408,10 @@ const SFPP = (n, uso, dual = true) => G(n, 10, ['SFP+'], uso, dual ? {velMin:1} 
 const SFP28 = (n, uso) => G(n, 25, ['SFP28'], uso, {velMin:10});
 const QSFP40 = (n, uso) => G(n, 40, ['QSFP+'], uso);
 const QSFP28 = (n, uso) => G(n, 100, ['QSFP28'], uso, {velMin:40});
+// La jaula XGSPON/10GBASE-T de las 8100 VAI/VAP y CVAI/CVAP: solo admite la ONT XGSPON
+// (SFP-10G-ONT20-I) o el SFP-10G-T-X (guía de hardware de la serie 8100, tabla 10). De los enlaces
+// que se modelan, solo recibe cobre de 10G con ese transceptor (`soloCobre`); nunca una óptica.
+const XGS = (n) => G(n, 10, ['SFP+'], 'WAN', {soloCobre:true, rotulo:'XGSPON/10GBASE-T: SFP-10G-ONT20-I o SFP-10G-T-X'});
 const ISR_8P = [COMBO(1, 'WAN'), RJ(1, 'WAN'), RJ(8, 'LAN')];
 const C8200 = [RJ(2, 'WAN'), SFP1(2, 'WAN')];
 const C8300_6T = [RJ(4, 'WAN'), SFP1(2, 'WAN')];
@@ -404,6 +437,12 @@ const PUERTOS = {
   'Catalyst 8500-20X6C': [SFPP(20, 'WAN'), QSFP28(6, 'WAN')],
   'Cisco Secure Router C8130-G2': [RJ(1, 'WAN'), COMBO(1, 'WAN'), RJ(2, 'LAN/WAN'), RJ(2, 'LAN')],
   'Cisco Secure Router C8131-G2': [RJ(1, 'WAN'), COMBO(1, 'WAN'), RJ(2, 'LAN/WAN'), RJ(2, 'LAN')],
+  'Cisco Secure Router C8130-VAI-G2': [COMBO(1, 'WAN'), XGS(1), RJ(2, 'LAN/WAN'), RJ(2, 'LAN')],
+  'Cisco Secure Router C8130-VAP-G2': [COMBO(1, 'WAN'), XGS(1), RJ(2, 'LAN/WAN'), RJ(2, 'LAN')],
+  'Cisco Secure Router C8130H-G2': [COMBO(1, 'WAN'), RJ(1, 'WAN', 10), RJ(2, 'LAN/WAN'), RJ(2, 'LAN')],
+  'Cisco Secure Router C8151-CVAI-G2': [COMBO(1, 'WAN'), XGS(1), RJ(2, 'LAN/WAN'), RJ(6, 'LAN')],
+  'Cisco Secure Router C8151-CVAP-G2': [COMBO(1, 'WAN'), XGS(1), RJ(2, 'LAN/WAN'), RJ(6, 'LAN')],
+  'Cisco Secure Router C8151H-C-G2': [COMBO(1, 'WAN'), RJ(1, 'WAN', 10), RJ(2, 'LAN/WAN'), RJ(6, 'LAN')],
   'Cisco Secure Router C8140-G2': SR8140, 'Cisco Secure Router C8151-G2': SR8140, 'Cisco Secure Router C8161-G2': SR8140,
   'Cisco Secure Router C8211-G2': [COMBO(2, 'WAN'), RJ(2, 'LAN/WAN'), RJ(2, 'LAN')],
   'Cisco Secure Router C8221-G2': SR8221, 'Cisco Secure Router C8225-G2': SR8221,
@@ -494,6 +533,12 @@ const COMBINACIONES = {
 // ADSL2/VDSL2+ port (Annex B/J ISDN)»). Recibe un enlace con entrega DSL, nunca uno Ethernet.
 const DSL = {
   'ISR 1116-4P': 'ADSL2/VDSL2+, Annex B/J sobre RDSI',
+  // DSL integrado de las 8100 (ficha, tablas 10 y 15: VDSL2 G.993.2, perfiles 8a a 35b, y ADSL,
+  // ADSL2 y ADSL2+): VAI sobre RDSI (Annex B/J), VAP sobre POTS (Annex A).
+  'Cisco Secure Router C8130-VAI-G2': 'VDSL2/ADSL2+, Annex B/J sobre RDSI',
+  'Cisco Secure Router C8130-VAP-G2': 'VDSL2/ADSL2+, Annex A sobre POTS',
+  'Cisco Secure Router C8151-CVAI-G2': 'VDSL2/ADSL2+, Annex B/J sobre RDSI',
+  'Cisco Secure Router C8151-CVAP-G2': 'VDSL2/ADSL2+, Annex A sobre POTS',
 };
 // Alcance del cobre en los RJ-45 del equipo (`alcanceRJ45`, 2026-10-21): 100 m. Las guías de
 // hardware de los Catalyst 8200 y 8300 y de la G2 8100, 8200 y 8300 lo dicen para 1000BASE-T
