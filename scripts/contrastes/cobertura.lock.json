@@ -1,7 +1,7 @@
 {
  "medidoEn": {
-  "commit": "eec1d2c",
-  "fecha": "2026-10-21"
+  "commit": "3752d39",
+  "fecha": "2026-10-26"
  },
  "umbralRozado": 25,
  "modulos": [
@@ -76,17 +76,17 @@
    "pct": 18
   },
   {
-   "modulo": "procedencia.js",
-   "estado": "ejercitado",
-   "total": 36,
-   "usadas": 18,
-   "pct": 50
-  },
-  {
    "modulo": "navegacion.js",
    "estado": "ejercitado",
    "total": 17,
    "usadas": 9,
+   "pct": 53
+  },
+  {
+   "modulo": "procedencia.js",
+   "estado": "ejercitado",
+   "total": 36,
+   "usadas": 19,
    "pct": 53
   },
   {
@@ -149,8 +149,8 @@
    "modulo": "index.js",
    "estado": "ejercitado",
    "total": 58,
-   "usadas": 42,
-   "pct": 72
+   "usadas": 43,
+   "pct": 74
   },
   {
    "modulo": "ficha.js",
@@ -158,13 +158,6 @@
    "total": 77,
    "usadas": 58,
    "pct": 75
-  },
-  {
-   "modulo": "cisco-motor.js",
-   "estado": "ejercitado",
-   "total": 150,
-   "usadas": 119,
-   "pct": 79
   },
   {
    "modulo": "mikrotik-motor.js",
@@ -183,8 +176,8 @@
   {
    "modulo": "dimensionador-fortinet-fortigate.js",
    "estado": "ejercitado",
-   "total": 283,
-   "usadas": 225,
+   "total": 284,
+   "usadas": 226,
    "pct": 80
   },
   {
@@ -200,6 +193,13 @@
    "total": 61,
    "usadas": 49,
    "pct": 80
+  },
+  {
+   "modulo": "cisco-motor.js",
+   "estado": "ejercitado",
+   "total": 150,
+   "usadas": 121,
+   "pct": 81
   },
   {
    "modulo": "dimensionador-mikrotik-routeros.js",
