@@ -152,6 +152,23 @@ test('--revisado promueve lo visto y deja el lock limpio', () => {
   assert.strictEqual(e.pendienteDesde, undefined);
 });
 
+test('--revisado conserva la clase: lo verificado sigue comparándose con lo mismo', () => {
+  // Pasó el 2026-10-26 con el boletín de los Catalyst 8300/8200L, vigilado por su texto: la
+  // entrada salía sin `clase`, se leía como bytes, y el lunes siguiente `clasificar` la tomaba
+  // por «nueva línea base» y absorbía en silencio cualquier cambio de esa semana.
+  const ruta = path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'vigia-')), 'lock.json');
+  fs.writeFileSync(ruta, JSON.stringify(lockCon({
+    documento: DOC, hashVerificado: 'aaa', bytes: 1000, medido: haceSemanas(3), clase: 'texto',
+    visto: { hash: 'bbb', bytes: 2000, medido: haceSemanas(1) },
+    pendienteDesde: haceSemanas(1),
+  })));
+  assert.strictEqual(marcarRevisado('fortinet', 'matrix.pdf', ruta).ok, true);
+  const lock = JSON.parse(fs.readFileSync(ruta, 'utf8'));
+  assert.strictEqual(lock.documentos[CLAVE].clase, 'texto');
+  // Y la semana siguiente, con el mismo texto, no hay cambio ni línea base nueva.
+  assert.strictEqual(semana(lock, { hash: 'bbb', clase: 'texto' }).cambio, 'sin cambios');
+});
+
 test('--revisado no dice «hecho» cuando no había nada pendiente', () => {
   // Decirlo seria la misma pequena mentira que este vigia existe para no contar.
   const ruta = path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'vigia-')), 'lock.json');

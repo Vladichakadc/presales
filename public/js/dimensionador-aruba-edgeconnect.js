@@ -490,7 +490,7 @@ const PERSONA_HINT={
 const SEC_HINT={
   none:'El NGFW y la clasificación de aplicaciones (AppRF, ~3.500 apps) ya van en Foundation. Activa una estrategia solo si el diseño exige IDS/IPS o inspección en la nube.',
   sse:'HPE Aruba Networking SSE (ex-Axis): ZTNA, SWG, CASB y DEM en suscripción POR USUARIO — paquetes oficiales Foundation ZTNA / Foundation SWG / Foundation Plus / Advanced / Advanced Plus (QuickSpecs SSE a50009212enw). EdgeConnect monta los túneles IPsec orquestados y AppExpress elige el mejor PoP. Entra en la lista como «consultar»: HPE no publica List Price de SSE.',
-  gwsec:'IDS/IPS, antimalware y panel de seguridad EN el gateway SD-Branch: la suscripción de Central pasa a su nivel «+ Security» (Foundation o Advanced), que HPE publica para las series 9000, 9100 y 9200 — no para 7000/7200 ni para EdgeConnect, donde la vía es Dynamic Threat Defense. El gateway se dimensiona contra su throughput de IDS/IPS oficial (VSG SD-Branch, sep-2026: 9004/9012 1,1 Gbps, 9106 2,5, 9114 4 y 9240 6 Gbps), no contra el de firewall; el 9004-LTE no publica esa cifra y se aparta. Los SKU son los oficiales de cada serie; su precio se confirma con el distribuidor (la lista cargada no los trae).',
+  gwsec:'IDS/IPS, antimalware y panel de seguridad EN el gateway SD-Branch: la suscripción de Central pasa a su nivel «+ Security» (Foundation o Advanced), que HPE publica para las series 9000, 9100 y 9200 — no para 7000/7200 ni para EdgeConnect, donde la vía es Dynamic Threat Defense. El gateway se dimensiona contra su throughput de IDS/IPS oficial (VSG SD-Branch, oct-2026: 9004/9012 1,1 Gbps, 9106 2,5, 9114 4 y 9240 6 Gbps), no contra el de firewall; el 9004-LTE no publica esa cifra y se aparta. Los SKU son los oficiales de cada serie; su precio se confirma con el distribuidor (la lista cargada no los trae).',
   dtd:'Dynamic Threat Defense: IDS/IPS, DDoS adaptativo y clasificación web EN el chasis EdgeConnect — licencia opcional aparte de Foundation/Advanced (QuickSpecs p.32), con SKU y List Price en la lista vigente (escalera plana por appliance, 2026-06-01): se cotiza por appliance y término. Regla de dimensionado del arquitecto (SIN FUENTE oficial): reserva un 35 % adicional de capacidad de proceso para la inspección. En el EC-XS vigente, IDS/IPS hasta 300 Mbps en línea (spec sheet); no corre en los EC-XS de PN 200889 y 200900 (doc oficial). Exige familia EdgeConnect.',
 };
 // Factor IMIX (brief del duenyo 2026-09-13, SIN FUENTE oficial): el throughput nominal de
@@ -986,7 +986,7 @@ function consolidarPerfiles(){
     meta.notas.push('', 'HEADEND VPNC (SD-Branch) — no incluido en las lineas de arriba:',
       `  ${vpnc.sedes} sedes con gateway de sucursal abren ${milesVpnc(vpnc.tuneles)} tuneles SD-WAN hacia cada VPNC (${vpnc.detalle.join('; ')}).`,
       vpnc.elegido
-        ?`  Minimo por tuneles: ${vpnc.elegido.id} (${milesVpnc(vpnc.elegido.vpncTuneles)} tuneles, VSG SD-Branch sep-2026); en par redundante, 2 unidades.`
+        ?`  Minimo por tuneles: ${vpnc.elegido.id} (${milesVpnc(vpnc.elegido.vpncTuneles)} tuneles, VSG SD-Branch oct-2026); en par redundante, 2 unidades.`
         :'  Ningun headend del catalogo llega a esa cifra: repartir en varios VPNC o regiones SD-WAN (VSG).',
       '  El throughput cifrado agregado y el crecimiento tambien cuentan: es un minimo, no el diseno del DC.');
   }
@@ -1768,11 +1768,11 @@ const REGLAS_DISENO=[
   {nivel:'aviso', cuando:(D,m)=>m.fam==='ec'&&secMode==='dtd'&&!D.bundle,
    texto:()=>'Dynamic Threat Defense elegido pero suscripcion EXCLUIDA: es licencia aparte, pero DE la suscripcion — sin ella no se licencia.'},
   // Fase 11: la regla de trabajo del duenyo reserva +35 % de proceso para DTD, pero HPE
-  // publica para los gateways SD-Branch un throughput IDS/IPS de solo el 18-30 % (VSG SD-Branch, sep-2026) del de
+  // publica para los gateways SD-Branch un throughput IDS/IPS de solo el 18-30 % (VSG SD-Branch, oct-2026) del de
   // firewall (datasheet oficial, medido con iMix). En EdgeConnect no hay cifra oficial:
   // el dimensionado ya va cargado con el 35 %, y este aviso pide no prometer de mas.
   {nivel:'aviso', cuando:(D,m)=>m.fam==='ec'&&secMode==='dtd',
-   texto:()=>'DTD dimensionado con +35 % de proceso (regla de trabajo declarada). Ojo: en gateways SD-Branch HPE publica throughput IDS/IPS de solo el 18-30 % del nominal de firewall (VSG SD-Branch, sep-2026); en EdgeConnect no hay cifra oficial — si la inspeccion sera intensiva, considera un escalon mas de chasis.'},
+   texto:()=>'DTD dimensionado con +35 % de proceso (regla de trabajo declarada). Ojo: en gateways SD-Branch HPE publica throughput IDS/IPS de solo el 18-30 % del nominal de firewall (VSG SD-Branch, oct-2026); en EdgeConnect no hay cifra oficial — si la inspeccion sera intensiva, considera un escalon mas de chasis.'},
   // Local Breakout sin Internet es una incoherencia de diseno: no hay salida local.
   {nivel:'aviso', cuando:(D,m)=>D.breakout&&D.inetMbps<=0&&D.caudalTotal>0,
    texto:()=>'Local Breakout activo pero el sitio no tiene enlace de Internet declarado: no hay salida local para el trafico SaaS — declara un DIA/banda ancha o desmarca el breakout.'},
@@ -2272,7 +2272,7 @@ function render(){
     }
     if(destMode==='cloud') flags.push('<b>Cloud-First/SaaS:</b> First-packet iQ clasifica la aplicación en el primer paquete y rompe al Internet local o a la nube SSE; el túnel cifrado al datacenter se reserva para el tráfico privado. Son capacidades de plataforma — no fuerzan el nivel de suscripción.');
     if(secMode==='dtd') flags.push('<b>Dynamic Threat Defense:</b> IDS/IPS, DDoS adaptativo y clasificación web son una licencia opcional APARTE de Foundation y Advanced (QuickSpecs p.32). Está en la lista de precios vigente (escalera plana por appliance, 1/3/5 años — verificada 2026-09-14): entra en la lista de materiales con su SKU y su List Price. El dimensionado reserva un 35 % adicional de proceso para la inspección (regla de trabajo declarada — ver la revisión del diseño).');
-    if(secMode==='gwsec') flags.push('<b>IDS/IPS en el gateway:</b> la suscripción de Central pasa a «+ Security» (IDS/IPS, antimalware y panel de seguridad), con el SKU oficial de la serie del gateway. El equipo se dimensiona contra su throughput de IDS/IPS oficial (VSG SD-Branch, sep-2026), con la misma degradación IMIX que el firewall — en estos gateways la inspección rinde entre el 18 % y el 30 % del firewall publicado.');
+    if(secMode==='gwsec') flags.push('<b>IDS/IPS en el gateway:</b> la suscripción de Central pasa a «+ Security» (IDS/IPS, antimalware y panel de seguridad), con el SKU oficial de la serie del gateway. El equipo se dimensiona contra su throughput de IDS/IPS oficial (VSG SD-Branch, oct-2026), con la misma degradación IMIX que el firewall — en estos gateways la inspección rinde entre el 18 % y el 30 % del firewall publicado.');
     if(secMode==='sse') flags.push('<b>HPE Aruba Networking SSE:</b> la inspección se hace en la nube — ZTNA, SWG, CASB y DEM en suscripción <b>por usuario</b> (paquetes oficiales Foundation ZTNA / Foundation SWG / Foundation Plus / Advanced / Advanced Plus, QuickSpecs SSE a50009212enw). El appliance monta los túneles IPsec orquestados hacia el SSE y AppExpress elige el mejor PoP. Entra en la lista como «consultar»: HPE no publica List Price de SSE.');
     if(cap!=null) flags.push(m.fam==='ec'
       ?`<b>Mezcla de tráfico (IMIX):</b> el requerimiento ya viene degradado por el motor de ingeniería (÷IMIX según el perfil de tráfico, más FEC, seguridad y margen), así que se compara contra el throughput NOMINAL publicado — sin volver a aplicar un 70 % al chasis (regla única del brief carrier-grade 2026-09-13; HPE no publica el delta entre laboratorio y mezcla real). Este modelo queda al ${Math.round(req/cap*100)} % de su capacidad nominal.`

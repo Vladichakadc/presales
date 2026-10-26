@@ -9,16 +9,10 @@
     },
     "cisco::https://www.cisco.com/c/en/us/products/collateral/networking/sdwan-routers/catalyst-8000-edge-platforms/catalyst-c8300-2n2s-4t2x-6t-1n-4t-c8200l-eol.html": {
       "documento": "Boletines oficiales de fin de venta (EOL)",
-      "hashVerificado": "8b7d2e78821894b29222b5958987f45771a1cb620988c41ec5446a2db8f2e893",
-      "bytes": 173911,
-      "medido": "2026-10-13T19:08:29.846Z",
-      "clase": "texto",
-      "visto": {
-        "hash": "cfdf92d30df6a7ae66ff9e3608a50c26e88d8512d006ae3aaff94f51f22e8959",
-        "bytes": 173940,
-        "medido": "2026-10-26T12:35:29.169Z"
-      },
-      "pendienteDesde": "2026-10-26T12:31:19.830Z"
+      "hashVerificado": "cfdf92d30df6a7ae66ff9e3608a50c26e88d8512d006ae3aaff94f51f22e8959",
+      "bytes": 173940,
+      "medido": "2026-10-26T12:35:29.169Z",
+      "clase": "texto"
     },
     "juniper::https://www.juniper.net/content/dam/www/assets/datasheets/us/en/security/security-products-comparison-chart.pdf": {
       "documento": "SRX Series and vSRX Performance and Features Matrix",
@@ -84,17 +78,11 @@
       "medido": "2026-10-26T12:35:29.169Z"
     },
     "fortinet::https://www.fortinet.com/content/dam/fortinet/assets/data-sheets/og-secure-sdwan.pdf": {
-      "documento": "Secure SD-WAN Ordering Guide (SDWAN-OG-R31-20260804)",
-      "hashVerificado": "b5c35f97d868b3555bb6dec73c224d32ecba743eb48c790d21d52f9141991e99",
-      "bytes": 1091677,
-      "medido": "2026-10-13T19:08:29.846Z",
-      "clase": "bytes",
-      "visto": {
-        "hash": "f0cad9697834dee8394851dcefb6f1244746aef5631a24c3d2c273fb20b9ba06",
-        "bytes": 1090028,
-        "medido": "2026-10-26T12:35:29.169Z"
-      },
-      "pendienteDesde": "2026-10-26T12:31:18.270Z"
+      "documento": "Secure SD-WAN Ordering Guide (SDWAN-OG-R32-20261007)",
+      "hashVerificado": "f0cad9697834dee8394851dcefb6f1244746aef5631a24c3d2c273fb20b9ba06",
+      "bytes": 1090028,
+      "medido": "2026-10-26T12:35:29.169Z",
+      "clase": "bytes"
     },
     "fortinet::https://www.fortinet.com/content/dam/fortinet/assets/data-sheets/og-fortiguard.pdf": {
       "documento": "FortiGate Subscriptions and FortiGuard Bundles Ordering Guide",
@@ -560,16 +548,10 @@
     },
     "aruba::https://arubanetworking.hpe.com/techdocs/VSG/docs/070-sd-branch-design/Media/PDF/Aruba_VSG_SD-Branch-Design.pdf": {
       "documento": "Validated Solution Guide SD-Branch y data sheet de suscripciones EdgeConnect (HPE, oficiales)",
-      "hashVerificado": "c215a2d431a97e8a754ce1f4edf41445f39963fc9d0730fe3c523fa2bb05aef1",
-      "bytes": 17596233,
-      "medido": "2026-09-13T00:00:00.000Z",
-      "clase": "bytes",
-      "visto": {
-        "hash": "7cccdf5723c87e0336fe50eba75b6024f3dfd3646340b834e071c20c508b80c6",
-        "bytes": 17594529,
-        "medido": "2026-10-26T12:35:29.169Z"
-      },
-      "pendienteDesde": "2026-10-26T12:35:25.253Z"
+      "hashVerificado": "7cccdf5723c87e0336fe50eba75b6024f3dfd3646340b834e071c20c508b80c6",
+      "bytes": 17594529,
+      "medido": "2026-10-26T12:35:29.169Z",
+      "clase": "bytes"
     },
     "fortinet::https://docs.fortinet.com/max-value-table": {
       "documento": "FortiOS Maximum Values Table (FortiOS 7.6.7)",

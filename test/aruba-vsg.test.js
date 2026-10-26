@@ -1,5 +1,5 @@
 'use strict';
-// Cifras del «EdgeConnect SD-Branch» Validated Solution Guide (septiembre de 2026, copia en
+// Cifras del «EdgeConnect SD-Branch» Validated Solution Guide (edición del 15-oct-2026, copia en
 // public/datasheets/sd-branch-design-vsg.pdf, p. 63) que el dimensionador Aruba usa desde el
 // 2026-09-24: el throughput de IDS/IPS de cada gateway (eje de la estrategia «IDS/IPS en el
 // gateway», A2) y la escala de túneles de cada headend (VPNC sugerido en el consolidado, M8).
@@ -42,5 +42,5 @@ test('VSG p.63: escala de túneles SD-WAN por headend', () => {
 });
 
 test('la ficha del gateway lleva la cifra de IDS/IPS con su fuente', () => {
-  assert.match(porId('Gateway 9106').spec.idsips, /Hasta 2,5 Gbps de throughput IDS\/IPS \(VSG SD-Branch, sep-2026\)/);
+  assert.match(porId('Gateway 9106').spec.idsips, /Hasta 2,5 Gbps de throughput IDS\/IPS \(VSG SD-Branch, oct-2026\)/);
 });

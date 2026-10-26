@@ -722,8 +722,9 @@ const RETIRADOS_SIN_FECHA = {
 };
 
 // IDS/IPS Y ESCALA DE HEADEND DE LOS GATEWAYS (2026-09-24, A2 y M8 de la auditoría del
-// 2026-09-17). FUENTE: «EdgeConnect SD-Branch» Validated Solution Guide de HPE (septiembre de
-// 2026, copia en public/datasheets/sd-branch-design-vsg.pdf), p. 63, tablas «HPE Aruba
+// 2026-09-17). FUENTE: «EdgeConnect SD-Branch» Validated Solution Guide de HPE (leída en la
+// edición del 04-sep-2026 y contrastada el 2026-10-26 contra la del 15-oct-2026, que es la copia de
+// public/datasheets/sd-branch-design-vsg.pdf: las mismas cifras), p. 63, tablas «HPE Aruba
 // Networking Branch Gateways» (fila «IDS/IPS throughput») y «HPE Aruba Networking Headend
 // Gateways» (fila «Maximum SD-WAN tunnels»). Leídas en local; las fichas de serie del repo no
 // publican la cifra de IDS/IPS. El 9004-LTE NO aparece en esa tabla y se queda sin cifra —no
@@ -766,7 +767,7 @@ for (const m of MODELS) {
   m.vpncTuneles = v && v.vpncTuneles != null ? v.vpncTuneles : null;
   // La ficha lo pinta en la fila «IDS/IPS integrado» que EdgeConnect ya usaba.
   if (v && v.idsMbps != null) {
-    m.spec = Object.assign({}, m.spec, { idsips: `Hasta ${String(m.idsMbps / 1000).replace('.', ',')} Gbps de throughput IDS/IPS (VSG SD-Branch, sep-2026) · licencia de Central «+ Security»` });
+    m.spec = Object.assign({}, m.spec, { idsips: `Hasta ${String(m.idsMbps / 1000).replace('.', ',')} Gbps de throughput IDS/IPS (VSG SD-Branch, oct-2026) · licencia de Central «+ Security»` });
   }
 }
 
@@ -1421,7 +1422,7 @@ const ARUBA_ACCESSORY_CATALOG = {
 // REANCLADA el 2026-10-07 (pendientes 24 y 25) al Hardware Reference Guide Rev V
 // (ago-2026, PN 201889-001, el que versiona public/datasheets/), que publica la matriz
 // modelo a modelo con «Yes»/«No» explícitos: p. 122 (Single-Rate), p. 125 (TAA) y p. 126
-// («Orderable SKU»). El VSG SD-Branch del 04-sep-2026 dice otra cosa en el EC-10108 (1G
+// («Orderable SKU»). El VSG SD-Branch del 04-sep-2026 decía otra cosa en el EC-10108 (1G
 // no; 25G y 10GBASE-T sí), pero su propia tabla (p. 110) remite a esta guía: «Full
 // transceiver support information can be found in the HPE Aruba Networking EdgeConnect
 // Hardware Reference Guide». Y el hardware le da la razón a la guía: el QuickSpecs v18
@@ -1441,6 +1442,10 @@ const ARUBA_ACCESSORY_CATALOG = {
 //     «X», p. 126 «Yes») y en conflicto no se oferta.
 //   · J9153E y J8177E siguen FUERA: no aparecen en ninguna matriz EC (Rev V, QuickSpecs v18
 //     ni VSG), que siguen citando J9153D y S3R03A.
+// EDICIÓN DEL VSG DEL 15-OCT-2026 (contrastada el 2026-10-26): retira su tabla de transceptores y
+// remite a la sección «Pluggable Transceivers in EdgeConnect» de esta guía, que ya es la que manda.
+// El J9153D en el EC-10106, que la Rev V no tabula, queda con la lista de opciones de la QuickSpecs
+// v18 (que lo da como óptica de EdgeConnect) y el «Yes» de la edición del 04-sep: no se retira.
 //   · Un SKU en PLC «ES» NUNCA entra en la matriz (JL747A queda solo en catálogo).
 //   · Consola JY728A (AP-CBL-SERU) en el hardware de generación actual; los legacy
 //     7000/7200 solo ofrecen su rack de parque instalado.

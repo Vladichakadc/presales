@@ -815,7 +815,7 @@ for (const m of MODELS) {
 }
 
 /* ── SD-WAN SERVICE: EL SKU DE LOS TRES SERVICIOS AVANZADOS (pendiente F2, 2026-09-24) ────────
-   QUE ES CADA CODIGO lo dice el «Secure SD-WAN Ordering Guide» SDWAN-OG-R31-20260804 (paginas
+   QUE ES CADA CODIGO lo dice el «Secure SD-WAN Ordering Guide» SDWAN-OG-R32-20261007 (paginas
    3-6, tablas SERVICES, y FAQ, pp. 10-11), traido por `traer-fortinet-pendientes.yml` (corrida
    35991156286) y leido por coordenadas. Lo confirma el «FortiGate Subscriptions and FortiGuard
    Bundles Ordering Guide» (mayo-2026, p. 4): Underlay and Application Monitoring, Overlay
@@ -841,11 +841,15 @@ for (const m of MODELS) {
    busqueda con el marcador del documento no podia encontrar nada. Lo vio otra sesion del mismo
    dia, que conto dos candidatos «SD-WAN BDL SVC» por modelo sin poder decir cual era cual; el
    Ordering Guide lo decide, y esa es la otra mitad del anclaje.
-   DOBLE ANCLAJE CONTRA EL DOCUMENTO, donde el documento lista el modelo (23 de las tablas):
+   EDICION R32 (7-oct-2026, contrastada el 2026-10-26 contra la R31 del 4-ago): lo unico que cambia
+   es que la tabla de appliances ya no lista el FortiGate 1000F ni sus SKU. No dice por que (no es un
+   aviso de fin de venta), asi que el 1000F pasa a los modelos que el documento no tabula y toma el
+   SKU de la lista, que es el mismo que imprimia la R31 (FC-10-F1K0F-1389).
+   DOBLE ANCLAJE CONTRA EL DOCUMENTO, donde el documento lista el modelo (22 de las tablas):
      · la FAMILIA tiene que coincidir —el documento y la lista ponen el corte en el mismo sitio—,
        y si no coincide la linea se queda sin SKU: dos documentos oficiales que discrepan sobre
        que se pide no se resuelven eligiendo uno;
-     · el CODIGO DE MODELO coincide en 20. En los otros 3 el documento imprime otro:
+     · el CODIGO DE MODELO coincide en 19. En los otros 3 el documento imprime otro:
          70G   FG70G (y en su propia tabla de renovacion, 0070G); la lista, GT70G.
          200G  F200G; la lista, FG2HG.
          4800F F481F bajo la columna del 4800F, que es el codigo del 4801F; la lista, F48HF.
@@ -855,7 +859,7 @@ for (const m of MODELS) {
    los chasis) toman el SKU de la lista, que es exactamente a lo que el documento remite
    («Refer to Price List»). */
 const SDWAN_SERVICIO={
-  fuente:'Secure SD-WAN Ordering Guide SDWAN-OG-R31-20260804',
+  fuente:'Secure SD-WAN Ordering Guide SDWAN-OG-R32-20261007',
   porModelo:{
     '30G':  ['FC-10-FG30G-1337-02-DD', 'FC-10-FG30G-1387-02-DD'],
     '40F':  ['FC-10-0040F-1337-02-DD', 'FC-10-0040F-1387-02-DD'],
@@ -868,7 +872,6 @@ const SDWAN_SERVICIO={
     '400G': ['FC-10-FG4H0-1329-02-DD', 'FC-10-FG4H0-1389-02-DD'],
     '700G': ['FC-10-G7H0G-1329-02-DD', 'FC-10-G7H0G-1389-02-DD'],
     '900G': ['FC-10-FG9H0-1329-02-DD', 'FC-10-FG9H0-1389-02-DD'],
-    '1000F':['FC-10-F1K0F-1329-02-DD', 'FC-10-F1K0F-1389-02-DD'],
     '1800F':['FC-10-F18HF-1329-02-DD', 'FC-10-F18HF-1389-02-DD'],
     '2600F':['FC-10-F26HF-1329-02-DD', 'FC-10-F26HF-1389-02-DD'],
     '3000F':['FC-10-F3K0F-1329-02-DD', 'FC-10-F3K0F-1389-02-DD'],

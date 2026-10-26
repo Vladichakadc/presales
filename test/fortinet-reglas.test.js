@@ -282,7 +282,10 @@ test('F2 · el SD-WAN Service sale de la price list y la familia se contrasta co
   // que dice la lista hoy, y si baja es que un modelo perdio su SKU sin que nadie lo decida.
   assert.strictEqual(conSku.length, 54);
   const porOrigen = (o) => conSku.filter((m) => m.lic.sdwanSvc.origen === o).length;
-  assert.strictEqual(porOrigen('coincide'), 20, 'el documento y la lista dan el MISMO SKU en 20 modelos');
+  // 19 desde la edicion R32 (7-oct-2026), que ya no tabula el 1000F: pasa a tomar el SKU de la lista.
+  assert.strictEqual(porOrigen('coincide'), 19, 'el documento y la lista dan el MISMO SKU en 19 modelos');
+  assert.strictEqual(svc('1000F').origen, 'lista');
+  assert.strictEqual(svc('1000F').addon.sku, 'FC-10-F1K0F-1389-02-DD');
   assert.strictEqual(porOrigen('otro-codigo'), 3);
   // Los tres en los que el documento imprime otro codigo se piden con el de la lista, y la
   // linea lo DICE: callarlo haria parecer que el documento y la lista coinciden.

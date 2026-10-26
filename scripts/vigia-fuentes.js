@@ -392,11 +392,14 @@ function marcarRevisado(vendor, urlOTrozo, ruta) {
     return { ok: false, error: `"${e.documento}" no tiene ningún cambio pendiente de revisar` };
   }
 
+  // La clase se conserva: sin ella la entrada se lee como bytes, y una vigilada por su texto
+  // pasaba el lunes siguiente por «nueva línea base», que absorbe sin avisar lo que cambie.
   lock.documentos[clave] = {
     documento: e.documento,
     hashVerificado: e.visto.hash,
     bytes: e.visto.bytes,
     medido: e.visto.medido,
+    ...(e.clase ? { clase: e.clase } : {}),
   };
   guardarLock(lock, ruta);
   return { ok: true, clave, documento: e.documento, hash: e.visto.hash };
