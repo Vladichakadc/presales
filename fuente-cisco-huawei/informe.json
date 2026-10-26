@@ -1,0 +1,47 @@
+[
+  {
+    "archivo": "cisco-eol-c8300-c8200.html",
+    "para": "CISCO",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://www.cisco.com/c/en/us/products/collateral/networking/sdwan-routers/catalyst-8000-edge-platforms/catalyst-c8300-2n2s-4t2x-6t-1n-4t-c8200l-eol.html",
+        "status": 200,
+        "bytes": 173938,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "fortinet-og-secure-sdwan.pdf",
+    "para": "FORTINET",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://www.fortinet.com/content/dam/fortinet/assets/data-sheets/og-secure-sdwan.pdf",
+        "status": 200,
+        "bytes": 1090028,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "aruba-vsg-sd-branch-design.pdf",
+    "para": "ARUBA",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://arubanetworking.hpe.com/techdocs/VSG/docs/070-sd-branch-design/Media/PDF/Aruba_VSG_SD-Branch-Design.pdf",
+        "status": 200,
+        "bytes": 17594529,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  }
+]
