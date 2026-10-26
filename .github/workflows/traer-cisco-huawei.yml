@@ -907,6 +907,15 @@ jobs:
               { archivo: 'cisco-eol-c8500.html', tipo: 'html', para: 'CISCO', debeContener: 'C8500-12X', urls: [
                 'https://www.cisco.com/c/en/us/products/collateral/networking/sdwan-routers/catalyst-8000-edge-platforms/catalyst-c8500-12x-c8500-12x4qc-eol.html',
               ] },
+              // El vigia del 2026-10-26 (issue #18) los dio por cambiados: se traen para contrastar la
+              // edicion nueva con la que verifico el catalogo, que esta en fuente/fortinet-pendientes y
+              // en public/datasheets/sd-branch-design-vsg.pdf.
+              { archivo: 'fortinet-og-secure-sdwan.pdf', tipo: 'pdf', para: 'FORTINET', urls: [
+                'https://www.fortinet.com/content/dam/fortinet/assets/data-sheets/og-secure-sdwan.pdf',
+              ] },
+              { archivo: 'aruba-vsg-sd-branch-design.pdf', tipo: 'pdf', para: 'ARUBA', urls: [
+                'https://arubanetworking.hpe.com/techdocs/VSG/docs/070-sd-branch-design/Media/PDF/Aruba_VSG_SD-Branch-Design.pdf',
+              ] },
               { archivo: 'cisco-sr8600-soporte.html', tipo: 'html', para: 'CISCO', exploracion: true, urls: [
                 'https://www.cisco.com/c/en/us/support/routers/8600-series-secure-routers/series.html',
               ] },
