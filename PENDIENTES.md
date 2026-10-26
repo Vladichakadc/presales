@@ -4,7 +4,8 @@ Registro vivo de lo que falta. **Al empezar una tarea se buscan aquí los puntos
 tocan, y al terminarla se actualiza**, y su contenido se resume al usuario al cerrar cada entrega — esa es la instrucción
 permanente que lo justifica (ver `CLAUDE.md`, sección *Instrucciones permanentes del dueño*).
 
-Última revisión: 2026-10-21, quincuagesimotercera entrega (**Las nueve propuestas de conectividad, SD-WAN y seguridad de Cisco, hechas o cerradas con su documento.** Encargo del dueño: «avanza con todo». El tramo se declara también en cobre (100 m en RJ-45; 100 y 30 m con los transceptores de cobre); el enlace celular elige su PIM por la categoría de la ficha; la sede con dos routers (y TLOC extension) duplica el equipo y reparte los enlaces; SD-WAN Manager, Validators y Controllers salen del número de equipos; AppQoE con DRE elige el nodo por conexiones; Cisco Secure Access entra al BOM por usuario o por sede; con «Firewall dedicado» se propone un Secure Firewall 1200, 3100 o 4200 por la cifra de su capa. Los NIM DSL están fuera de venta (EOL15805). Railway sigue sin desplegar desde `24287c2`. Ver *Cerrado recientemente*, *Abierto: enlaces y puertos de Cisco* y *Vigilar: un push a `main` que Railway no vio*.)
+Última revisión: 2026-10-26, quincuagesimocuarta entrega (**`main` vuelve a verde y Railway vuelve a desplegar.** Encargo del dueño: «revisar, continuar». El bloqueo de despliegues del 21 al 22-oct era una incidencia de builds de Railway; desde que pasó, `main` estaba en rojo por dos causas: un PR de Dependabot que subió `actions/setup-node` en todos los workflows menos en el job `contrastar_cisco` del vigía (añadido después de abrir el PR) y tres avisos altos nuevos (body-parser, multer, undici) que frenan `auditar`. Ver *Cerrado recientemente* y *~~Vigilar~~ Cerrado: un push a `main` que Railway no vio*.)
+Revisión anterior: 2026-10-21, quincuagesimotercera entrega (**Las nueve propuestas de conectividad, SD-WAN y seguridad de Cisco, hechas o cerradas con su documento.** Encargo del dueño: «avanza con todo». El tramo se declara también en cobre (100 m en RJ-45; 100 y 30 m con los transceptores de cobre); el enlace celular elige su PIM por la categoría de la ficha; la sede con dos routers (y TLOC extension) duplica el equipo y reparte los enlaces; SD-WAN Manager, Validators y Controllers salen del número de equipos; AppQoE con DRE elige el nodo por conexiones; Cisco Secure Access entra al BOM por usuario o por sede; con «Firewall dedicado» se propone un Secure Firewall 1200, 3100 o 4200 por la cifra de su capa. Los NIM DSL están fuera de venta (EOL15805). Railway sigue sin desplegar desde `24287c2`. Ver *Cerrado recientemente*, *Abierto: enlaces y puertos de Cisco* y *Vigilar: un push a `main` que Railway no vio*.)
 Revisión anterior: 2026-10-21, quincuagesimosegunda entrega (**El dimensionador Cisco elige la óptica de cada enlace por la fibra y la distancia, y se cierran los pendientes de puertos que tenían documento.** Encargo del dueño: «ejecuta y cierra pendientes y avanza con la mejora propuesta». Cada enlace de fibra declara su tipo de fibra y su tramo, y la óptica sale del alcance de la ficha de cada óptica (cinco fichas de Cisco y la guía de SFP de Meraki); de paso, el `QSFP-100G-ER4-S` del catálogo no existía (es la `QSFP-100G-ER4L-S`). Cerrados con su documento: el DSL del ISR 1116-4P, el portador de dos NIM en una ranura SM, las combinaciones de puertos del 12X4QC (tabla 5; tenía una jaula QSFP de más) y del C8570-G2 (bahías de su guía y 240 GE), el cobre de 10G en SFP+ de la serie 8300 de la G2 y la velocidad mínima de los mGig de la G2. Railway no desplegó la entrega anterior. Ver *Cerrado recientemente*, *Abierto: enlaces y puertos de Cisco* y *Vigilar: un push a `main` que Railway no vio*.)
 Revisión anterior: 2026-10-21, quincuagesimoprimera entrega (**Enlaces WAN a puertos reales en el dimensionador Cisco.** Encargo del dueño: «avanza con la mejora propuesta» (la 1.1). Los 52 modelos traen sus puertos contados de su ficha (WAN, flex o LAN, medio y velocidad) y cada enlace declarado va a uno; si no cabe, se propone un módulo NIM de la guía o el equipo se aparta con su motivo, y cada fibra lleva su óptica en el BOM. Por el camino, la ficha corrigió dos textos del catálogo (ASR 1002-HX y Catalyst 8500-12X4QC). Ver *Cerrado recientemente* y *Abierto: enlaces y puertos de Cisco*.)
 Revisión anterior: 2026-10-21, quincuagésima entrega (**Túneles y sesiones BFD por topología en el dimensionador Cisco.** Encargo del dueño: «ejecuta pendientes y mejora propuesta». La única decisión abierta era la de las propuestas de Cisco, y su opción recomendada (2.1) era también la mejora propuesta: se hizo. Los túneles dejan de escribirse a ojo: salen de la topología (hub y radios o malla, sedes, hubs y transportes) y se comparan con los que publica cada ficha. El despliegue de la entrega anterior se confirmó (Railway no vio los pushes y se lanzó a mano). Ver *Cerrado recientemente*.)
@@ -1867,7 +1868,12 @@ etapa 6, y *Cerrado recientemente*. Lo que sigue abierto, con su motivo:
     bloqueado desde el sandbox (2026-09-16); cierra bajando el DS oficial de la
     serie 7000/7200 desde una máquina con acceso y repitiendo este mismo patrón.
 
-## Vigilar: un push a `main` que Railway no vio (2026-10-21)
+## ~~Vigilar~~ Cerrado: un push a `main` que Railway no vio (2026-10-21, cerrado el 2026-10-26)
+
+**Causa** (la dio el dueño el 2026-10-22, desde la página de estado de Railway): una incidencia de la plataforma, «We are
+continuing to work to make builds available again», con un aviso de seguridad aparte. No era la integración de GitHub del
+servicio. Railway volvió a ver los pushes el 2026-10-22 a las 17:03 UTC (despliegue de `316099e`), que se descartó porque
+`verificar` estaba en rojo (ver *Cerrado recientemente*, 2026-10-26). Lo que sigue es la historia del diagnóstico.
 
 El push de `73569ae` (licencias DNA de Cisco) pasó `verificar` y `pantallas` en verde y Railway no
 creó ningún despliegue: ni en espera, ni saltado, ni trabajo pendiente en el entorno; la
@@ -2257,6 +2263,18 @@ que ya se comprobó y lo que cuesta cada opción.
     normalizar) se cerró el 2026-09-02 — ver *Cerrado recientemente*.
 
 ## Cerrado recientemente
+
+- **2026-10-26 · `main` vuelve a verde (quincuagesimocuarta entrega).** Encargo del dueño: «revisar, continuar».
+  Railway volvió a desplegar tras su incidencia, pero descartó `316099e` porque `verificar` estaba en rojo desde
+  `578edfd`. **Dos causas**: (1) el PR de Dependabot que subió `actions/setup-node` de la 7.0.0 a la 7.1.0 se abrió antes
+  de que existiera el job `contrastar_cisco` de `vigia-fuentes.yml` y se fusionó sin traer `main`: ese job se quedó en la
+  7.0.0 y `test/workflows-acciones.test.js` (una acción, un commit en todos los workflows) lo frenó, como debe; se alinea
+  a la 7.1.0. El commit `316099e` («errores de lint») no tocaba la causa: los dos avisos de lint que se ven en Actions
+  son anteriores y no fallan. (2) Tres avisos altos publicados después del 21-oct frenan `auditar`, que corre en
+  `verificar.yml`: body-parser (GHSA-27r3-jxmh-p828), multer (GHSA-q7qp-rjg7-q26m) y undici (GHSA-xjj6-f33q-929c, dentro
+  de `sqlite3` → `node-gyp`). `npm audit fix` sin `--force` los sube a body-parser 1.20.9, multer 2.5.0 y undici 6.29.1,
+  sin tocar `package.json` ni `sqlite3`. Comprobado: `verificar` (1116), `auditar` (0 avisos), servidor en producción,
+  17 pantallas, e2e y puerta.
 
 - **2026-10-21 · Las nueve propuestas de conectividad, SD-WAN y seguridad de Cisco, hechas o cerradas
   con su documento (quincuagesimotercera entrega).** Encargo del dueño: «avanza con todo» (la mejora
