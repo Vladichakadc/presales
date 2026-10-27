@@ -71,3 +71,9 @@ test('la tabla de fuentes de la hoja dice cómo se asoció cada una', () => {
   assert.match(t, /Asociación con el equipo/);
   assert.match(t, /Ficha AR650 \| sin fecha \| Vigente \| Sin cambios \|  \|  \| declarada en el catálogo/);
 });
+
+test('un resumen que llega como texto se escribe como una fila y no tumba la hoja', () => {
+  // Cisco lo pasaba así hasta el 2026-10-27 y el Excel de Cisco no se descargaba.
+  const t = texto(BOM.matrizSupuestos({ titulo: 'BOM', supuestos: { fabricante: 'Cisco', resumen: 'Overlay 900 Mbps' } }, { fecha: 'f', url: 'u' }).aoa);
+  assert.match(t, /RESULTADO DEL DIMENSIONAMIENTO\nResultado \| Overlay 900 Mbps/);
+});

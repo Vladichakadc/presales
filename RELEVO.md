@@ -36,6 +36,8 @@ está en curso no va aquí: lo dice `npm run traspasos` (protocolo en `docs/tras
   el Excel), y la leyenda de las figuras de Cisco fusionada (PR #24). **Los fallos del e2e se leen
   ahora desde una sesión**: `gh api repos/Vladichakadc/presales/check-runs/<id>/annotations`
   (los logs y artefactos de Actions están en un dominio que el proxy deniega).
+  Por el camino se arregló que **el Excel de Cisco no se descargaba** (la hoja «Supuestos» recibía
+  un texto donde espera pares).
 - **Producción**: `main` lleva esta entrega (ver `git log`); Railway despliega cuando CI pasa y la
   sonda (`sonda-produccion.yml`) abre un issue con la etiqueta `despliegue` si algo falla.
 - **Sexagesimoprimera entrega**: las figuras del dimensionador Cisco dicen qué es cada número. 67 caras de 38

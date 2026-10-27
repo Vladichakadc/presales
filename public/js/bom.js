@@ -721,7 +721,11 @@
     aoa.push(['Fabricante', s.fabricante || (vendorPagina ? vendorPagina : 'no lo declara la página')]);
     aoa.push(['Plataforma evaluada', s.plataforma || 'la página no distingue plataformas']);
     aoa.push(['Equipo del BOM', s.modelo || (m.fotos && m.fotos.modelo) || m.titulo || '—']);
-    const resumen = (s.resumen || []).filter((r) => r && r.length);
+    // `resumen` es una lista de pares [clave, valor]. Hasta el 2026-10-27 Cisco pasaba un texto, y
+    // `.filter` sobre un texto lanzaba: el Excel de Cisco no se descargaba (lo destapó la batería
+    // e2e-cisco-excel-figuras). Un texto se escribe como una fila; nada que no sea par se cuela.
+    const crudo = typeof s.resumen === 'string' ? [['Resultado', s.resumen]] : (Array.isArray(s.resumen) ? s.resumen : []);
+    const resumen = crudo.filter((r) => Array.isArray(r) && r.length);
     if (resumen.length) {
       aoa.push([]);
       aoa.push(['RESULTADO DEL DIMENSIONAMIENTO']);

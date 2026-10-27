@@ -754,7 +754,12 @@ function renderBom(){
   const meta = {
     titulo:`Lista de materiales — ${m.id}`,
     supuestos:{vendor:VENDOR, fabricante:'Cisco', plataforma:ultimaEval ? ultimaEval.plataforma.n : null, modelo:m.id, serie:m.ser,
-      resumen:ultimaEval ? `Overlay ${fmt(ultimaEval.demanda.overlayNeed)}${ultimaEval.demanda.diaNeed ? ` + salida local ${fmt(ultimaEval.demanda.diaNeed)}` : ''}${f && f.u != null ? `; utilización del ${Math.round(f.u * 100)} %` : ''}` : null},
+      // Pares [clave, valor], como la hoja «Supuestos» los espera (un texto suelto tumbaba el Excel).
+      resumen:ultimaEval ? [
+        ['Demanda del overlay', fmt(ultimaEval.demanda.overlayNeed)],
+        ...(ultimaEval.demanda.diaNeed ? [['Salida local a Internet', fmt(ultimaEval.demanda.diaNeed)]] : []),
+        ['Utilización del equipo', f && f.u != null ? `${Math.round(f.u * 100)} % (suma de las fracciones de overlay y salida local, supuesto declarado)` : null],
+      ] : null},
     subtitulo:`${m.fam} · Serie ${m.ser} · término ${anios} años`,
     archivo:`BOM_${m.id}`,
     // Las figuras de la ficha, con la tabla de sus números, en la hoja «Fotos del equipo» del Excel
