@@ -1540,23 +1540,39 @@ function sinJaulasSfp(modelo){
 //   · sin puerto común libre: se dice, y la auditoría ya aparta el chasis.
 // Sin inventario de puertos (equipo virtual) se queda la regla anterior, por velocidad.
 const VEL_JAULA={sfp:['1G'], sfpPlus:['1G','10G'], sfp28:['1G','10G','25G']};
+// Velocidades de óptica que la jaula `tipo` de ESTE modelo admite y el catálogo trae.
+function velocidadesJaula(m, tipo){
+  const cfg=ACCESSORY_COMPAT[m.id];
+  const delModelo=new Set(cfg?cfg.items.map(k=>ACCESSORY_CATALOG[k]&&ACCESSORY_CATALOG[k].speed).filter(Boolean):[]);
+  return (VEL_JAULA[tipo]||[]).filter(v=>delModelo.has(v)&&opticasPorVelocidad(m.id, v).length);
+}
+// Lo que la auditoría del par necesita para elegir la interconexión POR VELOCIDAD (mejora
+// aprobada, 2026-10-27): el agregado del sitio y cuánto alcanza cada tipo de puerto en este
+// modelo (cobre, 1 GbE; una jaula, su óptica más rápida del catálogo; sin óptica, no se usa).
+// La usan interconexionEdgeHA y auditarPuertos, para que las dos vean el mismo puerto.
+function opcionesHa(m, enlacesPar){
+  if(!m||!enlacesPar) return undefined;
+  return {
+    haMbps:enlacesPar.reduce((s,l)=>s+l.down,0),
+    haVel:t=>(t==='rj45'||t==='combo')?VELOCIDAD_OPTICA['1G']
+      :Math.max(0,...velocidadesJaula(m,t).map(v=>VELOCIDAD_OPTICA[v]||0)),
+  };
+}
 function interconexionEdgeHA(m, unidades, links, pick){
   const enlaces=m?parEdgeHA(m.fam==='ec', unidades, links):null;
   if(!enlaces) return null;
   const agregado=enlaces.reduce((s,l)=>s+l.down,0);
   const r={enlaces, agregado, puerto:null, modo:'optica', vel:null, ops:[], sku:null, aviso:null};
   if(m.puertos){
-    const asig=ArubaReglas.asignarPuertosPar(m.puertos, links, LAN_RESERVADOS);
+    const asig=ArubaReglas.asignarPuertosPar(m.puertos, links, LAN_RESERVADOS, opcionesHa(m, enlaces));
     r.puerto=asig.ha;
     if(!asig.ha){ r.modo='sinPuerto'; return r; }
     if(asig.ha==='rj45'||asig.ha==='combo'){
       r.modo='cobre';
-      if(agregado>(VELOCIDAD_OPTICA['1G'])) r.aviso=`el RJ-45 es de 1 GbE y el agregado del sitio es ${fmt(agregado)}: la regla de la casa pide ≥ agregado; si importa, deja libre una jaula del mismo tipo en los dos chasis y va con ópticas`;
+      if(agregado>(VELOCIDAD_OPTICA['1G'])) r.aviso=`el RJ-45 es de 1 GbE y el agregado del sitio es ${fmt(agregado)}: la regla de la casa pide ≥ agregado, y no queda libre en los dos chasis una jaula con óptica que lo cubra; si importa, libera una del mismo tipo en ambos`;
       return r;
     }
-    const cfg=ACCESSORY_COMPAT[m.id];
-    const delModelo=new Set(cfg?cfg.items.map(k=>ACCESSORY_CATALOG[k]&&ACCESSORY_CATALOG[k].speed).filter(Boolean):[]);
-    const admitidas=(VEL_JAULA[asig.ha]||[]).filter(v=>delModelo.has(v)&&opticasPorVelocidad(m.id, v).length);
+    const admitidas=velocidadesJaula(m, asig.ha);
     r.vel=admitidas.find(v=>(VELOCIDAD_OPTICA[v]||0)>=agregado)||null;
     if(!r.vel){
       r.modo='sinOptica';
@@ -1588,12 +1604,13 @@ function cobreSfp(modelo){
 // y cada uno reserva sus LAN y el puerto de la interconexión (ArubaReglas.asignarPuertosPar).
 function auditarPuertos(modelo, wanLinks){
   const enlaces=(wanLinks||[]).filter(l=>l.down>0||l.up>0);
-  const par=!!(modelo&&parEdgeHA(modelo.fam==='ec', unidadesSitio(), wanLinks));
+  const enlacesPar=modelo?parEdgeHA(modelo.fam==='ec', unidadesSitio(), wanLinks):null;
+  const par=!!enlacesPar;
   return {
     par,
     puertosNecesarios:enlaces.length+LAN_RESERVADOS*(par?2:1)+(par?2:0),
     hayFibra:enlaces.some(l=>/^SFP/.test(l.medio)),
-    asignacion:par?ArubaReglas.asignarPuertosPar(modelo.puertos, wanLinks, LAN_RESERVADOS)
+    asignacion:par?ArubaReglas.asignarPuertosPar(modelo.puertos, wanLinks, LAN_RESERVADOS, opcionesHa(modelo, enlacesPar))
       :ArubaReglas.asignarPuertos(modelo?modelo.puertos:null, wanLinks, LAN_RESERVADOS),
   };
 }

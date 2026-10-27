@@ -142,3 +142,54 @@ test('par EdgeHA: los enlaces se reparten y cada chasis gasta el puerto de la in
   // Un respaldo ocupa puerto igual que en un chasis; un equipo virtual no tiene nada que auditar.
   assert.strictEqual(R.asignarPuertosPar(null, diez, 2).virtual, true);
 });
+
+// La interconexión, también por velocidad (mejora aprobada, 2026-10-27). En un fallo cruza lo
+// que llega al chasis que no está activo; la regla de la casa pide que cubra el agregado del
+// sitio. Con `haMbps` se elige el tipo común libre más barato que lo cubre; si ninguno, el más
+// rápido que se pueda usar (`haCubre: false`); sin `haMbps`, como antes.
+test('par EdgeHA: la interconexión va por el puerto más barato que cubre el agregado', () => {
+  const dosCobre = (mbps) => [enlace(1, 'RJ45', mbps), enlace(2, 'RJ45', mbps)];
+  // EC-10106: 2 SFP+, 2 combo y 2 RJ-45 por chasis. 1,6 Gbps no caben en un RJ-45 de 1 GbE.
+  const rapido = R.asignarPuertosPar(P('EC-10106'), dosCobre(800), 2, { haMbps: 1600 });
+  assert.strictEqual(rapido.ha, 'sfpPlus');
+  assert.strictEqual(rapido.haCubre, true);
+  assert.strictEqual(rapido.cabe, true);
+  // 800 Mbps sí caben por cobre: un latiguillo, ninguna óptica.
+  const lento = R.asignarPuertosPar(P('EC-10106'), dosCobre(400), 2, { haMbps: 800 });
+  assert.strictEqual(lento.ha, 'rj45');
+  assert.strictEqual(lento.haCubre, true);
+  // Una jaula sin óptica que cubra (lo dice la página por su catálogo) no se elige: va el cobre,
+  // y se dice que no llega.
+  const sinOptica = R.asignarPuertosPar(P('EC-10106'), dosCobre(800), 2, { haMbps: 1600, haVel: (t) => (t === 'sfpPlus' ? 0 : 1000) });
+  assert.strictEqual(sinOptica.ha, 'rj45');
+  assert.strictEqual(sinOptica.haCubre, false);
+  // Si ningún tipo cubre, el más rápido de los que se pueden usar.
+  const corto = R.asignarPuertosPar(P('EC-10106'), dosCobre(800), 2, { haMbps: 20000 });
+  assert.strictEqual(corto.ha, 'sfpPlus');
+  assert.strictEqual(corto.haCubre, false);
+  // Sin agregado, el comportamiento de antes.
+  const antes = R.asignarPuertosPar(P('EC-10106'), dosCobre(800), 2);
+  assert.strictEqual(antes.ha, 'rj45');
+  assert.strictEqual(antes.haCubre, null);
+});
+
+test('par EdgeHA: elegir la interconexión por velocidad no cambia si el par cabe', () => {
+  // El riesgo que se temía: que la jaula que gasta la interconexión le falte a un enlace. No
+  // puede pasar: la interconexión se elige tras los enlaces y antes de los LAN, que van a
+  // cualquier puerto. Se recorre todo el catálogo con mezclas de enlaces.
+  const medios = ['RJ45', 'SFP 1G', 'SFP+ 10G', 'SFP28 25G'];
+  for (const m of aruba.MODELS.filter((x) => x.puertos)) {
+    for (let n = 2; n <= 8; n++) {
+      for (let k = 0; k < medios.length; k++) {
+        const enlaces = Array.from({ length: n }, (_, i) => enlace(i + 1, medios[(i + k) % medios.length], 500));
+        const sin = R.asignarPuertosPar(m.puertos, enlaces, 2);
+        for (const haMbps of [500, 2000, 15000, 40000]) {
+          const con = R.asignarPuertosPar(m.puertos, enlaces, 2, { haMbps });
+          assert.strictEqual(con.cabe, sin.cabe, `${m.id}, ${n} enlaces desde ${medios[k]}, ${haMbps} Mbps`);
+          assert.strictEqual(con.lanFaltan, sin.lanFaltan, `${m.id}: LAN que faltan`);
+          assert.strictEqual(con.haFalta, sin.haFalta, `${m.id}: interconexión`);
+        }
+      }
+    }
+  }
+});
