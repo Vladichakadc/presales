@@ -4,8 +4,8 @@
 - **Rama:** claude/elegant-pascal-7ymts7
 - **Cuenta:** vladichakadc, sesión 01TxCQ3W2sHYVmimAdMKht3j
 - **Estado:** en curso
-- **Actualizado:** 2026-10-27 21:20
-- **Archivos que toca:** server/seed/legacyData/cisco.js, server/seed/legacyData/juniper.js, server/seed/legacyData/mikrotik.js, server/seed/legacyData/aruba.js, server/seed/legacyData/nokia.js, server/seed/legacyData/huawei.js, server/seed/legacyData/fuentes.js, .github/workflows/traer-cisco-huawei.yml, test/pqc.test.js
+- **Actualizado:** 2026-10-27 21:50
+- **Archivos que toca:** server/seed/legacyData/cisco.js, server/seed/legacyData/juniper.js, server/seed/legacyData/mikrotik.js, server/seed/legacyData/aruba.js, server/seed/legacyData/nokia.js, server/seed/legacyData/huawei.js, server/seed/legacyData/fuentes.js, .github/workflows/traer-cisco-huawei.yml, test/pqc.test.js, test/pqc-requisito.test.js, public/dimensionador-aruba-edgeconnect.html, public/dimensionador-mikrotik-routeros.html, public/dimensionador-nokia-7750sr.html
 - **Siguiente paso:** conducir las pantallas (pantallas, contraste, e2e, puerta) con el requisito PQC; después rebase sobre `main`, PENDIENTES, RELEVO y CLAUDE.md (la línea de PQC de `ficha.js`), borrar este traspaso y fusionar por el PR #31
 
 ## Encargo del dueño
@@ -38,7 +38,9 @@ la criptografía post-cuántica, que hoy aparta como «no consta» a Huawei, Aru
   - MikroTik: PPK desde RouterOS 7.21 en los 13 cuya ficha dice «RouterOS v7» y en los 3 CHR.
   - Aruba: PPK en los 10 EdgeConnect (cifrados de ECOS, Rev C ago-2025), sin versión.
   - Nokia: MACsec/ANYsec quantum-safe en el 7750 SR-1x-48D y el SR-1x-92S (ficha Release 26).
-- `npm run verificar`: 1155 pruebas en verde.
+- `npm run verificar`: 1155 pruebas en verde (1162 tras el rebase sobre `main`).
+- Las pistas de «Exigir PQC» de Aruba, MikroTik y Nokia decían que nada estaba documentado:
+  corregidas a lo que hay ahora.
 
 ## Falta
 
@@ -55,4 +57,9 @@ la criptografía post-cuántica, que hoy aparta como «no consta» a Huawei, Aru
 
 ## Verificación
 
-- `npm run verificar` en verde (1155). Falta el navegador.
+- `npm run verificar` (1162) y `npm run auditar` en verde; servidor con `NODE_ENV=production`.
+- Conducido en Chromium: MikroTik con «clave» recomienda el hEX E50UG (13 cumplen) y con ML-KEM
+  ninguno; Cisco IOS XE con «clave» entra el Catalyst 8300 y con ML-KEM se aparta «su documento
+  da PPK (RFC 8784), no un algoritmo ML-KEM»; ISR a 50 Mbps, 5 de 5; ASR, «no consta»; Nokia
+  SR-1x, 2 de 2. `npm run pantallas` 17/17; `npm run contraste -- --todos` 10 casos sin
+  discrepancias (cobertura en commit aparte).
