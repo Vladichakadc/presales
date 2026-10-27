@@ -52,6 +52,13 @@
 // que no se puede traer, que ya no se reconoce como ficha o que no da ninguna celda sale con su
 // motivo y codigo 2; el issue lo dice.
 //
+// MODELOS DE LA FICHA QUE EL CATALOGO NO TRAE (2026-10-27, la mejora propuesta al cerrar la
+// entrega anterior). Seis variantes de la 8100 estuvieron en su ficha sin que nada lo recordara.
+// Las cabeceras de cada tabla nombran los equipos de la ficha; una referencia que ningun modelo
+// del catalogo cubre sale en `fueraDeCatalogo` y el issue del vigia la cita. Es un aviso: no
+// cambia el codigo de salida, no escribe nada, y lo que una persona ya miro va a `REVISADAS` con
+// su motivo para no avisar cada lunes.
+//
 // CODIGO DE SALIDA: 0 si todo casa; 1 si algo difiere, no se pudo leer o falta un modelo; 2 si no
 // hay ninguna ficha reconocida, una reconocida no dio ninguna celda o una ficha no se pudo traer.
 const fs = require('fs');
@@ -171,6 +178,31 @@ function codigos(m) {
   if (m.hwSku) c.add(m.hwSku.replace(/-HW$/, ''));
   return [...c];
 }
+// Lo que una cabecera llama «un equipo» en cada familia: su referencia de pedido. Una que no casa
+// con ningún modelo del catálogo (de ninguna familia) sale en `fueraDeCatalogo`: un aviso, no una
+// diferencia, porque la ficha puede traer variantes que el catálogo deja fuera a propósito.
+const REFERENCIAS = {
+  g2: /(?<![A-Za-z0-9-])C?8\d{3}[A-Z]?(?:-[A-Z0-9]+)*?-G2(?:-MX)?(?![A-Za-z0-9-])/g,
+  catalyst: /(?<![A-Za-z0-9-])C8[235]\d\dL?-[A-Z0-9]+(?:-[A-Z0-9]+)*(?![A-Za-z0-9-])/g,
+  isr: /(?<![A-Za-z0-9-])C11\d[\dxX](?:\(X\))?X?(?:-[A-Z0-9]+)*(?![A-Za-z0-9-])/g,
+  meraki: /(?<![A-Za-z0-9-])(?:MX\d+[A-Z]*|C8\d{3}-G2(?:-MX)?)(?![A-Za-z0-9-])/g,
+};
+// Las referencias que una persona ya miró y dejó fuera, con su motivo: no vuelven a avisar cada
+// lunes. Una que entre al catálogo se quita de aquí (la prueba lo frena).
+const REVISADAS = Object.fromEntries([
+  [['C8200-1N-4S', 'C8200L-1N-4S'],
+    'errata de la ficha de la serie 8200: solo las nombra su tabla de consumo; el resto de la ficha, ' +
+    'su guía de hardware, la guía de pedido y el boletín de fin de venta dicen C8200-1N-4T y C8200L-1N-4T (revisado el 2026-10-27)'],
+  [['C1101-4P', 'C1101-4PLTEP', 'C1101-4PLTEPW', 'C1109-2PLTE', 'C1109-4PLTE2P', 'C1109-4PLTE2PW', 'C111x-4PLTE',
+    'C111x-4PLTEW', 'C111x-4PW', 'C111x-8PLTE', 'C111x-8PLTEW', 'C111x-8PW', 'C1121-4P', 'C1121-4PLTEP', 'C1121-8PLTEPW',
+    'C1121X-8PLTEPW', 'C112x-4P', 'C112x-8P', 'C112x-8PLTEP', 'C112xX-8P', 'C112xX-8PLTEP', 'C1131-8P', 'C1131-8PLTEPW',
+    'C1131-8PW', 'C1131X-8P', 'C1131X-8PLTEPW', 'C1131X-8PW', 'C1161-8P', 'C1161-8PLTEP', 'C1161X-8PLTEP'],
+    'variantes de la ficha del ISR 1000 (cuatro puertos, LTE, Wi-Fi, C1101, C1109, C1131 y las sin X) que el catálogo ' +
+    'no trae; si entran es una decisión de alcance (PENDIENTES.md, «Modelos de una ficha que el catálogo no trae», 2026-10-27)'],
+  [['MX67W', 'MX68W'],
+    'variantes con Wi-Fi de la ficha del MX67/MX68 que el catálogo no trae; si entran es una decisión de alcance ' +
+    '(PENDIENTES.md, «Modelos de una ficha que el catálogo no trae», 2026-10-27)'],
+].flatMap(([refs, motivo]) => refs.map((r) => [r, motivo])));
 const escapar = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 const nombra = (celda, cod) => new RegExp(`(^|[^A-Za-z0-9-])${escapar(cod)}(?![A-Za-z0-9-])`).test(celda);
 const normalCabecera = (t) => t.replace(/-\s+/g, '-').replace(/\/\s+/g, '/');
@@ -193,13 +225,14 @@ function valor(txt, tipo) {
   return { n: Math.round(x * ({ K: 1e3, M: 1e6 }[m[2]] || 1)) };
 }
 
-function contrastar(html, archivo = '(html)') {
+function contrastar(html, archivo = '(html)', modelos = MODELS) {
   const tit = titulo(html);
   const fam = FAMILIAS.find((f) => f.titulo.test(tit));
   if (!fam) return { archivo, documento: tit || null, reconocida: false };
-  const candidatos = MODELS.filter((m) => m.ser === fam.ser);
+  const candidatos = modelos.filter((m) => m.ser === fam.ser);
   const celdas = [];
   const vistos = new Set();
+  const cabeceras = [];
   tablas(html).forEach((filas, nt) => {
     let cols = null;
     for (const fila of filas) {
@@ -215,6 +248,7 @@ function contrastar(html, archivo = '(html)') {
           // La primera columna es la etiqueta: si la cabecera ocupa toda la fila, la cifra va en la 1.
           if (mapa.has(0) && fila.length > 1) mapa.delete(0);
           cols = mapa;
+          cabeceras.push(fila);
         }
         continue;
       }
@@ -242,11 +276,45 @@ function contrastar(html, archivo = '(html)') {
         }
       }
     }
+    // Una tabla cuya cabecera no nombra ningún modelo del catálogo se mira por su primera fila:
+    // es justo la que trae solo equipos nuevos.
+    if (!cols && filas.length) cabeceras.push(filas[0]);
   });
   const nombre = nombreDeUrl(canonica(html));
   const esperados = nombre ? candidatos.filter((m) => nombreDeUrl(m.datasheet) === nombre) : [];
   const sinColumna = esperados.filter((m) => !vistos.has(m.id)).map((m) => m.id);
-  return { archivo, documento: tit, familia: fam.n, reconocida: true, celdas, sinColumna };
+  const fuera = fueraDeCatalogo(cabeceras, fam.id, modelos);
+  return { archivo, documento: tit, familia: fam.n, reconocida: true, celdas, sinColumna,
+    fueraDeCatalogo: fuera.filter((r) => !REVISADAS[r]), revisadas: fuera.filter((r) => REVISADAS[r]) };
+}
+
+/* Las referencias de equipo que nombran las cabeceras de la ficha y que ningún modelo del catálogo
+   lleva. Solo las cabeceras: una tabla de pedido (accesorios, fuentes, licencias) no cuenta. */
+function fueraDeCatalogo(cabeceras, familia, modelos = MODELS) {
+  const conocidas = new Set(modelos.flatMap(referenciasDe).map((c) => c.toUpperCase()));
+  const fuera = new Set();
+  for (const fila of cabeceras) {
+    for (const celda of fila) {
+      for (const [ref] of normalCabecera(celda).matchAll(REFERENCIAS[familia])) {
+        if (conocidas.has(ref.toUpperCase())) continue;
+        // «C1161(X)-8P» son dos referencias; «C112x» a secas es la familia del ISR, no un equipo.
+        const refs = /\(X\)/.test(ref) ? [ref.replace('(X)', ''), ref.replace('(X)', 'X')] : [ref];
+        for (const r of refs) {
+          if (familia === 'isr' && !r.includes('-')) continue;
+          if (!conocidas.has(r.toUpperCase())) fuera.add(r);
+        }
+      }
+    }
+  }
+  return [...fuera].sort();
+}
+// Las referencias que un modelo ya cubre: sus códigos de columna y su referencia de pedido («ISR
+// 1111X-8P» es la C1111X-8P), que no se usan para buscar columnas porque la ficha las agrupa.
+function referenciasDe(m) {
+  const r = codigos(m);
+  const isr = /^ISR (1\d{3}X?-\w+)$/.exec(m.id);
+  if (isr) r.push(`C${isr[1]}`);
+  return r;
 }
 
 function archivos(rutas) {
@@ -274,6 +342,10 @@ function informe(res) {
       lineas.push(`  ${x.estado.toUpperCase().padEnd(8)} ${x.modelo} · ${x.campo}: catálogo ${fmt(x.catalogo)}, ficha «${x.texto}» (${x.ficha == null ? 'no publica' : fmt(x.ficha)}) — fila «${x.etiqueta}», tabla ${x.tabla}`);
     }
     for (const id of r.sinColumna) lineas.push(`  SIN COLUMNA ${id}: su ficha es esta y ninguna cabecera lo nombra.`);
+    if (r.fueraDeCatalogo.length) {
+      lineas.push(`  EN LA FICHA, NO EN EL CATÁLOGO (aviso; no cuenta como diferencia): ${r.fueraDeCatalogo.join(', ')}`);
+    }
+    if (r.revisadas.length) lineas.push(`  ya revisadas y fuera a propósito: ${r.revisadas.length} (REVISADAS)`);
     lineas.push('');
   }
   const ign = res.filter((r) => !r.reconocida);
@@ -325,6 +397,7 @@ function resumenJson(res) {
     sinLeer: (r.celdas || []).filter((x) => x.estado === 'sin leer')
       .map((x) => ({ modelo: x.modelo, campo: x.campo, texto: x.texto })),
     sinColumna: r.sinColumna || [],
+    fueraDeCatalogo: r.fueraDeCatalogo || [],
   })) };
 }
 
@@ -352,4 +425,5 @@ async function principal(args, traer = fetch) {
 
 if (require.main === module) principal(process.argv.slice(2)).then((c) => process.exit(c));
 
-module.exports = { contrastar, tablas, valor, codigos, codigoSalida, informe, fichasDeCatalogo, traerYContrastar, resumenJson, principal };
+module.exports = { contrastar, tablas, valor, codigos, referenciasDe, REVISADAS, codigoSalida, informe, fichasDeCatalogo,
+  traerYContrastar, resumenJson, principal };

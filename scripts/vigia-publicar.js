@@ -159,6 +159,7 @@ function tituloIssue(inf, matrix, cisco) {
   if (matrix && matrix.error) return 'Product Matrix de Fortinet: el contraste no se pudo usar';
   if (cisco && !cisco.error && cisco.nDifieren) return `Fichas de Cisco y Meraki: ${cisco.nDifieren} cifra(s) distintas del catálogo`;
   if (cisco && !cisco.limpio) return 'Fichas de Cisco y Meraki: el contraste no se pudo completar';
+  if (cisco && !cisco.error && cisco.nFuera) return `Fichas de Cisco y Meraki: ${cisco.nFuera} modelo(s) que el catálogo no trae`;
   if (inf.inalcanzables.length) return `Fuentes del catálogo: ${inf.inalcanzables.length} no se pudieron leer`;
   return 'Vigía de fuentes: no se pudo guardar lo medido';
 }
@@ -169,7 +170,7 @@ function tituloIssue(inf, matrix, cisco) {
 const hayQueAvisar = (inf, lock, matrix, cisco) => inf.cambiados.length > 0 || inf.inalcanzables.length > 0 || (lock && lock.estado === 'fallida')
   || (inf.reaparecidas || []).length > 0
   || !!(matrix && (matrix.error || !matrix.limpio))
-  || !!(cisco && !cisco.limpio);
+  || !!(cisco && (!cisco.limpio || cisco.nFuera));
 
 // EL CONTRASTE DEL PRODUCT MATRIX (2026-10-14). Lo deja el job `contrastar`, que corrio
 // `npm run matrix` sobre un PDF de fortinet.com: es contenido de fuera y se valida aqui campo a
@@ -241,6 +242,8 @@ function seccionMatrix(m, url) {
 // `npm run cisco -- --traer`. Contenido de fuera: se valida aquí antes de escribirlo, y la URL
 // tiene que ser una que fuentes.js declare para Cisco, no la que diga el artefacto.
 const MODELO_CISCO = /^[A-Za-z0-9][A-Za-z0-9 .()\/-]{2,59}$/;
+// Una referencia de pedido que la ficha nombra y el catálogo no trae (2026-10-27): un aviso.
+const REFERENCIA_CISCO = /^[A-Za-z0-9][A-Za-z0-9()-]{2,39}$/;
 function resumenCisco(d, fuentes = FUENTES) {
   if (!esObjeto(d) || !Array.isArray(d.fichas)) return { error: 'cisco.json no trae la lista de fichas' };
   if (!d.fichas.length || d.fichas.length > MAX_FILAS) return { error: 'cisco.json con un número de fichas imposible' };
@@ -263,15 +266,19 @@ function resumenCisco(d, fuentes = FUENTES) {
     const sinLeer = filas(f.sinLeer, ['texto']);
     if (!difieren || !sinLeer) return { error: 'una fila del contraste no tiene modelo o campo válidos' };
     if (!f.sinColumna.every((x) => MODELO_CISCO.test(x))) return { error: 'un modelo sin columna con forma desconocida' };
+    const fuera = f.fueraDeCatalogo == null ? [] : f.fueraDeCatalogo;
+    if (!Array.isArray(fuera) || !fuera.every((x) => REFERENCIA_CISCO.test(x))) return { error: 'una referencia fuera del catálogo con forma desconocida' };
     const fuente = fuentes.cisco.find((x) => x.url === f.url);
     fichas.push({ url: f.url, documento: fuente.documento, error: f.error ? corto(f.error) : null, casan: f.casan,
       ninguna: !f.error && f.casan === 0 && !f.difieren.length && !f.sinLeer.length,
-      nDifieren: f.difieren.length, difieren, sinLeer, sinColumna: f.sinColumna.slice(0, MAX_FILAS) });
+      nDifieren: f.difieren.length, difieren, sinLeer, sinColumna: f.sinColumna.slice(0, MAX_FILAS),
+      fueraDeCatalogo: fuera.slice(0, MAX_FILAS) });
   }
   const suma = (k) => fichas.reduce((a, f) => a + (Array.isArray(f[k]) ? f[k].length : f[k] || 0), 0);
   const nErrores = fichas.filter((f) => f.error || f.ninguna).length;
+  // `limpio` es el contraste de cifras; lo que el catálogo no trae avisa aparte (`nFuera`).
   return { cisco: { fichas, nFichas: fichas.length, casan: suma('casan'), nDifieren: suma('nDifieren'), nSinLeer: suma('sinLeer'),
-    nSinColumna: suma('sinColumna'), nErrores,
+    nSinColumna: suma('sinColumna'), nErrores, nFuera: suma('fueraDeCatalogo'),
     limpio: !suma('nDifieren') && !suma('sinLeer') && !suma('sinColumna') && !nErrores } };
 }
 
@@ -291,6 +298,10 @@ function seccionCisco(c) {
   if (sin.length) l.push('', 'Celdas que no se pudieron leer (mirarlas a mano):', ...sin.slice(0, MAX_FILAS));
   const col = c.fichas.flatMap((f) => f.sinColumna.map((m) => `- ${m}: su ficha (${f.documento}) ya no lo nombra en ninguna cabecera`));
   if (col.length) l.push('', ...col.slice(0, MAX_FILAS));
+  const fuera = c.fichas.filter((f) => (f.fueraDeCatalogo || []).length).map((f) => `- ${f.documento}: ${f.fueraDeCatalogo.join(', ')}`);
+  if (fuera.length) {
+    l.push('', 'Modelos que la ficha nombra y el catálogo no trae (aviso: decidir si entran, o declararlos en `REVISADAS` de `scripts/contrastar-cisco.js` con su motivo):', ...fuera.slice(0, MAX_FILAS));
+  }
   const mal = c.fichas.filter((f) => f.error || f.ninguna);
   if (mal.length) {
     l.push('', 'Fichas que no se pudieron usar (esto **no** es «sin cambios»):');
@@ -320,7 +331,7 @@ function cuerpoFallo(motivo, corrida) {
 function cuerpoIssue(inf, lock, matrix, cisco) {
   const l = [];
   if (matrix) l.push(...seccionMatrix(matrix, matrix.url || 'la URL del Product Matrix'));
-  if (cisco && !cisco.limpio) l.push(...seccionCisco(cisco));
+  if (cisco && (!cisco.limpio || cisco.nFuera)) l.push(...seccionCisco(cisco));
   if (inf.cambiados.length) {
     l.push('## Fuentes que cambiaron', '');
     l.push('El documento oficial ya no es el mismo que se usó para verificar el catálogo.');

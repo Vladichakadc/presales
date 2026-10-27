@@ -189,11 +189,11 @@ const MODELS = [
   {id:'Cisco Secure Router C8130-VAI-G2', ser:'Secure Router (G2)', fam:'Sucursal pequeña con DSL (Annex B/J) y XGSPON/10GBASE-T', clase:'S', fwd:1900, ipsec:1500, sdwan:900, amenazas:null, aps:null, redund:false, lte:false, bases:B_G2, secAddon:false,
    tuneles:250, rutas:280000, nat:100000, pim:false, sdwanDesde:'IOS XE 26.2.1',
    psu:{watts:23, tipo:'adaptador externo (PWR-CC1-66WAC por defecto)'},
-   ports:'1 GE RJ45/SFP + 1 DSL + 1 XGSPON/10GBASE-T WAN · 2 GE flex · 2 GE LAN', nim:0, sm:0, optics:['sfp1g', 'sfp10gt'], parts:[], lic:'cswan', datasheet:DS.sr8100},
+   ports:'1 GE RJ45/SFP + 1 DSL + 1 XGSPON/10GBASE-T WAN · 2 GE flex · 2 GE LAN', nim:0, sm:0, optics:['sfp1g', 'sfp10gt', 'xgspon'], parts:[], lic:'cswan', datasheet:DS.sr8100},
   {id:'Cisco Secure Router C8130-VAP-G2', ser:'Secure Router (G2)', fam:'Sucursal pequeña con DSL (Annex A) y XGSPON/10GBASE-T', clase:'S', fwd:1900, ipsec:1500, sdwan:900, amenazas:null, aps:null, redund:false, lte:false, bases:B_G2, secAddon:false,
    tuneles:250, rutas:280000, nat:100000, pim:false, sdwanDesde:'IOS XE 26.2.1',
    psu:{watts:23, tipo:'adaptador externo (PWR-CC1-66WAC por defecto)'},
-   ports:'1 GE RJ45/SFP + 1 DSL + 1 XGSPON/10GBASE-T WAN · 2 GE flex · 2 GE LAN', nim:0, sm:0, optics:['sfp1g', 'sfp10gt'], parts:[], lic:'cswan', datasheet:DS.sr8100},
+   ports:'1 GE RJ45/SFP + 1 DSL + 1 XGSPON/10GBASE-T WAN · 2 GE flex · 2 GE LAN', nim:0, sm:0, optics:['sfp1g', 'sfp10gt', 'xgspon'], parts:[], lic:'cswan', datasheet:DS.sr8100},
   {id:'Cisco Secure Router C8130H-G2', ser:'Secure Router (G2)', fam:'Sucursal pequeña con WAN 10GBASE-T', clase:'S', fwd:1900, ipsec:1500, sdwan:900, amenazas:null, aps:null, redund:false, lte:false, bases:B_G2, secAddon:false,
    tuneles:250, rutas:280000, nat:100000, pim:false, sdwanDesde:'IOS XE 26.2.1',
    psu:{watts:22, tipo:'adaptador externo (PWR-CC1-66WAC por defecto)'},
@@ -213,11 +213,11 @@ const MODELS = [
   {id:'Cisco Secure Router C8151-CVAI-G2', ser:'Secure Router (G2)', fam:'Sucursal pequeña con DSL (Annex B/J), XGSPON/10GBASE-T y 5G RedCap', clase:'S', fwd:5600, ipsec:1500, sdwan:900, amenazas:1000, aps:null, redund:false, lte:true, bases:B_G2,
    tuneles:250, rutas:500000, nat:100000, pim:false,
    psu:{watts:27, tipo:'adaptador externo (PWR-CC1-66WAC por defecto)'},
-   ports:'1 GE RJ45/SFP + 1 DSL + 1 XGSPON/10GBASE-T WAN · 2 GE flex · 6 GE LAN · 5G RedCap integrado', nim:0, sm:0, optics:['sfp1g', 'sfp10gt'], parts:[], lic:'cswan', datasheet:DS.sr8100},
+   ports:'1 GE RJ45/SFP + 1 DSL + 1 XGSPON/10GBASE-T WAN · 2 GE flex · 6 GE LAN · 5G RedCap integrado', nim:0, sm:0, optics:['sfp1g', 'sfp10gt', 'xgspon'], parts:[], lic:'cswan', datasheet:DS.sr8100},
   {id:'Cisco Secure Router C8151-CVAP-G2', ser:'Secure Router (G2)', fam:'Sucursal pequeña con DSL (Annex A), XGSPON/10GBASE-T y 5G RedCap', clase:'S', fwd:5600, ipsec:1500, sdwan:900, amenazas:1000, aps:null, redund:false, lte:true, bases:B_G2,
    tuneles:250, rutas:500000, nat:100000, pim:false,
    psu:{watts:27, tipo:'adaptador externo (PWR-CC1-66WAC por defecto)'},
-   ports:'1 GE RJ45/SFP + 1 DSL + 1 XGSPON/10GBASE-T WAN · 2 GE flex · 6 GE LAN · 5G RedCap integrado', nim:0, sm:0, optics:['sfp1g', 'sfp10gt'], parts:[], lic:'cswan', datasheet:DS.sr8100},
+   ports:'1 GE RJ45/SFP + 1 DSL + 1 XGSPON/10GBASE-T WAN · 2 GE flex · 6 GE LAN · 5G RedCap integrado', nim:0, sm:0, optics:['sfp1g', 'sfp10gt', 'xgspon'], parts:[], lic:'cswan', datasheet:DS.sr8100},
   {id:'Cisco Secure Router C8151H-C-G2', ser:'Secure Router (G2)', fam:'Sucursal pequeña con WAN 10GBASE-T y 5G RedCap', clase:'S', fwd:5600, ipsec:1500, sdwan:900, amenazas:1000, aps:null, redund:false, lte:true, bases:B_G2,
    tuneles:250, rutas:500000, nat:100000, pim:false,
    psu:{watts:25, tipo:'adaptador externo (PWR-CC1-66WAC por defecto)'},
@@ -388,10 +388,12 @@ const PSU_SEGUNDA = {
    · velMin: la velocidad más baja que admite, solo donde la ficha lo dice («1/10», «SFP/SFP+»,
      «10/25», «40/100», «2.5/1»). Un puerto multigigabit (mGig, 2,5G o 5G) admite también 1G: en
      la G2 lo dicen sus guías de hardware (8200: «1000BASE-T… 2.5GBASE-T»; 8300: el C8375-E-G2,
-     «100BASE-TX, 1000BASE-T, and 2500BASE_T», y el C8355-G2 hasta «5000BASE-T»); en los Meraki
-     (MX95/MX105, C8111/C8121-G2-MX) sigue siendo la norma 802.3bz, supuesto declarado
-     (`velMinSupuesto`): sus fichas solo dan la velocidad máxima. Un SFP+ que la ficha da «no
-     reducible a 1G» (ASR) no lleva velMin.
+     «100BASE-TX, 1000BASE-T, and 2500BASE_T», y el C8355-G2 hasta «5000BASE-T»); en el MX95 y el
+     MX105, la página «WAN Behavior on MX75/85/95/105» de documentation.meraki.com (tabla de LED de
+     los RJ-45: «Slow link… 10/100 Mbps, 1Gbps for MX95/105»; «Full speed… 2.5 Gbps for MX95/105»,
+     leída el 2026-10-27). En los C8111/C8121-G2-MX sigue siendo la norma 802.3bz, supuesto
+     declarado (`velMinSupuesto`): su ficha y su guía de instalación solo dan la velocidad máxima.
+     Un SFP+ que la ficha da «no reducible a 1G» (ASR) no lleva velMin.
    · Fuentes, por familia: fichas de las series 8100 a 8600 («Interfaces and slots»), de los
      Catalyst 8200 («four built-in Ethernet WAN ports: two SFP and two RJ45»), 8300 («6 built-in
      Layer 3 Ethernet ports for WAN or LAN… at least 2 SFP or SFP+ in addition to 4 RJ-45», tabla 2)
@@ -409,9 +411,10 @@ const SFP28 = (n, uso) => G(n, 25, ['SFP28'], uso, {velMin:10});
 const QSFP40 = (n, uso) => G(n, 40, ['QSFP+'], uso);
 const QSFP28 = (n, uso) => G(n, 100, ['QSFP28'], uso, {velMin:40});
 // La jaula XGSPON/10GBASE-T de las 8100 VAI/VAP y CVAI/CVAP: solo admite la ONT XGSPON
-// (SFP-10G-ONT20-I) o el SFP-10G-T-X (guía de hardware de la serie 8100, tabla 10). De los enlaces
-// que se modelan, solo recibe cobre de 10G con ese transceptor (`soloCobre`); nunca una óptica.
-const XGS = (n) => G(n, 10, ['SFP+'], 'WAN', {soloCobre:true, rotulo:'XGSPON/10GBASE-T: SFP-10G-ONT20-I o SFP-10G-T-X'});
+// (SFP-10G-ONT20-I) o el SFP-10G-T-X (guía de hardware de la serie 8100, tabla 10). Recibe un
+// enlace XGS-PON con esa ONT (`pon`) o un cobre de 10G con ese transceptor; nunca una óptica
+// (`sinOptica`).
+const XGS = (n) => G(n, 10, ['SFP+'], 'WAN', {sinOptica:true, pon:true, rotulo:'XGSPON/10GBASE-T: SFP-10G-ONT20-I o SFP-10G-T-X'});
 const ISR_8P = [COMBO(1, 'WAN'), RJ(1, 'WAN'), RJ(8, 'LAN')];
 const C8200 = [RJ(2, 'WAN'), SFP1(2, 'WAN')];
 const C8300_6T = [RJ(4, 'WAN'), SFP1(2, 'WAN')];
@@ -421,7 +424,7 @@ const SR8221 = [SFPP(2, 'WAN'), RJ(2, 'WAN'), RJ(2, 'LAN/WAN'), RJ(4, 'LAN')];
 const SR_E = [SFPP(2, 'WAN'), MGIG(2, 2.5, 'WAN')];
 const MX67 = [RJ(1, 'WAN'), RJ(1, 'LAN/WAN'), RJ(3, 'LAN')];
 const MX68 = [RJ(2, 'WAN'), RJ(10, 'LAN')];
-const MX95 = [SFPP(2, 'WAN'), MGIG_MX(2, 2.5, 'WAN'), RJ(4, 'LAN'), SFPP(2, 'LAN')];
+const MX95 = [SFPP(2, 'WAN'), MGIG(2, 2.5, 'WAN'), RJ(4, 'LAN'), SFPP(2, 'LAN')];
 const MX250 = [SFPP(2, 'WAN'), SFPP(8, 'LAN'), SFP1(8, 'LAN'), RJ(8, 'LAN')];
 const PUERTOS = {
   'ISR 1111-8P': ISR_8P, 'ISR 1111X-8P': ISR_8P, 'ISR 1121X-8P': ISR_8P, 'ISR 1161X-8P': ISR_8P,
@@ -508,6 +511,18 @@ const APPQOE = {
   'Cisco Secure Router C8570-G2':   {rol:'controlador'},
 };
 const NOTA_PUERTOS = {};
+// La bahía de módulos del ASR 1000 (2026-10-27), de sus guías de hardware («Supported Hardware
+// Components»): lo que el motivo de un enlace sin puerto fijo cita. El catálogo no propone esos
+// módulos: el chasis está fuera de venta (solo cuenta el parque instalado) y su ciclo de vida no
+// está contrastado. El 1006-X es modular (`puertos: null`): lo deciden sus tarjetas.
+const BAHIA_ASR = {
+  'ASR 1001-X': {doc:'guía de hardware del ASR 1001-X, «Supported Hardware Components», 3-oct-2019',
+    texto:'una bahía SPA de media altura (Ethernet: SPA-1X10GE-L-V2 y SPA-1X10GE-WL-V2 de 10G, SPA-2X1GE-V2, ' +
+      'SPA-5X1GE-V2 y SPA-8X1GE-V2 de 1G) y una ranura NIM solo para NIM-SSD y NIM-T1/E1, sin Ethernet'},
+  'ASR 1002-HX': {doc:'guía de hardware del ASR 1001-HX/1002-HX, «Supported EPAs», 13-oct-2016',
+    texto:'una bahía EPA (EPA-18X1GE: 18 SFP de 1G; EPA-10X10GE: 10 SFP+; EPA-1X100GE con CPAK; ' +
+      'EPA-CPAK-2X40GE; EPA-1X40GE y EPA-2X40GE en QSFP)'},
+};
 // Combinaciones de puertos que el equipo admite a la vez (`combinaciones`): cuántos puertos SFP+
 // (de 1 o 10G), de 40G y de 100G como mucho en cada una, y de dónde sale la lista. Lo que no cabe en
 // ninguna aparta el equipo; el «breakout» 4x10G no se modela (la ficha del 12X4QC dice que no va
@@ -558,6 +573,7 @@ for (const m of MODELS) {
   if (Object.prototype.hasOwnProperty.call(PUERTOS, m.id)) m.puertos = PUERTOS[m.id];
   if (MAX_WAN[m.id]) m.maxWan = MAX_WAN[m.id];
   if (NOTA_PUERTOS[m.id]) m.notaPuertos = NOTA_PUERTOS[m.id];
+  if (BAHIA_ASR[m.id]) m.bahia = BAHIA_ASR[m.id];
   if (COMBINACIONES[m.id]) m.combinaciones = COMBINACIONES[m.id];
   if (DSL[m.id]) m.dsl = DSL[m.id];
   if (APPQOE[m.id]) m.appqoe = APPQOE[m.id];
@@ -740,6 +756,16 @@ const OPTICS = {
   sfp10gt: [
     {sku:'SFP-10G-T-X', bom:'SFP-10G-T-X', d:'10GBASE-T · cobre · RJ45 · hasta 30 m (CAT6A/CAT7) · 100M/1G/10G', alcance:[T('cobre', 30)]},
   ],
+  // ONT XGS-PON en SFP+ (2026-10-27): solo en la jaula XGSPON/10GBASE-T de las 8100 VAI/VAP y
+  // CVAI/CVAP (guía de hardware de la serie 8100, tabla 10). Ficha «Cisco 10G PON ONT Modules Data
+  // Sheet» (actualizada el 15-oct-2026): ITU-T G.9807.1 (clase N1), SC/APC, una fibra monomodo
+  // G.652, hasta 20 km (tabla 1), 2,1 W típicos y sin DOM (tabla 2). No es la óptica de un enlace
+  // de fibra punto a punto: la pide un enlace XGS-PON, y la fibra y la distancia a la OLT son de
+  // la red del operador.
+  xgspon: [
+    {sku:'SFP-10G-ONT20-I', bom:'SFP-10G-ONT20-I', d:'ONT XGS-PON · SFP+ · monomodo G.652, una fibra · SC/APC · hasta 20 km · 2,1 W',
+      alcance:[T('smf', 20000)]},
+  ],
   qsfp40g: [
     {sku:'QSFP-40G-SR4', bom:'QSFP-40G-SR4-S',d:'40GBASE-SR4 · multimodo · MPO de 12 fibras · 100 m (OM3) y 150 m (OM4)',
       alcance:[T('om3', 100, 'MPO de 12 fibras en paralelo'), T('om4', 150, 'MPO de 12 fibras en paralelo')]},
@@ -917,9 +943,11 @@ const SECURE_FIREWALL = {
 // datos. Advantage incluye IPS y control L7; en Essentials es el complemento SA-THRT, con la cantidad
 // del mayor número de puestos. «Best Practices for Configuring Network Tunnels by Device» de su guía
 // de usuario: «a throughput of 1 Gbps per tunnel», túnel principal y de respaldo obligatorios, y más
-// de 1 Gbps con varios túneles en ECMP.
+// de 1 Gbps con varios túneles en ECMP. «Establish an IPsec Tunnel» (26-oct-2026, tabla «Tunnel
+// Throughput, Capacity, and Scaling»): «1 Gbps per tunnel (in either direction)» y «up to 10 ECMP
+// tunnels».
 const SECURE_ACCESS = {
-  sub:'SECURE-ACCESS-SUB', plazos:[12, 36, 60], minUsuarios:50, tunelMbps:1000,
+  sub:'SECURE-ACCESS-SUB', plazos:[12, 36, 60], minUsuarios:50, tunelMbps:1000, ecmpMax:10,
   usuario:{
     ess:{n:'Essentials', sia:'SA-SIA-ESS', spa:'SA-SPA-ESS-K9'},
     adv:{n:'Advantage', sia:'SA-SIA-ADV-K9', spa:'SA-SPA-ADV-K9'},
@@ -932,7 +960,7 @@ const SECURE_ACCESS = {
   ],
 };
 
-const OPTIC_LABEL = {sfp1g:'1GE — SFP / GLC', sfp10g:'10GE — SFP+', sfp10gt:'10GE — SFP+ de cobre (10GBASE-T)', qsfp40g:'40GE — QSFP+', qsfp100g:'100GE — QSFP28',
+const OPTIC_LABEL = {sfp1g:'1GE — SFP / GLC', sfp10g:'10GE — SFP+', sfp10gt:'10GE — SFP+ de cobre (10GBASE-T)', xgspon:'10G — ONT XGS-PON en SFP+', qsfp40g:'40GE — QSFP+', qsfp100g:'100GE — QSFP28',
   mxsfp1g:'1GE — SFP Meraki', mxg2sfp1g:'1GE — SFP Meraki (G2-MX)', mxsfp10g:'10GE — SFP+ Meraki', mxg2sfp10g:'10GE — SFP+ Meraki (G2-MX)',
   mxdac10g:'10GE — twinax Meraki', mxsfp25g:'25GE — SFP28 (C8455-G2-MX)', mxdac25g:'25GE — cable (C8455-G2-MX)'};
 

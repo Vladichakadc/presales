@@ -326,6 +326,19 @@ test('el contraste de las fichas de Cisco se valida, y el issue dice qué cifra 
     { fichas: [{ ...base.fichas[0], casan: -1 }] }, { fichas: [{ ...base.fichas[0], difieren: [{ modelo: '<script>', campo: 'fwd' }] }] },
     { fichas: [{ ...base.fichas[0], sinColumna: ['../../x'] }] }];
   for (const m of malos) assert.ok(V.resumenCisco(m).error, JSON.stringify(m));
+  // Un modelo que la ficha nombra y el catálogo no trae (2026-10-27): avisa aparte, sin tocar `limpio`.
+  const nuevo = copia(base); nuevo.fichas[0].fueraDeCatalogo = ['C8299-G2'];
+  const cn = V.resumenCisco(nuevo).cisco;
+  assert.ok(cn.limpio && cn.nFuera === 1);
+  assert.ok(V.hayQueAvisar({ cambiados: [], inalcanzables: [] }, { estado: 'sin-cambios' }, null, cn));
+  assert.match(V.tituloIssue({ cambiados: [], inalcanzables: [] }, null, cn), /1 modelo\(s\) que el catálogo no trae/);
+  assert.match(V.cuerpoIssue({ cambiados: [], inalcanzables: [] }, null, null, cn), /el catálogo no trae[\s\S]*C8299-G2/);
+  // Sin la lista (un artefacto anterior) no avisa; con una forma imposible, se rechaza.
+  assert.strictEqual(V.resumenCisco(copia(base)).cisco.nFuera, 0);
+  for (const raro of [['<img src=x>'], 'C8299-G2', [{ ref: 'x' }]]) {
+    const m = copia(base); m.fichas[0].fueraDeCatalogo = raro;
+    assert.ok(V.resumenCisco(m).error, JSON.stringify(raro));
+  }
   // Y un job que no terminó también llega al issue.
   const fallo = { error: 'el job contrastar_cisco no terminó (failure)' };
   assert.ok(V.hayQueAvisar({ cambiados: [], inalcanzables: [] }, null, null, fallo));

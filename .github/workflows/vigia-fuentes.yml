@@ -204,7 +204,7 @@ jobs:
           codigo=$?
           set -e
           echo "Salida del contraste: $codigo"
-          node -e "const d = require(process.argv[1]); for (const f of d.fichas) console.log((f.error ? 'NO SE PUDO ' + f.error : 'casan ' + f.casan + ' difieren ' + f.difieren.length + ' sin leer ' + f.sinLeer.length) + ' :: ' + f.url)" "$RUNNER_TEMP/cisco/cisco.json" | tee "$RUNNER_TEMP/cisco/cisco.txt"
+          node -e "const d = require(process.argv[1]); for (const f of d.fichas) console.log((f.error ? 'NO SE PUDO ' + f.error : 'casan ' + f.casan + ' difieren ' + f.difieren.length + ' sin leer ' + f.sinLeer.length + ' fuera del catalogo ' + (f.fueraDeCatalogo || []).length) + ' :: ' + f.url)" "$RUNNER_TEMP/cisco/cisco.json" | tee "$RUNNER_TEMP/cisco/cisco.txt"
           {
             echo '## Contraste de las fichas de Cisco y Meraki'
             echo '```'

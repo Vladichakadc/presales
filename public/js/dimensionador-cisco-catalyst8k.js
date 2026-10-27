@@ -358,7 +358,7 @@ function render(){
         : mo ? ` · <span class="warn">${esc(mo)}</span>`
         : tc ? ` · tramo de ${esc(M.fmtKm(tc.km))}, llega a ${tc.llega} m${tc.supuesto ? ' (norma 802.3)' : ''}` : '';
       const v = x.tipo === 'celular' ? (m.lte ? 'Módem celular integrado' : m.pim ? 'Módulo PIM (va al BOM)' : '<span class="warn">sin módem celular</span>')
-        : a ? `${esc(M.rotuloPuerto(a))}${a.via === 'transceptor' ? ' · con transceptor de cobre' : ''}${optica}`
+        : a ? `${esc(M.rotuloPuerto(a))}${a.via === 'transceptor' ? ' · con transceptor de cobre' : a.via === 'ont' ? ` · con la ONT ${esc(a.ont[0] ? a.ont[0].sku : 'XGS-PON')}` : ''}${optica}`
         : s ? `<span class="warn">${esc(s.motivo)}</span>`
         : en && en.modular ? 'Chasis modular: lo deciden las tarjetas (consultar)' : 'Puertos no contados: sin comprobar';
       return [esc(rot), v, true];

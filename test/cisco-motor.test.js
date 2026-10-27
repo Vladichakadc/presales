@@ -640,13 +640,45 @@ test('reparto 8100: el DSL de las VAI/VAP, la jaula XGSPON/10GBASE-T solo con co
   assert.notStrictEqual(SR('C8151-CVAI-G2').secAddon, false);
 });
 
-test('puertos mGig: la velocidad mínima tiene fuente en la G2 y es supuesto solo en los Meraki', () => {
+test('puertos mGig: la velocidad mínima tiene fuente en la G2 y en el MX95/MX105, y es supuesto solo en los G2-MX', () => {
+  // Desde el 2026-10-27 el MX95 y el MX105 la tienen de su página «WAN Behavior» (LED de los
+  // RJ-45: 1 Gbps es «slow link»); los C8111/C8121-G2-MX siguen sin documento que la dé.
+  const conFuente = new Set(['Meraki MX95', 'Meraki MX105']);
   for (const m of MODELS) {
     for (const g of m.puertos || []) {
       if (!g.mgig) continue;
-      assert.strictEqual(!!g.velMinSupuesto, m.ser === 'Meraki MX', `${m.id}: velMinSupuesto donde no toca`);
+      assert.strictEqual(!!g.velMinSupuesto, m.ser === 'Meraki MX' && !conFuente.has(m.id), `${m.id}: velMinSupuesto donde no toca`);
     }
   }
+  const mx95 = MODELS.find((m) => m.id === 'Meraki MX95');
+  assert.ok(mx95.puertos.some((g) => g.mgig && g.uso === 'WAN' && g.velMin === 1 && !g.velMinSupuesto));
+});
+
+// XGS-PON (2026-10-27): el enlace PON de un operador solo cabe en la jaula XGSPON/10GBASE-T de las
+// 8100 VAI/VAP y CVAI/CVAP, con la ONT SFP-10G-ONT20-I de su ficha (20 km en monomodo G.652).
+test('XGS-PON: solo en la jaula de las 8100 con ONT, con la ONT en el BOM; en otro equipo, motivo', () => {
+  const SR = (n) => id(`Cisco Secure Router ${n}`);
+  const pon = [{ tipo: 'internet', rol: 'principal', entrega: 'xgspon' }];
+  for (const n of ['C8130-VAI-G2', 'C8130-VAP-G2', 'C8151-CVAI-G2', 'C8151-CVAP-G2']) {
+    const r = M.asignarEnlaces(SR(n), pon, CAT);
+    assert.strictEqual(r.asignados.length, 1, n);
+    assert.strictEqual(r.asignados[0].via, 'ont');
+    assert.match(M.rotuloPuerto(r.asignados[0]), /XGSPON\/10GBASE-T/);
+    const p = M.piezasEnlaces(r);
+    assert.deepStrictEqual(p.map((x) => x.sku), ['SFP-10G-ONT20-I']);
+    assert.match(p[0].nota, /20 km en monomodo G\.652/);
+  }
+  // En la jaula con la ONT ya no cabe el cobre de 10G: es la misma jaula.
+  const dos = M.asignarEnlaces(SR('C8130-VAI-G2'), [...pon, { tipo: 'internet', rol: 'respaldo', entrega: 'cobre-10g' }], CAT);
+  assert.deepStrictEqual([dos.asignados.length, dos.sinAsignar.length], [1, 1]);
+  // El 10GBASE-T nativo de las H no admite la ONT, ni una fibra de 10G va a la jaula de la ONT.
+  const h = M.asignarEnlaces(SR('C8130H-G2'), pon, CAT);
+  assert.match(h.sinAsignar[0].motivo, /ningún puerto admite la ONT XGS-PON/);
+  const fibra = M.asignarEnlaces(SR('C8130-VAI-G2'), [{ tipo: 'internet', rol: 'principal', entrega: 'fibra-10g' }], CAT);
+  assert.strictEqual(fibra.asignados.length, 0);
+  // Un PON no lleva tipo de fibra ni tramo: los da la red del operador.
+  const v = M.enlacesValidos([{ tipo: 'internet', entrega: 'xgspon', fibra: 'smf', km: 12 }])[0];
+  assert.deepStrictEqual([v.fibra, v.km], [null, null]);
 });
 
 // PROPUESTA 3.2 (2026-10-21): el firewall dedicado es un Cisco Secure Firewall, por la cifra de su capa.
@@ -761,10 +793,16 @@ test('Secure Access: suscripción, licencia por usuario con su mínimo, por sede
   const fila = sede.filas.find((x) => /por sede/.test(x.desc));
   assert.ok(fila && /grupo Medium/.test(fila.desc) && /SA-SIAS-M1-ESS: 1 TB/.test(fila.nota), JSON.stringify(sede.filas));
   assert.ok(sede.avisos.some((x) => /solo existe en SIA Essentials/.test(x)));
-  // Más de 5 Gbps por sentido no cabe por sede: va por usuario. Y 3 Gbps de salida piden 4 túneles.
+  // Más de 5 Gbps por sentido no cabe por sede: va por usuario. Y 1,5 Gbps por sentido (1,95 con el
+  // margen) piden 2 túneles: el gigabit del túnel es por sentido («in either direction»), no la suma.
   const grande = M.secureAccess({ licencia: 'sede' }, M.demanda({ ...base, bwMbps: 6000, diaPct: 100 }), SECURE_ACCESS);
   assert.ok(grande.avisos.some((x) => /llega a 5\.000 Mbps/.test(x)) && grande.filas.some((x) => x.sku === 'SA-SIA-ESS'));
-  assert.strictEqual(M.secureAccess({}, M.demanda({ ...base, bwMbps: 1500, diaPct: 100 }), SECURE_ACCESS).principales, 4);
+  assert.strictEqual(M.secureAccess({}, M.demanda({ ...base, bwMbps: 1500, diaPct: 100 }), SECURE_ACCESS).principales, 2);
+  assert.ok(!grande.avisos.some((x) => /hasta 10 túneles/.test(x)), '6 Gbps por sentido: 8 túneles, caben en ECMP');
+  // Más de 10 túneles no caben en un grupo ECMP: avisa.
+  const enorme = M.secureAccess({}, M.demanda({ ...base, bwMbps: 9000, diaPct: 100 }), SECURE_ACCESS);
+  assert.strictEqual(enorme.principales, 12);
+  assert.ok(enorme.avisos.some((x) => /hasta 10 túneles en ECMP/.test(x)));
   // Sin salida a Internet no hay nada que pagar.
   assert.deepStrictEqual(M.secureAccess({}, M.demanda(base), SECURE_ACCESS).filas, []);
 });
@@ -791,4 +829,18 @@ test('enlaces en la evaluación: apartan agrupados, el celular pide módem y sin
   assert.deepStrictEqual(dos10.candidatos[0].enlaces.modulos.map((x) => x.sku), ['C-NIM-4X']);
   const md = M.memoria(dos10, { perfil: 'sdwan' });
   assert.match(md, /## Enlaces WAN y puertos[\s\S]*Enlace 1: Internet, principal, fibra de 10G → SFP\+ LAN\/WAN de 10G en el C-NIM-4X/);
+});
+
+// ASR 1000 (2026-10-27): un enlace que no cabe en los puertos fijos cita lo que admite la bahía del
+// chasis, de su guía de hardware; el catálogo no propone el módulo (chasis fuera de venta).
+test('ASR: el enlace sin puerto fijo dice qué admite su bahía y de qué guía sale', () => {
+  const tres = Array.from({ length: 3 }, () => ({ tipo: 'internet', rol: 'principal', entrega: 'fibra-10g' }));
+  const r = M.asignarEnlaces(id('ASR 1001-X'), tres, CAT);
+  assert.strictEqual(r.asignados.length, 2);
+  assert.match(r.sinAsignar[0].motivo, /SPA-1X10GE-L-V2[\s\S]*NIM-SSD y NIM-T1\/E1, sin Ethernet[\s\S]*guía de hardware del ASR 1001-X/);
+  assert.match(r.sinAsignar[0].motivo, /fuera de venta/);
+  assert.deepStrictEqual(r.modulos, [], 'no se propone ningún módulo');
+  // El 1002-HX no tiene puerto fijo de 100G: su EPA-1X100GE sí.
+  const hx = M.asignarEnlaces(id('ASR 1002-HX'), [{ tipo: 'internet', rol: 'principal', entrega: 'fibra-100g' }], CAT);
+  assert.match(hx.sinAsignar[0].motivo, /EPA-1X100GE con CPAK[\s\S]*Supported EPAs/);
 });

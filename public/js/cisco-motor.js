@@ -293,6 +293,9 @@
     'fibra-100g': { medio: 'fibra', vel: 100, n: 'fibra de 100G' },
     // Va a un puerto DSL integrado (`dsl` del equipo); su velocidad la da la línea, no la interfaz.
     dsl: { medio: 'dsl', vel: null, n: 'DSL (ADSL2+/VDSL2)' },
+    // Va a una jaula que admite la ONT XGS-PON (`pon` del puerto: la XGSPON/10GBASE-T de las 8100
+    // VAI/VAP y CVAI/CVAP). La fibra y la distancia a la OLT son de la red del operador.
+    xgspon: { medio: 'pon', vel: 10, n: 'XGS-PON con ONT en SFP+' },
   };
   // Tipos de fibra de un enlace: los de la tabla de cableado de las fichas de las ópticas.
   const FIBRAS = {
@@ -309,7 +312,7 @@
   // Orden lexicográfico de dos claves de preferencia: la menor gana.
   const antes = (a, b) => { for (let k = 0; k < a.length; k++) if (a[k] !== b[k]) return a[k] < b[k]; return false; };
   // Orden de reparto: lo que menos puertos admiten va primero.
-  const ORDEN_ENTREGA = ['dsl', 'fibra-100g', 'fibra-40g', 'fibra-25g', 'fibra-10g', 'cobre-10g', 'cobre-5g', 'cobre-2.5g', 'fibra-1g', 'cobre-1g'];
+  const ORDEN_ENTREGA = ['dsl', 'xgspon', 'fibra-100g', 'fibra-40g', 'fibra-25g', 'fibra-10g', 'cobre-10g', 'cobre-5g', 'cobre-2.5g', 'fibra-1g', 'cobre-1g'];
 
   // Los enlaces declarados, normalizados y numerados; lo que no se entiende se descarta.
   function enlacesValidos(enlaces) {
@@ -372,9 +375,10 @@
     const min = pu.velMin != null ? pu.velMin : pu.vel;
     const rango = e.vel <= pu.vel && e.vel >= min;
     const jaula = pu.medios.find((x) => JAULAS.includes(x));
-    // Una jaula que solo admite un transceptor de cobre (`soloCobre`: la XGSPON/10GBASE-T de las
-    // 8100 VAI/VAP) nunca recibe una óptica.
-    if (pu.soloCobre && e.medio !== 'cobre') return null;
+    // Un XGS-PON solo va a una jaula que admite su ONT (`pon`), y esa jaula (`sinOptica`: la
+    // XGSPON/10GBASE-T de las 8100 VAI/VAP y CVAI/CVAP) nunca recibe una óptica.
+    if (e.medio === 'pon') return pu.pon ? { via: 'ont', medio: jaula } : null;
+    if (pu.sinOptica && e.medio !== 'cobre') return null;
     if (e.medio === 'cobre') {
       if (pu.medios.includes('RJ45') && rango) return { via: 'nativo', medio: 'RJ45' };
       if (VEL_COBRE_SFP.includes(e.vel) && conTransceptor && jaula && rango) return { via: 'transceptor', medio: jaula };
@@ -528,6 +532,11 @@
         const jaulaDe = { 1: 'fibra-1g', 10: 'fibra-10g' }[e.e.vel];
         const falta = e.e.medio === 'cobre' && jaulaDe && !cobreDe(e.e.vel, false).length && libres.some((pu) => admite(pu, ENTREGAS[jaulaDe], false));
         let porque = falta ? `: tiene jaulas de ${fmtVel(e.e.vel)}, pero el catálogo no trae su transceptor de cobre${e.e.vel === 10 ? ' 10GBASE-T para este equipo' : ''}` : '';
+        // El ASR (fuera de venta): qué admite su bahía, con su guía; el catálogo no propone el módulo.
+        if (!porque && m.bahia && e.e.medio !== 'dsl' && e.e.medio !== 'pon') {
+          porque = `: los puertos fijos no bastan; tiene ${m.bahia.texto} (${m.bahia.doc}). El catálogo no propone esos módulos: el chasis está fuera de venta`;
+        }
+        if (e.e.medio === 'pon') porque = ': ningún puerto admite la ONT XGS-PON (solo la jaula XGSPON/10GBASE-T de las 8100 VAI/VAP y CVAI/CVAP, tabla 10 de su guía de hardware)';
         // Un DSL sin puerto integrado: los NIM DSL de la guía salieron de venta (EOL15805).
         if (!porque && e.e.medio === 'dsl' && mods.some((x) => /^NIM-VA/.test(x.sku) && x.finVenta)) {
           porque = `: los NIM DSL de su guía están fuera de venta (último pedido el ${mods.find((x) => /^NIM-VA/.test(x.sku)).finVenta.ultimoPedido}, boletín EOL15805) y sin reemplazo`;
@@ -561,6 +570,7 @@
         opticas: al ? al.lista : null,
         alcance: al ? { ...al, fibra: e.fibra, km: e.km } : null,
         transceptores: el.a.via === 'transceptor' ? cobreQueLlega(e, !!pu.modulo) : null,
+        ont: el.a.via === 'ont' ? ((c.optics && c.optics.xgspon) || []) : null,
         tramoCobre: e.e.medio === 'cobre' && e.km ? {
           km: e.km,
           llega: el.a.via === 'nativo' ? rjM : Math.max(...cobreQueLlega(e, !!pu.modulo).map(alcanceCobre)),
@@ -660,6 +670,10 @@
           nota: lista.length
             ? `${lista.join(', ')}: la elige el alcance del tramo${al && al.falta ? ` (falta ${al.falta})` : ''}.${enModulo}`
             : 'El catálogo no trae ópticas de esta velocidad para este equipo: consultar la matriz de compatibilidad de Cisco.' });
+      } else if (a.ont) {
+        const o = a.ont[0];
+        push(a, { cat: 'Ópticas', desc: `ONT XGS-PON para ${quien(a)}`, sku: o ? (o.bom || o.sku) : null,
+          nota: `${o ? `${o.d}. ` : 'El catálogo no trae la ONT: consultar. '}Va en la jaula ${a.medio} XGSPON/10GBASE-T (guía de hardware de la serie 8100, tabla 10). La fibra y la distancia hasta la OLT son de la red del operador; la ficha de la ONT llega a 20 km en monomodo G.652.` });
       } else if (a.transceptores) {
         const diez = ENTREGAS[a.entrega].vel === 10;
         push(a, { cat: 'Ópticas', desc: `Transceptor de cobre ${diez ? '10GBASE-T' : '1000BASE-T'} para ${quien(a)}${lista.length > 1 ? ' — elegir uno' : ''}`,
@@ -698,14 +712,17 @@
        grupo lo fija la salida a Internet de la sede por sentido y el tier, el volumen mensual de datos
        (que el escenario no trae: «elegir una»).
      · IPS en la nube: Advantage lo incluye; con Essentials, el complemento SA-THRT por puesto.
-     · Túneles: 1 Gbps por túnel y uno de respaldo por cada principal. La guía no dice si el gigabit es
-       por sentido: se cuenta la suma de los dos, con el margen (lo prudente, supuesto declarado). */
+     · Túneles: «1 Gbps per tunnel (in either direction)» y uno de respaldo por cada principal
+       (guía de usuario, «Establish an IPsec Tunnel», 26-oct-2026): se cuenta el sentido mayor de la
+       salida a Internet, con el margen. Hasta 10 túneles en ECMP (`ecmpMax`): más, avisa. */
   function secureAccess(o, d, SA) {
     const res = { filas: [], avisos: [], principales: 0, tuneles: 0 };
     if (!SA || !d || !(d.diaMbps > 0)) return res;
     const x = o || {};
     const cat = 'Seguridad en la nube';
-    res.principales = Math.max(1, Math.ceil(d.diaNeed / SA.tunelMbps));
+    // El caudal es simétrico: con los dos sentidos sumados, cada uno es la mitad.
+    const porSentido = d.dir === 2 ? d.diaNeed / 2 : d.diaNeed;
+    res.principales = Math.max(1, Math.ceil(porSentido / SA.tunelMbps));
     res.tuneles = res.principales * 2;
     res.filas.push({ cat, desc: 'Cisco Secure Access — suscripción (una por cliente)', sku: SA.sub, qty: 1,
       nota: `Sin precio propio: lo ponen las líneas de producto, por tramos de usuarios en CCW. Plazo de ${SA.plazos.join(', ')} meses; incluye el soporte SWSS Enhanced.` });
@@ -737,7 +754,8 @@
         else res.avisos.push('Secure Access Advantage ya incluye IPS y control L7: no hace falta SA-THRT.');
       }
     }
-    res.avisos.push(`Secure Access: la salida a Internet (${miles(d.diaNeed)} Mbps con margen, los dos sentidos) pide ${res.principales} túnel(es) IPsec de 1 Gbps y otros tantos de respaldo${res.principales > 1 ? ', en un grupo ECMP' : ''}.`);
+    res.avisos.push(`Secure Access: la salida a Internet (${miles(Math.round(porSentido))} Mbps por sentido con margen) pide ${res.principales} túnel(es) IPsec de 1 Gbps por sentido y otros tantos de respaldo${res.principales > 1 ? ', en un grupo ECMP' : ''}.`);
+    if (SA.ecmpMax && res.principales > SA.ecmpMax) res.avisos.push(`Secure Access admite hasta ${SA.ecmpMax} túneles en ECMP: ${res.principales} no caben en un grupo; repartir el tráfico por política (PBR) o consultar.`);
     return res;
   }
 

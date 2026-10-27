@@ -4,7 +4,8 @@ Registro vivo de lo que falta. **Al empezar una tarea se buscan aquí los puntos
 tocan, y al terminarla se actualiza**, y su contenido se resume al usuario al cerrar cada entrega — esa es la instrucción
 permanente que lo justifica (ver `CLAUDE.md`, sección *Instrucciones permanentes del dueño*).
 
-Última revisión: 2026-10-26, quincuagesimoquinta entrega (**Pendientes ejecutados: el lock del vigía y Dependabot en `main`, las tres fuentes del issue #18 contrastadas, y seis variantes de la 8100 que traen el DSL vigente y más 10G en cobre.** Encargo del dueño: «ejecuta los pendientes y la mejora propuesta, y si encuentras una mejora por el camino, aprobada». La guía de pedido de Secure SD-WAN de Fortinet (R32) solo retira el 1000F; el boletín de fin de venta de los Catalyst 8300/8200L no cambió; la VSG de SD-Branch del 15-oct conserva lo que el catálogo toma de ella. Por el camino: `--revisado` del vigía borraba la clase de la entrada, y las seis variantes de la 8100 que la ficha ya traía. La mejora propuesta (ramas al día antes de fusionar) es un ajuste de GitHub que necesita al dueño. Ver *Cerrado recientemente* y *Decisiones que necesitan al dueño*.)
+Última revisión: 2026-10-27, quincuagesimosexta entrega (**Los pendientes de Cisco con documento, cerrados, y `npm run cisco` avisa de los modelos de una ficha que el catálogo no trae.** Encargo del dueño: «exijo que pasen verificar y pantallas; activa ramas al día con omisión del administrador; cierra lo pendiente con fuentes oficiales y ejecuta la mejora propuesta». La protección de `main` sigue sin poder tocarse desde esta sesión (ver *Decisiones*). Con su documento: el enlace **XGS-PON** (ficha de la ONT SFP-10G-ONT20-I, 15-oct-2026) va a la jaula de las cuatro 8100 que la admiten, con la ONT en el BOM; el túnel de **Secure Access** es de 1 Gbps **por sentido** («in either direction», 26-oct-2026) y admite hasta 10 en ECMP; los mGig del **MX95/MX105** enlazan a 1G (su página «WAN Behavior»); y el **ASR** que no tiene puerto fijo dice qué admite su bahía (guías de hardware del 1001-X y del 1002-HX). La mejora: la ficha de la 8200 nombra «C8200-1N-4S» y «C8200L-1N-4S» solo en su tabla de consumo (errata: todo lo demás dice -4T). Ver *Cerrado recientemente*.)
+Revisión anterior: 2026-10-26, quincuagesimoquinta entrega (**Pendientes ejecutados: el lock del vigía y Dependabot en `main`, las tres fuentes del issue #18 contrastadas, y seis variantes de la 8100 que traen el DSL vigente y más 10G en cobre.** Encargo del dueño: «ejecuta los pendientes y la mejora propuesta, y si encuentras una mejora por el camino, aprobada». La guía de pedido de Secure SD-WAN de Fortinet (R32) solo retira el 1000F; el boletín de fin de venta de los Catalyst 8300/8200L no cambió; la VSG de SD-Branch del 15-oct conserva lo que el catálogo toma de ella. Por el camino: `--revisado` del vigía borraba la clase de la entrada, y las seis variantes de la 8100 que la ficha ya traía. La mejora propuesta (ramas al día antes de fusionar) es un ajuste de GitHub que necesita al dueño. Ver *Cerrado recientemente* y *Decisiones que necesitan al dueño*.)
 Revisión anterior: 2026-10-26, quincuagesimocuarta entrega (**`main` vuelve a verde y Railway vuelve a desplegar.** Encargo del dueño: «revisar, continuar». El bloqueo de despliegues del 21 al 22-oct era una incidencia de builds de Railway; desde que pasó, `main` estaba en rojo por dos causas: un PR de Dependabot que subió `actions/setup-node` en todos los workflows menos en el job `contrastar_cisco` del vigía (añadido después de abrir el PR) y tres avisos altos nuevos (body-parser, multer, undici) que frenan `auditar`. Ver *Cerrado recientemente* y *~~Vigilar~~ Cerrado: un push a `main` que Railway no vio*.)
 Revisión anterior: 2026-10-21, quincuagesimotercera entrega (**Las nueve propuestas de conectividad, SD-WAN y seguridad de Cisco, hechas o cerradas con su documento.** Encargo del dueño: «avanza con todo». El tramo se declara también en cobre (100 m en RJ-45; 100 y 30 m con los transceptores de cobre); el enlace celular elige su PIM por la categoría de la ficha; la sede con dos routers (y TLOC extension) duplica el equipo y reparte los enlaces; SD-WAN Manager, Validators y Controllers salen del número de equipos; AppQoE con DRE elige el nodo por conexiones; Cisco Secure Access entra al BOM por usuario o por sede; con «Firewall dedicado» se propone un Secure Firewall 1200, 3100 o 4200 por la cifra de su capa. Los NIM DSL están fuera de venta (EOL15805). Railway sigue sin desplegar desde `24287c2`. Ver *Cerrado recientemente*, *Abierto: enlaces y puertos de Cisco* y *Vigilar: un push a `main` que Railway no vio*.)
 Revisión anterior: 2026-10-21, quincuagesimosegunda entrega (**El dimensionador Cisco elige la óptica de cada enlace por la fibra y la distancia, y se cierran los pendientes de puertos que tenían documento.** Encargo del dueño: «ejecuta y cierra pendientes y avanza con la mejora propuesta». Cada enlace de fibra declara su tipo de fibra y su tramo, y la óptica sale del alcance de la ficha de cada óptica (cinco fichas de Cisco y la guía de SFP de Meraki); de paso, el `QSFP-100G-ER4-S` del catálogo no existía (es la `QSFP-100G-ER4L-S`). Cerrados con su documento: el DSL del ISR 1116-4P, el portador de dos NIM en una ranura SM, las combinaciones de puertos del 12X4QC (tabla 5; tenía una jaula QSFP de más) y del C8570-G2 (bahías de su guía y 240 GE), el cobre de 10G en SFP+ de la serie 8300 de la G2 y la velocidad mínima de los mGig de la G2. Railway no desplegó la entrega anterior. Ver *Cerrado recientemente*, *Abierto: enlaces y puertos de Cisco* y *Vigilar: un push a `main` que Railway no vio*.)
@@ -2058,27 +2059,29 @@ La quincuagesimosegunda entrega cerró con su documento el alcance del tramo en 
 en SFP+ (serie 8300 de la G2) y la velocidad mínima de los mGig de la G2; la quincuagesimotercera,
 el alcance del cobre, el DSL por módulo (los NIM DSL están fuera de venta: EOL15805) y las nueve
 propuestas; la quincuagesimoquinta, las seis variantes de la 8100 (DSL integrado vigente en las
-VAI/VAP y CVAI/CVAP, jaula XGSPON/10GBASE-T y 10GBASE-T nativo en las H) (ver *Cerrado
-recientemente*). Queda, dicho:
-- **Los módulos del ASR** (NIM del 1001-X, EPA del 1002-HX) y las tarjetas del 1006-X no están en
-  el catálogo: un enlace que no cabe en los puertos fijos del ASR aparta el equipo, y el 1006-X no
-  se comprueba. El ASR está fuera de venta: solo cuenta para el parque instalado.
+VAI/VAP y CVAI/CVAP, jaula XGSPON/10GBASE-T y 10GBASE-T nativo en las H); la quincuagesimosexta, el
+enlace XGS-PON, el túnel de Secure Access por sentido, el mGig del MX95/MX105 y la bahía del ASR (ver
+*Cerrado recientemente*). Queda, dicho:
+- **Los módulos del ASR no se proponen**: un enlace que no cabe en los puertos fijos del 1001-X o del
+  1002-HX aparta el equipo, y el motivo cita lo que admite su bahía con su guía de hardware (SPA
+  Ethernet en el 1001-X, cuya ranura NIM no lleva Ethernet; EPA en el 1002-HX). El chasis está fuera
+  de venta y el ciclo de vida de esos módulos no está contrastado. El 1006-X (tarjetas) no se comprueba.
 - **El 10GBASE-T en SFP+** solo consta en la guía de hardware de la serie 8300 de la G2 (C8355-G2 y
   C8375-E-G2) y, desde el 2026-10-26, en la jaula XGSPON/10GBASE-T de las 8100 VAI/VAP y CVAI/CVAP
   (tabla 10 de su guía). Se buscó en las guías de hardware traídas de las demás familias (8100
   base, 8200, 8400, 8500, 8600, Catalyst 8200/8300/8500, ISR 1100): ninguna lo da. En ellas un cobre
   de 10G sin RJ-45 de 10G se aparta, con el motivo de que el catálogo no trae su transceptor.
-- **XGSPON no es un tipo de entrega**: la jaula de las 8100 VAI/VAP y CVAI/CVAP admite la ONT
-  SFP-10G-ONT20-I, pero el dimensionador solo modela cobre, fibra punto a punto y DSL. Un enlace PON
-  no se puede declarar; la ficha del puerto lo dice.
+- **XGS-PON sin tramo**: el enlace no pide tipo de fibra ni distancia (son de la red del operador);
+  la línea de la ONT dice los 20 km en monomodo G.652 de su ficha, y nada lo comprueba.
 - **El C8570-G2** tiene las mismas bahías que el Catalyst 8500-12X4QC, pero sus documentos no
   traen la nota del 12X4QC («con la bahía 1 en 100G, nada más en las bahías 0 y 1»): se le aplican
   sus bahías y el tope de 240 GE de su ficha. Si Cisco publica una tabla de combinaciones del
   C8570-G2, se contrasta con `combinaciones`.
 - **El «breakout» 4x10G** de los QSFP de 40G (12X4QC y C8570-G2) no se modela: la ficha del 12X4QC
   dice que no va en SD-WAN.
-- **Un puerto mGig de Meraki admite 1G** (MX95/MX105, C8111/C8121-G2-MX): sigue siendo el supuesto
-  de la norma 802.3bz (`velMinSupuesto`); sus fichas solo dan la velocidad máxima.
+- **Un puerto mGig de los C8111/C8121-G2-MX admite 1G**: sigue siendo el supuesto de la norma
+  802.3bz (`velMinSupuesto`); su ficha y su guía de instalación solo dan la velocidad máxima (los
+  LED de la guía no dicen la velocidad). En el MX95/MX105 ya tiene fuente.
 - **Las ópticas son las del catálogo**: si ninguna llega al tramo (una ZR de 100G, un BiDi, una
   1000BASE-EX), la línea va «consultar» y el equipo no se aparta. Ampliar el catálogo pide la ficha
   de la familia y, para Meraki, que su guía la dé para el equipo.
@@ -2089,14 +2092,26 @@ recientemente*). Queda, dicho:
   `SECURE_FIREWALL` y no en `Product`. La ficha no dice si su caudal es de un sentido o la suma: se
   compara con la suma de los dos (lo prudente). Malware Defense y URL Filtering no tienen cifra
   propia. Darle ficha completa pide sus guías de hardware (figuras) y decidir si entra al portal.
-- **El túnel de Secure Access** (1 Gbps por túnel, de su guía de usuario) no dice el sentido: se
-  compara con la salida a Internet de los dos sentidos sumados. Los tramos de precio por usuario
-  viven en CCW: la línea va sin precio.
+- **Secure Access**: los tramos de precio por usuario viven en CCW: la línea va sin precio.
 - **La interfaz de la extensión TLOC** se pide como un puerto de cobre de 1G libre en cada router
   (supuesto: la guía de diseño no fija el medio). La alta disponibilidad solo existe en el modo de
   sede; en hub, el clúster de hubs no se modela.
 - **AppQoE no publica caudal**: el nodo se elige por las conexiones DRE de su perfil y la página
   avisa de que el caudal optimizado no tiene cifra.
+
+## Abierto: modelos de una ficha que el catálogo no trae (2026-10-27)
+
+`npm run cisco` (y el vigía cada lunes) avisa ahora de las referencias de equipo que las cabeceras de
+una ficha nombran y ningún modelo del catálogo cubre. La primera pasada, sobre las 19 fichas traídas,
+dio tres grupos; los tres quedan en `REVISADAS` de `scripts/contrastar-cisco.js`, con su motivo, para
+no avisar cada semana:
+- **C8200-1N-4S y C8200L-1N-4S**: errata de la ficha de la serie 8200 (solo su tabla de consumo; el
+  resto de la ficha, 17 y 15 veces, su guía de hardware, la guía de pedido y el boletín de fin de venta
+  dicen -4T, que el catálogo trae). Nada que hacer.
+- **30 variantes del ISR 1000** (cuatro puertos, LTE, Wi-Fi, C1101, C1109, C1131 y las C1161/C1121 sin
+  X): el catálogo modela los cuatro de 8 puertos y el 1116-4P. Si entran es una decisión de alcance.
+- **MX67W y MX68W** (Wi-Fi integrado): el catálogo trae MX67, MX67C, MX68 y MX68CW. Ídem.
+Un modelo que se incorpore sale de `REVISADAS` (la prueba lo frena si se queda).
 
 ## ~~Abierto~~ Cerrado: herramienta externa Cisco (2026-10-20)
 
@@ -2122,8 +2137,10 @@ documento que se miró; si Cisco publica una edición nueva, `traer-cisco-huawei
 ## Decisiones que necesitan al dueño del producto
 
 - **Ramas al día antes de fusionar en `main` (2026-10-26).** **Aprobada por el dueño** («ejecuta la
-  mejora propuesta»), **pero es un ajuste de GitHub que esta sesión no puede tocar**: el conector de
-  GitHub no expone la protección de ramas ni los rulesets, y la sesión no tiene `gh`. Lo que evita: que
+  mejora propuesta») **y pedida otra vez el 2026-10-27** («exijo que pasen verificar y pantallas…»),
+  **pero es un ajuste de GitHub que esta sesión no puede tocar**: el conector de GitHub no expone la
+  protección de ramas ni los rulesets, y la sesión no tiene `gh`. Comprobado el 2026-10-27 en la API
+  pública: `main` sigue con `protected: false` y sin rulesets. Lo que evita: que
   un PR validado contra un `main` viejo (el de Dependabot del 22-oct) lo deje en rojo y Railway descarte
   los despliegues durante días. **Cómo se hace** (repositorio → *Settings* → *Rules* → *Rulesets* →
   *New branch ruleset*, o *Branches* → *Add classic branch protection rule*): rama `main`; activar
@@ -2282,6 +2299,33 @@ que ya se comprobó y lo que cuesta cada opción.
     normalizar) se cerró el 2026-09-02 — ver *Cerrado recientemente*.
 
 ## Cerrado recientemente
+
+- **2026-10-27 · Pendientes de Cisco con documento, y modelos de una ficha fuera del catálogo
+  (quincuagesimosexta entrega).** Encargo del dueño: «exijo que pasen verificar y pantallas; activa
+  "Require branches to be up to date before merging"; deja que el administrador pueda saltarse la
+  regla; cierra lo pendiente buscando los documentos en fuentes oficiales, y ejecuta la mejora
+  propuesta». **La protección de `main` no se pudo activar** (ver *Decisiones*). **Documentos traídos**
+  por `traer-cisco-huawei.yml` a `fuente/pendientes-cisco-2026-10-27` (corrida 40493337677) y
+  `fuente/secure-access-tuneles-2026-10-27` (corrida 40494638894); dos URL de la ayuda de Secure Access
+  que daban los buscadores respondieron 404 y las buenas salieron de la navegación de la propia ayuda.
+  **Cerrado con su documento**: (1) **XGS-PON** es una entrega nueva (`xgspon`): solo cabe en la jaula
+  XGSPON/10GBASE-T de las 8100 VAI/VAP y CVAI/CVAP (`pon`; la jaula nunca recibe una óptica,
+  `sinOptica`), con la ONT SFP-10G-ONT20-I en el BOM (su ficha, 15-oct-2026: monomodo G.652, una fibra,
+  SC/APC, 20 km); en otro equipo, el motivo lo dice. Caso nuevo del contraste: 100 Mbps por XGS-PON,
+  C8130-VAI-G2 (29 %, cumplen 4). (2) **Secure Access**: «1 Gbps per tunnel (in either direction)» y
+  «up to 10 ECMP tunnels» («Establish an IPsec Tunnel», 26-oct-2026): los túneles se cuentan con el
+  sentido mayor, no con la suma (1,5 Gbps por sentido: 2 túneles, antes 4), y más de 10 avisan. (3)
+  **MX95/MX105**: su página «WAN Behavior» da 1 Gbps («slow link») en los RJ-45 mGig: deja de ser
+  supuesto; en los C8111/C8121-G2-MX sigue. (4) **ASR**: un enlace sin puerto fijo cita lo que admite
+  su bahía (guía del 1001-X, 3-oct-2019: SPA Ethernet, y su NIM solo NIM-SSD y NIM-T1/E1; guía del
+  1001-HX/1002-HX, 13-oct-2016: EPA), sin proponer el módulo. Cinco entradas nuevas en `fuentes.js`.
+  **La mejora propuesta**: `npm run cisco` avisa de las referencias que las cabeceras de una ficha
+  nombran y el catálogo no trae (`fueraDeCatalogo`; no cambia el código de salida ni escribe nada), y el
+  issue del vigía las cita; con el catálogo de antes del 26-oct habría señalado las seis variantes de la
+  8100. Lo ya mirado va a `REVISADAS` con su motivo (ver *Abierto: modelos de una ficha que el catálogo
+  no trae*). Verificado: `verificar` (1.123 pruebas), `auditar`, servidor en producción, la pantalla de
+  Cisco conducida en Chromium (XGS-PON, cambio de entrega con el foco, BOM con la ONT, aviso de
+  túneles), `contraste --todos` (10 casos), `pantallas` 17/17, `e2e` y `puerta`.
 
 - **2026-10-26 · Pendientes ejecutados, y seis variantes de la 8100 (quincuagesimoquinta entrega).**
   Encargo del dueño: «ejecuta los pendientes y ejecuta la mejora propuesta; si encuentras una mejora por

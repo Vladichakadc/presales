@@ -153,7 +153,51 @@ test('--traer: una ficha que casa, otra que no se puede traer y otra que ya no e
   assert.strictEqual(codigoSalida([ok, caida]), 2);
   // El artefacto lleva lo que el issue necesita, sin el HTML.
   const j = resumenJson([ok, caida]);
-  assert.deepStrictEqual(Object.keys(j.fichas[0]).sort(), ['casan', 'difieren', 'documento', 'error', 'sinColumna', 'sinLeer', 'url']);
+  assert.deepStrictEqual(Object.keys(j.fichas[0]).sort(), ['casan', 'difieren', 'documento', 'error', 'fueraDeCatalogo', 'sinColumna', 'sinLeer', 'url']);
   assert.strictEqual(j.fichas[1].error, 'HTTP 403');
   assert.ok(!JSON.stringify(j).includes('<table'));
+});
+
+// MODELOS DE LA FICHA QUE EL CATÁLOGO NO TRAE (2026-10-27, mejora propuesta al cerrar la
+// quincuagesimoquinta entrega): seis variantes de la 8100 estuvieron en su ficha sin que nada lo
+// recordara. Es un aviso: no cambia el código de salida y no escribe nada.
+test('una referencia de la cabecera que el catálogo no trae sale en fueraDeCatalogo, sin cambiar el código de salida', () => {
+  const ficha = pagina('Cisco 8100 Series Secure Routers Data Sheet - Cisco', `<table>
+    ${fila('', 'C8130-G2/ C8131-G2', 'C8140-G2')}
+    ${fila('Forwarding (512B)', gbps(id('Cisco Secure Router C8130-G2').fwd), gbps(id('Cisco Secure Router C8140-G2').fwd))}
+  </table><table>
+    ${fila('', 'C8130-VAI-G2/ C8130-VAP-G2', 'C8199-ZZ-G2')}
+    ${fila('Product number', 'PWR-66W-AC')}
+  </table>`);
+  // Con el catálogo de hoy, las VAI/VAP ya están y la referencia inventada no.
+  const hoy = contrastar(ficha, 'c8100.html');
+  assert.deepStrictEqual(hoy.fueraDeCatalogo, ['C8199-ZZ-G2']);
+  assert.strictEqual(codigoSalida([hoy]), 0, 'un aviso no es una diferencia');
+  // Con el catálogo de antes del 2026-10-26, las dos variantes habrían salido: la tabla cuya
+  // cabecera no nombra ningún modelo del catálogo se mira por su primera fila.
+  const antes = MODELS.filter((m) => !/C8130-VA[IP]-G2/.test(m.id));
+  assert.deepStrictEqual(contrastar(ficha, 'c8100.html', antes).fueraDeCatalogo, ['C8130-VAI-G2', 'C8130-VAP-G2', 'C8199-ZZ-G2']);
+  // Una fila de pedido (accesorios, fuentes) no es una cabecera: PWR-66W-AC no sale.
+  assert.ok(!hoy.fueraDeCatalogo.some((r) => /PWR/.test(r)));
+});
+
+test('ISR: «C1161(X)-8P» son dos referencias, la familia a secas no cuenta y lo revisado no vuelve a avisar', () => {
+  const r = contrastar(pagina('Cisco 1000 Series Integrated Services Routers Data Sheet - Cisco', `<table>
+    ${fila('', 'C111x-8P', 'C1161(X)-8P', 'C112x', 'C1199-8P')}
+    ${fila('IPv4 Forwarding Throughput (512B)', '1 Gbps', '2 Gbps', '-', '-')}
+  </table>`), 'isr.html');
+  // C1161X-8P es el ISR 1161X-8P del catálogo; C1161-8P está revisada (REVISADAS); C112x es la
+  // familia; C1199-8P no existe en ningún sitio y es la única que avisa.
+  assert.deepStrictEqual(r.fueraDeCatalogo, ['C1199-8P']);
+  assert.deepStrictEqual(r.revisadas, ['C1161-8P']);
+  assert.match(require('../scripts/contrastar-cisco.js').informe([r]), /EN LA FICHA, NO EN EL CATÁLOGO[^\n]*C1199-8P/);
+});
+
+test('REVISADAS: cada referencia con su motivo, y ninguna que el catálogo ya traiga', () => {
+  const { REVISADAS, referenciasDe } = require('../scripts/contrastar-cisco.js');
+  const conocidas = new Set(MODELS.flatMap(referenciasDe).map((c) => c.toUpperCase()));
+  for (const [ref, motivo] of Object.entries(REVISADAS)) {
+    assert.ok(motivo.length > 40, `${ref}: motivo corto`);
+    assert.ok(!conocidas.has(ref.toUpperCase()), `${ref} ya está en el catálogo: se quita de REVISADAS`);
+  }
 });

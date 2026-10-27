@@ -43,6 +43,9 @@
  *     ficha) lo reciben; las demás no tienen puerto DSL y los NIM DSL están fuera de venta. Hasta
  *     ese día ningún equipo de IOS XE SD-WAN lo recibía. 260 Mbps de SD-WAN contra 900: 29 %.
  *     Las seis variantes no cambian las demás filas.
+ *   · La misma sede con su enlace por XGS-PON (2026-10-27): solo la jaula XGSPON/10GBASE-T de esas
+ *     cuatro admite la ONT SFP-10G-ONT20-I (guía de hardware de la serie 8100, tabla 10); las demás
+ *     se apartan. Hasta ese día un enlace PON no se podía declarar.
  */
 const BASE_LINEA = [
   { n: 'Sede 800 Mbps por sentido, SD-WAN', esc: { bw: '800' },
@@ -64,7 +67,10 @@ const BASE_LINEA = [
   { n: 'ISR de 50 Mbps con su enlace por DSL', esc: { bw: '50', plataforma: 'isr', enlaces: ['dsl'] },
     recomendado: 'ISR 1116-4P', utilizacion: '65 %', cumplen: '1' },
   { n: 'Sede de 200 Mbps con DRE para 3.000 conexiones', esc: { bw: '200', appqoe: '3000' },
-    recomendado: 'Catalyst 8300-1N1S-6T', utilizacion: '31 %', cumplen: '15' },  { n: 'Sede de 100 Mbps en SD-WAN con su enlace por DSL', esc: { bw: '100', enlaces: ['dsl'] },
+    recomendado: 'Catalyst 8300-1N1S-6T', utilizacion: '31 %', cumplen: '15' },
+  { n: 'Sede de 100 Mbps en SD-WAN con su enlace por DSL', esc: { bw: '100', enlaces: ['dsl'] },
+    recomendado: 'Cisco Secure Router C8130-VAI-G2', utilizacion: '29 %', cumplen: '4' },
+  { n: 'Sede de 100 Mbps en SD-WAN con su enlace por XGS-PON', esc: { bw: '100', enlaces: ['xgspon'] },
     recomendado: 'Cisco Secure Router C8130-VAI-G2', utilizacion: '29 %', cumplen: '4' },
 ];
 

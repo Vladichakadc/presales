@@ -456,15 +456,18 @@ Módulos compartidos:
   rol lo da el modo), que es aritmética rotulada como supuesto; la cifra escrita manda. **Enlaces WAN a
   puertos reales** (`asignarEnlaces`): cada equipo trae sus `puertos` contados de su ficha (`uso`
   WAN, LAN/WAN —los «Flex L2/L3» y los convertibles— o LAN, que nunca recibe un enlace; `velMin`
-  solo donde la ficha o la guía de hardware da el rango; en los mGig de Meraki es supuesto,
-  `velMinSupuesto`), y cada enlace declarado por su entrega (cobre, fibra o DSL y velocidad de la
+  solo donde la ficha o la guía de hardware da el rango —en el MX95/MX105, su página «WAN
+  Behavior»; en los mGig de los C8111/C8121-G2-MX es supuesto, `velMinSupuesto`), y cada enlace
+  declarado por su entrega (cobre, fibra, DSL o XGS-PON y velocidad de la
   interfaz) va a uno, el más exigente primero; un cobre de 1G puede ir a una jaula con el
   transceptor 1000BASE-T del catálogo, y uno de 10G a una SFP+ con el 10GBASE-T solo donde la guía
-  de hardware lo da (`sfp10gt`; la jaula XGSPON/10GBASE-T de las 8100 VAI/VAP y CVAI/CVAP solo
-  admite ese transceptor o la ONT XGSPON: `soloCobre`); un DSL, al puerto `dsl` (ISR 1116-4P y esas
-  cuatro 8100; los NIM DSL están fuera de venta); si no cabe, el módulo NIM
-  de la guía de su familia que lleve más enlaces (sin ranura NIM, en el portador C-SM-NIM-ADPT(R)
-  de una ranura SM) o se aparta; el `maxWan` de Meraki manda, y las `combinaciones` (tabla 5 del
+  de hardware lo da (`sfp10gt`); la jaula XGSPON/10GBASE-T de las 8100 VAI/VAP y CVAI/CVAP nunca
+  recibe una óptica (`sinOptica`) y es la única que admite un XGS-PON (`pon`), con la ONT
+  SFP-10G-ONT20-I (`xgspon` en `OPTICS`; la fibra y la distancia a la OLT son del operador); un DSL,
+  al puerto `dsl` (ISR 1116-4P y esas cuatro 8100; los NIM DSL están fuera de venta); si no cabe, el
+  módulo NIM de la guía de su familia que lleve más enlaces (sin ranura NIM, en el portador
+  C-SM-NIM-ADPT(R) de una ranura SM) o se aparta (en el ASR, el motivo cita lo que admite su bahía,
+  `BAHIA_ASR`, sin proponer el módulo: chasis fuera de venta); el `maxWan` de Meraki manda, y las `combinaciones` (tabla 5 del
   12X4QC; bahías y 240 GE del C8570-G2) apartan lo que la ficha no admite a la vez. **Cada fibra
   lleva su óptica por alcance** (`elegirOptica`): con el tipo de fibra (OM1…OM4, monomodo) y el
   tramo en km, la primera de la lista que llega según el `alcance` de la ficha de la óptica (en
@@ -498,7 +501,9 @@ Módulos compartidos:
   HTML traídas (la carpeta de una rama `fuente/*`, o de la red con `--traer`, que es como lo corre
   el vigía cada lunes) y las contrasta con el catálogo celda a celda, en la base que cada modelo
   declara; solo compara y falla cerrado (una ficha de la que no sale ninguna celda, o que no se pudo
-  traer, es un 2, no un «todo casa»).
+  traer, es un 2, no un «todo casa»). También avisa de las referencias de equipo que las cabeceras de
+  una ficha nombran y el catálogo no trae (`fueraDeCatalogo`: un aviso, no cambia el código de salida);
+  lo que una persona ya miró va a `REVISADAS` con su motivo y no vuelve a avisar.
 - **Juniper** (`juniper-motor.js`): SRX y Session Smart Router no se comparan. `fw` (paquetes
   grandes) se muestra y no dimensiona; manda la capa de inspección (`CAPAS`). El SSR se dimensiona
   por capa de cifrado en IMIX (`cap`/`capCif`/`capHmac`, de sus fichas; la de 1.500 B es portada),
@@ -575,8 +580,8 @@ Módulos compartidos:
   `npm run matrix -- <pdf>`. Las fichas de Cisco y Meraki son páginas dinámicas que nunca quedan
   pendientes, así que el job **`contrastar_cisco`** no espera a nada: cada lunes trae las fichas
   que cita el catálogo (solo las que `fuentes.js` declara) y corre `npm run cisco -- --traer`, sin
-  escritura ni instalación; `publicar` valida su artefacto y el issue dice qué cifra cambió o qué
-  ficha no se pudo leer. Nada de eso escribe en `legacyData/`: el `--revisado` sigue siendo
+  escritura ni instalación; `publicar` valida su artefacto y el issue dice qué cifra cambió, qué
+  ficha no se pudo leer o qué modelo nombra una ficha y el catálogo no trae. Nada de eso escribe en `legacyData/`: el `--revisado` sigue siendo
   humano. **Un documento inalcanzable no es uno sin
   cambios**, y un 403 no prueba quién bloquea (`npm run candidatas`). Pasadas 4 semanas sin
   contrastar, `verificar` frena (`SEMANAS_TOLERADAS`).
