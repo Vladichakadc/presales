@@ -368,6 +368,7 @@ function seccionesDe(m) {
       ] },
     FICHA.seccionPuertos(m),
     FICHA.seccionAlimentacion(m),
+    FICHA.seccionPqc(m),
     { titulo: 'Licenciamiento propuesto',
       filas: [[esc(b.n || tier), esc(b.svcs || '')]],
       nota: 'Los niveles de suscripción están verificados por nombre; el desglose exacto de servicios de los niveles Advanced no se pudo confirmar y se declara como tal en vez de repartirlo a ojo. Sin SKU ni precio: no hay lista de precios de Juniper en el material disponible.' },
@@ -484,7 +485,7 @@ function renderSsr(bwMbps, head) {
         ['Inspección de contenido', '<span class="warn">la ficha no publica IDP ni filtrado URL: va desacoplada</span>'],
         ['Interfaces', esc(m.ifaces), true],
         ['Precio de lista ref.', '<span class="warn">sin lista de precios Juniper</span>']] },
-    FICHA.seccionPuertos(m), FICHA.seccionAlimentacion(m)],
+    FICHA.seccionPuertos(m), FICHA.seccionAlimentacion(m), FICHA.seccionPqc(m)],
     alCambiar: (id) => {
       pintarEscala(SDWAN, k, need, SDWAN.find((x) => x.id === id) || pick, `${d.capa.n} (IMIX)`);
       $('pickModel').value = id; renderBom();

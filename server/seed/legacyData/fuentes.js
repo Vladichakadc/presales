@@ -160,6 +160,11 @@ const FUENTES = {
       nota: 'Lista de precios AMER oficial, vigente desde el 7 de septiembre de 2026. Sucede a la "Main" del 3 de agosto, y lo declara el propio documento en su Cover Sheet ("Previous Version: Aug 3, 2026" -> "Current Version: Sep 7, 2026"). Fortinet sigue siendo el unico fabricante de este catalogo con precios verificados contra una lista firmada. '
         + 'CONTRASTADA Y APLICADA el 2026-09-09: los 54 equipos del cotizador se casaron por su SKU de hardware contra la hoja DataSet y casaron los 54; 41 quedaron sin cambio y 13 subieron un +10 % o +15 % exacto. Los 13 se aplicaron con anclaje —solo si el precio que tenia el catalogo coincidia con el "precio anterior" que la hoja Changes declara— y las tres fuentes coincidieron en los 13. Que 41 precios quedaran identicos es la prueba de que el catalogo venia bien alineado con la Main, que por eso sale de este registro: ya no es de donde salen las cifras. '
         + 'Desde el 2026-09-24 es la UNICA fuente de precios de Fortinet, por instruccion del dueño: lo que no trae sale sin precio (`fueraDeLista`) y ya no se rellena con la Main de agosto. La invariante «regla del dueño» de test/fortinet-precios.test.js busca cada precio que puede llegar a una linea por su SKU exacto en lo extraido de esta lista.' },
+    { documento: 'FortiOS 7.6.5 Administration Guide, «Post-Quantum Cryptography for IPsec key exchange»',
+      url: 'https://docs.fortinet.com/document/fortigate/7.6.5/administration-guide/229631', estable: false,
+      fecha: null, hash: null, modelos: ['FortiGate 30G', 'FortiGate 31G', 'FortiGate 50G', 'FortiGate 51G', 'FortiGate 70G', 'FortiGate 71G', 'FortiGate 90G', 'FortiGate 91G', 'FortiGate 120G', 'FortiGate 121G', 'FortiGate 200G', 'FortiGate 201G', 'FortiGate 700G', 'FortiGate 701G', 'FortiGate 900G', 'FortiGate 901G', 'FortiGate 40F', 'FortiGate 60F', 'FortiGate 61F', 'FortiGate 70F', 'FortiGate 71F', 'FortiGate 80F', 'FortiGate 81F', 'FortiGate 100F', 'FortiGate 200F', 'FortiGate 400F', 'FortiGate 401F', 'FortiGate 600F', 'FortiGate 1000F', 'FortiGate 1001F', 'FortiGate 1800F', 'FortiGate 1801F', 'FortiGate 2600F', 'FortiGate 2601F', 'FortiGate 3000F', 'FortiGate 3001F', 'FortiGate 3200F', 'FortiGate 3201F', 'FortiGate 3500F', 'FortiGate 3501F', 'FortiGate 3700F', 'FortiGate 3701F', 'FortiGate 4200F', 'FortiGate 4201F', 'FortiGate 4400F', 'FortiGate 4401F', 'FortiGate 4800F', 'FortiGate 4801F'],
+      cubre: 'criptografia post-cuantica en el intercambio de claves de IPsec: ML-KEM-512, ML-KEM-768 y ML-KEM-1024 (FIPS 203) como claves adicionales de IKEv2 (addke), desde FortiOS 7.6.1 («New features» de FortiOS 7.6.0). Se marca en los FortiGate que lista la Maximum Values Table de FortiOS 7.6.7: 30G, 31G, 50G, 51G, 70G, 71G, 90G, 91G, 120G, 121G, 200G, 201G, 700G, 701G, 900G, 901G, 40F, 60F, 61F, 70F, 71F, 80F, 81F, 100F, 200F, 400F, 401F, 600F, 1000F, 1001F, 1800F, 1801F, 2600F, 2601F, 3000F, 3001F, 3200F, 3201F, 3500F, 3501F, 3700F, 3701F, 4200F, 4201F, 4400F, 4401F, 4800F y 4801F', campos: ['pqc'],
+      nota: 'Traida el 2026-10-27 por traer-cisco-huawei.yml (rama fuente/pqc-2026-10-27, corrida del mismo dia), con la pagina de novedades de FortiOS 7.6.0 que da la version (7.6.1): el proxy de egreso de este entorno no llega a docs.fortinet.com. Los FortiGate 400G, 3000G, 3500G, 3800G (y sus variantes), 7081F y 7121F no tienen fila valida en la Maximum Values Table de 7.6.7: «no consta».' },
   ],
 
   cisco: [
@@ -324,6 +329,11 @@ const FUENTES = {
       fecha: '2026-10-06', hash: null, modelos: [], cubre: 'alcance de las opticas de 10 Gbps SFP-10G-SR-S (33 m en OM1, 82 m en OM2, 300 m en OM3, 400 m en OM4), SFP-10G-LR-S (10 km), SFP-10G-ER-I (40 km; mas de 30 km es enlace de ingenieria) y SFP-10G-ZR (unos 80 km, con atenuador por debajo de 45 km)', campos: null,
       porQue: 'respalda el alcance por tipo de fibra de las opticas (`alcance` de OPTICS en legacyData/cisco.js), con el que el dimensionador elige la optica de cada enlace; no dice que router la admite, asi que no respalda ningun campo de MODELS ni ningun equipo',
       nota: 'Traida el 2026-10-21 por traer-cisco-huawei.yml (rama fuente/cisco-opticas-2026-10-21, corrida 39587970790): el proxy de egreso de este entorno responde 403 a cisco.com. Tabla 3 y sus notas *2 (enlace de ingenieria por encima de 30 km) y *5 (atenuadores de 15, 10 y 5 dB de la ZR por debajo de 5, 25 y 45 km, referencias 15216 ATT LC 15=, 10= y 5=). La tabla 1 da la SFP-10G-T-X (10GBASE-T, 30 m). 2026-10-21: la SFP-10G-T-X (tabla 1: 10 Gbps sobre Cat6A/Cat7, «up to 30 meters») entra como `sfp10gt` solo en el C8355-G2 y el C8375-E-G2, cuya guia de hardware lista el SFP+ de cobre 10GBASE-T.' },
+    { documento: 'Release Notes for Cisco 8000 Series Secure Routers, Release 26.1.x',
+      url: 'https://www.cisco.com/c/en/us/td/docs/routers/secure-routers/cisco-8000-series-secure-routers-release-26-1-x.html', estable: false,
+      fecha: '2026-10-12', hash: null, modelos: ['Secure Router (G2)'],
+      cubre: 'criptografia post-cuantica en la linea Secure Router (G2): «Post Quantum Crypto for IKEv2 and SSH Sessions», nueva en IOS XE 26.1.1 para «Cisco 8000 Series Secure Routers», en modo hibrido (ML-KEM, p. ej. mlkem768, con ECDH P-256 o X25519 y SHA-256); y los modelos que llegan en la 26.1.2 (C8130H-G2, C8151H-C-G2, C8221-G2, C8221L-G2, C8225-G2, C8650-G2)', campos: ['pqc'],
+      nota: 'Traida el 2026-10-27 por traer-cisco-huawei.yml (rama fuente/pqc-2026-10-27, corrida del mismo dia), con las notas de la 26.2.x: el proxy de egreso de este entorno responde 403 a cisco.com. Las fichas de la serie (8100 a 8600) dicen «Secure networking with PQC readiness» sin el mecanismo: lo da esta nota. Los G2-MX (MX OS), los Catalyst 8000, el ISR y el ASR: «no consta».' },
     { documento: 'Cisco 10G PON ONT Modules Data Sheet',
       url: 'https://www.cisco.com/c/en/us/products/collateral/networking/optics-transceiver-modules/10g-pon-ont-modules-ds.html', estable: false,
       fecha: '2026-10-15', hash: null, modelos: [], cubre: 'la ONT XGS-PON SFP-10G-ONT20-I: ITU-T G.9807.1 clase N1, SC/APC, una fibra monomodo G.652, hasta 20 km (tabla 1), 2,1 W tipicos y sin DOM (tabla 2)', campos: null,
@@ -355,10 +365,10 @@ const FUENTES = {
       porQue: 'respalda la regla de tuneles de `secureAccess()` en cisco-motor.js, no un campo de MODELS',
       nota: 'Traida el 2026-10-21 por traer-cisco-huawei.yml (rama fuente/cisco-propuestas-2026-10-21, corrida 39602063971): el proxy de egreso de este entorno responde 403 a cisco.com. La pagina es una aplicacion que sirve su texto en JSON (pageModel.ditaContent, «118929.dita»): lo traido es ese JSON, con el texto oficial dentro. No dice si el gigabit es por sentido: desde el 2026-10-27 lo dice la entrada siguiente («in either direction»), y el motor cuenta el sentido mayor.' },
     { documento: 'Cisco Secure Access Help, «Establish an IPsec Tunnel» (securitydocs.cisco.com)',
-      url: 'https://securitydocs.cisco.com/docs/csa/olh/120419.dita', estable: false,
+      url: 'https://securitydocs.cisco.com/docs/csa/olh/120419.dita', estable: false, vigilar: 'articulo',
       fecha: '2026-10-26', hash: null, modelos: [], cubre: 'limites de cada tunel IPsec hacia Secure Access (tabla «Tunnel Throughput, Capacity, and Scaling»): «1 Gbps per tunnel (in either direction)», sin limite de paquetes ni de usuarios, y hasta 10 tuneles en ECMP', campos: null,
       porQue: 'respalda la regla de tuneles de `secureAccess()` en cisco-motor.js (`tunelMbps` y `ecmpMax` de SECURE_ACCESS), no un campo de MODELS',
-      nota: 'Traida el 2026-10-27 por traer-cisco-huawei.yml (rama fuente/secure-access-tuneles-2026-10-27, corrida 40494638894). La pagina trae el texto del tema en su <article> y la navegacion de toda la ayuda alrededor. Los identificadores 119020 y 119011, que daban los buscadores, respondieron 404 (corrida 40493337677).' },
+      nota: 'Traida el 2026-10-27 por traer-cisco-huawei.yml (rama fuente/secure-access-tuneles-2026-10-27, corrida 40494638894). La pagina trae el texto del tema en su <article> y la navegacion de toda la ayuda alrededor: el vigia vigila solo el articulo (`vigilar: articulo`). Los identificadores 119020 y 119011, que daban los buscadores, respondieron 404 (corrida 40493337677).' },
     { documento: 'Cisco Wireless WAN Routers and Modules Data Sheet',
       url: 'https://www.cisco.com/c/en/us/solutions/collateral/enterprise-networks/4g-lte-solutions/datasheet-c78-743503.html', estable: false,
       fecha: '2024-06-04', hash: null, modelos: [], cubre: 'categoria y ancho de banda de bajada y subida de los modulos celulares PIM (P-5GS6-R16SA-GL, P-5GS6-GL, P-LTEAP18-GL, P-LTEA7-NA/EAL/JP, P-LTEA-EA/LA) y NIM (NIM-LTEA-EA/LA)', campos: null,
@@ -484,6 +494,11 @@ const FUENTES = {
       porQue: 'respalda texto escrito del cotizador, del portal y de la guia (MX304), equipo que no esta en MODELS',
       cubre: 'capacidad (4,8 Tbps en 2 RU), densidad por chasis (48x100GbE / 12x400GbE en tres MIC) y referencias de pedido del MX304',
       nota: 'La ficha de juniper.net es ya un visor de HPE; el PDF se trajo de psnow el 2026-10-19 (corrida 39356819148, rama fuente/juniper-mx304-2026-10-19), con la URL leida de esa misma pagina. Confirma los 4,8 Tbps que ya citaba el cotizador y corrige «MPC slots»: el MX304 lleva MIC (MX304-LMIC16-BASE, 16x100GbE / 4x400GbE). Fecha: la de creacion del PDF. `estable: false` hasta medirlo con el sondeo.' },
+    { documento: 'Juniper Pathfinder Feature Explorer, «Quantum-Safe: IPsec: RFC 8784 with ETSI QKD» (funcion 7502)',
+      url: 'https://apps.juniper.net/feature-explorer/feature/7502', estable: false,
+      fecha: null, hash: null, modelos: ['SRX1500', 'SRX1600', 'SRX2300', 'SRX4200', 'SRX4300', 'SRX4700'],
+      cubre: 'claves precompartidas post-cuanticas (PPK, RFC 8784) en IKEv2, estaticas o por QKD, y la version en que entra cada modelo: SRX1500 y SRX4200 en Junos OS 22.4R1, SRX1600 y SRX2300 en 23.4R1, SRX4300 en 24.2R1 y SRX4700 en 24.4R1-S2', campos: ['pqc'],
+      nota: 'Traida el 2026-10-27 por traer-cisco-huawei.yml (rama fuente/pqc-2026-10-27, corrida del mismo dia), con «Quantum Safe IPsec VPN» y «Get started with PQC» de la documentacion de Junos OS, que lo describen y remiten al Feature Explorer para modelos y versiones. No es un algoritmo PQC (ML-KEM): la ficha lo dice. El SRX4100 y los SRX de sucursal no estan en su tabla: «no consta».' },
   ],
 
   huawei: [
@@ -722,6 +737,11 @@ const FUENTES = {
       url: 'https://www.nokia.com/networks/ip-networks/', estable: false, fecha: '2026-08', hash: null,
       modelos: ['7220 IXR', '7250 IXR', '7250 IXR-X', '7250 IXR-R', '7750 SR'], cubre: 'lineas 7220 IXR, 7250 IXR (con sus series 7250 IXR-X y 7250 IXR-R) y 7750 SR', campos: null, porQue: 'nombra lineas, no campos: lo que respalda de cada una no esta acotado en esta entrada',
       nota: 'Cifras tecnicas verificadas; el PRECIO no, porque no hay lista de precios de Nokia en el material disponible. Van como Consultar y el BOM los cuenta sin cotizar.' },
+    { documento: 'Nokia 7750 Service Router data sheet, Release 26, y Nokia 7750 SR-s Service Router data sheet, Release 26',
+      url: 'https://www.nokia.com/asset/f/205421/', estable: true,
+      fecha: null, hash: null, modelos: ['7750 SR-1', '7750 SR-1s', '7750 SR-2s', '7750 SR-7s', '7750 SR-14s'],
+      cubre: 'MACsec IEEE 802.1AE con MKA y clave precompartida quantum-safe, y ANYsec, en el 7750 SR-1 (ficha del 7750 SR, asset 164728) y en el 7750 SR-1s, SR-2s, SR-7s y SR-14s (ficha del 7750 SR-s, asset 205421)', campos: ['pqc'],
+      nota: 'Traida el 2026-10-27 por traer-cisco-huawei.yml (rama fuente/pqc-2026-10-27, corrida del mismo dia). Cifrado simetrico con clave precompartida, no un algoritmo post-cuantico; depende del adaptador o de la tarjeta de linea y las fichas no dan version de SR OS. La nota de aplicacion «IPsec quantum-safe cryptography» (asset 174280) describe PPK (RFC 8784) con tarjetas ISA o ESA, sin version: no entra en el catalogo.' },
   ],
 
   // STARLINK (2026-10-15). No es uno de los siete fabricantes de `vendors.js`: su dimensionador

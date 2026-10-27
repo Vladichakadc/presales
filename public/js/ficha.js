@@ -892,6 +892,38 @@
   }
 
 
+  /* == CRIPTOGRAFIA POST-CUANTICA (2026-10-27, encargo del dueño) ============
+     Los fabricantes llaman «quantum-safe» a tres cosas distintas, y la ficha no las mezcla:
+       · `mlkem`: un algoritmo post-cuántico estandarizado (ML-KEM, FIPS 203) en el intercambio
+         de claves (Cisco Secure Router G2 con IOS XE 26.1, FortiGate con FortiOS 7.6.1);
+       · `ppk`: claves precompartidas post-cuánticas mezcladas en IKEv2 (RFC 8784): resisten a un
+         ordenador cuántico, pero no son un algoritmo PQC (Juniper SRX de gama alta);
+       · `macsec`: MACsec/ANYsec con clave precompartida «quantum-safe», cifrado simétrico (Nokia
+         7750 SR).
+     Sin `pqc`, «no consta»: ningún documento del catálogo lo dice, que no es lo mismo que «no
+     tiene» (la misma regla que la alimentación). */
+  const PQC_TIPO = {
+    mlkem: 'Sí — algoritmo post-cuántico ML-KEM (FIPS 203)',
+    ppk: 'Resistencia cuántica por clave precompartida (PPK, RFC 8784): no es un algoritmo post-cuántico',
+    macsec: 'MACsec/ANYsec «quantum-safe» (cifrado simétrico con clave precompartida): no es un algoritmo post-cuántico',
+  };
+  function seccionPqc(m) {
+    const titulo = 'Criptografía post-cuántica (PQC)';
+    const p = m && m.pqc;
+    if (!p || !PQC_TIPO[p.tipo]) {
+      return { titulo, filas: [['Soporte', '<span class="warn">no consta</span>']],
+        nota: 'Ningún documento oficial del catálogo dice que este equipo la traiga; eso no prueba que no la tenga. Confirmarlo con el fabricante antes de comprometerlo en la propuesta.' };
+    }
+    const filas = [
+      ['Soporte', esc(PQC_TIPO[p.tipo])],
+      ['Mecanismo', esc(p.mecanismo)],
+      ['Dónde', esc(p.donde)],
+      ['Software', p.desde ? esc(p.desde) + ' o superior' : '<span class="warn">la fuente no da la versión</span>'],
+    ];
+    if (p.alcance) filas.push(['Alcance', esc(p.alcance)]);
+    return { titulo, filas, nota: 'Fuente: ' + esc(p.fuente) + '.' };
+  }
+
   /* == SEMAFORO DE CICLO DE VIDA (pendiente 34) ==============================
      Vivia SOLO en la pagina de Aruba, y su rama por defecto era VERDE: cualquier modelo que
      no estuviera marcado `eol` ni `legacy` salia como «Generacion actual». Portarlo tal cual a
@@ -1113,6 +1145,7 @@
     // linea en gris sin que nadie haya decidido mostrarla seria ruido.
     fijarCicloVida(datos) { cicloVidaVendor = datos || null; },
     seccionAlimentacion,
+    seccionPqc,
     escalonSuperior,
     // Ordena dejando primero lo vigente y al final lo que esta fuera de venta, conservando
     // el criterio propio de cada pagina (capacidad, precio, medio) como desempate.

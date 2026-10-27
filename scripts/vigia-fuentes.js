@@ -162,6 +162,19 @@ const sha = (x) => crypto.createHash('sha256').update(x).digest('hex');
 // confundir un documento corto con un cascaron.
 const TEXTO_MINIMO = 200;
 
+// EL ARTICULO DE UNA AYUDA (2026-10-27, la mejora propuesta al cerrar la quincuagesimosexta
+// entrega). La ayuda de Cisco Secure Access sirve cada tema dentro de su <article> rodeado de la
+// navegacion de TODA la ayuda: de los 92 KB de texto de «Establish an IPsec Tunnel», el tema son
+// 7. Vigilar el texto entero daria por cambiada la pagina con cualquier tema nuevo de la ayuda, y
+// el cambio de una cifra (el gigabit por tunel, los 10 tuneles ECMP) pasaria como uno mas. Con
+// `vigilar: 'articulo'` se vigila solo el texto de sus <article>; si no llega ninguno, o llega
+// casi vacio, es ilegible, nunca «sin cambios».
+function articuloDe(html) {
+  const bloques = String(html || '').match(/<article\b[\s\S]*?<\/article>/gi);
+  if (!bloques) return null;
+  return textoNormalizado(Buffer.from(bloques.join(' ')), 'text/html');
+}
+
 async function revisar(vendor, f, opts) {
   const base = { vendor, documento: f.documento, url: f.url };
   const control = new AbortController();
@@ -193,6 +206,14 @@ async function revisar(vendor, f, opts) {
         return { ...base, estado: 'inalcanzable', detalle: `la página no se lee como la ficha de ${f.codigo}: ${motivo}` };
       }
       datos = huellaFicha(ficha);
+    } else if (f.vigilar === 'articulo') {
+      const art = articuloDe(cuerpo.toString('utf8'));
+      if (art === null || art.length < TEXTO_MINIMO) {
+        return { ...base, estado: 'inalcanzable', detalle: art === null
+          ? 'la página no trae el <article> del tema: otra maquetación o una pantalla intermedia'
+          : `el <article> del tema llega casi vacío (${art.length} caracteres de texto)` };
+      }
+      datos = sha(art);
     }
     return {
       ...base,
@@ -638,7 +659,7 @@ if (require.main === module) {
 
 module.exports = {
   correr, revisar, claveDe, pendientes, normalizarEntrada, marcarRevisado, aplicarAlLock, conRetirada,
-  sondear, textoNormalizado, primeraDiferencia, declaradasInestables, TEXTO_MINIMO, aMedir, imprimirSondeo,
+  sondear, textoNormalizado, articuloDe, primeraDiferencia, declaradasInestables, TEXTO_MINIMO, aMedir, imprimirSondeo,
   clasificar,
   leerLock, LOCK,
 };

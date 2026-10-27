@@ -566,6 +566,17 @@ const RJ45_GUIA = [
   {de:/^Cisco Secure Router C8(1\d\d|3\d\d)-/, hasta:1, guia:'la guía de hardware de su serie de la G2'},
 ];
 
+// CRIPTOGRAFÍA POST-CUÁNTICA (2026-10-27, encargo del dueño). «Release Notes for Cisco 8000
+// Series Secure Routers, Release 26.1.x» (12-oct-2026), tabla de funciones nuevas de la 26.1.1:
+// «Post Quantum Crypto for IKEv2 and SSH Sessions», plataformas «Cisco 8000 Series Secure
+// Routers», en modo híbrido: ML-KEM (p. ej. mlkem768) con ECDH P-256 o X25519 y SHA-256. Solo
+// la G2 con IOS XE: los G2-MX llevan MX OS, y los Catalyst 8000, el ISR y el ASR no tienen
+// documento que lo diga («no consta»). Seis modelos llegan en la 26.1.2 (tabla 1 de las mismas
+// notas): para ellos, esa es la primera versión.
+const PQC_G2 = {tipo:'mlkem', mecanismo:'ML-KEM (p. ej. mlkem768) en modo híbrido con ECDH P-256 o X25519 y SHA-256',
+  donde:'IKEv2 (IPsec) y SSH',
+  fuente:'Release Notes for Cisco 8000 Series Secure Routers, Release 26.1.x (12-oct-2026), «Post Quantum Crypto for IKEv2 and SSH Sessions»'};
+const PQC_DESDE_26_1_2 = ['C8130H-G2', 'C8151H-C-G2', 'C8221-G2', 'C8221L-G2', 'C8225-G2', 'C8650-G2'];
 for (const m of MODELS) {
   m.eolAnnounced = EOL_ANNOUNCED[m.id] || null;
   if (PSU_SEGUNDA[m.id]) m.psu2 = PSU_SEGUNDA[m.id];
@@ -574,6 +585,10 @@ for (const m of MODELS) {
   if (MAX_WAN[m.id]) m.maxWan = MAX_WAN[m.id];
   if (NOTA_PUERTOS[m.id]) m.notaPuertos = NOTA_PUERTOS[m.id];
   if (BAHIA_ASR[m.id]) m.bahia = BAHIA_ASR[m.id];
+  if (m.ser === 'Secure Router (G2)') {
+    const tarde = PQC_DESDE_26_1_2.some((c) => m.id.endsWith(` ${c}`));
+    m.pqc = {...PQC_G2, desde: tarde ? 'IOS XE 26.1.2 (primera versión de este modelo; la función llega en la 26.1.1)' : 'IOS XE 26.1.1'};
+  }
   if (COMBINACIONES[m.id]) m.combinaciones = COMBINACIONES[m.id];
   if (DSL[m.id]) m.dsl = DSL[m.id];
   if (APPQOE[m.id]) m.appqoe = APPQOE[m.id];

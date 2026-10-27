@@ -306,4 +306,19 @@ const CARE = {
   jcarePre: {n:'Juniper Premium Care', sla:'Todo lo de Advanced Care + service manager asignado (8x5). Respuesta: P1 en 15 min, P2 en 30 min, P3 en 2 h, P4 en 4 h.'},
 };
 
+// CRIPTOGRAFÍA POST-CUÁNTICA (2026-10-27, encargo del dueño). Juniper Pathfinder Feature
+// Explorer, función «Quantum-Safe: IPsec: RFC 8784 with ETSI QKD» (7502): claves precompartidas
+// post-cuánticas (PPK, RFC 8784) mezcladas en IKEv2, estáticas o por QKD, con el paquete
+// junos-ike y el Junos Key Manager; su tabla da el modelo y la versión en que entra. No es un
+// algoritmo post-cuántico (ML-KEM): la ficha lo dice así. El SRX4100 y los de sucursal
+// (SRX300/320/340/345/380) no están en esa tabla: «no consta».
+const PQC_SRX = {SRX1500:'22.4R1', SRX1600:'23.4R1', SRX2300:'23.4R1', SRX4200:'22.4R1', SRX4300:'24.2R1', SRX4700:'24.4R1-S2'};
+for (const m of MODELS) {
+  if (!PQC_SRX[m.id]) continue;
+  m.pqc = {tipo:'ppk',
+    mecanismo:'Claves precompartidas post-cuánticas (PPK, RFC 8784) mezcladas en la derivación de claves de IKEv2, estáticas o por QKD a través del Junos Key Manager',
+    donde:'IKEv2 (IPsec), con el paquete junos-ike', desde:`Junos OS ${PQC_SRX[m.id]}`,
+    fuente:'Juniper Pathfinder Feature Explorer, «Quantum-Safe: IPsec: RFC 8784 with ETSI QKD», y «Quantum Safe IPsec VPN» de la documentación de Junos OS'};
+}
+
 module.exports = { MODELS, SDWAN, BUNDLES, CARE };

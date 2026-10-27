@@ -1131,6 +1131,7 @@ function seccionesDe(r, m) {
     ] },
     FICHA.seccionPuertos(m),
     FICHA.seccionAlimentacion(m),
+    FICHA.seccionPqc(m),
     { titulo: 'Licenciamiento propuesto', filas: [
       ['Tipo de compra', esc({ nueva: 'Compra nueva', ampliacion: 'Ampliación', renovacion: 'Renovación', coterm: 'Co-term' }[s.comercial.motivo])],
       ['Bundle FortiGuard', BUNDLES[bundle] ? esc(BUNDLES[bundle].n) : '<span class="warn">Excluido de la cotización</span>'],

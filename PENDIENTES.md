@@ -4,7 +4,8 @@ Registro vivo de lo que falta. **Al empezar una tarea se buscan aquí los puntos
 tocan, y al terminarla se actualiza**, y su contenido se resume al usuario al cerrar cada entrega — esa es la instrucción
 permanente que lo justifica (ver `CLAUDE.md`, sección *Instrucciones permanentes del dueño*).
 
-Última revisión: 2026-10-27, quincuagesimosexta entrega (**Los pendientes de Cisco con documento, cerrados, y `npm run cisco` avisa de los modelos de una ficha que el catálogo no trae.** Encargo del dueño: «exijo que pasen verificar y pantallas; activa ramas al día con omisión del administrador; cierra lo pendiente con fuentes oficiales y ejecuta la mejora propuesta». La protección de `main` sigue sin poder tocarse desde esta sesión (ver *Decisiones*). Con su documento: el enlace **XGS-PON** (ficha de la ONT SFP-10G-ONT20-I, 15-oct-2026) va a la jaula de las cuatro 8100 que la admiten, con la ONT en el BOM; el túnel de **Secure Access** es de 1 Gbps **por sentido** («in either direction», 26-oct-2026) y admite hasta 10 en ECMP; los mGig del **MX95/MX105** enlazan a 1G (su página «WAN Behavior»); y el **ASR** que no tiene puerto fijo dice qué admite su bahía (guías de hardware del 1001-X y del 1002-HX). La mejora: la ficha de la 8200 nombra «C8200-1N-4S» y «C8200L-1N-4S» solo en su tabla de consumo (errata: todo lo demás dice -4T). Ver *Cerrado recientemente*.)
+Última revisión: 2026-10-27, quincuagesimoséptima entrega (**Criptografía post-cuántica en la ficha de los siete dimensionadores, el vigía mira solo el artículo de la ayuda de Secure Access, e investigación de IA para el dimensionador.** Encargo del dueño: «investiga los pendientes con las skills; ejecuta la mejora propuesta y las que encuentres; incluye la característica PQC en los equipos que la traigan; investiga qué IA meter en el dimensionador». PQC con su documento oficial: 26 Secure Router G2 (ML-KEM híbrido, IOS XE 26.1), 48 FortiGate (ML-KEM-512/768/1024, FortiOS 7.6.1), 6 SRX (PPK de RFC 8784, que no es un algoritmo PQC) y 5 Nokia 7750 (MACsec/ANYsec «quantum-safe», simétrico); el resto, «no consta». La IA, en `docs/ia-en-el-dimensionador-2026-10-27.md`, con dos decisiones para el dueño. Ver *Cerrado recientemente* y *Decisiones*.)
+Revisión anterior: 2026-10-27, quincuagesimosexta entrega (**Los pendientes de Cisco con documento, cerrados, y `npm run cisco` avisa de los modelos de una ficha que el catálogo no trae.** Encargo del dueño: «exijo que pasen verificar y pantallas; activa ramas al día con omisión del administrador; cierra lo pendiente con fuentes oficiales y ejecuta la mejora propuesta». La protección de `main` sigue sin poder tocarse desde esta sesión (ver *Decisiones*). Con su documento: el enlace **XGS-PON** (ficha de la ONT SFP-10G-ONT20-I, 15-oct-2026) va a la jaula de las cuatro 8100 que la admiten, con la ONT en el BOM; el túnel de **Secure Access** es de 1 Gbps **por sentido** («in either direction», 26-oct-2026) y admite hasta 10 en ECMP; los mGig del **MX95/MX105** enlazan a 1G (su página «WAN Behavior»); y el **ASR** que no tiene puerto fijo dice qué admite su bahía (guías de hardware del 1001-X y del 1002-HX). La mejora: la ficha de la 8200 nombra «C8200-1N-4S» y «C8200L-1N-4S» solo en su tabla de consumo (errata: todo lo demás dice -4T). Ver *Cerrado recientemente*.)
 Revisión anterior: 2026-10-26, quincuagesimoquinta entrega (**Pendientes ejecutados: el lock del vigía y Dependabot en `main`, las tres fuentes del issue #18 contrastadas, y seis variantes de la 8100 que traen el DSL vigente y más 10G en cobre.** Encargo del dueño: «ejecuta los pendientes y la mejora propuesta, y si encuentras una mejora por el camino, aprobada». La guía de pedido de Secure SD-WAN de Fortinet (R32) solo retira el 1000F; el boletín de fin de venta de los Catalyst 8300/8200L no cambió; la VSG de SD-Branch del 15-oct conserva lo que el catálogo toma de ella. Por el camino: `--revisado` del vigía borraba la clase de la entrada, y las seis variantes de la 8100 que la ficha ya traía. La mejora propuesta (ramas al día antes de fusionar) es un ajuste de GitHub que necesita al dueño. Ver *Cerrado recientemente* y *Decisiones que necesitan al dueño*.)
 Revisión anterior: 2026-10-26, quincuagesimocuarta entrega (**`main` vuelve a verde y Railway vuelve a desplegar.** Encargo del dueño: «revisar, continuar». El bloqueo de despliegues del 21 al 22-oct era una incidencia de builds de Railway; desde que pasó, `main` estaba en rojo por dos causas: un PR de Dependabot que subió `actions/setup-node` en todos los workflows menos en el job `contrastar_cisco` del vigía (añadido después de abrir el PR) y tres avisos altos nuevos (body-parser, multer, undici) que frenan `auditar`. Ver *Cerrado recientemente* y *~~Vigilar~~ Cerrado: un push a `main` que Railway no vio*.)
 Revisión anterior: 2026-10-21, quincuagesimotercera entrega (**Las nueve propuestas de conectividad, SD-WAN y seguridad de Cisco, hechas o cerradas con su documento.** Encargo del dueño: «avanza con todo». El tramo se declara también en cobre (100 m en RJ-45; 100 y 30 m con los transceptores de cobre); el enlace celular elige su PIM por la categoría de la ficha; la sede con dos routers (y TLOC extension) duplica el equipo y reparte los enlaces; SD-WAN Manager, Validators y Controllers salen del número de equipos; AppQoE con DRE elige el nodo por conexiones; Cisco Secure Access entra al BOM por usuario o por sede; con «Firewall dedicado» se propone un Secure Firewall 1200, 3100 o 4200 por la cifra de su capa. Los NIM DSL están fuera de venta (EOL15805). Railway sigue sin desplegar desde `24287c2`. Ver *Cerrado recientemente*, *Abierto: enlaces y puertos de Cisco* y *Vigilar: un push a `main` que Railway no vio*.)
@@ -2099,6 +2100,24 @@ enlace XGS-PON, el túnel de Secure Access por sentido, el mGig del MX95/MX105 y
 - **AppQoE no publica caudal**: el nodo se elige por las conexiones DRE de su perfil y la página
   avisa de que el caudal optimizado no tiene cifra.
 
+## Abierto: criptografía post-cuántica sin documento (2026-10-27)
+
+La ficha (y el Comparador) dicen «no consta» donde ningún documento oficial traído dice que el
+equipo la traiga. Lo que se buscó y no se encontró, o se encontró sin lo que hace falta:
+- **Huawei (AR, NetEngine), Aruba (EdgeConnect y gateways) y MikroTik**: ninguna ficha ni nota
+  oficial que nombre ML-KEM, PPK o «quantum-safe». Huawei anunció en marzo de 2026 una tarjeta QKD
+  para la serie NetEngine 8000E (no está en el catálogo, y QKD no es PQC).
+- **Cisco Catalyst 8000, ISR 1000, ASR 1000 y los G2-MX**: las notas de la 26.1 son de la serie
+  Secure Router con IOS XE; los G2-MX llevan MX OS. Un blog de Cisco habla de ML-DSA y PPK en la
+  26.2, pero un blog no es fuente: las notas de la 26.2 no lo listan como función nueva.
+- **FortiGate 400G, 3000G, 3500G, 3800G (y variantes), 7081F y 7121F**: sin fila válida en la
+  Maximum Values Table de FortiOS 7.6.7, no consta que corran una 7.6 posterior a la 7.6.1.
+- **SRX4100 y SRX de sucursal (300/320/340/345/380)**: no están en la tabla del Feature Explorer.
+- **Nokia 7750 SR-1x, 7250 IXR y 7220 IXR**: sus fichas no lo dicen. La nota de aplicación de
+  IPsec «quantum-safe» describe PPK con tarjetas ISA o ESA sin versión de SR OS: no entra.
+Si un fabricante publica el documento, entra por `traer-cisco-huawei.yml` y su fuente en
+`fuentes.js` con `campos: ['pqc']` (la prueba frena un equipo marcado sin fuente).
+
 ## Abierto: modelos de una ficha que el catálogo no trae (2026-10-27)
 
 `npm run cisco` (y el vigía cada lunes) avisa ahora de las referencias de equipo que las cabeceras de
@@ -2112,6 +2131,9 @@ no avisar cada semana:
   X): el catálogo modela los cuatro de 8 puertos y el 1116-4P. Si entran es una decisión de alcance.
 - **MX67W y MX68W** (Wi-Fi integrado): el catálogo trae MX67, MX67C, MX68 y MX68CW. Ídem.
 Un modelo que se incorpore sale de `REVISADAS` (la prueba lo frena si se queda).
+- **C8111-C-G2-MX, C8121-W-G2-MX y C8121-CW-G2-MX** (2026-10-27, encontrados buscando el mGig de
+  los G2-MX): variantes celular y Wi-Fi con ficha propia en documentation.meraki.com. Como el
+  catálogo no cita esas fichas, `npm run cisco` no las mira y el aviso no las puede ver.
 
 ## ~~Abierto~~ Cerrado: herramienta externa Cisco (2026-10-20)
 
@@ -2136,11 +2158,25 @@ documento que se miró; si Cisco publica una edición nueva, `traer-cisco-huawei
 
 ## Decisiones que necesitan al dueño del producto
 
+- **IA en los dimensionadores (2026-10-27).** Investigación en
+  `docs/ia-en-el-dimensionador-2026-10-27.md`. Dos decisiones: (1) **¿se puede mandar el pliego de
+  un cliente a la API de Anthropic?** *Recomendación*: sí, con aviso antes de enviar y sin guardar
+  el documento; bajo NDA, pegar solo el pliego técnico. (2) **¿Por dónde se empieza?**
+  *Recomendación*: «del pliego al escenario» como piloto en el dimensionador Cisco, primero con texto
+  pegado (cita verificada por programa) y el PDF después; la IA propone parámetros con su cita y la
+  persona los acepta uno a uno; el motor y el catálogo siguen siendo los únicos que eligen equipo y
+  ponen cifras.
+- **Variantes que el catálogo no trae (2026-10-27).** 30 variantes del ISR 1000, MX67W/MX68W y los
+  C8111-C/C8121-W/C8121-CW-G2-MX (ver *Abierto: modelos de una ficha que el catálogo no trae*).
+  *Recomendación*: dejarlas fuera hasta que un proyecto las pida; entrar una cuesta sus cifras,
+  puertos, figuras y fuente.
+
 - **Ramas al día antes de fusionar en `main` (2026-10-26).** **Aprobada por el dueño** («ejecuta la
   mejora propuesta») **y pedida otra vez el 2026-10-27** («exijo que pasen verificar y pantallas…»),
   **pero es un ajuste de GitHub que esta sesión no puede tocar**: el conector de GitHub no expone la
   protección de ramas ni los rulesets, y la sesión no tiene `gh`. Comprobado el 2026-10-27 en la API
-  pública: `main` sigue con `protected: false` y sin rulesets. Lo que evita: que
+  pública: `main` sigue con `protected: false` y sin rulesets (otra vez el mismo día, al cerrar la
+  quincuagesimoséptima entrega). Lo que evita: que
   un PR validado contra un `main` viejo (el de Dependabot del 22-oct) lo deje en rojo y Railway descarte
   los despliegues durante días. **Cómo se hace** (repositorio → *Settings* → *Rules* → *Rulesets* →
   *New branch ruleset*, o *Branches* → *Add classic branch protection rule*): rama `main`; activar
@@ -2299,6 +2335,28 @@ que ya se comprobó y lo que cuesta cada opción.
     normalizar) se cerró el 2026-09-02 — ver *Cerrado recientemente*.
 
 ## Cerrado recientemente
+
+- **2026-10-27 · Criptografía post-cuántica en la ficha, el vigía por artículo e IA para el
+  dimensionador (quincuagesimoséptima entrega).** Encargo del dueño: «investiga los pendientes con
+  las skills que tienes; ejecuta la mejora propuesta y, si encuentras otra, ejecútala; incluye la
+  característica técnica en los equipos que incluyan PQC; empieza a investigar qué funcionalidades de
+  IA incluir en el dimensionador». **La mejora propuesta**: el vigía vigila solo el `<article>` de la
+  ayuda de Secure Access (`vigilar: 'articulo'`): un tema nuevo de la navegación no la da por
+  cambiada y una cifra del tema sí; sin artículo, ilegible. **PQC**, con documentos traídos por
+  Actions a `fuente/pqc-2026-10-27`: notas de versión de la serie 8000 Secure Router (26.1.x, 12-oct-
+  2026: «Post Quantum Crypto for IKEv2 and SSH Sessions», ML-KEM híbrido), guía de administración de
+  FortiOS 7.6.5 y novedades de 7.6.0 (ML-KEM-512/768/1024 como claves adicionales de IKEv2, desde
+  7.6.1), Feature Explorer de Juniper (PPK de RFC 8784 por modelo y versión) y fichas Release 26 del
+  7750 SR y SR-s (MACsec/ANYsec «quantum-safe»). Sección común `seccionPqc` en las siete fichas, fila
+  en el Comparador del portal, cuatro fuentes nuevas con `campos: ['pqc']` y `test/pqc.test.js`.
+  **Por el camino**: la fuente técnica del banner de Fortinet es la primera de su lista; la de PQC va
+  al final (la batería e2e lo cazó). **IA**: investigación con la skill `claude-api` en
+  `docs/ia-en-el-dimensionador-2026-10-27.md` (ver *Decisiones*). **Pendientes con las skills**: el
+  aviso de seguridad de Railway sigue sin leerse (el conector de Railway pide autorización y el
+  proxy de este entorno rechaza `railway.com`); el mGig de los C8111/C8121-G2-MX sigue sin documento;
+  la protección de `main` sigue sin activarse. Verificado: `verificar` (1.131 pruebas), `auditar`,
+  servidor en producción, las siete fichas y el Comparador conducidos en Chromium, `contraste --todos`
+  (10 casos), `pantallas` 17/17, `e2e` y `puerta`.
 
 - **2026-10-27 · Pendientes de Cisco con documento, y modelos de una ficha fuera del catálogo
   (quincuagesimosexta entrega).** Encargo del dueño: «exijo que pasen verificar y pantallas; activa

@@ -238,6 +238,7 @@
     // entera sin dato: la pregunta merece hacerse, y ficha.js la declara sin rodeos en vez
     // de leer el hueco como «fuente única».
     secciones.push(FICHA.seccionAlimentacion(m));
+    secciones.push(FICHA.seccionPqc(m));
     return secciones;
   }
 

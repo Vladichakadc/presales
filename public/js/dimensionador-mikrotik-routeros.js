@@ -384,6 +384,7 @@ function render(){
       matrizDe(m),
       FICHA.seccionPuertos(m),
       FICHA.seccionAlimentacion(m),
+      FICHA.seccionPqc(m),
       {titulo:'Licenciamiento propuesto', filas:[
         ['Licencia RouterOS', m.lvl==='chr'?'CHR — la licencia es el producto':`Nivel ${m.lvl} — embebida en el hardware`],
         ['Túneles PPPoE / PPTP / L2TP', tope(lic.ppp)],

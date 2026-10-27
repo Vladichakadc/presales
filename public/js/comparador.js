@@ -88,6 +88,11 @@
   // Cisco trae una sola cifra de seguridad, `amenazas`: en Meraki es su NGFW y en los Secure
   // Router y los Catalyst 8000, Threat Protection (su base lo dice en `bases.amenazas`).
   const esMeraki = (d) => d.ser === 'Meraki MX';
+  const PQC_CORTO = {
+    mlkem: 'ML-KEM (FIPS 203)',
+    ppk: 'PPK de RFC 8784 (no es un algoritmo PQC)',
+    macsec: 'MACsec/ANYsec quantum-safe (no es un algoritmo PQC)',
+  };
 
   const SECCIONES = [
     { titulo: 'Identidad', filas: [
@@ -152,6 +157,13 @@
       { k: 'ram', n: 'Memoria', mejor: true, v: (d) => (num(d.ram) === null ? null : `${d.ram} MB`) },
       { k: 'lvl', n: 'Nivel de licencia RouterOS', v: (d) => (d.lvl != null ? `Level ${d.lvl}` : null) },
       { k: 'asic', n: 'Aceleración por hardware', v: (d) => d.asic || null },
+      // PQC (2026-10-27): el mismo dato que la ficha (`pqc`, con su fuente en legacyData/), en una
+      // línea. Lo que no es un algoritmo post-cuántico lo dice; sin documento, «sin dato».
+      { k: 'pqc', n: 'Criptografía post-cuántica', v: (d) => {
+        const p = d.pqc;
+        if (!p || !PQC_CORTO[p.tipo]) return null;
+        return PQC_CORTO[p.tipo] + (p.desde ? ` — desde ${p.desde.split(' (')[0]}` : '');
+      } },
       { k: 'protos', n: 'Protocolos', v: (d) => d.protos || null },
     ] },
 

@@ -328,7 +328,11 @@ Módulos compartidos:
   fabricante (hoy Cisco y Juniper); los demás declaran que el catálogo no trae el ciclo de vida.
   Secciones comunes: características, alimentación (cinco estados: `true`, `false`, `'opcional'`,
   `'no-aplica'` y «no consta», nunca `undefined` leído como `false`), puertos (configuraciones
-  alternativas, no acumulables; un chasis modular no publica densidad), licenciamiento, software,
+  alternativas, no acumulables; un chasis modular no publica densidad), **criptografía
+  post-cuántica** (`seccionPqc`, de `m.pqc` con su fuente: `mlkem` —algoritmo ML-KEM, G2 con IOS XE
+  26.1 y FortiGate con FortiOS 7.6.1—, `ppk` —clave precompartida de RFC 8784, SRX de gama alta— y
+  `macsec` —MACsec/ANYsec simétrico, Nokia 7750—, cada uno dicho como lo que es; sin documento,
+  «no consta»; el Comparador del portal lo da en una línea), licenciamiento, software,
   soporte, referencias de pedido (bajo demanda por modelo) y figuras con su página y rótulo literal
   (frontal, trasera y, opt-in `foto` + `fotoFuente`, una tercera pestaña con la foto de producto a
   color y su propio pie; hoy solo Juniper).
@@ -566,7 +570,9 @@ Módulos compartidos:
   (lo que una persona contrastó, no se mueve solo), `visto` y `pendienteDesde`; se limpia con
   `npm run vigia -- --revisado <fabricante> <url>`. Vigila el texto en HTML, los bytes en PDF y,
   en las 20 fichas de MikroTik, **los datos transcritos** (`vigilar: 'ficha-mikrotik'`: la huella de
-  lo que `npm run mikrotik` lee, que al transcribir deja el lock verificado);
+  lo que `npm run mikrotik` lee, que al transcribir deja el lock verificado); en una ayuda que
+  sirve su tema dentro de la navegación entera (Secure Access), solo el `<article>` (`vigilar:
+  'articulo'`; sin él, ilegible);
   `--sondeo` mide qué varía entre dos peticiones. Un HTML que, sin scripts, deja menos de
   `TEXTO_MINIMO` (200) caracteres es el cascarón de una aplicación de JavaScript y sale ilegible,
   nunca «sin cambios». Lo que el sondeo midió como no legible sin navegador lleva
@@ -596,7 +602,7 @@ Módulos compartidos:
 ## Documentos de referencia
 
 `IMPORTAR-CATALOGO.md` (procedimiento de importación) · `docs/sincronizacion.md` ·
-`docs/decisiones-del-dueno-2026-09-24.md` · `docs/herramienta-externa-cisco-2026-10-20.md` · `docs/propuestas-cisco-conectividad-sdwan-seguridad-2026-10-21.md` (las nueve, hechas o cerradas el 2026-10-21, con su documento) · `docs/portabilidad-aruba.md` (tres capas: escenario,
+`docs/decisiones-del-dueno-2026-09-24.md` · `docs/herramienta-externa-cisco-2026-10-20.md` · `docs/propuestas-cisco-conectividad-sdwan-seguridad-2026-10-21.md` (las nueve, hechas o cerradas el 2026-10-21, con su documento) · `docs/ia-en-el-dimensionador-2026-10-27.md` (qué IA cabe en los dimensionadores sin inventar datos; pendiente de dos decisiones del dueño) · `docs/portabilidad-aruba.md` (tres capas: escenario,
 comercial, gobierno del dato) · `docs/revision-huawei-2026-09-29.md` · `docs/manual-usuario/`
 (manual a PDF con `npm run manual`; Playwright fuera de `package.json` a propósito) ·
 `docs/claude-md-cronica.md` (la historia de cada regla de este archivo).

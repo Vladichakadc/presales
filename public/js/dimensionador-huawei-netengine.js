@@ -287,6 +287,7 @@ function seccionesHuawei(m, c){
     ...fichaTec,
     FICHA.seccionPuertos(m),
     FICHA.seccionAlimentacion(m),
+    FICHA.seccionPqc(m),
     {titulo:'Licenciamiento propuesto', filas:lic,
      nota:'Todas las licencias se emiten contra el ESN del equipo y se descargan del portal ESDP de Huawei.'},
     {titulo:'Software y gestión', filas:[

@@ -2479,6 +2479,7 @@ function render(){
       {titulo:'Ficha técnica', filas:tecnica},
       FICHA.seccionPuertos(m),
       FICHA.seccionAlimentacion(m),
+      FICHA.seccionPqc(m),
       ...seccionEdgeHA(),
       {titulo:'Suscripción y licencias',
        filas:[['Unidades a licenciar', unidades===2

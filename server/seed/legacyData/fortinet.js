@@ -599,6 +599,20 @@ for (const [base, fila] of Object.entries(MVT_LIMITES)) {
   }
 }
 
+// ── CRIPTOGRAFIA POST-CUANTICA (2026-10-27, encargo del dueño) ──
+// «FortiOS 7.6.5 Administration Guide», «Post-Quantum Cryptography for IPsec key exchange»:
+// ML-KEM-512, ML-KEM-768 y ML-KEM-1024 (FIPS 203) como intercambio de claves adicional de IKEv2
+// (`set addke1 …` en `vpn ipsec phase1-interface`). La version la da «New features» de FortiOS
+// 7.6.0: «Enhancing security with Post-Quantum Cryptography for IPsec key exchange 7.6.1». Se
+// marca en los modelos que la Maximum Values Table de FortiOS 7.6.7 lista (los que tienen
+// `bgpDe`): consta que corren una 7.6 posterior a la 7.6.1. Los demas, «no consta».
+const PQC_FORTIOS={tipo:'mlkem',
+  mecanismo:'ML-KEM-512, ML-KEM-768 o ML-KEM-1024 (FIPS 203) como intercambio de claves adicional (addke1 a addke7)',
+  donde:'IKEv2 (IPsec)', desde:'FortiOS 7.6.1',
+  alcance:'Modelo listado en la Maximum Values Table de FortiOS 7.6.7: corre una versión que la trae.',
+  fuente:'FortiOS 7.6.5 Administration Guide, «Post-Quantum Cryptography for IPsec key exchange»; la versión, de «New features» de FortiOS 7.6.0'};
+for (const m of MODELS) m.pqc = m.bgpDe ? PQC_FORTIOS : null;
+
 // ── PLATAFORMA POR MODELO: LO QUE EL MATRIX PUBLICA ADEMAS DEL RENDIMIENTO (2026-09-23) ──
 // Seis filas del Product Matrix (transcritas de la de septiembre; la de octubre las repite) que el catalogo no traia y que el informe de
 // auditoria del 23-sep pide como restricciones (F06, F14, F15): VDOM incluidos, almacenamiento

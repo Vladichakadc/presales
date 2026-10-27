@@ -405,6 +405,7 @@ function render(){
       FICHA.seccionPuertos(m),
       ...(ev.enlaces.length ? [seccionEnlaces(m)] : []),
       FICHA.seccionAlimentacion(m),
+      FICHA.seccionPqc(m),
       {titulo:'Licenciamiento propuesto', filas:lic.filas.map(x => [esc(x.desc), x.sku ? `<code>${esc(x.sku)}</code>` : 'referencia en CCW', true]),
         nota:lic.avisos.length ? `<span class="warn">${lic.avisos.map(esc).join(' ')}</span>` : (m.lic === 'cswan' ? 'En la G2 la referencia sale de la clase de la plataforma; el término y el precio, de CCW.' : null)},
       {titulo:'Software y gestión', filas:m.lic === 'meraki'
