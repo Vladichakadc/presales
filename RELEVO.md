@@ -31,6 +31,8 @@ está en curso no va aquí: lo dice `npm run traspasos` (protocolo en `docs/tras
 
 ## Estado al cerrar esta entrega
 
+- **Retoque tras la sexagesimosegunda** (PR #28): el número de la leyenda de Cisco sin
+  `aria-label` (prohibido en un `span` sin rol). El PR #23 se cerró, superado por el #24.
 - **Sexagesimosegunda entrega**: las tres mejoras propuestas, hechas (cita mínima del piloto del
   pliego, la interconexión EdgeHA por el puerto que le toca y las figuras de Cisco con su leyenda en
   el Excel), y la leyenda de las figuras de Cisco fusionada (PR #24). **Los fallos del e2e se leen
