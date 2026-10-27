@@ -1302,6 +1302,10 @@ jobs:
               { archivo: 'fortinet-7000f-limitaciones.html', tipo: 'html', para: 'FORTINET', exploracion: true, urls: [
                 'https://docs.fortinet.com/document/fortigate/7.6.7/fortigate-7000f-administration-guide/301266',
               ] },
+              // Y esa remite, para IPsec, a «IPsec VPN load balancing» (corrida del 2026-10-27).
+              { archivo: 'fortinet-7000f-ipsec.html', tipo: 'html', para: 'FORTINET', exploracion: true, urls: [
+                'https://docs.fortinet.com/document/fortigate/7.6.7/fortigate-7000f-administration-guide/813847/ipsec-vpn-load-balancing',
+              ] },
               { archivo: 'fortinet-rn-7.6.6.html', tipo: 'html', para: 'FORTINET', exploracion: true, urls: [
                 'https://docs.fortinet.com/document/fortigate/7.6.6/fortios-release-notes',
               ] },
