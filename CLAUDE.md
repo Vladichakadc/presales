@@ -243,7 +243,9 @@ pero su salida vive en `api.pdf4me.com`, que el proxy deniega: se le pide el tex
 `extract_text_by_expression`, nunca se le manda un documento de canal (la lista del distribuidor).
 Se comprueba con `example.com` antes de culpar al fabricante: el 2026-10-07 volvió conectado y
 fallaba con cualquier URL. Firecrawl corre dentro del sandbox y su dominio está
-denegado.
+denegado. **Los logs y los artefactos de Actions** viven en un dominio que el proxy también
+deniega: un fallo del e2e se lee por las anotaciones de la comprobación `pantallas`
+(`gh api repos/<dueño>/<repo>/check-runs/<id>/annotations`, título `e2e`), que el workflow publica.
 
 ## Arquitectura
 
@@ -380,7 +382,8 @@ Módulos compartidos:
   «BOM» en el índice 0 y detrás **«Supuestos»** (`matrizSupuestos`: fecha, enlace, plataforma,
   resultado que declare `meta.supuestos`, parámetros de `ESTADO.escenario()` y las fuentes que
   **declaran** al equipo en `modelos`, o las que lo nombran si no declaran, con su «Asociación»); el
-  consolidado multi-sede no la lleva.
+  consolidado multi-sede no la lleva. La hoja «Fotos del equipo» (`meta.fotos`: Aruba, Fortinet, Huawei y
+  Cisco) escribe bajo cada figura su leyenda opt-in (`frontLeyenda`/`rearLeyenda`), como la ficha.
 - `estado.js` — el escenario en la URL (manda si trae parámetros) y en el almacenamiento local;
   solo se serializa lo que difiere del valor por defecto; lo que va dentro de `[data-inactivo]` no
   viaja; un enlace con parámetros que la pantalla ya no entiende lo dice (`avisoOrigen`), salvo lo
@@ -453,7 +456,9 @@ Módulos compartidos:
   modelo sin puerto para algún enlace sale con su motivo. **Con el par EdgeHA**
   (`asignarPuertosPar`, 2026-10-27) se audita el par: cada enlace aterriza en un chasis, y cada uno
   reserva sus 2 LAN y el puerto de la interconexión, del mismo tipo en los dos («any LAN or WAN
-  port […] match the media type and speed […] not MGMT», página EdgeHA del Orchestrator). El medio no elegido a mano sigue al
+  port […] match the media type and speed […] not MGMT», página EdgeHA del Orchestrator). La interconexión va
+  por ESE puerto en el builder, el asistente de cableado y el BOM (`interconexionEdgeHA`): por cobre,
+  un latiguillo y ninguna óptica; por jaula, 2 ópticas de una velocidad que esa jaula admite. El medio no elegido a mano sigue al
   caudal (todo RJ-45 del catálogo es de 1 GbE). Una elección manual que no cabe se respeta hasta
   que cambien los enlaces. Sin selector de segmento: el tamaño de sitio lo fija el arquetipo. EdgeConnect se dimensiona
   contra su rango WAN publicado; los gateways 9000/9100/9200, contra firewall, clientes y APs, con la

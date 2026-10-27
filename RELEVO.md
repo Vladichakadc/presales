@@ -1,6 +1,6 @@
 # Relevo
 
-Última actualización: 2026-10-27 · sexagesimoprimera entrega
+Última actualización: 2026-10-27 · sexagesimosegunda entrega
 
 Informe para continuar el trabajo. Lo pidió el dueño del repositorio el 2026-10-27: «de aquí en
 adelante, un informe de pendientes y mejoras para que la cuenta **servicioiptv2025@gmail.com**
@@ -31,6 +31,13 @@ está en curso no va aquí: lo dice `npm run traspasos` (protocolo en `docs/tras
 
 ## Estado al cerrar esta entrega
 
+- **Sexagesimosegunda entrega**: las tres mejoras propuestas, hechas (cita mínima del piloto del
+  pliego, la interconexión EdgeHA por el puerto que le toca y las figuras de Cisco con su leyenda en
+  el Excel), y la leyenda de las figuras de Cisco fusionada (PR #24). **Los fallos del e2e se leen
+  ahora desde una sesión**: `gh api repos/Vladichakadc/presales/check-runs/<id>/annotations`
+  (los logs y artefactos de Actions están en un dominio que el proxy deniega).
+  Por el camino se arregló que **el Excel de Cisco no se descargaba** (la hoja «Supuestos» recibía
+  un texto donde espera pares).
 - **Producción**: `main` lleva esta entrega (ver `git log`); Railway despliega cuando CI pasa y la
   sonda (`sonda-produccion.yml`) abre un issue con la etiqueta `despliegue` si algo falla.
 - **Sexagesimoprimera entrega**: las figuras del dimensionador Cisco dicen qué es cada número. 67 caras de 38
@@ -56,6 +63,10 @@ esta entrega, ninguna rama remota llevaba un traspaso abierto.
 ## Pendientes, por prioridad
 
 ### Solo los puede hacer el dueño
+
+0. **Cerrar el PR #23** (superado por el #24, ya fusionado) y, si quieres, borrar las ramas
+   `claude/ia-pliego-cisco` y `claude/leyendas-figuras-cisco`: esta sesión no puede cerrar un PR
+   ajeno ni borrar ramas remotas.
 
 1. **Proteger `main`**: *Settings → Rules → Rulesets* (o *Branches*): exigir las comprobaciones
    `verificar` y `pantallas` y «Require branches to be up to date before merging», **con el
@@ -113,17 +124,14 @@ existen los workflows de transporte. Huawei y HPE niegan además el navegador au
 
 ## Mejoras propuestas sin decidir
 
-- **Las figuras de Cisco, con su leyenda, en el Excel del BOM** (propuesta al cerrar esta
-  entrega). Aruba, Fortinet y Huawei pasan su figura al Excel (`meta.fotos`, hoja «Fotos del
-  equipo»); Cisco no, así que la propuesta que se envía no lleva ni la figura ni la tabla de
-  números que esta entrega puso en pantalla. Con el dato ya en `cisco-vistas-equipos.json`: pasar
-  `fotos` desde el dimensionador Cisco y, bajo cada figura, sus filas (número, qué es, rótulo del
-  documento). Evita una propuesta impresa sin figura; cuesta una línea en la página de Cisco y la
-  leyenda opt-in en la hoja de fotos de `bom.js` (compartida por los siete) con su prueba; si se
-  hace mal, descuadra la hoja de los fabricantes sin leyenda. Se decide por el dueño.
-- **La interconexión EdgeHA en el BOM, por el puerto que le toca** (propuesta en la entrega
-  anterior, sin decidir). La auditoría de puertos del par ya sabe por qué puerto va la
-  interconexión; el BOM sigue pidiendo elegir la óptica o retirar la línea. Se decide por el dueño.
+- **Que la auditoría del par EdgeHA elija el puerto de la interconexión también por velocidad**
+  (propuesta al cerrar la sexagesimosegunda entrega). Hoy `asignarPuertosPar` toma el primer tipo
+  libre en los dos chasis, empezando por el RJ-45, y la interconexión va por él aunque su 1 GbE no
+  cubra el agregado del sitio; la entrega solo lo avisa. Con el cambio, si en los dos chasis queda
+  una jaula que cubre el agregado, la interconexión iría por ella (2 ópticas) y el RJ-45 solo cuando
+  basta. Evita un par con la interconexión por debajo de lo que cruza en un fallo; cuesta tocar
+  `aruba-reglas.js` y sus pruebas de puertos; si se hace mal, un chasis que hoy cabe dejaría de
+  caber (la jaula que gasta la interconexión ya no la tiene un enlace). Se decide por el dueño.
 
 ## Decisiones del dueño abiertas
 
