@@ -4,9 +4,9 @@
 - **Rama:** claude/leyendas-juniper-aruba
 - **Cuenta:** servicioiptv2025@gmail.com
 - **Estado:** en curso
-- **Actualizado:** 2026-10-27 15:20
-- **Archivos que toca:** public/data/juniper-vistas-equipos.json, public/data/aruba-vistas-equipos.json, public/js/ficha.js, test/vistas-leyendas.test.js
-- **Siguiente paso:** escribir las leyendas en los dos JSON, el `lang` de la leyenda en ficha.js y la prueba
+- **Actualizado:** 2026-10-27 15:45
+- **Archivos que toca:** public/data/juniper-vistas-equipos.json, public/data/aruba-vistas-equipos.json, public/js/ficha.js, public/js/dimensionador-aruba-edgeconnect.js, test/vistas-leyendas.test.js, test/e2e/e2e-leyendas-juniper.js
+- **Siguiente paso:** CI de la rama; luego la mejora de EdgeHA (interconexión por velocidad) en su propia rama
 
 ## Encargo del dueño
 

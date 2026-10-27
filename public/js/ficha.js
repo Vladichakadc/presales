@@ -224,11 +224,14 @@
   // Más de 8 números (el 8300-2N2S lleva 19): dos columnas en pantalla ancha, para que la
   // tabla quepa junto a la figura sin desplazarse; en estrecha, una.
   function tablaLeyenda(ley, cara) {
+    // El rótulo literal va en el idioma del documento: inglés salvo que la leyenda diga otro
+    // (`lang`; la ficha del SSR130 de Juniper es japonesa). Lo leen los lectores de pantalla.
+    const idioma = /^[a-z]{2}(-[A-Z]{2})?$/.test(ley.lang || '') ? ley.lang : 'en';
     const nombreCara = cara === 'rear' ? 'trasera' : 'frontal';
     const titulo = `Qué es cada número de la vista ${nombreCara}${ley.tabla ? ` · ${esc(ley.tabla)}` : ''}`;
     const tabla = (filas) => `<table class="ficha-leyenda" aria-label="${titulo}">`
       + '<thead><tr><th scope="col">N.º</th><th scope="col">Qué es</th><th scope="col" class="ficha-leyenda-lit">Rótulo del documento</th></tr></thead><tbody>'
-      + filas.map(([n, lit, es]) => `<tr><td class="ficha-leyenda-n"><span>${n}</span></td><td>${esc(es)}</td><td class="ficha-leyenda-lit" lang="en">${esc(lit)}</td></tr>`).join('')
+      + filas.map(([n, lit, es]) => `<tr><td class="ficha-leyenda-n"><span>${n}</span></td><td>${esc(es)}</td><td class="ficha-leyenda-lit" lang="${esc(idioma)}">${esc(lit)}</td></tr>`).join('')
       + '</tbody></table>';
     const mitad = Math.ceil(ley.filas.length / 2);
     const cuerpo = ley.filas.length > 8
@@ -716,7 +719,9 @@
         const leyAttr = (cara) => (v[cara] && leyendaValida(v[cara + 'Leyenda'])
           ? ` data-leyenda-${cara}="${esc(JSON.stringify(v[cara + 'Leyenda']))}"` : '');
         const ley0 = v[cara0] && leyendaValida(v[cara0 + 'Leyenda']) ? v[cara0 + 'Leyenda'] : null;
-        const hayLeyenda = ['front', 'rear'].some((c) => v[c] && leyendaValida(v[c + 'Leyenda']));
+        // En la tarjeta clavada (`panelFijo`: Aruba y Juniper) la compacta tiene que caber entera,
+        // así que el desplegable no va ahí: la tabla la pinta la lupa, que es donde se pidió.
+        const hayLeyenda = !cfg.panelFijo && ['front', 'rear'].some((c) => v[c] && leyendaValida(v[c + 'Leyenda']));
         vistaHtml = `<figure class="ficha-vista" id="${cid}-vista"${v.front ? ` data-front="${esc(v.front)}" data-front-prev="${esc(prev('front'))}"` : ''}${v.rear ? ` data-rear="${esc(v.rear)}" data-rear-prev="${esc(prev('rear'))}"` : ''}${v.foto ? ` data-foto="${esc(v.foto)}" data-foto-prev="${esc(prev('foto'))}" data-pie-foto="${esc(pieFoto)}"` : ''}${leyAttr('front')}${leyAttr('rear')} data-modelo="${esc(sel.id)}" data-pie="${esc(pie)}">`
           + `<div class="ficha-vista-img"><img src="${esc(prev(cara0))}" alt="Vista ${cara0 === 'rear' ? 'trasera' : 'frontal'} del ${esc(sel.id)} — pulsa la lupa para ampliar" loading="lazy">`
           + (sinRear ? `<p class="ficha-vista-sinrear" hidden>${esc(v.rearNota)}</p>` : '')
