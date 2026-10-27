@@ -51,14 +51,16 @@ test('la ficha distingue algoritmo PQC, clave precompartida y MACsec, y sin dato
 
 test('solo lleva `pqc` el equipo que su documento nombra', () => {
   const C = CATALOGOS.cisco;
-  const TIPO_CISCO = { 'Secure Router (G2)': 'mlkem', 'Catalyst 8000': 'ppk', 'ISR 1000': 'ppk' };
+  const TIPO_CISCO = { 'Secure Router (G2)': 'mlkem', 'Catalyst 8000': 'ppk', 'ISR 1000': 'ppk', 'ASR 1002-HX': 'ppk', 'ASR 1006-X': 'ppk' };
   for (const m of C) {
-    assert.strictEqual(m.pqc ? m.pqc.tipo : undefined, TIPO_CISCO[m.ser], `${m.id}: pqc donde no toca (${m.ser})`);
+    assert.strictEqual(m.pqc ? m.pqc.tipo : undefined, TIPO_CISCO[m.ser] || TIPO_CISCO[m.id], `${m.id}: pqc donde no toca (${m.ser})`);
   }
-  // Los G2-MX llevan MX OS: ni la nota ni la guía de IOS XE los cubren. Los ASR están fuera de
-  // venta y nada del catálogo dice que lleguen a la 17.11.1a.
+  // Los G2-MX llevan MX OS: ni la nota ni la guía de IOS XE los cubren. De los ASR, fuera de venta,
+  // su boletín da la última versión: el 1001-X se queda en la 17.9 (sin PPK, que llega en la 17.11.1a).
   assert.ok(!C.find((m) => m.id === 'Cisco Secure Router C8111-G2-MX').pqc);
-  assert.ok(C.filter((m) => m.ser === 'ASR 1000').every((m) => !m.pqc));
+  assert.ok(!C.find((m) => m.id === 'ASR 1001-X').pqc);
+  assert.match(C.find((m) => m.id === 'ASR 1002-HX').pqc.alcance, /hasta la IOS XE 17\.15/);
+  assert.match(C.find((m) => m.id === 'ASR 1006-X').pqc.alcance, /hasta la IOS XE 17\.18/);
   assert.strictEqual(C.find((m) => m.id === 'Catalyst 8300-1N1S-6T').pqc.desde, 'IOS XE 17.11.1a');
   assert.strictEqual(C.find((m) => m.id === 'Catalyst 8500L-8S4X').pqc.desde, 'IOS XE 17.12.1a');
   assert.strictEqual(C.find((m) => m.id === 'ISR 1111-8P').pqc.desde, 'IOS XE 17.12.1a');
@@ -82,9 +84,9 @@ test('solo lleva `pqc` el equipo que su documento nombra', () => {
     assert.strictEqual(!!m.pqc, m.fam === 'ec', `${m.id}: pqc donde no toca`);
     if (m.pqc) assert.strictEqual(m.pqc.desde, null);
   }
-  // MikroTik: donde la ficha dice «RouterOS v7» y en CHR; las fichas que dicen solo «RouterOS»
-  // se quedan en «no consta».
-  const sinV7 = ['RB750r2', 'RB750UPr2', 'RB750Gr3', 'RB760iGS', 'RB960PGS', 'RB960PGS-PB', 'RB1100x4'];
+  // MikroTik: donde la ficha o el manual de usuario dicen «RouterOS v7» y en CHR; los que solo
+  // dicen «la versión de /system resource o superior» se quedan en «no consta».
+  const sinV7 = ['RB750UPr2', 'RB960PGS-PB', 'RB1100x4'];
   for (const m of CATALOGOS.mikrotik) {
     assert.strictEqual(!!m.pqc, !sinV7.includes(m.codigo), `${m.id}: pqc donde no toca`);
     if (m.pqc) assert.strictEqual(m.pqc.desde, 'RouterOS 7.21');

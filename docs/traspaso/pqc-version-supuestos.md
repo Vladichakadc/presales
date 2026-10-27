@@ -4,9 +4,9 @@
 - **Rama:** claude/elegant-pascal-7ymts7
 - **Cuenta:** vladichakadc, sesión 01TxCQ3W2sHYVmimAdMKht3j
 - **Estado:** en curso
-- **Actualizado:** 2026-10-27 18:20
-- **Archivos que toca:** public/js/bom.js, public/js/dimensionador-aruba-edgeconnect.js, public/js/dimensionador-cisco-catalyst8k.js, public/js/dimensionador-fortinet-fortigate.js, public/js/dimensionador-huawei-netengine.js, public/js/dimensionador-juniper-srx.js, public/js/dimensionador-mikrotik-routeros.js, public/js/dimensionador-nokia-7750sr.js, test/bom-supuestos.test.js, test/e2e/, server/seed/legacyData/cisco.js, server/seed/legacyData/mikrotik.js, server/seed/legacyData/nokia.js, server/seed/legacyData/aruba.js, server/seed/legacyData/fuentes.js, .github/workflows/traer-cisco-huawei.yml, test/pqc.test.js
-- **Siguiente paso:** leer `fuente/pqc-3-2026-10-27` (boletines de los ASR, ficha de los 7250 IXR-e) y marcar la PPK de los cuatro MikroTik con su manual
+- **Actualizado:** 2026-10-27 18:45
+- **Archivos que toca:** public/js/bom.js, public/js/dimensionador-aruba-edgeconnect.js, public/js/dimensionador-cisco-catalyst8k.js, public/js/dimensionador-fortinet-fortigate.js, public/js/dimensionador-huawei-netengine.js, public/js/dimensionador-juniper-srx.js, public/js/dimensionador-mikrotik-routeros.js, public/js/dimensionador-nokia-7750sr.js, test/bom-supuestos.test.js, test/e2e/, server/seed/legacyData/cisco.js, server/seed/legacyData/mikrotik.js, server/seed/legacyData/nokia.js, server/seed/legacyData/aruba.js, server/seed/legacyData/fuentes.js, .github/workflows/traer-cisco-huawei.yml, test/pqc.test.js, public/dimensionador-mikrotik-routeros.html
+- **Siguiente paso:** pantallas, contraste, e2e y puerta contra un servidor en producción; después rebase, PENDIENTES, RELEVO, CLAUDE.md (la línea de PQC de `ficha.js`), borrar este traspaso, PR y fusionar
 
 ## Encargo del dueño
 
@@ -28,6 +28,13 @@ traer por Actions (ASR 1000, siete MikroTik, 7250 IXR, gateways AOS de Aruba).
   (Excel real del ISR: «IOS XE 17.12.1a o superior»).
 - Entradas nuevas en `traer-cisco-huawei.yml`: boletines de fin de venta de los tres ASR y la ficha
   de los 7250 IXR-e/e2 (asset 206825), a `fuente/pqc-3-2026-10-27`.
+
+- **PQC con documento** (rama `fuente/pqc-3-2026-10-27`): los boletines de fin de venta dan la
+  última versión de cada ASR: 1002-HX la 17.15 y 1006-X la 17.18 (PPK desde la 17.11.1a, con su
+  alcance), 1001-X la 17.9 (sin PPK). Cuatro MikroTik más por su manual («RouterOS v7 and above»).
+  La ficha Release 26 de los 7250 IXR-e/e2 solo da «MACsec (only on IXR-e 14 x SFP+ + 4 x RJ45)», sin
+  llamarlo quantum-safe: siguen en «no consta». Aruba AOS: ningún documento encontrado.
+- `npm run verificar` (1163) y `npm run auditar` en verde.
 
 ## Falta
 

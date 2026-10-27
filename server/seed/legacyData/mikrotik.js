@@ -297,22 +297,28 @@ const SUPPORT = {
 // integration (CLI only)». Es una clave simétrica, no un algoritmo post-cuántico: la ficha lo dice
 // así. La PPK es de RouterOS, no de un modelo: se marca donde la ficha del equipo dice «RouterOS
 // v7» (la 7.21 es una versión de la 7), y en CHR, que el manual describe como la edición virtual
-// de RouterOS con las mismas funciones de VPN. Las fichas del RB1100AHx4, el hEX RB750Gr3, el hEX
-// lite, el hEX PoE lite, el hEX PoE, la PowerBox Pro y el hEX S RB760iGS dicen solo «RouterOS», y
-// la página de descargas solo sirve el cascarón sin JavaScript: «no consta», sin deducirlo de la
-// arquitectura del procesador.
+// de RouterOS con las mismas funciones de VPN. Las fichas del hEX lite, el hEX RB750Gr3, el hEX PoE
+// y el hEX S RB760iGS dicen solo «RouterOS», pero su manual de usuario (manual.mikrotik.com/hardware)
+// dice «The device supports RouterOS v7 and above» (2026-10-27). Los del RB1100AHx4, el hEX PoE lite
+// y la PowerBox Pro dicen solo «RouterOS software with the version number at or above what is
+// indicated in […] /system resource», y la página de descargas solo sirve el cascarón sin
+// JavaScript: «no consta», sin deducirlo de la arquitectura del procesador.
 const PQC_ROUTEROS_V7 = new Set(['L009UiGS-2HaxD-IN', 'L009UiGS-RM', 'RB4011iGS+RM', 'RB5009UG+S+IN', 'RB5009UPr+S+IN',
   'RB5009UPr+S+OUT', 'CCR2004-16G-2S+', 'CCR2004-16G-2S+PC', 'CCR2004-1G-12S+2XS', 'CCR2116-12G-4S+',
   'CCR2216-1G-12XS-2XQ', 'E50UG', 'E60iUGS']);
+const PQC_MANUAL_V7 = new Set(['RB750r2', 'RB750Gr3', 'RB960PGS', 'RB760iGS']);
 for (const m of MODELS) {
   const chr = m.ser === 'CHR';
-  if (!chr && !PQC_ROUTEROS_V7.has(m.codigo)) continue;
+  const manual = PQC_MANUAL_V7.has(m.codigo);
+  if (!chr && !manual && !PQC_ROUTEROS_V7.has(m.codigo)) continue;
   m.pqc = {tipo:'ppk',
     mecanismo:'Claves precompartidas post-cuánticas (PPK, RFC 9867 sobre la 8784) mezcladas en IKEv2: estáticas por par, PSK de un solo uso o tomadas de un servidor QKD',
     donde:'IKEv2 (IPsec); en la 7.21, solo por CLI', desde:'RouterOS 7.21',
     alcance: chr ? 'CHR es la edición virtual de RouterOS, con las mismas funciones de VPN (manual de RouterOS 7.26)'
+      : manual ? 'su manual de usuario dice «The device supports RouterOS v7 and above»; la PPK es de RouterOS, no de un modelo'
       : 'su ficha dice «RouterOS v7»; la PPK es de RouterOS, no de un modelo',
-    fuente:'«QKD Integration in RouterOS IPsec (PPK)» del manual de RouterOS y el changelog oficial de RouterOS 7.21'};
+    fuente:'«QKD Integration in RouterOS IPsec (PPK)» del manual de RouterOS y el changelog oficial de RouterOS 7.21'
+      + (manual ? `; manual de usuario del ${m.codigo}` : '')};
 }
 
 module.exports = {
