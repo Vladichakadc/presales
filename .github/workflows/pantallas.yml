@@ -241,6 +241,12 @@ jobs:
             grep -E '^(══|──|\[e2e)|RESULTADO|^FALLO' e2e.txt || true
             echo '```'
           } >> "$GITHUB_STEP_SUMMARY"
+          # Cada fallo, tambien como anotacion de la comprobacion: el resumen de la corrida, los
+          # logs y los artefactos viven en un dominio que el proxy de las sesiones en la nube
+          # deniega, y las anotaciones se leen por la API de GitHub (2026-10-27: un e2e en rojo
+          # que ninguna sesion podia leer). El % se escapa como pide la sintaxis de los comandos.
+          grep -E '^(FALLO|ERROR E2E)|RESULTADO: [0-9]+ FALLO' e2e.txt | head -40 | sed 's/%/%25/g' \
+            | while IFS= read -r linea; do echo "::error title=e2e::$linea"; done || true
 
       - name: Capturas
         if: always()

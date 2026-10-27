@@ -138,6 +138,29 @@
 .ficha-lupa-cerrar:focus-visible{outline:2px solid var(--red);outline-offset:1px}
 .ficha-lupa-caja img{max-width:100%;max-height:calc(92vh - 110px);object-fit:contain;display:block;padding:14px 18px}
 .ficha-lupa figcaption{padding:8px 12px;border-top:1px solid var(--rule);font-size:11px;line-height:1.45;color:var(--steel)}
+/* Leyenda de los números de la figura (opt-in frontLeyenda/rearLeyenda, Cisco 2026-10-27,
+   petición del dueño: «al ampliar la imagen deberá mostrar la tabla donde se indica a qué hace
+   referencia cada puerto con su número»). La figura oficial lleva los números y su tabla está en
+   el documento; sin ella, el número no dice nada. Con leyenda, la lupa reserva sitio para la tabla
+   y la caja se desplaza si no cabe. */
+.ficha-lupa-caja.con-leyenda{overflow-y:auto}
+.ficha-lupa-caja.con-leyenda img{max-height:min(calc(92vh - 110px),52vh)}
+.ficha-lupa-leyenda{padding:4px 18px 12px}
+.ficha-lupa-leyenda[hidden]{display:none}
+.ficha-leyenda-tit{margin:6px 0 4px;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--steel)}
+.ficha-leyenda-cols{display:grid;grid-template-columns:1fr;gap:0 24px}
+@media (min-width:900px){.ficha-leyenda-cols.dos{grid-template-columns:1fr 1fr}}
+.ficha-leyenda{width:100%;border-collapse:collapse;font-size:12px;line-height:1.4;align-self:start}
+.ficha-leyenda th{text-align:left;font-weight:600;color:var(--steel);font-size:10.5px;padding:4px 8px;border-bottom:1px solid var(--rule)}
+.ficha-leyenda td{padding:4px 8px;border-bottom:1px solid var(--rule);vertical-align:top;color:var(--ink)}
+.ficha-leyenda td.ficha-leyenda-n{width:1%;white-space:nowrap}
+.ficha-leyenda-n span{display:inline-flex;align-items:center;justify-content:center;box-sizing:border-box;min-width:22px;height:22px;padding:0 3px;border:1.5px solid var(--ink);border-radius:50%;font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:600}
+.ficha-leyenda td.ficha-leyenda-lit{color:var(--steel);font-size:11px;font-family:'IBM Plex Mono',monospace}
+.ficha-vista-leyenda{padding:0 12px 10px;font-size:12px}
+.ficha-vista-leyenda summary{cursor:pointer;color:var(--ink);font-weight:600;font-size:11.5px}
+.ficha-vista-leyenda summary:focus-visible{outline:2px solid var(--red);outline-offset:1px}
+.ficha-vista-leyenda[hidden]{display:none}
+@media (max-width:640px){.ficha-leyenda td.ficha-leyenda-lit,.ficha-leyenda th.ficha-leyenda-lit{display:none}}
 .ficha-vista-bar{display:flex;align-items:center;gap:10px;padding:0 12px 10px;flex-wrap:wrap}
 .ficha-vista-tabs{display:flex;gap:4px;flex:none}
 .ficha-vista-tab{padding:3px 10px;border:1px solid var(--rule);border-radius:2px;background:var(--card);color:var(--steel);font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;cursor:pointer}
@@ -188,6 +211,31 @@
      Cierra con ×, Esc o clic en el fondo; ←/→ conmutan frontal/trasera cuando el
      documento de origen publica ambas caras; el foco vuelve al botón que la abrió. */
   const SVG_LUPA = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/><path d="M11 8v6M8 11h6"/></svg>';
+  // Leyenda de una cara: `{tabla, filas: [[n, rótulo literal, traducción]]}`, tal como la trae el
+  // mapa de vistas. Lo que no tenga esa forma no se pinta: una tabla a medias diría que el número
+  // que falta no es nada.
+  const leyendaValida = (ley) => !!(ley && Array.isArray(ley.filas) && ley.filas.length
+    && ley.filas.every((f) => Array.isArray(f) && Number.isInteger(f[0]) && f[1] && f[2]));
+  function leyendaDe(dataset, cara) {
+    const crudo = dataset && dataset['leyenda' + cara.charAt(0).toUpperCase() + cara.slice(1)];
+    if (!crudo) return null;
+    try { const ley = JSON.parse(crudo); return leyendaValida(ley) ? ley : null; } catch { return null; }
+  }
+  // Más de 8 números (el 8300-2N2S lleva 19): dos columnas en pantalla ancha, para que la
+  // tabla quepa junto a la figura sin desplazarse; en estrecha, una.
+  function tablaLeyenda(ley, cara) {
+    const nombreCara = cara === 'rear' ? 'trasera' : 'frontal';
+    const titulo = `Qué es cada número de la vista ${nombreCara}${ley.tabla ? ` · ${esc(ley.tabla)}` : ''}`;
+    const tabla = (filas) => `<table class="ficha-leyenda" aria-label="${titulo}">`
+      + '<thead><tr><th scope="col">N.º</th><th scope="col">Qué es</th><th scope="col" class="ficha-leyenda-lit">Rótulo del documento</th></tr></thead><tbody>'
+      + filas.map(([n, lit, es]) => `<tr><td class="ficha-leyenda-n"><span aria-label="Número ${n}">${n}</span></td><td>${esc(es)}</td><td class="ficha-leyenda-lit" lang="en">${esc(lit)}</td></tr>`).join('')
+      + '</tbody></table>';
+    const mitad = Math.ceil(ley.filas.length / 2);
+    const cuerpo = ley.filas.length > 8
+      ? `<div class="ficha-leyenda-cols dos">${tabla(ley.filas.slice(0, mitad))}${tabla(ley.filas.slice(mitad))}</div>`
+      : `<div class="ficha-leyenda-cols">${tabla(ley.filas)}</div>`;
+    return `<p class="ficha-leyenda-tit">${titulo}</p>${cuerpo}`;
+  }
   let lupaN = null, lupaOrigen = null, lupaDatos = null;
   function nodoLupa() {
     if (lupaN) return lupaN;
@@ -200,7 +248,7 @@
       + '<div class="ficha-lupa-bar"><span class="ficha-lupa-modelo"></span>'
       + '<span class="ficha-vista-tabs" role="tablist" aria-label="Vistas del equipo"></span>'
       + '<button type="button" class="ficha-lupa-cerrar" aria-label="Cerrar la vista ampliada">&times;</button></div>'
-      + '<img alt=""><figcaption></figcaption></figure>';
+      + '<img alt=""><div class="ficha-lupa-leyenda" hidden></div><figcaption></figcaption></figure>';
     n.querySelector('.ficha-lupa-fondo').addEventListener('click', cerrarLupa);
     n.querySelector('.ficha-lupa-cerrar').addEventListener('click', cerrarLupa);
     document.body.appendChild(n);
@@ -221,6 +269,12 @@
     img.alt = (ALT_CARA[d.cual] || ALT_CARA.front) + d.modelo + ' — ampliada a tamaño completo';
     n.querySelector('.ficha-lupa-modelo').textContent = d.modelo;
     n.querySelector('figcaption').textContent = d.cual === 'foto' && d.pieFoto ? d.pieFoto : d.pie;
+    // La tabla de los números va pegada a la imagen ampliada, que es donde se leen.
+    const ley = d.leyendas && d.leyendas[d.cual];
+    const cajaLey = n.querySelector('.ficha-lupa-leyenda');
+    cajaLey.innerHTML = ley ? tablaLeyenda(ley, d.cual) : '';
+    cajaLey.hidden = !ley;
+    n.querySelector('.ficha-lupa-caja').classList.toggle('con-leyenda', !!ley);
     const tabs = n.querySelector('.ficha-vista-tabs');
     const caras = carasDe(d);
     if (caras.length > 1) {
@@ -235,6 +289,7 @@
     const tabOn = fig.querySelector('.ficha-vista-tab.on');
     lupaDatos = { front: fig.dataset.front || null, rear: fig.dataset.rear || null, foto: fig.dataset.foto || null,
       modelo: fig.dataset.modelo || '', pie: fig.dataset.pie || '', pieFoto: fig.dataset.pieFoto || '',
+      leyendas: { front: leyendaDe(fig.dataset, 'front'), rear: leyendaDe(fig.dataset, 'rear') },
       // Sin pestañas (una sola cara) la lupa abre la que HAY, no `front` a ciegas.
       cual: tabOn ? tabOn.dataset.vista : (fig.dataset.front ? 'front' : 'rear') };
     lupaOrigen = fig.querySelector('.ficha-vista-zoom');
@@ -656,11 +711,20 @@
         // conserva los píxeles del documento. Sin previa, la tarjeta pinta el original.
         const prev = (cara) => v[cara + 'Prev'] || v[cara];
         const pieFoto = v.foto ? [v.tamano, v.fotoFuente].filter(Boolean).join(' · ') : '';
-        vistaHtml = `<figure class="ficha-vista" id="${cid}-vista"${v.front ? ` data-front="${esc(v.front)}" data-front-prev="${esc(prev('front'))}"` : ''}${v.rear ? ` data-rear="${esc(v.rear)}" data-rear-prev="${esc(prev('rear'))}"` : ''}${v.foto ? ` data-foto="${esc(v.foto)}" data-foto-prev="${esc(prev('foto'))}" data-pie-foto="${esc(pieFoto)}"` : ''} data-modelo="${esc(sel.id)}" data-pie="${esc(pie)}">`
+        // La leyenda viaja en el dataset, como el resto de lo que lee la lupa (opt-in
+        // `frontLeyenda`/`rearLeyenda`; sin ella, ni tabla ni desplegable).
+        const leyAttr = (cara) => (v[cara] && leyendaValida(v[cara + 'Leyenda'])
+          ? ` data-leyenda-${cara}="${esc(JSON.stringify(v[cara + 'Leyenda']))}"` : '');
+        const ley0 = v[cara0] && leyendaValida(v[cara0 + 'Leyenda']) ? v[cara0 + 'Leyenda'] : null;
+        const hayLeyenda = ['front', 'rear'].some((c) => v[c] && leyendaValida(v[c + 'Leyenda']));
+        vistaHtml = `<figure class="ficha-vista" id="${cid}-vista"${v.front ? ` data-front="${esc(v.front)}" data-front-prev="${esc(prev('front'))}"` : ''}${v.rear ? ` data-rear="${esc(v.rear)}" data-rear-prev="${esc(prev('rear'))}"` : ''}${v.foto ? ` data-foto="${esc(v.foto)}" data-foto-prev="${esc(prev('foto'))}" data-pie-foto="${esc(pieFoto)}"` : ''}${leyAttr('front')}${leyAttr('rear')} data-modelo="${esc(sel.id)}" data-pie="${esc(pie)}">`
           + `<div class="ficha-vista-img"><img src="${esc(prev(cara0))}" alt="Vista ${cara0 === 'rear' ? 'trasera' : 'frontal'} del ${esc(sel.id)} — pulsa la lupa para ampliar" loading="lazy">`
           + (sinRear ? `<p class="ficha-vista-sinrear" hidden>${esc(v.rearNota)}</p>` : '')
           + `<button type="button" class="ficha-vista-zoom" aria-label="Ampliar la foto del ${esc(sel.id)} a tamaño completo" title="Ampliar a tamaño completo">${SVG_LUPA}</button></div>`
           + `<div class="ficha-vista-bar">${tabs}<figcaption>${pie}</figcaption></div>`
+          + (hayLeyenda
+            ? `<details class="ficha-vista-leyenda"${ley0 ? '' : ' hidden'}><summary>Qué es cada número (${ley0 ? ley0.filas.length : 0})</summary>${ley0 ? tablaLeyenda(ley0, cara0) : ''}</details>`
+            : '')
           + `</figure>`;
       } else {
         vistaHtml = `<div class="ficha-vista-vacia">Sin foto oficial de este equipo en el repositorio — manda la ficha técnica de abajo.</div>`;
@@ -793,6 +857,18 @@
           // La foto de producto sale de otro documento que los dibujos: su pie lo dice.
           const cap = vistaNodo.querySelector('figcaption');
           if (cap) cap.textContent = cual === 'foto' && vistaNodo.dataset.pieFoto ? vistaNodo.dataset.pieFoto : vistaNodo.dataset.pie;
+          // La leyenda es de la cara que se ve: al cambiar de pestaña cambia con ella (y se
+          // esconde en la cara sin números), conservando si estaba abierta.
+          const det = vistaNodo.querySelector('.ficha-vista-leyenda');
+          if (det) {
+            const ley = src && (cual === 'front' || cual === 'rear') ? leyendaDe(vistaNodo.dataset, cual) : null;
+            det.hidden = !ley;
+            if (ley) {
+              det.querySelector('summary').textContent = `Qué es cada número (${ley.filas.length})`;
+              det.querySelectorAll('.ficha-leyenda-tit, .ficha-leyenda-cols').forEach((x) => x.remove());
+              det.insertAdjacentHTML('beforeend', tablaLeyenda(ley, cual));
+            }
+          }
           vistaNodo.querySelectorAll('.ficha-vista-tab').forEach((x) => {
             const on = x === tb;
             x.classList.toggle('on', on);

@@ -1,182 +1,723 @@
 {
  "_procedencia": "Figuras oficiales de los equipos Cisco y Meraki del catálogo, extraídas el 2026-10-20 de documentos traídos por traer-cisco-huawei.yml a las ramas de transporte fuente/cisco-secure-2026-10-20, fuente/cisco-secure-2-2026-10-20, fuente/cisco-cierre-2026-10-20 y fuente/cisco-cuarta-2026-10-20 (corridas 39360888778, 39410454052, 39475725083 y 39504840701): el proxy de egreso de este entorno responde 403 a cisco.com y a documentation.meraki.com. LA CARA LA DICE EL PIE DEL DOCUMENTO, no el orden en la página: cada figura cita su documento, su número de figura y su rótulo literal. De dónde sale cada cara: la de puertos de la línea Secure Router (G2), de las tablas «Front view» de su ficha técnica (fotografías a 2x, de 775 a 3.080 px); la otra cara, de la «Rear view» de la ficha cuando la publica (C8235-E-G2, C8355-G2, C8375-E-G2) o de la guía de instalación de la serie (8100, 8200 y 8500: dibujos de línea de 850 a 1.150 px). OJO con la serie 8200: su guía llama «Front View» a la cara del logotipo y «I/O View» a la de puertos, al revés que su ficha; aquí la frontal es la de puertos, como en la ficha, y el pie de la trasera lo dice. Los Catalyst 8000 Edge salen de su guía de instalación («I/O Side» y «PSU/Fan Tray Side» o «Power-input Side») y de la ficha c78-744089 en los 8500; los Meraki, de las guías de instalación de documentation.meraki.com («Front Panel» y «Back Panel»; en los MX de sobremesa la frontal es la de los LED y la trasera la de puertos, como las rotula Meraki). Las del C8111-G2-MX y el C8121-G2-MX van incrustadas en su guía como imágenes en base64 y se extrajeron de la página guardada. SIN PÉRDIDA: WebP VP8L con los píxeles del documento; solo se recorta el margen blanco uniforme, nunca se reescala. Una figura que el documento publica para varios modelos («C8130-G2/Cisco 8131-G2», «C8300-1N1S-4T2X|6T», «MX67/67C/67W») es un solo archivo; dos figuras distintas con los mismos bytes (la trasera de los 8500 de 1RU, la del MX250 y el MX450) también. La trasera del 8650-G2 sale de la guía de instalación de la serie 8600 (12-oct-2026); las del C8355-G2-MX y el C8455-G2-MX, de sus guías de Meraki; las de los ISR 1111-8P, 1111X-8P y 1121X-8P, del capítulo de presentación de la guía de instalación del ISR 1000 (edición HTML del 29-oct-2025; la italiana de 2021 trae los mismos dibujos), que llama «Bezel View» a la cara del logotipo y «I/O View» a la de puertos, y la del 1111-8P es el dibujo de la familia C111x-8P, con las opciones que ese modelo no lleva rotuladas; y las del C8221-G2, el C8225-G2, el C8221L-G2 y el C8231-E-G2, de la edición HTML de la guía de la serie 8200 (30-sep-2026), posterior a su PDF. Las seis variantes de la serie 8100 (C8130-VAI/VAP-G2, C8130H-G2, C8151-CVAI/CVAP-G2 y C8151H-C-G2) entraron el 2026-10-26: su frontal, de las figuras 2, 3, 6 y 7 de la misma ficha (traída a fuente/cisco-secure-2026-10-20); las traseras de las VAI/VAP y CVAI/CVAP, de las figuras 11 y 13 de la guía de la serie 8100. SIN TRASERA, la pestaña lo dice (`rearNota`), y en todos se buscó el documento que la publicaría: el C8130H-G2 y el C8151H-C-G2 (la guía de la serie 8100, del 24-abr-2026, no los dibuja), el C8211-G2 (ni la edición HTML de la guía de la serie 8200, del 30-sep-2026, lo dibuja), la serie 8400 (su guía, en PDF del 25-jul-2025 y en HTML, dibuja solo la cara de E/S) y el C8500-20X6C (su guía, en PDF y en HTML, solo publica la cara frontal, donde lleva puertos y fuentes). SIN FIGURA: el ISR 1116-4P (la guía, también en su edición del 29-oct-2025, no tiene vista de los C111x-4P) y el ISR 1161X-8P (la guía no dibuja ningún C1161) y los ASR 1000 (fuera de venta).",
  "_previa": "frontPrev y rearPrev: vista previa con pérdida (WebP calidad 82, ancho máximo 1.200 px) generada del original sin pérdida. La tarjeta pinta la previa; la lupa y el Excel usan el original, que es el que conserva los píxeles del documento.",
+ "_leyendas": "frontLeyenda y rearLeyenda: la tabla que acompaña a la figura en su documento (el mismo que cita fuente para esa cara), número a número: [número, rótulo literal del documento, traducción]. «tabla» dice de qué tabla o leyenda sale. Solo las llevan las figuras con números: las de Meraki y las fotos de producto de las fichas del Catalyst 8500 y del ISR 1111X-8P no los tienen. En las guías en PDF a dos columnas (Catalyst 8200, 8300 y 8500L, Secure Router 8500) los números de dos cifras salen invertidos al extraer el texto («21» por 12): se transcribieron por su posición en la tabla. La trasera de los 8500 de 1RU es un solo dibujo: la guía del Secure Router 8500 rotula del 1 al 7 y la del Catalyst 8500 deja la fila 7 en blanco («—»), así que cada modelo lleva la de su guía. Los números 3 y 4 de esa trasera son una sola fila del documento («3, and 4 — PEM 0, PEM 1») y aquí van separados.",
  "Cisco Secure Router C8130-G2": {
   "front": "/img/equipos/cs-c8130-c8131-g2-front.webp",
   "rear": "/img/equipos/cs-c8130-c8131-g2-rear.webp",
   "fuente": "Frontal — «Cisco 8100 Series Secure Routers Data Sheet» (actualizada el 30-sep-2026), figura 1 «Front panel of Cisco C8130-G2/Cisco 8131-G2 Secure Router» (1540 × 323 px, servida a 1444 × 216). Trasera — guía «Hardware Installation Guide for the Cisco 8100 Series Secure Routers» (24-abr-2026), figura 1 «C8130-G2 - Rear view» (1000 × 215 px, servida a 990 × 205).",
   "frontPrev": "/img/equipos/cs-c8130-c8131-g2-front.prev.webp",
-  "rearPrev": "/img/equipos/cs-c8130-c8131-g2-rear.prev.webp"
+  "rearPrev": "/img/equipos/cs-c8130-c8131-g2-rear.prev.webp",
+  "frontLeyenda": {
+   "tabla": "tabla 1 de la ficha",
+   "filas": [
+    [1, "Status LED, blue beacon LED", "LED de estado y LED baliza azul"],
+    [2, "Reset button", "Botón de reinicio"],
+    [3, "12 VDC power input", "Entrada de alimentación de 12 V CC"],
+    [4, "4 x GE RJ-45 ports", "4 puertos GE RJ-45"],
+    [5, "1 x GE RJ-45/SFP combo; 1 x GE RJ-45", "1 puerto combo GE RJ-45/SFP y 1 puerto GE RJ-45"],
+    [6, "1xRJ-45 console port", "1 puerto de consola RJ-45"],
+    [7, "USB Type-C 3.0", "USB tipo C 3.0"],
+    [8, "Kensington lock, ground screw", "Ranura de bloqueo Kensington y tornillo de tierra"]
+   ]
+  },
+  "rearLeyenda": {
+   "tabla": "leyenda de la figura 1 de la guía",
+   "filas": [
+    [1, "System status", "Estado del sistema"],
+    [2, "VPN", "VPN"]
+   ]
+  }
  },
  "Cisco Secure Router C8130-VAI-G2": {
   "front": "/img/equipos/cs-c8130-vai-vap-g2-front.webp",
   "rear": "/img/equipos/cs-c8130-vai-vap-g2-rear.webp",
   "fuente": "Frontal — «Cisco 8100 Series Secure Routers Data Sheet» (actualizada el 30-sep-2026), figura 3 «Front panel of Cisco C8130-VAI-G2/Cisco C8130-VAP-G2 Secure Router» (999 × 178 px, servida a 986 × 177). Trasera — guía «Hardware Installation Guide for the Cisco 8100 Series Secure Routers» (24-abr-2026), figura 11 «C8130-VAI-G2 and C8130-VAP-G2 - Rear view» (1000 × 217 px, servida a 993 × 200).",
   "frontPrev": "/img/equipos/cs-c8130-vai-vap-g2-front.prev.webp",
-  "rearPrev": "/img/equipos/cs-c8130-vai-vap-g2-rear.prev.webp"
+  "rearPrev": "/img/equipos/cs-c8130-vai-vap-g2-rear.prev.webp",
+  "frontLeyenda": {
+   "tabla": "tabla 3 de la ficha",
+   "filas": [
+    [1, "Status LED, blue beacon LED", "LED de estado y LED baliza azul"],
+    [2, "Reset button", "Botón de reinicio"],
+    [3, "12 VDC power input", "Entrada de alimentación de 12 V CC"],
+    [4, "1 x RJ-11 DSL port", "1 puerto DSL RJ-11"],
+    [5, "4 x GE RJ-45 ports", "4 puertos GE RJ-45"],
+    [6, "1 x GE RJ-45/SFP combo", "1 puerto combo GE RJ-45/SFP"],
+    [7, "1 x XGSPON/10G BASE-T port", "1 puerto XGS-PON/10G BASE-T"],
+    [8, "1xRJ-45 console port", "1 puerto de consola RJ-45"],
+    [9, "USB Type-C 3.0", "USB tipo C 3.0"],
+    [10, "Kensington lock, ground screw", "Ranura de bloqueo Kensington y tornillo de tierra"]
+   ]
+  },
+  "rearLeyenda": {
+   "tabla": "leyenda de la figura 11 de la guía",
+   "filas": [
+    [1, "System status", "Estado del sistema"],
+    [2, "VPN", "VPN"]
+   ]
+  }
  },
  "Cisco Secure Router C8130-VAP-G2": {
   "front": "/img/equipos/cs-c8130-vai-vap-g2-front.webp",
   "rear": "/img/equipos/cs-c8130-vai-vap-g2-rear.webp",
   "fuente": "Frontal — «Cisco 8100 Series Secure Routers Data Sheet» (actualizada el 30-sep-2026), figura 3 «Front panel of Cisco C8130-VAI-G2/Cisco C8130-VAP-G2 Secure Router» (999 × 178 px, servida a 986 × 177). Trasera — guía «Hardware Installation Guide for the Cisco 8100 Series Secure Routers» (24-abr-2026), figura 11 «C8130-VAI-G2 and C8130-VAP-G2 - Rear view» (1000 × 217 px, servida a 993 × 200).",
   "frontPrev": "/img/equipos/cs-c8130-vai-vap-g2-front.prev.webp",
-  "rearPrev": "/img/equipos/cs-c8130-vai-vap-g2-rear.prev.webp"
+  "rearPrev": "/img/equipos/cs-c8130-vai-vap-g2-rear.prev.webp",
+  "frontLeyenda": {
+   "tabla": "tabla 3 de la ficha",
+   "filas": [
+    [1, "Status LED, blue beacon LED", "LED de estado y LED baliza azul"],
+    [2, "Reset button", "Botón de reinicio"],
+    [3, "12 VDC power input", "Entrada de alimentación de 12 V CC"],
+    [4, "1 x RJ-11 DSL port", "1 puerto DSL RJ-11"],
+    [5, "4 x GE RJ-45 ports", "4 puertos GE RJ-45"],
+    [6, "1 x GE RJ-45/SFP combo", "1 puerto combo GE RJ-45/SFP"],
+    [7, "1 x XGSPON/10G BASE-T port", "1 puerto XGS-PON/10G BASE-T"],
+    [8, "1xRJ-45 console port", "1 puerto de consola RJ-45"],
+    [9, "USB Type-C 3.0", "USB tipo C 3.0"],
+    [10, "Kensington lock, ground screw", "Ranura de bloqueo Kensington y tornillo de tierra"]
+   ]
+  },
+  "rearLeyenda": {
+   "tabla": "leyenda de la figura 11 de la guía",
+   "filas": [
+    [1, "System status", "Estado del sistema"],
+    [2, "VPN", "VPN"]
+   ]
+  }
  },
  "Cisco Secure Router C8130H-G2": {
   "front": "/img/equipos/cs-c8130h-g2-front.webp",
   "fuente": "Frontal — «Cisco 8100 Series Secure Routers Data Sheet» (actualizada el 30-sep-2026), figura 2 «Front panel of Cisco C8130H-G2 Secure Router» (2200 × 344 px, sin recortar).",
   "rearNota": "La ficha publica solo la cara de puertos, y la guía de instalación de la serie 8100 (24-abr-2026) no dibuja el C8130H-G2 (sí el C8130-G2, el C8131-G2, el C8140-G2, el C8151-G2, el C8161-G2 y las variantes VAI/VAP y CVAI/CVAP): Cisco no publica su trasera.",
-  "frontPrev": "/img/equipos/cs-c8130h-g2-front.prev.webp"
+  "frontPrev": "/img/equipos/cs-c8130h-g2-front.prev.webp",
+  "frontLeyenda": {
+   "tabla": "tabla 2 de la ficha",
+   "filas": [
+    [1, "Status LED, blue beacon LED", "LED de estado y LED baliza azul"],
+    [2, "Reset button", "Botón de reinicio"],
+    [3, "12 VDC power input", "Entrada de alimentación de 12 V CC"],
+    [4, "4 x GE RJ-45 ports", "4 puertos GE RJ-45"],
+    [5, "1 x GE RJ-45/SFP combo", "1 puerto combo GE RJ-45/SFP"],
+    [6, "1 x 10G BASE-T", "1 puerto 10G BASE-T"],
+    [7, "1xRJ-45 console port", "1 puerto de consola RJ-45"],
+    [8, "USB Type-C 3.0", "USB tipo C 3.0"],
+    [9, "Kensington lock, ground screw", "Ranura de bloqueo Kensington y tornillo de tierra"]
+   ]
+  }
  },
  "Cisco Secure Router C8131-G2": {
   "front": "/img/equipos/cs-c8130-c8131-g2-front.webp",
   "rear": "/img/equipos/cs-c8130-c8131-g2-rear.webp",
   "fuente": "Frontal — «Cisco 8100 Series Secure Routers Data Sheet» (actualizada el 30-sep-2026), figura 1 «Front panel of Cisco C8130-G2/Cisco 8131-G2 Secure Router» (1540 × 323 px, servida a 1444 × 216). Trasera — guía «Hardware Installation Guide for the Cisco 8100 Series Secure Routers» (24-abr-2026), figura 3 «C8131-G2 - Rear view» (1000 × 215 px, servida a 990 × 205).",
   "frontPrev": "/img/equipos/cs-c8130-c8131-g2-front.prev.webp",
-  "rearPrev": "/img/equipos/cs-c8130-c8131-g2-rear.prev.webp"
+  "rearPrev": "/img/equipos/cs-c8130-c8131-g2-rear.prev.webp",
+  "frontLeyenda": {
+   "tabla": "tabla 1 de la ficha",
+   "filas": [
+    [1, "Status LED, blue beacon LED", "LED de estado y LED baliza azul"],
+    [2, "Reset button", "Botón de reinicio"],
+    [3, "12 VDC power input", "Entrada de alimentación de 12 V CC"],
+    [4, "4 x GE RJ-45 ports", "4 puertos GE RJ-45"],
+    [5, "1 x GE RJ-45/SFP combo; 1 x GE RJ-45", "1 puerto combo GE RJ-45/SFP y 1 puerto GE RJ-45"],
+    [6, "1xRJ-45 console port", "1 puerto de consola RJ-45"],
+    [7, "USB Type-C 3.0", "USB tipo C 3.0"],
+    [8, "Kensington lock, ground screw", "Ranura de bloqueo Kensington y tornillo de tierra"]
+   ]
+  },
+  "rearLeyenda": {
+   "tabla": "leyenda de la figura 3 de la guía",
+   "filas": [
+    [1, "System status", "Estado del sistema"],
+    [2, "VPN", "VPN"]
+   ]
+  }
  },
  "Cisco Secure Router C8140-G2": {
   "front": "/img/equipos/cs-c8140-g2-front.webp",
   "rear": "/img/equipos/cs-c8140-g2-rear.webp",
   "fuente": "Frontal — «Cisco 8100 Series Secure Routers Data Sheet» (actualizada el 30-sep-2026), figura 4 «Front View of a Cisco C8140-G2 Secure Router» (1540 × 311 px, servida a 1458 × 198). Trasera — guía «Hardware Installation Guide for the Cisco 8100 Series Secure Routers» (24-abr-2026), figura 5 «C8140-G2 - Rear view» (1000 × 209 px, servida a 989 × 196).",
   "frontPrev": "/img/equipos/cs-c8140-g2-front.prev.webp",
-  "rearPrev": "/img/equipos/cs-c8140-g2-rear.prev.webp"
+  "rearPrev": "/img/equipos/cs-c8140-g2-rear.prev.webp",
+  "frontLeyenda": {
+   "tabla": "tabla 4 de la ficha",
+   "filas": [
+    [1, "Status LED, blue beacon LED", "LED de estado y LED baliza azul"],
+    [2, "Reset button", "Botón de reinicio"],
+    [3, "12 VDC power input", "Entrada de alimentación de 12 V CC"],
+    [4, "8 x GE RJ-45 ports", "8 puertos GE RJ-45"],
+    [5, "2 x GE RJ-45/SFP combo", "2 puertos combo GE RJ-45/SFP"],
+    [6, "1 x RJ-45 console port", "1 puerto de consola RJ-45"],
+    [7, "USB Type-C 3.0", "USB tipo C 3.0"],
+    [8, "Kensington lock, ground screw", "Ranura de bloqueo Kensington y tornillo de tierra"]
+   ]
+  },
+  "rearLeyenda": {
+   "tabla": "leyenda de la figura 5 de la guía",
+   "filas": [
+    [1, "System status", "Estado del sistema"],
+    [2, "VPN", "VPN"]
+   ]
+  }
  },
  "Cisco Secure Router C8151-G2": {
   "front": "/img/equipos/cs-c8151-g2-front.webp",
   "rear": "/img/equipos/cs-c8151-c8161-g2-rear.webp",
   "fuente": "Frontal — «Cisco 8100 Series Secure Routers Data Sheet» (actualizada el 30-sep-2026), figura 5 «Front View of a Cisco C8151-G2 Secure Router» (1540 × 371 px, servida a 1468 × 254). Trasera — guía «Hardware Installation Guide for the Cisco 8100 Series Secure Routers» (24-abr-2026), figura 7 «C8151-G2 - Rear view» (1150 × 279 px, servida a 1132 × 261).",
   "frontPrev": "/img/equipos/cs-c8151-g2-front.prev.webp",
-  "rearPrev": "/img/equipos/cs-c8151-c8161-g2-rear.prev.webp"
+  "rearPrev": "/img/equipos/cs-c8151-c8161-g2-rear.prev.webp",
+  "frontLeyenda": {
+   "tabla": "tabla 5 de la ficha",
+   "filas": [
+    [1, "Status LED, blue beacon LED", "LED de estado y LED baliza azul"],
+    [2, "Reset button", "Botón de reinicio"],
+    [3, "12 VDC power input", "Entrada de alimentación de 12 V CC"],
+    [4, "8 x GE RJ-45 ports", "8 puertos GE RJ-45"],
+    [5, "2 x GE RJ-45/SFP combo", "2 puertos combo GE RJ-45/SFP"],
+    [6, "1 x RJ-45 console port", "1 puerto de consola RJ-45"],
+    [7, "USB Type-C 3.0", "USB tipo C 3.0"],
+    [8, "Optional PIM Slot – CAT 7 LTE or 5G", "Ranura PIM opcional: LTE CAT 7 o 5G"],
+    [9, "Kensington lock, ground screw", "Ranura de bloqueo Kensington y tornillo de tierra"]
+   ]
+  },
+  "rearLeyenda": {
+   "tabla": "leyenda de la figura 7 de la guía",
+   "filas": [
+    [1, "System status", "Estado del sistema"],
+    [2, "VPN", "VPN"]
+   ]
+  }
  },
  "Cisco Secure Router C8151-CVAI-G2": {
   "front": "/img/equipos/cs-c8151-cvai-cvap-g2-front.webp",
   "rear": "/img/equipos/cs-c8151-cvai-cvap-g2-rear.webp",
   "fuente": "Frontal — «Cisco 8100 Series Secure Routers Data Sheet» (actualizada el 30-sep-2026), figura 7 «Front View of a Cisco C8151-CVAI-G2/Cisco C8151-CVAP-G2 Secure Router» (994 × 229 px, servida a 994 × 200). Trasera — guía «Hardware Installation Guide for the Cisco 8100 Series Secure Routers» (24-abr-2026), figura 13 «C8151-CVAI-G2 and C8151-CVAP-G2 - Rear view» (1000 × 255 px, servida a 992 × 240).",
   "frontPrev": "/img/equipos/cs-c8151-cvai-cvap-g2-front.prev.webp",
-  "rearPrev": "/img/equipos/cs-c8151-cvai-cvap-g2-rear.prev.webp"
+  "rearPrev": "/img/equipos/cs-c8151-cvai-cvap-g2-rear.prev.webp",
+  "frontLeyenda": {
+   "tabla": "tabla 7 de la ficha",
+   "filas": [
+    [1, "Status LED, cellular LED, blue beacon LED", "LED de estado, LED celular y LED baliza azul"],
+    [2, "Reset button", "Botón de reinicio"],
+    [3, "12 VDC power input", "Entrada de alimentación de 12 V CC"],
+    [4, "1 x RJ-11 DSL port", "1 puerto DSL RJ-11"],
+    [5, "8 x GE RJ-45 ports", "8 puertos GE RJ-45"],
+    [6, "1 x GE RJ-45/SFP combo", "1 puerto combo GE RJ-45/SFP"],
+    [7, "1 x XGSPON/10G BASE-T port", "1 puerto XGS-PON/10G BASE-T"],
+    [8, "1xRJ-45 console port", "1 puerto de consola RJ-45"],
+    [9, "USB Type-C 3.0", "USB tipo C 3.0"],
+    [10, "Dual nano SIM Slots", "Dos ranuras nano SIM"],
+    [11, "Kensington lock, ground screw", "Ranura de bloqueo Kensington y tornillo de tierra"]
+   ]
+  },
+  "rearLeyenda": {
+   "tabla": "leyenda de la figura 13 de la guía",
+   "filas": [
+    [1, "System status", "Estado del sistema"],
+    [2, "VPN", "VPN"]
+   ]
+  }
  },
  "Cisco Secure Router C8151-CVAP-G2": {
   "front": "/img/equipos/cs-c8151-cvai-cvap-g2-front.webp",
   "rear": "/img/equipos/cs-c8151-cvai-cvap-g2-rear.webp",
   "fuente": "Frontal — «Cisco 8100 Series Secure Routers Data Sheet» (actualizada el 30-sep-2026), figura 7 «Front View of a Cisco C8151-CVAI-G2/Cisco C8151-CVAP-G2 Secure Router» (994 × 229 px, servida a 994 × 200). Trasera — guía «Hardware Installation Guide for the Cisco 8100 Series Secure Routers» (24-abr-2026), figura 13 «C8151-CVAI-G2 and C8151-CVAP-G2 - Rear view» (1000 × 255 px, servida a 992 × 240).",
   "frontPrev": "/img/equipos/cs-c8151-cvai-cvap-g2-front.prev.webp",
-  "rearPrev": "/img/equipos/cs-c8151-cvai-cvap-g2-rear.prev.webp"
+  "rearPrev": "/img/equipos/cs-c8151-cvai-cvap-g2-rear.prev.webp",
+  "frontLeyenda": {
+   "tabla": "tabla 7 de la ficha",
+   "filas": [
+    [1, "Status LED, cellular LED, blue beacon LED", "LED de estado, LED celular y LED baliza azul"],
+    [2, "Reset button", "Botón de reinicio"],
+    [3, "12 VDC power input", "Entrada de alimentación de 12 V CC"],
+    [4, "1 x RJ-11 DSL port", "1 puerto DSL RJ-11"],
+    [5, "8 x GE RJ-45 ports", "8 puertos GE RJ-45"],
+    [6, "1 x GE RJ-45/SFP combo", "1 puerto combo GE RJ-45/SFP"],
+    [7, "1 x XGSPON/10G BASE-T port", "1 puerto XGS-PON/10G BASE-T"],
+    [8, "1xRJ-45 console port", "1 puerto de consola RJ-45"],
+    [9, "USB Type-C 3.0", "USB tipo C 3.0"],
+    [10, "Dual nano SIM Slots", "Dos ranuras nano SIM"],
+    [11, "Kensington lock, ground screw", "Ranura de bloqueo Kensington y tornillo de tierra"]
+   ]
+  },
+  "rearLeyenda": {
+   "tabla": "leyenda de la figura 13 de la guía",
+   "filas": [
+    [1, "System status", "Estado del sistema"],
+    [2, "VPN", "VPN"]
+   ]
+  }
  },
  "Cisco Secure Router C8151H-C-G2": {
   "front": "/img/equipos/cs-c8151h-c-g2-front.webp",
   "fuente": "Frontal — «Cisco 8100 Series Secure Routers Data Sheet» (actualizada el 30-sep-2026), figura 6 «Front View of a Cisco C8151H-C-G2 Secure Router» (2190 × 432 px, sin recortar).",
   "rearNota": "La ficha publica solo la cara de puertos, y la guía de instalación de la serie 8100 (24-abr-2026) no dibuja el C8151H-C-G2 (sí el C8130-G2, el C8131-G2, el C8140-G2, el C8151-G2, el C8161-G2 y las variantes VAI/VAP y CVAI/CVAP): Cisco no publica su trasera.",
-  "frontPrev": "/img/equipos/cs-c8151h-c-g2-front.prev.webp"
+  "frontPrev": "/img/equipos/cs-c8151h-c-g2-front.prev.webp",
+  "frontLeyenda": {
+   "tabla": "tabla 6 de la ficha",
+   "filas": [
+    [1, "Status LED, cellular LED, blue beacon LED", "LED de estado, LED celular y LED baliza azul"],
+    [2, "Reset button", "Botón de reinicio"],
+    [3, "12 VDC power input", "Entrada de alimentación de 12 V CC"],
+    [4, "8 x GE RJ-45 ports", "8 puertos GE RJ-45"],
+    [5, "1 x GE RJ-45/SFP combo", "1 puerto combo GE RJ-45/SFP"],
+    [6, "1 x 10G BASE-T port", "1 puerto 10G BASE-T"],
+    [7, "1xRJ-45 console port", "1 puerto de consola RJ-45"],
+    [8, "USB Type-C 3.0", "USB tipo C 3.0"],
+    [9, "Dual nano SIM Slots", "Dos ranuras nano SIM"],
+    [10, "Kensington lock, ground screw", "Ranura de bloqueo Kensington y tornillo de tierra"]
+   ]
+  }
  },
  "Cisco Secure Router C8161-G2": {
   "front": "/img/equipos/cs-c8161-g2-front.webp",
   "rear": "/img/equipos/cs-c8151-c8161-g2-rear.webp",
   "fuente": "Frontal — «Cisco 8100 Series Secure Routers Data Sheet» (actualizada el 30-sep-2026), figura 8 «Front View of a Cisco C8161-G2 Secure Router» (1540 × 338 px, servida a 1486 × 251). Trasera — guía «Hardware Installation Guide for the Cisco 8100 Series Secure Routers» (24-abr-2026), figura 9 «C8161-G2 - Rear view» (1150 × 279 px, servida a 1132 × 261).",
   "frontPrev": "/img/equipos/cs-c8161-g2-front.prev.webp",
-  "rearPrev": "/img/equipos/cs-c8151-c8161-g2-rear.prev.webp"
+  "rearPrev": "/img/equipos/cs-c8151-c8161-g2-rear.prev.webp",
+  "frontLeyenda": {
+   "tabla": "tabla 8 de la ficha",
+   "filas": [
+    [1, "Status LED, blue beacon LED, PoE LED", "LED de estado, LED baliza azul y LED de PoE"],
+    [2, "Reset button", "Botón de reinicio"],
+    [3, "12 VDC power input", "Entrada de alimentación de 12 V CC"],
+    [4, "8 x GE RJ-45 ports", "8 puertos GE RJ-45"],
+    [5, "2 x GE RJ-45/SFP combo", "2 puertos combo GE RJ-45/SFP"],
+    [6, "1 x RJ-45 console port", "1 puerto de consola RJ-45"],
+    [7, "USB Type-C 3.0", "USB tipo C 3.0"],
+    [8, "Optional PIM Slot – CAT 7 LTE or 5G", "Ranura PIM opcional: LTE CAT 7 o 5G"],
+    [9, "Kensington lock, ground screw", "Ranura de bloqueo Kensington y tornillo de tierra"]
+   ]
+  },
+  "rearLeyenda": {
+   "tabla": "leyenda de la figura 9 de la guía",
+   "filas": [
+    [1, "System status", "Estado del sistema"],
+    [2, "VPN", "VPN"]
+   ]
+  }
  },
  "Cisco Secure Router C8211-G2": {
   "front": "/img/equipos/cs-c8211-g2-front.webp",
   "fuente": "Frontal — «Cisco 8200 Series Secure Router Data Sheet» (actualizada el 14-oct-2026), figura 7 «Front view of a Cisco C8211-G2 Secure Router» (788 × 240 px, sin recortar).",
   "rearNota": "La ficha publica solo la cara de puertos, y la guía de instalación de la serie 8200, también en su edición HTML del 30-sep-2026, no dibuja el C8211-G2 (sí el C8221-G2, el C8225-G2, el C8221L-G2 y los C8231/C8235): Cisco no publica su trasera.",
-  "frontPrev": "/img/equipos/cs-c8211-g2-front.prev.webp"
+  "frontPrev": "/img/equipos/cs-c8211-g2-front.prev.webp",
+  "frontLeyenda": {
+   "tabla": "tabla 7 de la ficha",
+   "filas": [
+    [1, "Status LEDs, blue beacon LED", "LED de estado y LED baliza azul"],
+    [2, "Reset button", "Botón de reinicio"],
+    [3, "Power button", "Botón de encendido"],
+    [4, "Dual power supply input", "Entrada doble de alimentación"],
+    [5, "4x 1 GE RJ-45 ports", "4 puertos 1 GE RJ-45"],
+    [6, "2x 1 GE RJ-45/SFP combo ports", "2 puertos combo 1 GE RJ-45/SFP"],
+    [7, "Console RJ-45 port", "Puerto de consola RJ-45"],
+    [8, "USB 3.0 Type C storage", "USB 3.0 tipo C para almacenamiento"],
+    [9, "Ground screw", "Tornillo de tierra"]
+   ]
+  }
  },
  "Cisco Secure Router C8221-G2": {
   "front": "/img/equipos/cs-c8221-g2-front.webp",
   "rear": "/img/equipos/cs-c8221-c8225-g2-rear.webp",
   "fuente": "Frontal — guía «Hardware Installation Guide for the Cisco 8200 Series Secure Routers» (edición HTML, actualizada el 30-sep-2026), figura 8 «C8221-G2 and C8225-G2 I/O view» (la guía avisa de que los dos chasis solo difieren en el PID impreso; el dibujo rotula «C8225-G2») (1200 × 366 px, servida a 1189 × 347). Trasera — guía «Hardware Installation Guide for the Cisco 8200 Series Secure Routers» (edición HTML, actualizada el 30-sep-2026), figura 7 «C8221-G2 and C8225-G2 front view», la cara del logotipo: la guía llama «Front View» a esta y «I/O View» a la de puertos, que aquí es la frontal, como en la ficha (1200 × 252 px, servida a 1187 × 232).",
   "frontPrev": "/img/equipos/cs-c8221-g2-front.prev.webp",
-  "rearPrev": "/img/equipos/cs-c8221-c8225-g2-rear.prev.webp"
+  "rearPrev": "/img/equipos/cs-c8221-c8225-g2-rear.prev.webp",
+  "frontLeyenda": {
+   "tabla": "leyenda de la figura 8 de la guía",
+   "filas": [
+    [1, "Reset button", "Botón de reinicio"],
+    [2, "Power button", "Botón de encendido"],
+    [3, "4-pin power connector", "Conector de alimentación de 4 pines"],
+    [4, "Ethernet ports", "Puertos Ethernet"],
+    [5, "SFP ports", "Puertos SFP"],
+    [6, "Management port", "Puerto de gestión"],
+    [7, "Console port", "Puerto de consola"],
+    [8, "USB Type-C", "USB tipo C"],
+    [9, "Kensington lock slot", "Ranura de bloqueo Kensington"],
+    [10, "Ground point", "Punto de tierra"]
+   ]
+  },
+  "rearLeyenda": {
+   "tabla": "leyenda de la figura 7 de la guía",
+   "filas": [
+    [1, "Status LED", "LED de estado"],
+    [2, "Non-illuminated Cisco logo", "Logotipo de Cisco sin iluminar"]
+   ]
+  }
  },
  "Cisco Secure Router C8221L-G2": {
   "front": "/img/equipos/cs-c8221l-g2-front.webp",
   "fuente": "Frontal — «Cisco 8200 Series Secure Router Data Sheet» (actualizada el 14-oct-2026), figura 6 «Front view of a Cisco C8221L-G2 Secure Router» (775 × 240 px, sin recortar). Trasera — guía «Hardware Installation Guide for the Cisco 8200 Series Secure Routers» (edición HTML, actualizada el 30-sep-2026), figura 9 «C8221L-G2 Front view», la cara del logotipo: la guía llama «Front View» a esta y «I/O View» a la de puertos, que aquí es la frontal, como en la ficha (1000 × 289 px, servida a 983 × 255).",
   "frontPrev": "/img/equipos/cs-c8221l-g2-front.prev.webp",
   "rear": "/img/equipos/cs-c8221l-g2-rear.webp",
-  "rearPrev": "/img/equipos/cs-c8221l-g2-rear.prev.webp"
+  "rearPrev": "/img/equipos/cs-c8221l-g2-rear.prev.webp",
+  "frontLeyenda": {
+   "tabla": "tabla 6 de la ficha",
+   "filas": [
+    [1, "Status LEDs, blue beacon LED", "LED de estado y LED baliza azul"],
+    [2, "Reset button", "Botón de reinicio"],
+    [3, "Power button", "Botón de encendido"],
+    [4, "Dual power supply Input", "Entrada doble de alimentación"],
+    [5, "8x 1 GE RJ-45 ports", "8 puertos 1 GE RJ-45"],
+    [6, "2x 10 GE RJ-45 ports", "2 puertos 10 GE RJ-45"],
+    [7, "Management RJ-45 port", "Puerto de gestión RJ-45"],
+    [8, "Console RJ-45 port", "Puerto de consola RJ-45"],
+    [9, "USB 3.0 Type C storage", "USB 3.0 tipo C para almacenamiento"],
+    [10, "Kensington lock, ground screw", "Ranura de bloqueo Kensington y tornillo de tierra"]
+   ]
+  },
+  "rearLeyenda": {
+   "tabla": "leyenda de la figura 9 de la guía",
+   "filas": [
+    [1, "Status LED", "LED de estado"],
+    [2, "Non-illuminated Cisco logo", "Logotipo de Cisco sin iluminar"]
+   ]
+  }
  },
  "Cisco Secure Router C8225-G2": {
   "front": "/img/equipos/cs-c8225-g2-front.webp",
   "fuente": "Frontal — «Cisco 8200 Series Secure Router Data Sheet» (actualizada el 14-oct-2026), figura 5 «Front view of a Cisco C8225-G2 Secure Router» (775 × 240 px, sin recortar). Trasera — guía «Hardware Installation Guide for the Cisco 8200 Series Secure Routers» (edición HTML, actualizada el 30-sep-2026), figura 7 «C8221-G2 and C8225-G2 front view», la cara del logotipo: la guía llama «Front View» a esta y «I/O View» a la de puertos, que aquí es la frontal, como en la ficha (1200 × 252 px, servida a 1187 × 232).",
   "frontPrev": "/img/equipos/cs-c8225-g2-front.prev.webp",
   "rear": "/img/equipos/cs-c8221-c8225-g2-rear.webp",
-  "rearPrev": "/img/equipos/cs-c8221-c8225-g2-rear.prev.webp"
+  "rearPrev": "/img/equipos/cs-c8221-c8225-g2-rear.prev.webp",
+  "frontLeyenda": {
+   "tabla": "tabla 5 de la ficha",
+   "filas": [
+    [1, "Status LEDs, blue beacon LED", "LED de estado y LED baliza azul"],
+    [2, "Reset button", "Botón de reinicio"],
+    [3, "Power button", "Botón de encendido"],
+    [4, "Dual power supply Input", "Entrada doble de alimentación"],
+    [5, "8x 1 GE RJ-45 ports", "8 puertos 1 GE RJ-45"],
+    [6, "2x 1/10 GE SFP+ ports", "2 puertos SFP+ de 1/10 GE"],
+    [7, "Management RJ-45 port", "Puerto de gestión RJ-45"],
+    [8, "Console RJ-45 port", "Puerto de consola RJ-45"],
+    [9, "USB 3.0 Type C storage", "USB 3.0 tipo C para almacenamiento"],
+    [10, "Kensington lock, ground screw", "Ranura de bloqueo Kensington y tornillo de tierra"]
+   ]
+  },
+  "rearLeyenda": {
+   "tabla": "leyenda de la figura 7 de la guía",
+   "filas": [
+    [1, "Status LED", "LED de estado"],
+    [2, "Non-illuminated Cisco logo", "Logotipo de Cisco sin iluminar"]
+   ]
+  }
  },
  "Cisco Secure Router C8231-G2": {
   "front": "/img/equipos/cs-c8231-g2-front.webp",
   "rear": "/img/equipos/cs-c8231-g2-rear.webp",
   "fuente": "Frontal — «Cisco 8200 Series Secure Router Data Sheet» (actualizada el 14-oct-2026), figura 4 «Front view of a Cisco C8231-G2 Secure Router» (1272 × 298 px, servida a 1269 × 296). Trasera — guía «Hardware Installation Guide for the Cisco 8200 Series Secure Routers» (10-sep-2025), figura 1 «C8231-G2 - Front View» (la guía llama así a la cara del logotipo y «I/O View» a la de puertos) (1000 × 256 px, servida a 977 × 239).",
   "frontPrev": "/img/equipos/cs-c8231-g2-front.prev.webp",
-  "rearPrev": "/img/equipos/cs-c8231-g2-rear.prev.webp"
+  "rearPrev": "/img/equipos/cs-c8231-g2-rear.prev.webp",
+  "frontLeyenda": {
+   "tabla": "tabla 4 de la ficha",
+   "filas": [
+    [1, "Status LEDs, blue beacon LED", "LED de estado y LED baliza azul"],
+    [2, "Reset button", "Botón de reinicio"],
+    [3, "Power button", "Botón de encendido"],
+    [4, "Power supply input (AC/AC+PoE)", "Entrada de alimentación (CA o CA + PoE)"],
+    [5, "4x 1 GE RJ-45 ports", "4 puertos 1 GE RJ-45"],
+    [6, "4x 2.5 GE Multigigabit RJ-45 ports", "4 puertos Multigigabit RJ-45 de 2,5 GE"],
+    [7, "2x 1/10 GE SFP+ ports", "2 puertos SFP+ de 1/10 GE"],
+    [8, "Management RJ-45 port", "Puerto de gestión RJ-45"],
+    [9, "Console RJ-45 port", "Puerto de consola RJ-45"],
+    [10, "USB 3.0 Type C storage", "USB 3.0 tipo C para almacenamiento"],
+    [11, "Kensington lock, ground screw", "Ranura de bloqueo Kensington y tornillo de tierra"]
+   ]
+  },
+  "rearLeyenda": {
+   "tabla": "leyenda de la figura 1 de la guía",
+   "filas": [
+    [1, "Non-illuminated Cisco logo", "Logotipo de Cisco sin iluminar"],
+    [2, "Status LED", "LED de estado"]
+   ]
+  }
  },
  "Cisco Secure Router C8231-E-G2": {
   "front": "/img/equipos/cs-c8231-e-g2-front.webp",
   "rear": "/img/equipos/cs-c8231-e-g2-rear.webp",
   "fuente": "Frontal — guía «Hardware Installation Guide for the Cisco 8200 Series Secure Routers» (edición HTML, actualizada el 30-sep-2026), figura 5 «C8231-E-G2 and C8235-E-G2 - front view», la de puertos y ranuras (la guía avisa de que los dos chasis solo difieren en el PID impreso) (1000 × 290 px, servida a 983 × 271). Trasera — guía «Hardware Installation Guide for the Cisco 8200 Series Secure Routers» (edición HTML, actualizada el 30-sep-2026), figura 6 «C8231-E-G2 and C8235-E-G2 - I/O view», la de alimentación (fuente de AC, entradas de PoE y de redundancia, interruptor) (1000 × 270 px, servida a 988 × 263).",
   "frontPrev": "/img/equipos/cs-c8231-e-g2-front.prev.webp",
-  "rearPrev": "/img/equipos/cs-c8231-e-g2-rear.prev.webp"
+  "rearPrev": "/img/equipos/cs-c8231-e-g2-rear.prev.webp",
+  "frontLeyenda": {
+   "tabla": "leyenda de la figura 5 de la guía",
+   "filas": [
+    [1, "Status LEDs", "LED de estado"],
+    [2, "Pluggable interface module (PIM) Slot", "Ranura de módulo de interfaz enchufable (PIM)"],
+    [3, "Service module (SM) slot", "Ranura de módulo de servicio (SM)"],
+    [4, "USB Type C slot", "Puerto USB tipo C"],
+    [5, "Management port", "Puerto de gestión"],
+    [6, "RJ45 and Micro-USB console port", "Puerto de consola RJ-45 y Micro-USB"],
+    [7, "Ethernet port", "Puerto Ethernet"],
+    [8, "SFP+ ports", "Puertos SFP+"],
+    [9, "E1.S slot", "Ranura E1.S"]
+   ]
+  },
+  "rearLeyenda": {
+   "tabla": "leyenda de la figura 6 de la guía",
+   "filas": [
+    [1, "Kensington lock slot", "Ranura de bloqueo Kensington"],
+    [2, "Optional POE power", "Alimentación de PoE opcional"],
+    [3, "Optional redundancy power", "Alimentación redundante opcional"],
+    [4, "AC Power connector", "Conector de alimentación de CA"],
+    [5, "Power switch", "Interruptor de encendido"]
+   ]
+  }
  },
  "Cisco Secure Router C8235-G2": {
   "front": "/img/equipos/cs-c8235-g2-front.webp",
   "rear": "/img/equipos/cs-c8235-g2-rear.webp",
   "fuente": "Frontal — «Cisco 8200 Series Secure Router Data Sheet» (actualizada el 14-oct-2026), figura 3 «Front view of a Cisco C8235-G2 Secure Router» (1306 × 344 px, servida a 1306 × 342). Trasera — guía «Hardware Installation Guide for the Cisco 8200 Series Secure Routers» (10-sep-2025), figura 3 «C8235-G2 - Front View» (la guía llama así a la cara del logotipo y «I/O View» a la de puertos) (1000 × 282 px, servida a 981 × 272).",
   "frontPrev": "/img/equipos/cs-c8235-g2-front.prev.webp",
-  "rearPrev": "/img/equipos/cs-c8235-g2-rear.prev.webp"
+  "rearPrev": "/img/equipos/cs-c8235-g2-rear.prev.webp",
+  "frontLeyenda": {
+   "tabla": "tabla 3 de la ficha",
+   "filas": [
+    [1, "Status LEDs, blue beacon LED", "LED de estado y LED baliza azul"],
+    [2, "Reset button", "Botón de reinicio"],
+    [3, "Power button", "Botón de encendido"],
+    [4, "Power supply input (AC/AC + PoE)", "Entrada de alimentación (CA o CA + PoE)"],
+    [5, "8x 2.5 GE Multigigabit RJ-45 ports", "8 puertos Multigigabit RJ-45 de 2,5 GE"],
+    [6, "2x 10 GE SFP/SFP+ ports", "2 puertos SFP/SFP+ de 10 GE"],
+    [7, "RFID", "Etiqueta RFID"],
+    [8, "Management RJ-45 port", "Puerto de gestión RJ-45"],
+    [9, "Console RJ-45 port/Micro-USB cConsole port", "Puerto de consola RJ-45 y consola Micro-USB"],
+    [10, "USB 3.0 Type C storage", "USB 3.0 tipo C para almacenamiento"],
+    [11, "PIM slot", "Ranura PIM"],
+    [12, "Kensington lock, ground screw", "Ranura de bloqueo Kensington y tornillo de tierra"]
+   ]
+  },
+  "rearLeyenda": {
+   "tabla": "leyenda de la figura 3 de la guía",
+   "filas": [
+    [1, "Non-illuminated Cisco logo", "Logotipo de Cisco sin iluminar"],
+    [2, "Status LED", "LED de estado"]
+   ]
+  }
  },
  "Cisco Secure Router C8235-E-G2": {
   "front": "/img/equipos/cs-c8235-e-g2-front.webp",
   "rear": "/img/equipos/cs-c8235-e-g2-rear.webp",
   "fuente": "Frontal — «Cisco 8200 Series Secure Router Data Sheet» (actualizada el 14-oct-2026), figura 1 «Front view of a Cisco C8235-E-G2 Secure Router» (1043 × 347 px, sin recortar). Trasera — «Cisco 8200 Series Secure Router Data Sheet» (actualizada el 14-oct-2026), figura 2 «Rear view of a Cisco C8235-E-G2 Secure Router» (859 × 322 px, sin recortar).",
   "frontPrev": "/img/equipos/cs-c8235-e-g2-front.prev.webp",
-  "rearPrev": "/img/equipos/cs-c8235-e-g2-rear.prev.webp"
+  "rearPrev": "/img/equipos/cs-c8235-e-g2-rear.prev.webp",
+  "frontLeyenda": {
+   "tabla": "tabla 1 de la ficha",
+   "filas": [
+    [1, "USB 3.0 Type C storage", "USB 3.0 tipo C para almacenamiento"],
+    [2, "Management RJ-45 port", "Puerto de gestión RJ-45"],
+    [3, "Console RJ-45 /Micro-USB port", "Puerto de consola RJ-45 / Micro-USB"],
+    [4, "2x 2.5 GE Multigigabit RJ-45 ports", "2 puertos Multigigabit RJ-45 de 2,5 GE"],
+    [5, "2x 1/10 GE SFP+ ports", "2 puertos SFP+ de 1/10 GE"],
+    [6, "Label tray", "Bandeja de etiquetas"],
+    [7, "PIM slot", "Ranura PIM"],
+    [8, "E1.S storage slot", "Ranura de almacenamiento E1.S"],
+    [9, "NIM slot", "Ranura NIM"],
+    [10, "RFID", "Etiqueta RFID"]
+   ]
+  },
+  "rearLeyenda": {
+   "tabla": "tabla 2 de la ficha",
+   "filas": [
+    [1, "Kensington lock, ground screw", "Ranura de bloqueo Kensington y tornillo de tierra"],
+    [2, "2x fan assemblies — default (optional third fan assembly for NEBS temperature support)", "2 conjuntos de ventiladores de serie (tercero opcional para el rango de temperatura NEBS)"],
+    [3, "Power over Ethernet (PoE) adapter input", "Entrada del adaptador de PoE"],
+    [4, "12V DC – secondary PSU input", "Entrada de 12 V CC de la fuente secundaria"],
+    [5, "AC – primary power socket", "Toma de CA de la fuente principal"],
+    [6, "Power switch", "Interruptor de encendido"]
+   ]
+  }
  },
  "Cisco Secure Router C8355-G2": {
   "front": "/img/equipos/cs-c8355-g2-front.webp",
   "rear": "/img/equipos/cs-c8355-g2-rear.webp",
   "fuente": "Frontal — «Cisco 8300 Series Secure Router Data Sheet» (actualizada el 14-oct-2026), figura 3 «Front view of a Cisco C8355-G2 Secure Router» (1860 × 452 px, servida a 1833 × 412). Trasera — «Cisco 8300 Series Secure Router Data Sheet» (actualizada el 14-oct-2026), figura 4 «Rear view of a Cisco C8355-G2 Secure Router» (1860 × 345 px, servida a 1845 × 312).",
   "frontPrev": "/img/equipos/cs-c8355-g2-front.prev.webp",
-  "rearPrev": "/img/equipos/cs-c8355-g2-rear.prev.webp"
+  "rearPrev": "/img/equipos/cs-c8355-g2-rear.prev.webp",
+  "frontLeyenda": {
+   "tabla": "tabla 3 de la ficha",
+   "filas": [
+    [1, "Reset Button", "Botón de reinicio"],
+    [2, "Power Button", "Botón de encendido"],
+    [3, "Dual Power Supply Input", "Entrada doble de alimentación"],
+    [4, "Status LED, blue beacon LED", "LED de estado y LED baliza azul"],
+    [5, "4 x 5G Multigigabit RJ45 Port", "4 puertos Multigigabit RJ-45 de 5G"],
+    [6, "2 x 1G RJ45 Port", "2 puertos RJ-45 de 1G"],
+    [7, "4 x 10G SFP/SFP+ Port", "4 puertos SFP/SFP+ de 10G"],
+    [8, "Label Tray", "Bandeja de etiquetas"],
+    [9, "Console RJ45 / Micro-USB Port", "Puerto de consola RJ-45 / Micro-USB"],
+    [10, "Management RJ45 Port", "Puerto de gestión RJ-45"],
+    [11, "USB 3.0 Type C Storage", "USB 3.0 tipo C para almacenamiento"],
+    [12, "PIM Slot", "Ranura PIM"],
+    [13, "RFID", "Etiqueta RFID"]
+   ]
+  },
+  "rearLeyenda": {
+   "tabla": "tabla 4 de la ficha",
+   "filas": [
+    [1, "Kensington Lock", "Bloqueo Kensington"]
+   ]
+  }
  },
  "Cisco Secure Router C8375-E-G2": {
   "front": "/img/equipos/cs-c8375-e-g2-front.webp",
   "rear": "/img/equipos/cs-c8375-e-g2-rear.webp",
   "fuente": "Frontal — «Cisco 8300 Series Secure Router Data Sheet» (actualizada el 14-oct-2026), figura 1 «Front view of a Cisco C8375-E-G2 Secure Router» (1860 × 460 px, servida a 1811 × 411). Trasera — «Cisco 8300 Series Secure Router Data Sheet» (actualizada el 14-oct-2026), figura 2 «Rear view of a Cisco C8375-E-G2 Secure Router» (1860 × 469 px, servida a 1839 × 428).",
   "frontPrev": "/img/equipos/cs-c8375-e-g2-front.prev.webp",
-  "rearPrev": "/img/equipos/cs-c8375-e-g2-rear.prev.webp"
+  "rearPrev": "/img/equipos/cs-c8375-e-g2-rear.prev.webp",
+  "frontLeyenda": {
+   "tabla": "tabla 1 de la ficha",
+   "filas": [
+    [1, "USB 3.0 Type C Storage", "USB 3.0 tipo C para almacenamiento"],
+    [2, "Management RJ45 Port", "Puerto de gestión RJ-45"],
+    [3, "Console RJ45 / Micro-USB Port", "Puerto de consola RJ-45 / Micro-USB"],
+    [4, "4 x 2.5G Multigigabit RJ45 Port", "4 puertos Multigigabit RJ-45 de 2,5G"],
+    [5, "2 x 10G SFP/SFP+ Port", "2 puertos SFP/SFP+ de 10G"],
+    [6, "NIM Slot", "Ranura NIM"],
+    [7, "M.2 Storage Slot (eUSB / SED)", "Ranura de almacenamiento M.2 (eUSB / SED)"],
+    [8, "SM Slot", "Ranura SM"],
+    [9, "Label Tray", "Bandeja de etiquetas"],
+    [10, "RFID", "Etiqueta RFID"]
+   ]
+  },
+  "rearLeyenda": {
+   "tabla": "tabla 2 de la ficha",
+   "filas": [
+    [1, "Power Supply Slot 1", "Bahía de fuente de alimentación 1"],
+    [2, "Replaceable Fan Tray Assembly", "Bandeja de ventiladores reemplazable"],
+    [3, "PIM Slot", "Ranura PIM"],
+    [4, "Power ON/OFF Switch", "Interruptor de encendido y apagado"],
+    [5, "Power Supply Slot 0", "Bahía de fuente de alimentación 0"]
+   ]
+  }
  },
  "Cisco Secure Router C8455-G2": {
   "front": "/img/equipos/cs-c8455-g2-front.webp",
   "fuente": "Frontal — «Cisco 8400 Series Secure Routers Data Sheet» (actualizada el 13-oct-2026), figura 1 «Front view of a Cisco C8455-G2 Secure Router» (1860 × 321 px, servida a 1850 × 303).",
   "rearNota": "La ficha publica solo la vista frontal, y la guía de instalación de la serie 8400 (PDF del 25-jul-2025 y su edición HTML, «Chassis views», traídas el 2026-10-20) dibuja solo la cara de E/S del chasis (figura 6, «C8455-G2 Chassis - I/O Side»): Cisco no publica la trasera.",
-  "frontPrev": "/img/equipos/cs-c8455-g2-front.prev.webp"
+  "frontPrev": "/img/equipos/cs-c8455-g2-front.prev.webp",
+  "frontLeyenda": {
+   "tabla": "tabla 1 de la ficha",
+   "filas": [
+    [1, "USB 3.0 Type-C storage", "USB 3.0 tipo C para almacenamiento"],
+    [2, "Management RJ45 Port", "Puerto de gestión RJ-45"],
+    [3, "Console RJ45/micro-USB port", "Puerto de consola RJ-45 / Micro-USB"],
+    [4, "8 x 1G SFP Ports", "8 puertos SFP de 1G"],
+    [5, "2 x 1/10G SFP+ Ports", "2 puertos SFP+ de 1/10G"],
+    [6, "2 x 10/25G SFP28 Ports", "2 puertos SFP28 de 10/25G"],
+    [7, "M.2 storage slot", "Ranura de almacenamiento M.2"],
+    [8, "Label Tray", "Bandeja de etiquetas"],
+    [9, "RFID", "Etiqueta RFID"]
+   ]
+  }
  },
  "Cisco Secure Router C8475-G2": {
   "front": "/img/equipos/cs-c8475-g2-front.webp",
   "fuente": "Frontal — «Cisco 8400 Series Secure Routers Data Sheet» (actualizada el 13-oct-2026), figura 2 «Front view of a Cisco C8475-G2 Secure Router» (1860 × 325 px, servida a 1852 × 314).",
   "rearNota": "La ficha publica solo la vista frontal, y la guía de instalación de la serie 8400 (PDF del 25-jul-2025 y su edición HTML, «Chassis views», traídas el 2026-10-20) dibuja solo la cara de E/S del chasis (figura 3, «C8475-G2 Chassis - I/O Side»): Cisco no publica la trasera.",
-  "frontPrev": "/img/equipos/cs-c8475-g2-front.prev.webp"
+  "frontPrev": "/img/equipos/cs-c8475-g2-front.prev.webp",
+  "frontLeyenda": {
+   "tabla": "tabla 2 de la ficha",
+   "filas": [
+    [1, "USB 3.0 Type-C storage", "USB 3.0 tipo C para almacenamiento"],
+    [2, "Management RJ45 Port", "Puerto de gestión RJ-45"],
+    [3, "Console RJ45/micro-USB port", "Puerto de consola RJ-45 / Micro-USB"],
+    [4, "8 x 1G SFP Ports", "8 puertos SFP de 1G"],
+    [5, "8 x 1/10G SFP+ Ports", "8 puertos SFP+ de 1/10G"],
+    [6, "4 x 10/25G SFP28 Ports", "4 puertos SFP28 de 10/25G"],
+    [7, "Label tray", "Bandeja de etiquetas"],
+    [8, "M.2 storage slot", "Ranura de almacenamiento M.2"],
+    [9, "RFID", "Etiqueta RFID"]
+   ]
+  }
  },
  "Cisco Secure Router C8550-G2": {
   "front": "/img/equipos/cs-c8550-g2-front.webp",
   "rear": "/img/equipos/cs-c8500-1ru-rear.webp",
   "fuente": "Frontal — «Cisco 8500 Series Secure Routers Data Sheet» (actualizada el 6-oct-2025), figura 1 «Front View of a Cisco C8550-G2 Secure Router» (3080 × 654 px, servida a 2948 × 443). Trasera — guía «Cisco 8500 Series Secure Routers Hardware Installation Guide» (9-sep-2025), figura 5 «Cisco C8550-G2 Rear View» (850 × 224 px, servida a 847 × 224).",
   "frontPrev": "/img/equipos/cs-c8550-g2-front.prev.webp",
-  "rearPrev": "/img/equipos/cs-c8500-1ru-rear.prev.webp"
+  "rearPrev": "/img/equipos/cs-c8500-1ru-rear.prev.webp",
+  "frontLeyenda": {
+   "tabla": "tabla 1 de la ficha",
+   "filas": [
+    [1, "RFID", "Etiqueta RFID"],
+    [2, "USB 3.0 Type C Storage", "USB 3.0 tipo C para almacenamiento"],
+    [3, "Management RJ-45 Port", "Puerto de gestión RJ-45"],
+    [4, "Console RJ-45 / Micro-USB Port", "Puerto de consola RJ-45 / Micro-USB"],
+    [5, "12 x 1/10G SFP+ Ports", "12 puertos SFP+ de 1/10G"],
+    [6, "Label Tray", "Bandeja de etiquetas"]
+   ]
+  },
+  "rearLeyenda": {
+   "tabla": "leyenda de la figura 5 de la guía",
+   "filas": [
+    [1, "Fans", "Ventiladores"],
+    [2, "Power supply AC input LED", "LED de entrada de CA de la fuente"],
+    [3, "PEM 0", "Módulo de alimentación (PEM) 0"],
+    [4, "PEM 1", "Módulo de alimentación (PEM) 1"],
+    [5, "Power switch", "Interruptor de encendido"],
+    [6, "Power supply failure LED", "LED de fallo de la fuente"],
+    [7, "Ground Lug Attachment", "Fijación de la orejeta de tierra"]
+   ]
+  }
  },
  "Cisco Secure Router C8570-G2": {
   "front": "/img/equipos/cs-c8570-g2-front.webp",
   "rear": "/img/equipos/cs-c8500-1ru-rear.webp",
   "fuente": "Frontal — «Cisco 8500 Series Secure Routers Data Sheet» (actualizada el 6-oct-2025), figura 2 «Front View of a Cisco C8570-G2 Secure Router» (3080 × 636 px, servida a 2770 × 465). Trasera — guía «Cisco 8500 Series Secure Routers Hardware Installation Guide» (9-sep-2025), figura 2 «Cisco C8570-G2 Rear View» (850 × 224 px, servida a 847 × 224).",
   "frontPrev": "/img/equipos/cs-c8570-g2-front.prev.webp",
-  "rearPrev": "/img/equipos/cs-c8500-1ru-rear.prev.webp"
+  "rearPrev": "/img/equipos/cs-c8500-1ru-rear.prev.webp",
+  "frontLeyenda": {
+   "tabla": "tabla 2 de la ficha",
+   "filas": [
+    [1, "RFID", "Etiqueta RFID"],
+    [2, "USB 3.0 Type C Storage", "USB 3.0 tipo C para almacenamiento"],
+    [3, "Management RJ-45 Port", "Puerto de gestión RJ-45"],
+    [4, "Console RJ-45 / Micro-USB Port", "Puerto de consola RJ-45 / Micro-USB"],
+    [5, "Bay 2: 1x 40/100G QSFP28, 2x 40G QSFP+", "Bahía 2: 1 QSFP28 de 40/100G y 2 QSFP+ de 40G"],
+    [6, "Bay 1: 1x 40/100G QSFP28, 4x 1/10G SFP+", "Bahía 1: 1 QSFP28 de 40/100G y 4 SFP+ de 1/10G"],
+    [7, "Bay 0: 8x 1/10G SFP+", "Bahía 0: 8 SFP+ de 1/10G"],
+    [8, "Label Tray", "Bandeja de etiquetas"]
+   ]
+  },
+  "rearLeyenda": {
+   "tabla": "leyenda de la figura 2 de la guía",
+   "filas": [
+    [1, "Fans", "Ventiladores"],
+    [2, "Power supply AC input LED", "LED de entrada de CA de la fuente"],
+    [3, "PEM 0", "Módulo de alimentación (PEM) 0"],
+    [4, "PEM 1", "Módulo de alimentación (PEM) 1"],
+    [5, "Power switch", "Interruptor de encendido"],
+    [6, "Power supply failure LED", "LED de fallo de la fuente"],
+    [7, "Ground Lug Attachment", "Fijación de la orejeta de tierra"]
+   ]
+  }
  },
  "Cisco Secure Router C8650-G2": {
   "front": "/img/equipos/cs-c8650-g2-front.webp",
   "fuente": "Frontal — «Cisco 8600 Series Secure Routers Data Sheet» (2-jun-2026), figura 1 «Front view of a Cisco 8650-G2 Secure Router» (1887 × 856 px, sin recortar). Trasera — guía «Cisco 8600 Series Secure Routers Hardware Installation Guide» (actualizada el 12-oct-2026), figura 8 «Cisco C8650-G2 Chassis—Rear View», la de los ventiladores (750 × 330 px, servida a 723 × 308).",
   "frontPrev": "/img/equipos/cs-c8650-g2-front.prev.webp",
   "rear": "/img/equipos/cs-c8650-g2-rear.webp",
-  "rearPrev": "/img/equipos/cs-c8650-g2-rear.prev.webp"
+  "rearPrev": "/img/equipos/cs-c8650-g2-rear.prev.webp",
+  "frontLeyenda": {
+   "tabla": "tabla 1 de la ficha",
+   "filas": [
+    [1, "RFID", "Etiqueta RFID"],
+    [2, "Console RJ-45/Micro-USB port", "Puerto de consola RJ-45 / Micro-USB"],
+    [3, "Management RJ-45 port and USB 3.0 interfaces", "Puerto de gestión RJ-45 e interfaces USB 3.0"],
+    [4, "AC or DC power supplies (N+2 redundancy)", "Fuentes de CA o CC (redundancia N+2)"],
+    [5, "20x 1/10GE SFP+ ports", "20 puertos SFP+ de 1/10 GE"],
+    [6, "6x 40/100GE QSFP28 ports", "6 puertos QSFP28 de 40/100 GE"]
+   ]
+  },
+  "rearLeyenda": {
+   "tabla": "leyenda de la figura 8 de la guía",
+   "filas": [
+    [1, "Fans", "Ventiladores"]
+   ]
+  }
  },
  "Cisco Secure Router C8111-G2-MX": {
   "front": "/img/equipos/cs-c8111-g2-mx-front.webp",
@@ -281,56 +822,274 @@
   "rear": "/img/equipos/cs-c8200-rear.webp",
   "fuente": "Frontal — guía «Hardware Installation Guide for Cisco Catalyst 8200 Series Edge Platforms», figura 1 «Cisco 8200 Series Chassis - I/O Side» (la guía aplica a C8200-1N-4T y C8200L-1N-4T) (800 × 266 px, servida a 789 × 255). Trasera — guía «Hardware Installation Guide for Cisco Catalyst 8200 Series Edge Platforms», figura 2 «Cisco 8200 Series Chassis - Power-input Side» (789 × 182 px, servida a 778 × 165).",
   "frontPrev": "/img/equipos/cs-c8200-front.prev.webp",
-  "rearPrev": "/img/equipos/cs-c8200-rear.prev.webp"
+  "rearPrev": "/img/equipos/cs-c8200-rear.prev.webp",
+  "frontLeyenda": {
+   "tabla": "tabla 1 «I/O Side» de la guía",
+   "filas": [
+    [1, "Logo", "Logotipo"],
+    [2, "Status LEDs", "LED de estado"],
+    [3, "USB", "USB"],
+    [4, "RJ-45 ports GE0/0/0-0/0/1", "Puertos RJ-45 GE0/0/0 y GE0/0/1"],
+    [5, "Gigabit Ethernet ports GE0/0/2 - 0/0/3 (SFP)", "Puertos Gigabit Ethernet GE0/0/2 y GE0/0/3 (SFP)"],
+    [6, "LTE module (PIM)", "Módulo LTE (PIM)"],
+    [7, "NIM Module", "Módulo NIM"],
+    [8, "Kensington lock", "Bloqueo Kensington"],
+    [9, "RJ-45 Console", "Consola RJ-45"],
+    [10, "M.2 USB/NVMe storage", "Almacenamiento M.2 USB/NVMe"],
+    [11, "RFID (Provisionable)", "Etiqueta RFID (aprovisionable)"]
+   ]
+  },
+  "rearLeyenda": {
+   "tabla": "tabla 2 «Power-input Side» de la guía",
+   "filas": [
+    [1, "Switch", "Interruptor"],
+    [2, "AC power socket", "Toma de CA"],
+    [3, "PoE Adapter", "Adaptador de PoE"],
+    [4, "Fan", "Ventilador"],
+    [5, "Ground lug securing location", "Punto de fijación de la orejeta de tierra"]
+   ]
+  }
  },
  "Catalyst 8200L": {
   "front": "/img/equipos/cs-c8200-front.webp",
   "rear": "/img/equipos/cs-c8200-rear.webp",
   "fuente": "Frontal — guía «Hardware Installation Guide for Cisco Catalyst 8200 Series Edge Platforms», figura 1 «Cisco 8200 Series Chassis - I/O Side» (la guía aplica a C8200-1N-4T y C8200L-1N-4T) (800 × 266 px, servida a 789 × 255). Trasera — guía «Hardware Installation Guide for Cisco Catalyst 8200 Series Edge Platforms», figura 2 «Cisco 8200 Series Chassis - Power-input Side» (789 × 182 px, servida a 778 × 165).",
   "frontPrev": "/img/equipos/cs-c8200-front.prev.webp",
-  "rearPrev": "/img/equipos/cs-c8200-rear.prev.webp"
+  "rearPrev": "/img/equipos/cs-c8200-rear.prev.webp",
+  "frontLeyenda": {
+   "tabla": "tabla 1 «I/O Side» de la guía",
+   "filas": [
+    [1, "Logo", "Logotipo"],
+    [2, "Status LEDs", "LED de estado"],
+    [3, "USB", "USB"],
+    [4, "RJ-45 ports GE0/0/0-0/0/1", "Puertos RJ-45 GE0/0/0 y GE0/0/1"],
+    [5, "Gigabit Ethernet ports GE0/0/2 - 0/0/3 (SFP)", "Puertos Gigabit Ethernet GE0/0/2 y GE0/0/3 (SFP)"],
+    [6, "LTE module (PIM)", "Módulo LTE (PIM)"],
+    [7, "NIM Module", "Módulo NIM"],
+    [8, "Kensington lock", "Bloqueo Kensington"],
+    [9, "RJ-45 Console", "Consola RJ-45"],
+    [10, "M.2 USB/NVMe storage", "Almacenamiento M.2 USB/NVMe"],
+    [11, "RFID (Provisionable)", "Etiqueta RFID (aprovisionable)"]
+   ]
+  },
+  "rearLeyenda": {
+   "tabla": "tabla 2 «Power-input Side» de la guía",
+   "filas": [
+    [1, "Switch", "Interruptor"],
+    [2, "AC power socket", "Toma de CA"],
+    [3, "PoE Adapter", "Adaptador de PoE"],
+    [4, "Fan", "Ventilador"],
+    [5, "Ground lug securing location", "Punto de fijación de la orejeta de tierra"]
+   ]
+  }
  },
  "Catalyst 8300-1N1S-6T": {
   "front": "/img/equipos/cs-c8300-1n1s-front.webp",
   "rear": "/img/equipos/cs-c8300-1n1s-rear.webp",
   "fuente": "Frontal — guía «Hardware Installation Guide for Cisco Catalyst 8300 Series Edge Platforms», figura 1 «C8300-1N1S-4T2X|6T Chassis - I/O Side» (750 × 224 px, servida a 749 × 219). Trasera — guía «Hardware Installation Guide for Cisco Catalyst 8300 Series Edge Platforms», figura 2 «C8300-1N1S-4T2X|6T Chassis - PSU/Fan Tray Side» (700 × 115 px, sin recortar).",
   "frontPrev": "/img/equipos/cs-c8300-1n1s-front.prev.webp",
-  "rearPrev": "/img/equipos/cs-c8300-1n1s-rear.prev.webp"
+  "rearPrev": "/img/equipos/cs-c8300-1n1s-rear.prev.webp",
+  "frontLeyenda": {
+   "tabla": "tabla 1 «I/O Side» de la guía",
+   "filas": [
+    [1, "LED", "LED"],
+    [2, "RJ-45 Gigabit Ethernet port (1G 0/0/0)", "Puerto Gigabit Ethernet RJ-45 (1G 0/0/0)"],
+    [3, "RJ-45 Gigabit Ethernet port (1G 0/0/2)", "Puerto Gigabit Ethernet RJ-45 (1G 0/0/2)"],
+    [4, "SFP+/10 Gigabit Ethernet port (10G 0/0/4); SFP/1 Gigabit Ethernet port (1G 0/0/4)", "Puerto SFP+ de 10 Gigabit Ethernet (10G 0/0/4) o SFP de 1 Gigabit Ethernet (1G 0/0/4)"],
+    [5, "NIM Slot1", "Ranura NIM 1"],
+    [6, "SM Slot1", "Ranura SM 1"],
+    [7, "RFID (Optional)", "Etiqueta RFID (opcional)"],
+    [8, "USB Type C (3.0) (USB 1)", "USB tipo C 3.0 (USB 1)"],
+    [9, "USB Type A (3.0) (USB 0)", "USB tipo A 3.0 (USB 0)"],
+    [10, "RJ-45 Console", "Consola RJ-45"],
+    [11, "Micro-USB Console", "Consola Micro-USB"],
+    [12, "RJ-45 Gigabit Ethernet port (1G 0/0/1)", "Puerto Gigabit Ethernet RJ-45 (1G 0/0/1)"],
+    [13, "RJ-45 Gigabit Ethernet port (1G 0/0/3)", "Puerto Gigabit Ethernet RJ-45 (1G 0/0/3)"],
+    [14, "SFP+/10 Gigabit Ethernet port (10G 0/0/5); SFP/1 Gigabit Ethernet port (1G 0/0/5)", "Puerto SFP+ de 10 Gigabit Ethernet (10G 0/0/5) o SFP de 1 Gigabit Ethernet (1G 0/0/5)"],
+    [15, "M.2 USB/NVMe storage", "Almacenamiento M.2 USB/NVMe"],
+    [16, "Device Label Tray", "Bandeja de etiquetas del equipo"]
+   ]
+  },
+  "rearLeyenda": {
+   "tabla": "tabla 2 «PSU/Fan Tray Side» de la guía",
+   "filas": [
+    [1, "AC/DC power supply unit (PSU1)", "Fuente de alimentación de CA/CC (PSU1)"],
+    [2, "Power, Preset, OK, LED", "LED de alimentación, presencia y OK"],
+    [3, "ALARM Fail LED", "LED de alarma de fallo"],
+    [4, "Ground lug", "Orejeta de tierra"],
+    [5, "Fan tray vent", "Rejilla de la bandeja de ventiladores"],
+    [6, "3-Internal Fan tray", "Bandeja de 3 ventiladores internos"],
+    [7, "PIM Slot 1", "Ranura PIM 1"],
+    [8, "Power switch", "Interruptor de encendido"],
+    [9, "AC/DC Power Supply Unit (PSU0)", "Fuente de alimentación de CA/CC (PSU0)"]
+   ]
+  }
  },
  "Catalyst 8300-1N1S-4T2X": {
   "front": "/img/equipos/cs-c8300-1n1s-front.webp",
   "rear": "/img/equipos/cs-c8300-1n1s-rear.webp",
   "fuente": "Frontal — guía «Hardware Installation Guide for Cisco Catalyst 8300 Series Edge Platforms», figura 1 «C8300-1N1S-4T2X|6T Chassis - I/O Side» (750 × 224 px, servida a 749 × 219). Trasera — guía «Hardware Installation Guide for Cisco Catalyst 8300 Series Edge Platforms», figura 2 «C8300-1N1S-4T2X|6T Chassis - PSU/Fan Tray Side» (700 × 115 px, sin recortar).",
   "frontPrev": "/img/equipos/cs-c8300-1n1s-front.prev.webp",
-  "rearPrev": "/img/equipos/cs-c8300-1n1s-rear.prev.webp"
+  "rearPrev": "/img/equipos/cs-c8300-1n1s-rear.prev.webp",
+  "frontLeyenda": {
+   "tabla": "tabla 1 «I/O Side» de la guía",
+   "filas": [
+    [1, "LED", "LED"],
+    [2, "RJ-45 Gigabit Ethernet port (1G 0/0/0)", "Puerto Gigabit Ethernet RJ-45 (1G 0/0/0)"],
+    [3, "RJ-45 Gigabit Ethernet port (1G 0/0/2)", "Puerto Gigabit Ethernet RJ-45 (1G 0/0/2)"],
+    [4, "SFP+/10 Gigabit Ethernet port (10G 0/0/4); SFP/1 Gigabit Ethernet port (1G 0/0/4)", "Puerto SFP+ de 10 Gigabit Ethernet (10G 0/0/4) o SFP de 1 Gigabit Ethernet (1G 0/0/4)"],
+    [5, "NIM Slot1", "Ranura NIM 1"],
+    [6, "SM Slot1", "Ranura SM 1"],
+    [7, "RFID (Optional)", "Etiqueta RFID (opcional)"],
+    [8, "USB Type C (3.0) (USB 1)", "USB tipo C 3.0 (USB 1)"],
+    [9, "USB Type A (3.0) (USB 0)", "USB tipo A 3.0 (USB 0)"],
+    [10, "RJ-45 Console", "Consola RJ-45"],
+    [11, "Micro-USB Console", "Consola Micro-USB"],
+    [12, "RJ-45 Gigabit Ethernet port (1G 0/0/1)", "Puerto Gigabit Ethernet RJ-45 (1G 0/0/1)"],
+    [13, "RJ-45 Gigabit Ethernet port (1G 0/0/3)", "Puerto Gigabit Ethernet RJ-45 (1G 0/0/3)"],
+    [14, "SFP+/10 Gigabit Ethernet port (10G 0/0/5); SFP/1 Gigabit Ethernet port (1G 0/0/5)", "Puerto SFP+ de 10 Gigabit Ethernet (10G 0/0/5) o SFP de 1 Gigabit Ethernet (1G 0/0/5)"],
+    [15, "M.2 USB/NVMe storage", "Almacenamiento M.2 USB/NVMe"],
+    [16, "Device Label Tray", "Bandeja de etiquetas del equipo"]
+   ]
+  },
+  "rearLeyenda": {
+   "tabla": "tabla 2 «PSU/Fan Tray Side» de la guía",
+   "filas": [
+    [1, "AC/DC power supply unit (PSU1)", "Fuente de alimentación de CA/CC (PSU1)"],
+    [2, "Power, Preset, OK, LED", "LED de alimentación, presencia y OK"],
+    [3, "ALARM Fail LED", "LED de alarma de fallo"],
+    [4, "Ground lug", "Orejeta de tierra"],
+    [5, "Fan tray vent", "Rejilla de la bandeja de ventiladores"],
+    [6, "3-Internal Fan tray", "Bandeja de 3 ventiladores internos"],
+    [7, "PIM Slot 1", "Ranura PIM 1"],
+    [8, "Power switch", "Interruptor de encendido"],
+    [9, "AC/DC Power Supply Unit (PSU0)", "Fuente de alimentación de CA/CC (PSU0)"]
+   ]
+  }
  },
  "Catalyst 8300-2N2S-6T": {
   "front": "/img/equipos/cs-c8300-2n2s-front.webp",
   "rear": "/img/equipos/cs-c8300-2n2s-rear.webp",
   "fuente": "Frontal — guía «Hardware Installation Guide for Cisco Catalyst 8300 Series Edge Platforms», figura 3 «C8300-2N2S-4T2X|6T Chassis - I/O Side» (725 × 300 px, sin recortar). Trasera — guía «Hardware Installation Guide for Cisco Catalyst 8300 Series Edge Platforms», figura 4 «C8300-2N2S-4T2X|6T Chassis - PSU/Fan Tray Side» (650 × 240 px, sin recortar).",
   "frontPrev": "/img/equipos/cs-c8300-2n2s-front.prev.webp",
-  "rearPrev": "/img/equipos/cs-c8300-2n2s-rear.prev.webp"
+  "rearPrev": "/img/equipos/cs-c8300-2n2s-rear.prev.webp",
+  "frontLeyenda": {
+   "tabla": "tabla 3 «I/O Side» de la guía",
+   "filas": [
+    [1, "USB Type A (3.0) (USB 0)", "USB tipo A 3.0 (USB 0)"],
+    [2, "LED", "LED"],
+    [3, "RJ-45 Console", "Consola RJ-45"],
+    [4, "RJ-45 Gigabit Ethernet port (1G 0/0/0)", "Puerto Gigabit Ethernet RJ-45 (1G 0/0/0)"],
+    [5, "RJ-45 Gigabit Ethernet port (1G 0/0/2)", "Puerto Gigabit Ethernet RJ-45 (1G 0/0/2)"],
+    [6, "SFP+/10 Gigabit Ethernet port (10G 0/0/4) for C8300-2N2S-4T2X; SFP/1 Gigabit Ethernet port (1G 0/0/4) for C8300-2N2S-6T", "Puerto SFP+ de 10 Gigabit Ethernet (10G 0/0/4) en el C8300-2N2S-4T2X; SFP de 1 Gigabit Ethernet (1G 0/0/4) en el C8300-2N2S-6T"],
+    [7, "M.2 USB/NVMe storage", "Almacenamiento M.2 USB/NVMe"],
+    [8, "NIM Slot 1", "Ranura NIM 1"],
+    [9, "NIM Slot 2", "Ranura NIM 2"],
+    [10, "PIM Slot 1", "Ranura PIM 1"],
+    [11, "RFID (Optional)", "Etiqueta RFID (opcional)"],
+    [12, "SM Slot 2", "Ranura SM 2"],
+    [13, "Device label tray", "Bandeja de etiquetas del equipo"],
+    [14, "SM Slot 1", "Ranura SM 1"],
+    [15, "SFP+/10 Gigabit Ethernet port (10G 0/0/5) for C8300-2N2S-4T2X; SFP/1 Gigabit Ethernet port (1G 0/0/5) for C8300-2N2S-6T", "Puerto SFP+ de 10 Gigabit Ethernet (10G 0/0/5) en el C8300-2N2S-4T2X; SFP de 1 Gigabit Ethernet (1G 0/0/5) en el C8300-2N2S-6T"],
+    [16, "RJ-45 Gigabit Ethernet port (1G 0/0/3)", "Puerto Gigabit Ethernet RJ-45 (1G 0/0/3)"],
+    [17, "RJ-45 Gigabit Ethernet port (1G 0/0/1)", "Puerto Gigabit Ethernet RJ-45 (1G 0/0/1)"],
+    [18, "Micro-USB Console", "Consola Micro-USB"],
+    [19, "USB Type C(3.0) (USB 1)", "USB tipo C 3.0 (USB 1)"]
+   ]
+  },
+  "rearLeyenda": {
+   "tabla": "tabla 4 «PSU/Fan Tray Side» de la guía",
+   "filas": [
+    [1, "Ground Lug", "Orejeta de tierra"],
+    [2, "FRU Fan tray", "Bandeja de ventiladores reemplazable en campo (FRU)"],
+    [3, "Power Switch", "Interruptor de encendido"],
+    [4, "PSU0 Power LED", "LED de alimentación de la PSU0"],
+    [5, "PSU0", "Fuente PSU0"],
+    [6, "POE Power Module 0/1, behind removable Fan tray", "Módulos de alimentación PoE 0 y 1, detrás de la bandeja de ventiladores extraíble"],
+    [7, "PSU1 Power LED", "LED de alimentación de la PSU1"],
+    [8, "PSU1", "Fuente PSU1"]
+   ]
+  }
  },
  "Catalyst 8300-2N2S-4T2X": {
   "front": "/img/equipos/cs-c8300-2n2s-front.webp",
   "rear": "/img/equipos/cs-c8300-2n2s-rear.webp",
   "fuente": "Frontal — guía «Hardware Installation Guide for Cisco Catalyst 8300 Series Edge Platforms», figura 3 «C8300-2N2S-4T2X|6T Chassis - I/O Side» (725 × 300 px, sin recortar). Trasera — guía «Hardware Installation Guide for Cisco Catalyst 8300 Series Edge Platforms», figura 4 «C8300-2N2S-4T2X|6T Chassis - PSU/Fan Tray Side» (650 × 240 px, sin recortar).",
   "frontPrev": "/img/equipos/cs-c8300-2n2s-front.prev.webp",
-  "rearPrev": "/img/equipos/cs-c8300-2n2s-rear.prev.webp"
+  "rearPrev": "/img/equipos/cs-c8300-2n2s-rear.prev.webp",
+  "frontLeyenda": {
+   "tabla": "tabla 3 «I/O Side» de la guía",
+   "filas": [
+    [1, "USB Type A (3.0) (USB 0)", "USB tipo A 3.0 (USB 0)"],
+    [2, "LED", "LED"],
+    [3, "RJ-45 Console", "Consola RJ-45"],
+    [4, "RJ-45 Gigabit Ethernet port (1G 0/0/0)", "Puerto Gigabit Ethernet RJ-45 (1G 0/0/0)"],
+    [5, "RJ-45 Gigabit Ethernet port (1G 0/0/2)", "Puerto Gigabit Ethernet RJ-45 (1G 0/0/2)"],
+    [6, "SFP+/10 Gigabit Ethernet port (10G 0/0/4) for C8300-2N2S-4T2X; SFP/1 Gigabit Ethernet port (1G 0/0/4) for C8300-2N2S-6T", "Puerto SFP+ de 10 Gigabit Ethernet (10G 0/0/4) en el C8300-2N2S-4T2X; SFP de 1 Gigabit Ethernet (1G 0/0/4) en el C8300-2N2S-6T"],
+    [7, "M.2 USB/NVMe storage", "Almacenamiento M.2 USB/NVMe"],
+    [8, "NIM Slot 1", "Ranura NIM 1"],
+    [9, "NIM Slot 2", "Ranura NIM 2"],
+    [10, "PIM Slot 1", "Ranura PIM 1"],
+    [11, "RFID (Optional)", "Etiqueta RFID (opcional)"],
+    [12, "SM Slot 2", "Ranura SM 2"],
+    [13, "Device label tray", "Bandeja de etiquetas del equipo"],
+    [14, "SM Slot 1", "Ranura SM 1"],
+    [15, "SFP+/10 Gigabit Ethernet port (10G 0/0/5) for C8300-2N2S-4T2X; SFP/1 Gigabit Ethernet port (1G 0/0/5) for C8300-2N2S-6T", "Puerto SFP+ de 10 Gigabit Ethernet (10G 0/0/5) en el C8300-2N2S-4T2X; SFP de 1 Gigabit Ethernet (1G 0/0/5) en el C8300-2N2S-6T"],
+    [16, "RJ-45 Gigabit Ethernet port (1G 0/0/3)", "Puerto Gigabit Ethernet RJ-45 (1G 0/0/3)"],
+    [17, "RJ-45 Gigabit Ethernet port (1G 0/0/1)", "Puerto Gigabit Ethernet RJ-45 (1G 0/0/1)"],
+    [18, "Micro-USB Console", "Consola Micro-USB"],
+    [19, "USB Type C(3.0) (USB 1)", "USB tipo C 3.0 (USB 1)"]
+   ]
+  },
+  "rearLeyenda": {
+   "tabla": "tabla 4 «PSU/Fan Tray Side» de la guía",
+   "filas": [
+    [1, "Ground Lug", "Orejeta de tierra"],
+    [2, "FRU Fan tray", "Bandeja de ventiladores reemplazable en campo (FRU)"],
+    [3, "Power Switch", "Interruptor de encendido"],
+    [4, "PSU0 Power LED", "LED de alimentación de la PSU0"],
+    [5, "PSU0", "Fuente PSU0"],
+    [6, "POE Power Module 0/1, behind removable Fan tray", "Módulos de alimentación PoE 0 y 1, detrás de la bandeja de ventiladores extraíble"],
+    [7, "PSU1 Power LED", "LED de alimentación de la PSU1"],
+    [8, "PSU1", "Fuente PSU1"]
+   ]
+  }
  },
  "Catalyst 8500-12X4QC": {
   "front": "/img/equipos/cs-c8500-12x4qc-front.webp",
   "rear": "/img/equipos/cs-c8500-1ru-rear.webp",
   "fuente": "Frontal — ficha «Cisco Catalyst 8500 Series Edge Platforms Data Sheet» (c78-744089), figura 2 «C8500-12X4QC» (1800 × 183 px, sin recortar). Trasera — guía «Cisco Catalyst 8500 Series Edge Platforms Hardware Installation Guide» (2-jul-2024), figura 2 «Cisco C8500-12X4QC Rear View» (850 × 224 px, servida a 847 × 224).",
   "frontPrev": "/img/equipos/cs-c8500-12x4qc-front.prev.webp",
-  "rearPrev": "/img/equipos/cs-c8500-1ru-rear.prev.webp"
+  "rearPrev": "/img/equipos/cs-c8500-1ru-rear.prev.webp",
+  "rearLeyenda": {
+   "tabla": "leyenda de la figura 2 de la guía del Catalyst 8500; el 7 del dibujo no lo rotula («—»)",
+   "filas": [
+    [1, "Fans", "Ventiladores"],
+    [2, "Power supply AC input LED", "LED de entrada de CA de la fuente"],
+    [3, "PEM 0", "Módulo de alimentación (PEM) 0"],
+    [4, "PEM 1", "Módulo de alimentación (PEM) 1"],
+    [5, "Power switch", "Interruptor de encendido"],
+    [6, "Power supply failure LED", "LED de fallo de la fuente"]
+   ]
+  }
  },
  "Catalyst 8500-12X": {
   "front": "/img/equipos/cs-c8500-12x-front.webp",
   "rear": "/img/equipos/cs-c8500-1ru-rear.webp",
   "fuente": "Frontal — ficha «Cisco Catalyst 8500 Series Edge Platforms Data Sheet» (c78-744089), figura 3 «C8500-12X with 12x 1/10GE ports» (1800 × 191 px, sin recortar). Trasera — guía «Cisco Catalyst 8500 Series Edge Platforms Hardware Installation Guide» (2-jul-2024), figura 5 «Cisco C8500-12X Rear View» (850 × 224 px, servida a 847 × 224).",
   "frontPrev": "/img/equipos/cs-c8500-12x-front.prev.webp",
-  "rearPrev": "/img/equipos/cs-c8500-1ru-rear.prev.webp"
+  "rearPrev": "/img/equipos/cs-c8500-1ru-rear.prev.webp",
+  "rearLeyenda": {
+   "tabla": "leyenda de la figura 5 de la guía del Catalyst 8500; el 7 del dibujo no lo rotula («—»)",
+   "filas": [
+    [1, "Fans", "Ventiladores"],
+    [2, "Power supply AC input LED", "LED de entrada de CA de la fuente"],
+    [3, "PEM 0", "Módulo de alimentación (PEM) 0"],
+    [4, "PEM 1", "Módulo de alimentación (PEM) 1"],
+    [5, "Power switch", "Interruptor de encendido"],
+    [6, "Power supply failure LED", "LED de fallo de la fuente"]
+   ]
+  }
  },
  "Catalyst 8500-20X6C": {
   "front": "/img/equipos/cs-c8500-20x6c-front.webp",
@@ -343,27 +1102,111 @@
   "rear": "/img/equipos/cs-c8500l-8s4x-rear.webp",
   "fuente": "Frontal — ficha «Cisco Catalyst 8500 Series Edge Platforms Data Sheet» (c78-744089), figura 4 «C8500L-8S4X with 4x 1/10GE and 8x 1GE ports» (1800 × 180 px, sin recortar). Trasera — guía «Hardware Installation Guide for Cisco Catalyst 8500L-8S4X Edge Platform» (10-feb-2022), figura 5 «C8500L-8S4X Chassis - PSU/Fan Tray Side» (750 × 237 px, sin recortar).",
   "frontPrev": "/img/equipos/cs-c8500l-8s4x-front.prev.webp",
-  "rearPrev": "/img/equipos/cs-c8500l-8s4x-rear.prev.webp"
+  "rearPrev": "/img/equipos/cs-c8500l-8s4x-rear.prev.webp",
+  "rearLeyenda": {
+   "tabla": "tabla 4 «PSU/Fan Tray Side» de la guía",
+   "filas": [
+    [1, "Power Supply 1 (PSU1)", "Fuente de alimentación 1 (PSU1)"],
+    [2, "ALARM Fail LED", "LED de alarma de fallo"],
+    [3, "Status LED", "LED de estado"],
+    [4, "Power Supply 0 (PSU0)", "Fuente de alimentación 0 (PSU0)"],
+    [5, "PSU Latch", "Pestillo de la fuente"],
+    [6, "Ground Lug", "Orejeta de tierra"],
+    [7, "Fan Tray Vent", "Rejilla de la bandeja de ventiladores"],
+    [8, "Internal Fans", "Ventiladores internos"],
+    [9, "Power Switch", "Interruptor de encendido"]
+   ]
+  }
  },
  "ISR 1111X-8P": {
   "front": "/img/equipos/cs-isr1111x-8p-front.webp",
   "fuente": "Frontal — ficha «Cisco 1000 Series Integrated Services Routers Data Sheet» (c78-739512), figura 10 «C1111X-8P» (900 × 131 px, sin recortar). Trasera — guía «Hardware Installation Guide for the Cisco 1000 Series Integrated Services Router» (actualizada el 29-oct-2025), figura 1 «C111x Series - Bezel View», la cara del logotipo («Bezel»): la de puertos es la frontal, como en la ficha (625 × 157 px, sin recortar).",
   "frontPrev": "/img/equipos/cs-isr1111x-8p-front.prev.webp",
   "rear": "/img/equipos/cs-isr111x-rear.webp",
-  "rearPrev": "/img/equipos/cs-isr111x-rear.prev.webp"
+  "rearPrev": "/img/equipos/cs-isr111x-rear.prev.webp",
+  "rearLeyenda": {
+   "tabla": "leyenda de la figura 1 de la guía",
+   "filas": [
+    [1, "Status", "Estado"],
+    [2, "VPN", "VPN"],
+    [3, "Wi-Fi", "Wi-Fi"],
+    [4, "GPS", "GPS"],
+    [5, "LTE signal intensity", "Intensidad de la señal LTE"],
+    [6, "LTE data/SIM", "Datos LTE / SIM"],
+    [7, "Illuminated Cisco logo", "Logotipo de Cisco iluminado"]
+   ]
+  }
  },
  "ISR 1111-8P": {
   "front": "/img/equipos/cs-isr111x-8p-front.webp",
   "rear": "/img/equipos/cs-isr111x-rear.webp",
   "fuente": "Frontal — guía «Hardware Installation Guide for the Cisco 1000 Series Integrated Services Router» (actualizada el 29-oct-2025), figura 2 «C111x-8P - I/O View», dibujo de la familia: rotula también las antenas LTE, el GPS y los huecos de las variantes que los llevan, que el 1111-8P no trae (625 × 241 px, sin recortar). Trasera — guía «Hardware Installation Guide for the Cisco 1000 Series Integrated Services Router» (actualizada el 29-oct-2025), figura 1 «C111x Series - Bezel View», la cara del logotipo («Bezel»): la de puertos es la frontal, como en la ficha (625 × 157 px, sin recortar).",
   "frontPrev": "/img/equipos/cs-isr111x-8p-front.prev.webp",
-  "rearPrev": "/img/equipos/cs-isr111x-rear.prev.webp"
+  "rearPrev": "/img/equipos/cs-isr111x-rear.prev.webp",
+  "frontLeyenda": {
+   "tabla": "leyenda de la figura 2 de la guía",
+   "filas": [
+    [1, "LTE antennas – main and diversity", "Antenas LTE: principal y de diversidad"],
+    [2, "Ethernet switch", "Switch Ethernet"],
+    [3, "GPS connection", "Conexión de GPS"],
+    [4, "CLEI label", "Etiqueta CLEI"],
+    [5, "Serial number", "Número de serie"],
+    [6, "Grounding", "Toma de tierra"],
+    [7, "Reset button", "Botón de reinicio"],
+    [8, "Power switch", "Interruptor de encendido"],
+    [9, "4-pin power connector", "Conector de alimentación de 4 pines"],
+    [10, "GE 0/0/1", "GE 0/0/1"],
+    [11, "GE 0/0/0 - RJ45", "GE 0/0/0 (RJ-45)"],
+    [12, "GE 0/0/0 - SFP", "GE 0/0/0 (SFP)"],
+    [13, "USB3.0", "USB 3.0"],
+    [14, "Lower slot0 Upper slot1", "Ranura inferior 0 y superior 1"],
+    [15, "LTE provisioning port", "Puerto de aprovisionamiento LTE"],
+    [16, "RJ45/Micro USB console", "Consola RJ-45 / Micro-USB"],
+    [17, "DSL", "DSL"],
+    [18, "Kensington lock slot", "Ranura de bloqueo Kensington"],
+    [19, "Product Identification Number (PID)", "Número de identificación del producto (PID)"]
+   ]
+  },
+  "rearLeyenda": {
+   "tabla": "leyenda de la figura 1 de la guía",
+   "filas": [
+    [1, "Status", "Estado"],
+    [2, "VPN", "VPN"],
+    [3, "Wi-Fi", "Wi-Fi"],
+    [4, "GPS", "GPS"],
+    [5, "LTE signal intensity", "Intensidad de la señal LTE"],
+    [6, "LTE data/SIM", "Datos LTE / SIM"],
+    [7, "Illuminated Cisco logo", "Logotipo de Cisco iluminado"]
+   ]
+  }
  },
  "ISR 1121X-8P": {
   "front": "/img/equipos/cs-isr1121x-8p-front.webp",
   "rear": "/img/equipos/cs-isr1121x-8p-rear.webp",
   "fuente": "Frontal — guía «Hardware Installation Guide for the Cisco 1000 Series Integrated Services Router» (actualizada el 29-oct-2025), figura 14 «C1121(X)-8P I/O View», que vale para el C1121-8P y el C1121X-8P (700 × 159 px, sin recortar). Trasera — guía «Hardware Installation Guide for the Cisco 1000 Series Integrated Services Router» (actualizada el 29-oct-2025), figura 13 «C1121(X)-8P - Bezel View», la cara del logotipo («Bezel»): la de puertos es la frontal, como en la ficha (1200 × 258 px, sin recortar).",
   "frontPrev": "/img/equipos/cs-isr1121x-8p-front.prev.webp",
-  "rearPrev": "/img/equipos/cs-isr1121x-8p-rear.prev.webp"
+  "rearPrev": "/img/equipos/cs-isr1121x-8p-rear.prev.webp",
+  "frontLeyenda": {
+   "tabla": "leyenda de la figura 14 de la guía",
+   "filas": [
+    [1, "Reset button", "Botón de reinicio"],
+    [2, "Power switch", "Interruptor de encendido"],
+    [3, "4-pin power connector", "Conector de alimentación de 4 pines"],
+    [4, "Ethernet switch", "Switch Ethernet"],
+    [5, "RJ-45", "RJ-45"],
+    [6, "GE WAN 0/0/0 -RJ45", "GE WAN 0/0/0 (RJ-45)"],
+    [7, "GE WAN 0/0/0 -SFP", "GE WAN 0/0/0 (SFP)"],
+    [8, "Micro-USB console", "Consola Micro-USB"],
+    [9, "USB 3.0", "USB 3.0"],
+    [10, "Kensington lock slot", "Ranura de bloqueo Kensington"],
+    [11, "Grounding", "Toma de tierra"]
+   ]
+  },
+  "rearLeyenda": {
+   "tabla": "leyenda de la figura 13 de la guía",
+   "filas": [
+    [1, "Non-illuminated Cisco logo", "Logotipo de Cisco sin iluminar"]
+   ]
+  }
  }
 }
