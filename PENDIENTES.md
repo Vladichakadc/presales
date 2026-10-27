@@ -2356,6 +2356,7 @@ que ya se comprobó y lo que cuesta cada opción.
 
 ## Cerrado recientemente
 
+- **2026-10-27 · El arranque enseña los temas en curso (mejora aprobada de la quincuagesimoctava entrega).** Encargo del dueño: «hazla». `session-start.sh` corre `scripts/traspasos.js` **antes** de `npm install` (con `set -e`, una instalación fallida cortaba el hook antes de llegar; ese mismo día el proxy de la sesión dio 403 al registro de npm), dentro de un `if !` con `timeout 60`: si el fetch falla o se cuelga, avisa y el arranque sigue (conducido con un `git` roto en el PATH). El script ya no suelta una traza si `git for-each-ref` falla. `test/traspasos.test.js` frena el bloque si se mueve detrás de la instalación o pierde la guarda. Primera rama con su traspaso, borrado al fusionar.
 - **2026-10-27 · Las tres mejoras propuestas, cuatro pendientes con documento y el informe de relevo
   (quincuagesimonovena entrega).** Encargo del dueño: «instala ECC y tráeme las tareas pendientes y
   las mejoras propuestas»; después «ejecuta las mejoras propuestas y cierra las tareas pendientes»,
