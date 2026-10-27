@@ -1280,6 +1280,31 @@ jobs:
               { archivo: 'cisco-asr-epa-ds.html', tipo: 'html', para: 'CISCO', debeContener: 'EPA', urls: [
                 'https://www.cisco.com/c/en/us/products/collateral/application-networking-services/wide-area-application-services-waas-software/data-sheet-c78-729778.html',
               ] },
+              // Pendientes que se cierran con papel (2026-10-27, encargo «ejecuta las mejoras propuestas
+              // y cierra las tareas pendientes»), uno por documento:
+              // · PQC de los FortiGate sin fila en la Maximum Values Table (400G, 3000G, 3500G, 3800G,
+              //   sus variantes, 7081F y 7121F): si las Release Notes de FortiOS 7.6.7 los listan como
+              //   soportados, corren una 7.6 posterior a la 7.6.1, la que trae ML-KEM.
+              { archivo: 'fortinet-rn-7.6.7.html', tipo: 'html', para: 'FORTINET', exploracion: true, urls: [
+                'https://docs.fortinet.com/document/fortigate/7.6.7/fortios-release-notes/',
+              ] },
+              { archivo: 'fortinet-rn-7.6.7.pdf', tipo: 'pdf', para: 'FORTINET', urls: [],
+                descubrirEnlace: { de: 'fortinet-rn-7.6.7.html', contiene: 'release-notes',
+                  base: 'https://docs.fortinet.com/document/fortigate/7.6.7/fortios-release-notes/',
+                  dominios: ['fortinet.com', 'fortinetweb.s3.amazonaws.com'] } },
+              // · Combinaciones del C8570-G2: su guia de hardware no trae la nota de la bahia 1 en
+              //   100G; el capitulo «Bay configuration» de su guia de configuracion, si (leida en la
+              //   edicion japonesa: la bahia 0 se deshabilita).
+              { archivo: 'cisco-sr8500-scg-bahias.html', tipo: 'html', para: 'CISCO', debeContener: 'C8570-G2', urls: [
+                'https://www.cisco.com/c/en/us/td/docs/routers/secure-routers/sec-8500-series/secure-8500-software-config-guide/bay-configuration.html',
+              ] },
+              { archivo: 'cisco-sr8500-scg.pdf', tipo: 'pdf', para: 'CISCO', urls: [
+                'https://www.cisco.com/c/en/us/td/docs/routers/secure-routers/sec-8500-series/secure-8500-software-config-guide.pdf',
+              ] },
+              // · Puerto de la interconexion EdgeHA de Aruba: que puertos puede usar el enlace HA.
+              { archivo: 'aruba-edgeha.html', tipo: 'html', para: 'ARUBA', debeContener: 'HA Link', urls: [
+                'https://arubanetworking.hpe.com/techdocs/sdwan/docs/orch/configuration/overlays/deploy-edgeha/',
+              ] },
               { archivo: 'cisco-hig3-img', tipo: 'imagenes', para: 'CISCO', urls: [],
                 descubrirPiezas: { de: ['cisco-isr1100-hig-overview.html', 'cisco-sr8200-hig-overview.html'],
                   base: 'https://www.cisco.com/', dominios: ['cisco.com'], relativas: true,
