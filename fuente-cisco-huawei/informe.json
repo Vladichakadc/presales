@@ -1,0 +1,32 @@
+[
+  {
+    "archivo": "aruba-7010-pagina.html",
+    "para": "ARUBA",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://arubanetworking.hpe.com/techdocs/hardware/DocumentationPortal/Content/ArubaTopics/gatecontroller/7010.htm",
+        "status": 200,
+        "bytes": 29452,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "aruba-7010-ig.pdf",
+    "para": "ARUBA",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://www.arubanetworks.com/techdocs/hardware/controllers/7010/ig/Aruba%207010%20Installation%20Guide_EN.pdf",
+        "status": 200,
+        "bytes": 2548007,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  }
+]
