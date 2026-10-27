@@ -1,0 +1,77 @@
+[
+  {
+    "archivo": "cisco-sa-tuneles-intro.html",
+    "para": "CISCO",
+    "guardado": true,
+    "exploracion": true,
+    "intentos": [
+      {
+        "url": "https://securitydocs.cisco.com/docs/csa/olh/118824.dita",
+        "status": 200,
+        "bytes": 1717779,
+        "guardado": true,
+        "verificado": false
+      }
+    ]
+  },
+  {
+    "archivo": "cisco-sa-limites.html",
+    "para": "CISCO",
+    "guardado": true,
+    "exploracion": true,
+    "intentos": [
+      {
+        "url": "https://securitydocs.cisco.com/docs/csa/olh/118830.dita",
+        "status": 200,
+        "bytes": 1720062,
+        "guardado": true,
+        "verificado": false
+      }
+    ]
+  },
+  {
+    "archivo": "cisco-sa-grupos-tunel.html",
+    "para": "CISCO",
+    "guardado": true,
+    "exploracion": true,
+    "intentos": [
+      {
+        "url": "https://securitydocs.cisco.com/docs/csa/olh/118900.dita",
+        "status": 200,
+        "bytes": 1721319,
+        "guardado": true,
+        "verificado": false
+      }
+    ]
+  },
+  {
+    "archivo": "cisco-sa-ipsec.html",
+    "para": "CISCO",
+    "guardado": true,
+    "exploracion": true,
+    "intentos": [
+      {
+        "url": "https://securitydocs.cisco.com/docs/csa/olh/120419.dita",
+        "status": 200,
+        "bytes": 1729974,
+        "guardado": true,
+        "verificado": false
+      }
+    ]
+  },
+  {
+    "archivo": "cisco-sa-caudal.html",
+    "para": "CISCO",
+    "guardado": true,
+    "exploracion": true,
+    "intentos": [
+      {
+        "url": "https://securitydocs.cisco.com/docs/csa/olh/120799.dita",
+        "status": 200,
+        "bytes": 1718819,
+        "guardado": true,
+        "verificado": false
+      }
+    ]
+  }
+]
