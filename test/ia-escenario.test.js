@@ -71,6 +71,8 @@ test('se acepta lo que tiene cita en el texto y valor válido; lo demás se desc
     { campo: 'seguridad', valor: 'onbox', cita: '', nota: '' },
     { campo: 'inventado', valor: '1', cita: 'La sede central', nota: '' },
     { campo: 'chkHa', valor: 'sí', cita: 'La sede central', nota: '' },
+    // Un número suelto está en casi cualquier pliego: no respalda nada.
+    { campo: 'tuneles', valor: '40', cita: '40', nota: '' },
   ]);
   assert.deepStrictEqual(r.propuestas.map((p) => [p.campo, p.valor]),
     [['bw', 2], ['unit', '1000'], ['dirSeg', '2'], ['diaPct', 40], ['chk4g', true], ['reqPqc', 'mlkem']]);
@@ -83,6 +85,7 @@ test('se acepta lo que tiene cita en el texto y valor válido; lo demás se desc
   assert.match(motivo('seguridad'), /sin cita/);
   assert.match(motivo('inventado'), /no es un parámetro de esta página/);
   assert.match(motivo('chkHa'), /no es true ni false/);
+  assert.match(motivo('tuneles'), /cita de menos de 6 caracteres/);
 });
 
 test('la llamada: Opus 5.5, esfuerzo explícito, esquema, sin herramientas y el pliego como documento', async () => {
