@@ -7,7 +7,7 @@ const test = require('node:test');
 const assert = require('node:assert');
 const { cargar } = require('./ayuda/navegador');
 
-const { BOM } = cargar('public/js/bom.js');
+const { BOM } = cargar('public/js/pqc.js', 'public/js/bom.js');
 const texto = (aoa) => aoa.map((r) => r.join(' | ')).join('\n');
 
 const META = { titulo: 'Lista de materiales — AR651', supuestos: { vendor: 'huawei', fabricante: 'Huawei', plataforma: 'NetEngine AR',
@@ -76,4 +76,42 @@ test('un resumen que llega como texto se escribe como una fila y no tumba la hoj
   // Cisco lo pasaba así hasta el 2026-10-27 y el Excel de Cisco no se descargaba.
   const t = texto(BOM.matrizSupuestos({ titulo: 'BOM', supuestos: { fabricante: 'Cisco', resumen: 'Overlay 900 Mbps' } }, { fecha: 'f', url: 'u' }).aoa);
   assert.match(t, /RESULTADO DEL DIMENSIONAMIENTO\nResultado \| Overlay 900 Mbps/);
+});
+
+// La PQC exigida con su versión mínima (2026-10-27, mejora propuesta en la sexagesimosexta entrega):
+// el equipo la cumple DESDE una versión de software, y la propuesta tiene que decirlo.
+test('con «Exigir PQC», la hoja dice el mecanismo, la versión mínima y la fuente; sin exigirla, nada', () => {
+  const ISR = { tipo: 'ppk', mecanismo: 'Claves precompartidas post-cuánticas (PPK, RFC 8784)', donde: 'IKEv2 e IPsec',
+    desde: 'IOS XE 17.12.1a', fuente: 'Guía de IOS XE 17' };
+  const meta = { titulo: 'BOM', supuestos: { fabricante: 'Cisco', modelo: 'ISR 1111-8P', pqc: ISR } };
+  const clave = { fecha: 'f', url: 'u', pqc: { nivel: 'clave', etiqueta: 'Mecanismo quantum-safe documentado (PPK, MACsec/ANYsec o ML-KEM)' } };
+  const t = texto(BOM.matrizSupuestos(meta, clave).aoa);
+  assert.match(t, /CRIPTOGRAFÍA POST-CUÁNTICA EXIGIDA/);
+  assert.match(t, /Requisito del escenario \| Mecanismo quantum-safe documentado/);
+  assert.match(t, /¿El equipo del BOM lo cumple\? \| Sí/);
+  assert.match(t, /Mecanismo documentado \| PPK \(RFC 8784\): Claves precompartidas/);
+  assert.match(t, /Versión mínima de software \| IOS XE 17\.12\.1a o superior/);
+  assert.match(t, /Fuente \| Guía de IOS XE 17/);
+  // Sin exigirla, la sección no sale (los parámetros ya dicen que no se exige).
+  assert.doesNotMatch(texto(BOM.matrizSupuestos(meta, { fecha: 'f', url: 'u' }).aoa), /POST-CUÁNTICA/);
+});
+
+test('PQC exigida: sin versión lo dice, un equipo elegido a mano que no cumple lo dice con su motivo', () => {
+  const EC = { tipo: 'ppk', mecanismo: 'PPK en IKEv2', desde: null, fuente: 'Cifrados de EdgeConnect' };
+  const ml = { fecha: 'f', url: 'u', pqc: { nivel: 'mlkem', etiqueta: 'Algoritmo post-cuántico ML-KEM (FIPS 203)' } };
+  const t = texto(BOM.matrizSupuestos({ titulo: 'BOM', supuestos: { modelo: 'EC-10104', pqc: EC } }, ml).aoa);
+  assert.match(t, /¿El equipo del BOM lo cumple\? \| No: su documento da PPK \(RFC 8784\), no un algoritmo ML-KEM/);
+  assert.match(t, /Versión mínima de software \| la fuente no da la versión/);
+  const sin = texto(BOM.matrizSupuestos({ titulo: 'BOM', supuestos: { modelo: 'AR651' } }, { ...ml, pqc: { nivel: 'clave', etiqueta: 'x' } }).aoa);
+  assert.match(sin, /¿El equipo del BOM lo cumple\? \| No: no consta en ningún documento oficial que la traiga/);
+  assert.match(sin, /eso no prueba que no la tenga/);
+});
+
+test('las siete páginas pasan el `pqc` del equipo a la hoja', () => {
+  const fs = require('fs');
+  const path = require('path');
+  for (const p of ['aruba-edgeconnect', 'cisco-catalyst8k', 'fortinet-fortigate', 'huawei-netengine', 'juniper-srx', 'mikrotik-routeros', 'nokia-7750sr']) {
+    const js = fs.readFileSync(path.join(__dirname, '..', 'public', 'js', `dimensionador-${p}.js`), 'utf8');
+    assert.match(js, /pqc: ?m\.pqc \|\| null/, `${p} no pasa la PQC a «Supuestos»`);
+  }
 });

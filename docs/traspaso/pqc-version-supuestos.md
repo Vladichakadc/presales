@@ -4,9 +4,9 @@
 - **Rama:** claude/elegant-pascal-7ymts7
 - **Cuenta:** vladichakadc, sesión 01TxCQ3W2sHYVmimAdMKht3j
 - **Estado:** en curso
-- **Actualizado:** 2026-10-27 18:00
-- **Archivos que toca:** public/js/bom.js, test/bom-supuestos.test.js, test/e2e/, server/seed/legacyData/cisco.js, server/seed/legacyData/mikrotik.js, server/seed/legacyData/nokia.js, server/seed/legacyData/aruba.js, server/seed/legacyData/fuentes.js, .github/workflows/traer-cisco-huawei.yml, test/pqc.test.js
-- **Siguiente paso:** leer `matrizSupuestos` en `bom.js` y añadir la fila de PQC (mecanismo, versión mínima y fuente) cuando el escenario exige `reqPqc`
+- **Actualizado:** 2026-10-27 18:20
+- **Archivos que toca:** public/js/bom.js, public/js/dimensionador-aruba-edgeconnect.js, public/js/dimensionador-cisco-catalyst8k.js, public/js/dimensionador-fortinet-fortigate.js, public/js/dimensionador-huawei-netengine.js, public/js/dimensionador-juniper-srx.js, public/js/dimensionador-mikrotik-routeros.js, public/js/dimensionador-nokia-7750sr.js, test/bom-supuestos.test.js, test/e2e/, server/seed/legacyData/cisco.js, server/seed/legacyData/mikrotik.js, server/seed/legacyData/nokia.js, server/seed/legacyData/aruba.js, server/seed/legacyData/fuentes.js, .github/workflows/traer-cisco-huawei.yml, test/pqc.test.js
+- **Siguiente paso:** leer `fuente/pqc-3-2026-10-27` (boletines de los ASR, ficha de los 7250 IXR-e) y marcar la PPK de los cuatro MikroTik con su manual
 
 ## Encargo del dueño
 
@@ -21,6 +21,11 @@ traer por Actions (ASR 1000, siete MikroTik, 7250 IXR, gateways AOS de Aruba).
   hEX lite (RB750r2), el hEX (RB750Gr3), el hEX PoE (RB960PGS) y el hEX S (RB760iGS) dicen «The device
   supports RouterOS v7 and above»; el hEX PoE lite, la PowerBox Pro y el RB1100AHx4 dicen solo «la
   versión de /system resource o superior».
+- **Mejora hecha**: `matrizSupuestos` (`bom.js`) escribe «CRIPTOGRAFÍA POST-CUÁNTICA EXIGIDA» cuando
+  `#reqPqc` pide algo: requisito, si el equipo lo cumple (con el motivo de `pqc.js` si no), mecanismo,
+  versión mínima («la fuente no da la versión» si falta), dónde, alcance y fuente. Las siete páginas
+  pasan `pqc: m.pqc || null`. Pruebas en `bom-supuestos.test.js` y batería `e2e-pqc-supuestos.js`
+  (Excel real del ISR: «IOS XE 17.12.1a o superior»).
 - Entradas nuevas en `traer-cisco-huawei.yml`: boletines de fin de venta de los tres ASR y la ficha
   de los 7250 IXR-e/e2 (asset 206825), a `fuente/pqc-3-2026-10-27`.
 
