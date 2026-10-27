@@ -28,6 +28,10 @@ const MAX_TEXTO = 200000;
 // campos es corta, así que 32.000 sobra y solo se cobra lo que se genera.
 const MAX_TOKENS = 32000;
 const MAX_CITA = 400;
+// Cita mínima (mejora aprobada el 2026-10-27): un «5» o un «40» aparecen en casi cualquier pliego,
+// así que comprobar que están en el texto no prueba nada. Seis caracteres, ya normalizados, dejan
+// pasar lo más corto que respalda algo («2 Gbps», «SD-WAN», «5 años») y frenan un número suelto.
+const MIN_CITA = 6;
 
 /* Los campos que la IA puede proponer, por página. `id` es el del control de la página; `n`, el
    nombre que se enseña; `d`, lo que lee el modelo. El TIPO, el RANGO y las OPCIONES no se
@@ -164,6 +168,7 @@ function validar(pagina, texto, crudas) {
     const cita = String(p.cita || '').trim();
     if (!cita) { rechazar('sin cita del texto'); continue; }
     if (cita.length > MAX_CITA) { rechazar(`cita de más de ${MAX_CITA} caracteres`); continue; }
+    if (normalizar(cita).length < MIN_CITA) { rechazar(`cita de menos de ${MIN_CITA} caracteres: no respalda nada`); continue; }
     if (!textoN.includes(normalizar(cita))) { rechazar('la cita no aparece literalmente en el texto'); continue; }
     const v = String(p.valor == null ? '' : p.valor).trim();
     let valor;
@@ -246,5 +251,5 @@ async function proponerEscenario(pagina, texto) {
 
 function _clienteDePrueba(c) { cliente = c; }
 
-module.exports = { PAGINAS, MAX_TEXTO, MAX_CITA, restricciones, camposDe, esquema, sistema, normalizar, validar,
+module.exports = { PAGINAS, MAX_TEXTO, MAX_CITA, MIN_CITA, restricciones, camposDe, esquema, sistema, normalizar, validar,
   crudasDeRespuesta, proponerEscenario, _clienteDePrueba };
