@@ -55,8 +55,6 @@ const globalsNavegador = {
   FortinetMotor: 'readonly',
   // Requisito de criptografía post-cuántica (2026-10-27): la regla única, /js/pqc.js.
   PQC: 'readonly',
-  // Del pliego al escenario (piloto de IA, 2026-10-27): /js/pliego.js.
-  PLIEGO: 'readonly',
 };
 
 const reglas = {
