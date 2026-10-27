@@ -13,3 +13,5 @@ docs/manual-usuario/fonts/
 # consulta, tapando las relaciones reales. Lo cerrado se busca en el propio archivo.
 PENDIENTES.md
 docs/claude-md-cronica.md
+# El traspaso entre sesiones es estado de trabajo, no documentacion del codigo.
+docs/traspaso/
