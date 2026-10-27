@@ -4,7 +4,7 @@
 - **Rama:** claude/elegant-pascal-7ymts7
 - **Cuenta:** vladichakadc, sesión 01TxCQ3W2sHYVmimAdMKht3j
 - **Estado:** en curso
-- **Actualizado:** 2026-10-27 17:40
+- **Actualizado:** 2026-10-27 18:00
 - **Archivos que toca:** public/js/bom.js, test/bom-supuestos.test.js, test/e2e/, server/seed/legacyData/cisco.js, server/seed/legacyData/mikrotik.js, server/seed/legacyData/nokia.js, server/seed/legacyData/aruba.js, server/seed/legacyData/fuentes.js, .github/workflows/traer-cisco-huawei.yml, test/pqc.test.js
 - **Siguiente paso:** leer `matrizSupuestos` en `bom.js` y añadir la fila de PQC (mecanismo, versión mínima y fuente) cuando el escenario exige `reqPqc`
 
@@ -17,7 +17,12 @@ traer por Actions (ASR 1000, siete MikroTik, 7250 IXR, gateways AOS de Aruba).
 
 ## Hecho
 
-- (nada todavía)
+- Hallado (manuales de usuario de MikroTik ya traídos, rama `fuente/pendientes-2026-10-13`): el
+  hEX lite (RB750r2), el hEX (RB750Gr3), el hEX PoE (RB960PGS) y el hEX S (RB760iGS) dicen «The device
+  supports RouterOS v7 and above»; el hEX PoE lite, la PowerBox Pro y el RB1100AHx4 dicen solo «la
+  versión de /system resource o superior».
+- Entradas nuevas en `traer-cisco-huawei.yml`: boletines de fin de venta de los tres ASR y la ficha
+  de los 7250 IXR-e/e2 (asset 206825), a `fuente/pqc-3-2026-10-27`.
 
 ## Falta
 
