@@ -258,14 +258,6 @@ function contador() {
     ok(cond, msg) {
       console.log((cond ? 'ok' : 'FALLO') + ' - ' + msg);
       if (!cond) fallos.push(msg);
-      // En Actions, cada fallo es además una anotación del job (2026-10-27): el log completo
-      // vive en un almacén que el proxy de las sesiones de Claude no alcanza, y las anotaciones
-      // se leen por la API de GitHub (check-runs/<id>/annotations). Saltos de línea escapados
-      // como pide el formato de los comandos de flujo de trabajo.
-      if (!cond && process.env.GITHUB_ACTIONS) {
-        const limpio = (s) => String(s).replace(/%/g, '%25').replace(/\r/g, '%0D').replace(/\n/g, '%0A');
-        console.log(`::error title=${limpio(require('path').basename(process.argv[1] || 'e2e'))}::${limpio(msg).slice(0, 900)}`);
-      }
     },
     resumen(nombre) {
       console.log(fallos.length
