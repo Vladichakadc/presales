@@ -1212,6 +1212,23 @@ jobs:
               { archivo: 'cisco-sa-tunel-guia.html', tipo: 'html', para: 'CISCO', exploracion: true, urls: [
                 'https://securitydocs.cisco.com/docs/csa/olh/118929.dita',
               ] },
+              // Los identificadores 119020 y 119011 dieron 404 (corrida 40493337677); estos salen de la
+              // navegación de la ayuda que sí se trajo (118929): túneles, límites y grupos de túneles.
+              { archivo: 'cisco-sa-tuneles-intro.html', tipo: 'html', para: 'CISCO', exploracion: true, urls: [
+                'https://securitydocs.cisco.com/docs/csa/olh/118824.dita',
+              ] },
+              { archivo: 'cisco-sa-limites.html', tipo: 'html', para: 'CISCO', exploracion: true, urls: [
+                'https://securitydocs.cisco.com/docs/csa/olh/118830.dita',
+              ] },
+              { archivo: 'cisco-sa-grupos-tunel.html', tipo: 'html', para: 'CISCO', exploracion: true, urls: [
+                'https://securitydocs.cisco.com/docs/csa/olh/118900.dita',
+              ] },
+              { archivo: 'cisco-sa-ipsec.html', tipo: 'html', para: 'CISCO', exploracion: true, urls: [
+                'https://securitydocs.cisco.com/docs/csa/olh/120419.dita',
+              ] },
+              { archivo: 'cisco-sa-caudal.html', tipo: 'html', para: 'CISCO', exploracion: true, urls: [
+                'https://securitydocs.cisco.com/docs/csa/olh/120799.dita',
+              ] },
               { archivo: 'cisco-pon-ont-ds.html', tipo: 'html', para: 'CISCO', debeContener: 'SFP-10G-ONT20-I', urls: [
                 'https://www.cisco.com/c/en/us/products/collateral/networking/optics-transceiver-modules/10g-pon-ont-modules-ds.html',
               ] },
