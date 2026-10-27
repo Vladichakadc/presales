@@ -1298,6 +1298,10 @@ jobs:
               { archivo: 'fortinet-rn-7.6.7-6000-7000.html', tipo: 'html', para: 'FORTINET', exploracion: true, urls: [
                 'https://docs.fortinet.com/document/fortigate/7.6.7/fortios-release-notes/866373/fortigate-6000-and-7000-incompatibilities-and-limitations',
               ] },
+              // La pagina anterior remite a esta para el 7081F y el 7121F (corrida 40537044470).
+              { archivo: 'fortinet-7000f-limitaciones.html', tipo: 'html', para: 'FORTINET', exploracion: true, urls: [
+                'https://docs.fortinet.com/document/fortigate/7.6.7/fortigate-7000f-administration-guide/301266',
+              ] },
               { archivo: 'fortinet-rn-7.6.6.html', tipo: 'html', para: 'FORTINET', exploracion: true, urls: [
                 'https://docs.fortinet.com/document/fortigate/7.6.6/fortios-release-notes',
               ] },
