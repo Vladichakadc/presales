@@ -1,6 +1,6 @@
 {
  "medidoEn": {
-  "commit": "54dbc07",
+  "commit": "084630d",
   "fecha": "2026-10-27"
  },
  "umbralRozado": 25,
@@ -64,7 +64,7 @@
   {
    "modulo": "comparador.js",
    "estado": "rozado",
-   "total": 47,
+   "total": 48,
    "usadas": 2,
    "pct": 4
   },
@@ -149,15 +149,15 @@
    "modulo": "index.js",
    "estado": "ejercitado",
    "total": 58,
-   "usadas": 42,
-   "pct": 72
+   "usadas": 43,
+   "pct": 74
   },
   {
    "modulo": "ficha.js",
    "estado": "ejercitado",
-   "total": 77,
-   "usadas": 58,
-   "pct": 75
+   "total": 78,
+   "usadas": 59,
+   "pct": 76
   },
   {
    "modulo": "mikrotik-motor.js",
@@ -176,8 +176,8 @@
   {
    "modulo": "dimensionador-fortinet-fortigate.js",
    "estado": "ejercitado",
-   "total": 284,
-   "usadas": 226,
+   "total": 283,
+   "usadas": 225,
    "pct": 80
   },
   {
