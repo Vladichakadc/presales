@@ -1292,6 +1292,19 @@ jobs:
                 descubrirEnlace: { de: 'fortinet-rn-7.6.7.html', contiene: 'release-notes',
                   base: 'https://docs.fortinet.com/document/fortigate/7.6.7/fortios-release-notes/',
                   dominios: ['fortinet.com', 'fortinetweb.s3.amazonaws.com'] } },
+              //   Las de 7.6.7 (corrida 40535630075) listan el 3800G/3801G y, aparte, el 7081F/7121F
+              //   con sus «incompatibilities and limitations»; el 400G, el 3000G y el 3500G no estan:
+              //   las de 7.6.6 dicen en que build se publica cada uno.
+              { archivo: 'fortinet-rn-7.6.7-6000-7000.html', tipo: 'html', para: 'FORTINET', exploracion: true, urls: [
+                'https://docs.fortinet.com/document/fortigate/7.6.7/fortios-release-notes/866373/fortigate-6000-and-7000-incompatibilities-and-limitations',
+              ] },
+              { archivo: 'fortinet-rn-7.6.6.html', tipo: 'html', para: 'FORTINET', exploracion: true, urls: [
+                'https://docs.fortinet.com/document/fortigate/7.6.6/fortios-release-notes',
+              ] },
+              { archivo: 'fortinet-rn-7.6.6.pdf', tipo: 'pdf', para: 'FORTINET', urls: [],
+                descubrirEnlace: { de: 'fortinet-rn-7.6.6.html', contiene: 'release-notes',
+                  base: 'https://docs.fortinet.com/document/fortigate/7.6.6/fortios-release-notes',
+                  dominios: ['fortinet.com', 'fortinetweb.s3.amazonaws.com'] } },
               // · Combinaciones del C8570-G2: su guia de hardware no trae la nota de la bahia 1 en
               //   100G; el capitulo «Bay configuration» de su guia de configuracion, si (leida en la
               //   edicion japonesa: la bahia 0 se deshabilita).
