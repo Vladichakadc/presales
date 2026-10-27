@@ -352,10 +352,11 @@ Módulos compartidos:
   alternativas, no acumulables; un chasis modular no publica densidad), **criptografía
   post-cuántica** (`seccionPqc`, de `m.pqc` con su fuente: `mlkem` —algoritmo ML-KEM, G2 con IOS XE
   26.1 y FortiGate con FortiOS 7.6.1—, `ppk` —clave precompartida de RFC 8784: SRX de gama alta,
-  Catalyst 8000 e ISR 1000 con IOS XE 17.11/17.12, EdgeConnect y MikroTik con RouterOS 7.21 (solo
-  donde su ficha dice «RouterOS v7», y CHR)— y `macsec` —MACsec/ANYsec simétrico, Nokia 7750 y
-  SR-1x—, cada uno dicho como lo que es; la PPK de un sistema operativo no se extiende a un modelo
-  sin documento de que corre esa versión (los ASR fuera de venta, «no consta»); sin documento,
+  Catalyst 8000, ISR 1000 y ASR 1002-HX/1006-X con IOS XE 17.11/17.12, EdgeConnect y MikroTik con
+  RouterOS 7.21 (donde su ficha o su manual dice «RouterOS v7», y CHR)— y `macsec` —MACsec/ANYsec
+  simétrico, Nokia 7750 y SR-1x—, cada uno dicho como lo que es; la PPK de un sistema operativo no
+  se extiende a un modelo sin documento de que corre esa versión (el boletín de fin de venta da la
+  última de cada ASR: el 1001-X se queda en la 17.9); sin documento,
   «no consta»; el Comparador del portal lo da en una línea), licenciamiento, software,
   soporte, referencias de pedido (bajo demanda por modelo) y figuras con su página y rótulo literal
   (frontal, trasera y, opt-in `foto` + `fotoFuente`, una tercera pestaña con la foto de producto a
@@ -373,7 +374,9 @@ Módulos compartidos:
   «BOM» en el índice 0 y detrás **«Supuestos»** (`matrizSupuestos`: fecha, enlace, plataforma,
   resultado que declare `meta.supuestos`, parámetros de `ESTADO.escenario()` y las fuentes que
   **declaran** al equipo en `modelos`, o las que lo nombran si no declaran, con su «Asociación»); el
-  consolidado multi-sede no la lleva. La hoja «Fotos del equipo» (`meta.fotos`: Aruba, Fortinet, Huawei,
+  consolidado multi-sede no la lleva. Con «Exigir PQC» (`#reqPqc`), «Supuestos» trae además la
+  sección de la PQC exigida: si el equipo la cumple, su mecanismo, **la versión mínima de software**
+  y la fuente, del `pqc` que cada página pasa en `meta.supuestos`. La hoja «Fotos del equipo» (`meta.fotos`: Aruba, Fortinet, Huawei,
   Cisco y Juniper) escribe bajo cada figura su leyenda opt-in (`frontLeyenda`/`rearLeyenda`), como la ficha.
   Llevan leyenda las figuras con números: las de Cisco, las 36 de Juniper y el Aruba 7010 (decidido
   figura a figura en `cisco-leyendas.test.js` y `vistas-leyendas.test.js`); en la tarjeta clavada
