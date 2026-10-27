@@ -1,0 +1,131 @@
+[
+  {
+    "archivo": "meraki-wan-behavior.html",
+    "para": "CISCO",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://documentation.meraki.com/SASE_and_SD-WAN/MX/Product_Information/Overviews_and_Datasheets/WAN_Behavior_on_MX75%2F%2F85%2F%2F95%2F%2F105",
+        "status": 200,
+        "bytes": 85318,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "cisco-sa-tunel-tamano.html",
+    "para": "CISCO",
+    "guardado": false,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://securitydocs.cisco.com/docs/csa/olh/119020.dita",
+        "status": 404
+      }
+    ]
+  },
+  {
+    "archivo": "cisco-sa-tunel-ecmp.html",
+    "para": "CISCO",
+    "guardado": false,
+    "exploracion": true,
+    "intentos": [
+      {
+        "url": "https://securitydocs.cisco.com/docs/csa/olh/119011.dita",
+        "status": 404
+      }
+    ]
+  },
+  {
+    "archivo": "cisco-sa-tunel-guia.html",
+    "para": "CISCO",
+    "guardado": true,
+    "exploracion": true,
+    "intentos": [
+      {
+        "url": "https://securitydocs.cisco.com/docs/csa/olh/118929.dita",
+        "status": 200,
+        "bytes": 1717696,
+        "guardado": true,
+        "verificado": false
+      }
+    ]
+  },
+  {
+    "archivo": "cisco-pon-ont-ds.html",
+    "para": "CISCO",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://www.cisco.com/c/en/us/products/collateral/networking/optics-transceiver-modules/10g-pon-ont-modules-ds.html",
+        "status": 200,
+        "bytes": 67526,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "cisco-pon-ont-ds.pdf",
+    "para": "CISCO",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://www.cisco.com/c/en/us/products/collateral/networking/optics-transceiver-modules/10g-pon-ont-modules-ds.pdf",
+        "status": 200,
+        "bytes": 280178,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "cisco-asr1001x-hig-hw.html",
+    "para": "CISCO",
+    "guardado": true,
+    "exploracion": true,
+    "intentos": [
+      {
+        "url": "https://www.cisco.com/c/en/us/td/docs/routers/asr1000/install/guide/1001-x/asr1hig-book/asr1hig-book_chapter_011.html",
+        "status": 200,
+        "bytes": 210496,
+        "guardado": true,
+        "verificado": false
+      }
+    ]
+  },
+  {
+    "archivo": "cisco-asr1002hx-hig-hw.html",
+    "para": "CISCO",
+    "guardado": true,
+    "exploracion": true,
+    "intentos": [
+      {
+        "url": "https://www.cisco.com/c/en/us/td/docs/routers/asr1000/install/guide/1001HX_1002HX/b_ASR1001HX-1002HX_HIG/b_ASR1001HX-1002HX_HIG_chapter_010.html",
+        "status": 200,
+        "bytes": 98886,
+        "guardado": true,
+        "verificado": false
+      }
+    ]
+  },
+  {
+    "archivo": "cisco-asr-epa-ds.html",
+    "para": "CISCO",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://www.cisco.com/c/en/us/products/collateral/application-networking-services/wide-area-application-services-waas-software/data-sheet-c78-729778.html",
+        "status": 200,
+        "bytes": 178727,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  }
+]

@@ -1,0 +1,896 @@
+<!DOCTYPE html>
+<html  lang="en">
+<head prefix="og: http://ogp.me/ns# article: http://ogp.me/ns/article#">
+
+        <meta name="viewport" content="width=device-width, initial-scale=1"/>
+        <meta name="google-site-verification" content="mW_9DEI0m-ICeSJnaiaIKGJltJgFh4edDWNJb1m9l3U"/>
+        <meta name="generator" content="MindTouch"/>
+        <meta name="robots" content="index,follow"/>
+        <meta property="og:title" content="WAN Behavior on MX75/85/95/105"/>
+        <meta property="og:site_name" content="Cisco Meraki Documentation"/>
+        <meta property="og:type" content="article"/>
+        <meta property="og:locale" content="en_US"/>
+        <meta property="og:url" content="https://documentation.meraki.com/SASE_and_SD-WAN/MX/Product_Information/Overviews_and_Datasheets/WAN_Behavior_on_MX75%2F%2F85%2F%2F95%2F%2F105"/>
+        <meta property="og:image" content="https://documentation.meraki.com/@public/production/site_13505/1603418441-social-share.png"/>
+        <meta property="og:description" content="This document outlines the behavior for MX75/85/95/105 in context of multiple interfaces capabilities"/>
+        <meta property="article:published_time" content="2021-05-27T16:12:25Z"/>
+        <meta property="article:modified_time" content="2026-09-15T17:30:24Z"/>
+        <meta name="twitter:card" content="summary"/>
+        <meta name="twitter:title" content="WAN Behavior on MX75/85/95/105"/>
+        <meta name="twitter:description" content="This document outlines the behavior for MX75/85/95/105 in context of multiple interfaces capabilities"/>
+        <meta name="twitter:image" content="https://documentation.meraki.com/@public/production/site_13505/1603418441-social-share.png"/>
+        <meta name="description" content="This document outlines the behavior for MX75/85/95/105 in context of multiple interfaces capabilities"/>
+        <link rel="canonical" href="https://documentation.meraki.com/SASE_and_SD-WAN/MX/Product_Information/Overviews_and_Datasheets/WAN_Behavior_on_MX75%2F%2F85%2F%2F95%2F%2F105"/>
+        <link rel="search" type="application/opensearchdescription+xml" title="Cisco Meraki Documentation Search" href="https://documentation.meraki.com/@api/deki/site/opensearch/description"/>
+        <link rel="apple-touch-icon" href="https://documentation.meraki.com/@public/production/site_13505/1749845950-apple-touch-icon.png"/>
+        <link rel="shortcut icon" href="https://documentation.meraki.com/@public/production/site_13505/1756406766-favicon.ico"/>
+
+        <script type="application/ld+json" nonce="1fdb651f54956ee7b0a5dbd6fa5ad4eca5c33cc1509b390b5dfbeb573fce70f8">{"@context":"http:\/\/schema.org","@type":"TechArticle","name":"WAN Behavior on MX75\/85\/95\/105","url":"https:\/\/documentation.meraki.com\/SASE_and_SD-WAN\/MX\/Product_Information\/Overviews_and_Datasheets\/WAN_Behavior_on_MX75%2F%2F85%2F%2F95%2F%2F105","image":{"@type":"ImageObject","url":"https:\/\/documentation.meraki.com\/@public\/production\/site_13505\/1603418441-social-share.png","height":{"@type":"QuantitativeValue","maxValue":315},"width":{"@type":"QuantitativeValue","maxValue":600}},"datePublished":"2021-05-27T16:12:25Z","dateModified":"2026-09-15T17:30:24Z","description":"This document outlines the behavior for MX75\/85\/95\/105 in context of multiple interfaces capabilities","thumbnailUrl":"https:\/\/documentation.meraki.com\/@api\/deki\/pages\/6073\/thumbnail?default=https%3A%2F%2Fdocumentation.meraki.com%2F%40style%2Fcommon%2Fimages%2Fimage-placeholder.png","mainEntityofPage":{"@type":"WebPage","@id":"https:\/\/documentation.meraki.com\/SASE_and_SD-WAN\/MX\/Product_Information\/Overviews_and_Datasheets\/WAN_Behavior_on_MX75%2F%2F85%2F%2F95%2F%2F105"},"headline":"WAN Behavior on MX75\/85\/95\/105"}</script>
+        <script type="application/ld+json" nonce="1fdb651f54956ee7b0a5dbd6fa5ad4eca5c33cc1509b390b5dfbeb573fce70f8">{"@context":"http:\/\/schema.org","@type":"WebPage","name":"WAN Behavior on MX75\/85\/95\/105","url":"https:\/\/documentation.meraki.com\/SASE_and_SD-WAN\/MX\/Product_Information\/Overviews_and_Datasheets\/WAN_Behavior_on_MX75%2F%2F85%2F%2F95%2F%2F105","relatedLink":["https:\/\/documentation.meraki.com\/SASE_and_SD-WAN\/MX\/Operate_and_Maintain\/How-Tos\/Onboarding_IOS_XE_Based_Secure_Routers_into_Dashboard","https:\/\/documentation.meraki.com\/SASE_and_SD-WAN\/MX\/Operate_and_Maintain\/How-Tos\/MX_Cold_Swap_-_Replacing_an_Existing_MX_with_a_Different_MX","https:\/\/documentation.meraki.com\/SASE_and_SD-WAN\/MX\/Operate_and_Maintain\/How-Tos\/Static_IP_Assignment","https:\/\/documentation.meraki.com\/SASE_and_SD-WAN\/MX\/Install_and_Get_Started\/Installation_Guides\/MX67%2F%2FMX68_Installation_Guide"]}</script>
+        <script type="application/ld+json" nonce="1fdb651f54956ee7b0a5dbd6fa5ad4eca5c33cc1509b390b5dfbeb573fce70f8">{"@context":"http:\/\/schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"item":{"@id":"https:\/\/documentation.meraki.com\/SASE_and_SD-WAN","name":"SASE and SD-WAN"}},{"@type":"ListItem","position":2,"item":{"@id":"https:\/\/documentation.meraki.com\/SASE_and_SD-WAN\/MX","name":"MX - Security & SD-WAN"}},{"@type":"ListItem","position":3,"item":{"@id":"https:\/\/documentation.meraki.com\/SASE_and_SD-WAN\/MX\/Product_Information","name":"Product Information"}},{"@type":"ListItem","position":4,"item":{"@id":"https:\/\/documentation.meraki.com\/SASE_and_SD-WAN\/MX\/Product_Information\/Overviews_and_Datasheets","name":"Overviews and Datasheets"}}]}</script>
+
+        <title>WAN Behavior on MX75/85/95/105 - Cisco Meraki Documentation</title>
+
+
+    <style type="text/css">/*<![CDATA[*/
+/*.mt-foot {
+    display: none;
+}
+
+#contact-support{
+    width: 350px;
+    /*background-image: url('data:image/png;base64,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');
+    background-repeat: no-repeat;
+    background-position: left center;
+    background-size: 5em;*/
+    /*padding-left: 6em;
+    margin-left: 35px;
+    margin-top: -15px;
+}
+#wishFrame{
+    margin-top: 25px;
+    margin-left: 35px;
+    width: 350px;
+}
+
+/* /begin Added 10/20/17 
+#contact-sales{
+    width: 350px;
+    margin-left: 80px;
+    margin-top: -15px;
+}
+#contact-sales h2{
+    color: #999;
+}
+#contact-sales a{
+    font-size: larger;
+    color: #999;
+}
+
+/* /end Added 10/20/17 */
+
+/* /begin Added for testing 8/16/17 
+#ask-community{
+    margin-left: 35px;
+    margin-top: -15px;
+    width: 350px;
+}
+/* /end Added for testing 8/16/17 */
+/*.clearFix{
+   content: " "; /* Older browser do not support empty content 
+   visibility: hidden;
+   display: block;
+   height: 0;
+   clear: both;
+}
+.float-right{
+   display:inline-block;
+   float:right;
+}
+.float-left{
+   display:inline-block;
+   float:left;
+}
+#internal-suggestion {
+    margin: auto;
+    width: 572px;
+    clear: both;
+    margin-top: 2em;
+    border-top: 1px solid rgba(0,0,0,0.2);
+    text-align: center;
+    padding-top: 2em;
+}
+/* Changes for Docs+KB UI */
+/*#footerContent{
+    background: #484848; /* grey background color */
+   /* border-top: 6px solid #282828; /* small black border at the top */
+   /* margin: auto;
+    width: 1280px;
+    color: #999;
+    clear: both;
+    overflow: auto;
+    box-shadow: 0 0 3px rgba(0,0,0,0.4);
+}
+#contact-support a {
+    font-size: larger;
+    color: #999;
+}
+#contact-support a:hover {
+    color: #0097c8;
+}
+
+#contact-support h2{
+    color: #999; /* makes "contact support" a better grey */
+}
+
+/* /begin Added 8/16/17 */
+/*#ask-community a {
+    font-size: larger;
+    color: #999;
+}
+#ask-community a:hover {
+    color: #0097c8;
+}
+
+#ask-community h2{
+    color: #999; /* makes "contact support" a better grey */
+}
+/* /end Added 8/16/17 */
+
+/*#copyright {
+    margin: auto;
+    padding-right: 90px;
+    color: grey;
+    float: right;
+}
+#crfoot {
+    background: #505050;
+    margin: auto;
+    width: 1280px;
+    clear: both;
+    overflow: auto;
+    box-shadow: 0 3px 3px rgba(0,0,0,0.4);
+    height: 20px;
+    padding-top: 10px;
+    padding-bottom: 5px;
+}/*]]>*/</style>
+
+        <link media="screen" type="text/css" rel="stylesheet" href="https://a.mtstatic.com/@cache/layout/anonymous.css?_=bc1cf6d1f7dae577d68e1d471b97d03f_ZG9jdW1lbnRhdGlvbi5tZXJha2kuY29t:site_13505" id="mt-screen-css" />
+
+    
+        <link media="print" type="text/css" rel="stylesheet" href="https://a.mtstatic.com/@cache/layout/print.css?_=08b5078b61ce100bf8ae4d4829a6f54b:site_13505" id="mt-print-css" />
+
+
+    <script type="application/json" nonce="1fdb651f54956ee7b0a5dbd6fa5ad4eca5c33cc1509b390b5dfbeb573fce70f8" id="mt-localizations-draft">
+{"Draft.JS.alert.cancel.button":"OK","Draft.JS.alert.cancel.message":"You can not cancel a draft when the live page is unpublished.","Draft.JS.alert.cancel.title":"This draft cannot be canceled","Draft.JS.alert.publish.button":"OK","Draft.JS.alert.publish.message":"You can not publish a draft of a page with an unpublished parent","Draft.JS.alert.publish.title":"This draft cannot be published","Draft.JS.alert.unpublish.button":"OK","Draft.JS.alert.unpublish.message":"You can not unpublish a page when published subpages are present.","Draft.JS.alert.unpublish.title":"This page cannot be unpublished","Draft.JS.success.cancel":"The draft was successfully deleted.","Draft.JS.success.schedule.publish":"Publication schedule successfully created.","Draft.JS.success.publish":"The draft was successfully published.","Draft.JS.success.unpublish":"The page was successfully unpublished.","Draft.JS.success.unpublish.inherits-schedule\n        Draft.JS.success.unpublish.scheduled-to-publish":"[MISSING: draft.js.success.unpublish.inherits-schedule\n        draft.js.success.unpublish.scheduled-to-publish]","Draft.JS.success.update.schedule.publish":"Publication schedule successfully updated.","Draft.JS.success.update.schedule.unpublish":"[MISSING: draft.js.success.update.schedule.unpublish]","Draft.JS.success.delete.schedule\n        Draft.JS.success.delete.schedule.with.subpages\n        Draft.error.cancel":"[MISSING: draft.js.success.delete.schedule\n        draft.js.success.delete.schedule.with.subpages\n        draft.error.cancel]","Draft.error.publish":"There was an error publishing the draft.","Draft.error.unpublish":"There was an error unpublishing the page.","Draft.message.at":"at","Dialog.ConfirmSave.StrictIdf.title":"Oops!","Dialog.ConfirmSave.StrictIdf.error.missing-template-reference":"This article type requires a template reference widget. Not having one may negatively impact your site and SEO. Please contact NiCE Knowledge Management support.","Dialog.ConfirmSave.StrictIdf.label.continue":"Proceed anyway","Dialog.ConfirmSave.StrictIdf.label.cancel":"Cancel","Dialog.ConfirmSave.StrictIdf.label.missing-template-reference-help-link":"Learn more about required references","Dialog.ConfirmSave.StrictIdf.error.invalid-idf":"This type of article should not exist at the requested location in the site hierarchy. Proceeding with the requested move may negatively impact site navigation and SEO.","Dialog.ConfirmSave.StrictIdf.label.invalid-idf-help-link":"Learn more about IDF structure","Dialog.EditDraft.page-title":"Create draft","Dialog.Scheduler.Common.label.am":"{0} AM","Dialog.Scheduler.Common.label.pm":"{0} PM","Dialog.Scheduler.Publish.alert-create-draft":"Create","Dialog.Scheduler.Publish.alert-existing-publication-scheduled":"This location has an existing publication schedule applied.  The new page will inherit this new schedule.","Dialog.Scheduler.Publish.alert-modify-message":"This draft is scheduled to be published {0} at {1}. A schedule cannot be modified or deleted less than 15 minutes from its start time.","Dialog.Scheduler.Publish.alert-modify-title":"This schedule cannot be modified","Dialog.Scheduler.Publish.button-close":"Close","Dialog.Scheduler.Publish.button-save":"Save publish schedule","Dialog.Scheduler.Publish.button-go-to-parent":"Go to parent","Dialog.Scheduler.Publish.do-not-have-permission-message":"This page will be published {0} with another page scheduled by {1}. You do not have permission to view this page. Please see {1} to resolve scheduling conflicts.","Dialog.Scheduler.Publish.go-to-parent-message":"This draft will be published {0}, scheduled by {1}. A schedule can only be modified where it was created.","Dialog.Scheduler.Publish.label.f1-link":"Learn about scheduled publishing","Dialog.Scheduler.Publish.page-title":"Publish","Dialog.Scheduler.Unpublish.button-save":"Save unpublish schedule","Dialog.Scheduler.Unpublish.alert-modify-message":"This page is scheduled to be unpublished {0} at {1}. A schedule cannot be modified or deleted less than 15 minutes from its start time.","Dialog.Scheduler.Unpublish.do-not-have-permission-message":"This page will be unpublished {0} with another page scheduled by {1}. You do not have permission to view this page. Please see {1} to resolve scheduling conflicts.","Dialog.Scheduler.Unpublish.go-to-parent-message":"This page will be unpublished {0}, scheduled by {1}. A schedule can only be modified where it was created.","Dialog.Scheduler.Unpublish.page-title":"Unpublish","Page.Dashboard.page-title":"Dashboard"}    </script>    <script type="application/json" nonce="1fdb651f54956ee7b0a5dbd6fa5ad4eca5c33cc1509b390b5dfbeb573fce70f8" id="mt-localizations-editor">
+{"Article.Attach.file.upload.toobig":"The file \"{1}\" is too large.  The maximum allowed file size is {0}.","Article.Attach.file.upload.notAllowed":"The selected file can not be uploaded because you do not have permission to upload files of that type.","Article.Attach.file.upload.fileExtension":"You picked a file with an unsupported extension.  Please try again with a valid file.","Article.Common.page-is-restricted-login":"You do not have permission to view this page - please try signing in.","Article.Common.page-save-conflict":"You may have overwritten a concurrent editor's changes. Use this page's <a title=\"Revision History\" target=\"_blank\" href=\"{0}\" >Revision History<\/a> to review.","Article.Error.page-couldnt-be-loaded":"The requested page's contents could not be loaded.","Article.Error.page-save-conflict":"A page already exists at {0}. Navigate to the existing page and edit the page if you wish to modify its contents.","Article.Error.page-save-forbidden":"Your session has expired or you do not have permission to edit this page.","Article.Error.page-title-required":"A page title is required.","Article.edit.summary":"Edit summary","Article.edit.summary-reason":"Why are you making this edit?","Article.edit.enter-reason":"Enter reason (viewable in Site History Report)","Component.YoutubeSearch.error.key-invalid":"Your YouTube API Key was improperly configured. Please review the article at the","Component.YoutubeSearch.error.key-missing":"Your NiCE Knowledge Management deployment needs to update your YouTube API Key. Details on how to update can be found at the","Component.YoutubeSearch.error.search-failed":"Search failed","Component.YoutubeSearch.info.not-found":"No videos found","Component.YoutubeSearch.label.video-url":"Video URL","Component.YoutubeSearch.placeholder.query":"Video URL or YouTube search query","Dialog.ConfirmCancel.button.continue-editing":"Continue editing","Dialog.ConfirmCancel.button.discard-changes":"Discard changes","Dialog.ConfirmCancel.message.changes-not-saved":"Your changes have not been saved to MindTouch.","Dialog.ConfirmCancel.title":"Discard changes?","Dialog.ConfirmDeleteRedirects.label.delete-redirects-help-link":"Learn more about deleting redirects","Dialog.ConfirmSave.error.redirect":"A redirect exists at this location and will be deleted if you continue. This may negatively impact your site and SEO. Please contact NiCE Knowledge Management support.","Dialog.ConfirmSave.label.cancel":"Cancel","Dialog.ConfirmSave.label.continue":"Continue","Dialog.ConfirmSave.title":"Delete redirect?","Dialog.ConfirmSave.StrictIdf.error.invalid-idf":"This type of article should not exist at the requested location in the site hierarchy. Proceeding with the requested move may negatively impact site navigation and SEO.","Dialog.ConfirmSave.StrictIdf.error.missing-template-reference-insert":"You've removed the template reference, which is required for this page. Click Insert to reinsert the template reference.","Dialog.ConfirmSave.StrictIdf.label.cancel":"Cancel","Dialog.ConfirmSave.StrictIdf.label.continue":"Proceed anyway","Dialog.ConfirmSave.StrictIdf.label.insert":"Insert","Dialog.ConfirmSave.StrictIdf.label.missing-template-reference-help-link":"Learn more about required references","Dialog.ConfirmSave.StrictIdf.label.invalid-idf-help-link":"Learn more about IDF structure","Dialog.ConfirmSave.StrictIdf.title":"Oops!","Dialog.JS.wikibits-edit-section":"Edit section","Dialog.SaveRequired.button.cancel":"Cancel","Dialog.SaveRequired.button.save":"Save and continue","Dialog.SaveRequired.label.change-title-start":"This page needs a different title than","Dialog.SaveRequired.label.change-title-end":"Please make the correction and try again.","Dialog.SaveRequired.label.new-page-alert":"This operation can not be performed on a page that has not yet been created. In order to do that, we need to quickly save what you have.","Dialog.SaveRequired.title":"Save required","Draft.error.save-unpublished":"You cannot save an unpublished draft at {0}. A published page already exists at that location.","GUI.Editor.alert-changes-made-without-saving":"You have made changes to the content without saving your changes. Are you sure you want to exit this page?","GUI.Editor.error.copy-hint":"To avoid losing your work, copy the page contents to a new file and retry saving again.","GUI.Editor.error.server-error":"A server error has occurred.","GUI.Editor.error.unable-to-save":"We are unable to save this page","Redist.CKE.mt-save.save-to-file-link":"Save the page content to a file","Redist.CKE.mt-autosave.contents-autosaved":"The page contents were autosaved to the browser's local storage {0}","System.API.Error.invalid-redirect":"Cannot create a redirect on a page with sub-pages.","System.API.Error.invalid-redirect-target":"The redirect does not point at a valid page."}    </script>    <script type="application/json" nonce="1fdb651f54956ee7b0a5dbd6fa5ad4eca5c33cc1509b390b5dfbeb573fce70f8" id="mt-localizations-file-uploader">
+{"Dialog.Attach.allowed-types":"Allowed file types:","Dialog.Attach.button.upload":"Upload","Dialog.Attach.choose-files-dad":"Choose files to upload or drag and drop files into this window.","Dialog.Attach.max-size":"Maximum upload file size: {0}"}    </script>    <script type="application/json" nonce="1fdb651f54956ee7b0a5dbd6fa5ad4eca5c33cc1509b390b5dfbeb573fce70f8" id="mt-localizations-grid-widget">
+{"Article.Common.page-is-restricted-login":"You do not have permission to view this page - please try signing in.","MindTouch.Help.Page.search-unavailable":"Sorry, search is currently unavailable.","MindTouch.Reports.data.empty-grid-text":"No Data Available.","Page.StructuredTags.error-update":"An unknown error occurred."}    </script>    <script type="application/json" nonce="1fdb651f54956ee7b0a5dbd6fa5ad4eca5c33cc1509b390b5dfbeb573fce70f8" id="mt-localizations-tree-widget">
+{"Skin.Common.home":"Home","Dialog.Common.error.path-not-found":"The requested page or section could not be loaded. Please update the link.","Dialog.JS.loading":"Loading...","Dialog.JS.loading.copy":"Copying page(s)...","Dialog.JS.loading.insertImage":"Inserting image...","Dialog.JS.loading.move":"Moving page(s)...","Dialog.JS.loading.moveFile":"Moving file...","Dialog.JS.loading.search":"Searching...","MindTouch.Help.Page.in":"in","MindTouch.Help.Page.no-search-results":"Sorry, we can't find what you are looking for.","MindTouch.Help.Page.no-search-try":"Try searching for something else, selecting a category, or try creating a ticket.","MindTouch.Help.Page.retrysearch":"Click here to search the whole site.","MindTouch.Help.Page.search-error-try":"Please try again later.","MindTouch.Help.Page.search-unavailable":"Sorry, search is currently unavailable."}    </script>    <script type="application/json" nonce="1fdb651f54956ee7b0a5dbd6fa5ad4eca5c33cc1509b390b5dfbeb573fce70f8" id="mt-localizations-dialog">
+{"Dialog.Common.button.cancel":"Cancel","Dialog.Common.button.close":"Close","Dialog.Common.button.ok":"OK","Dialog.Common.label.home":"Home"}    </script>
+    <script type="text/javascript" data-mindtouch-module="true" nonce="1fdb651f54956ee7b0a5dbd6fa5ad4eca5c33cc1509b390b5dfbeb573fce70f8" src="https://a.mtstatic.com/deki/javascript/out/globals.jqueryv2.2.4.polyfill.js?_=670f5a3cd0b46c0637012decc8ed035ba4a97eb4:site_13505"></script><script type="application/json" id="mt-global-settings" nonce="1fdb651f54956ee7b0a5dbd6fa5ad4eca5c33cc1509b390b5dfbeb573fce70f8">{"articleType":"reference","attachFileMax":1000,"baseHref":"https:\/\/documentation.meraki.com","cacheFingerprint":"670f5a3cd0b46c0637012decc8ed035ba4a97eb4:site_13505","canFileBeAttached":false,"cdnHostname":"a.mtstatic.com","clientSideWarnings":false,"dntEditorConfig":false,"draftEditable":false,"followRedirects":1,"idfHideTemplateTags":true,"idfVersion":"IDF3","isAiOptimizationTemplateEnabled":false,"isArticleReviewCommunityMembersEnabled":false,"isDraftAllowed":false,"isDraftManagerReportDownloadEnabled":false,"isDraftRequest":false,"isFindAndReplaceUndoEnabled":false,"isGenerativeSearchEnabled":false,"isGenerativeSearchDisclaimerEnabled":true,"isGenerativeSearchStreamResponseToggleEnabled":false,"isGenerativeSearchSearchIconEnabled":false,"isContentAdequacyEnabled":true,"isGenerativeSearchOnDemandEvaluationEnabled":true,"isEditorAiAssistantShortcutsEnabled":false,"isFileDescriptionCaptionableByLlmEnabled":false,"isGoogleAnalyticsEnabled":true,"isGuideTabMultipleClassificationsEnabled":false,"isHawthornThemeEnabled":false,"isIframeSandboxEnabled":false,"isImportExportEnhancementsEnabled":true,"isImportExportMediaEnabled":true,"isExternalImportEnabled":false,"isInteractionAnalyticsDebugEnabled":false,"isDevelopmentModeEnabled":false,"isInteractionAnalyticsEnabled":true,"isKcsEnabledOnPage":false,"isMediaManagerEnabled":false,"isPinnedPagesEnabled":true,"isPinnedPagesEnhancementsEnabled":true,"isReportDownloadEnabled":false,"isSchedulePublishEnabled":true,"isSearchAsYouTypeEnabled":false,"isTinymceAiAssistantEnabled":false,"isSearchInsightsDownloadEnabled":true,"isSentimentAnalysisEnabled":true,"isShowMoreChildrenNodesEnabled":false,"isShowTerminalNodesEnabled":false,"isSkinResponsive":true,"isSmoothScrollEnabled":true,"isTinyMceEnabled":false,"isTreeArticleIconsEnabled":false,"isXhrF1WebWidgetEnabled":true,"isXhrIEMode":false,"kcsEnabled":false,"kcsV2Enabled":false,"kcsV2GuidePrivacySetting":"Semi-Public","learningPathsEnabled":true,"maxFileSize":268435456,"moduleMode":"global","pageEditable":false,"pageId":6073,"pageIsRedirect":false,"pageLanguageCode":"en-US","pageName":"WAN Behavior on MX75\/85\/95\/105","pageNamespace":"","pageOrderLimit":1000,"pagePermissions":["LOGIN","BROWSE","READ","SUBSCRIBE"],"pageRevision":"86","pageSectionEditable":false,"pageTitle":"SASE and SD-WAN\/MX\/Product Information\/Overviews and Datasheets\/WAN Behavior on MX75\/\/85\/\/95\/\/105","pageViewId":"7a7f06ea-ebd4-4a1c-81db-58ad3ca8aec5","siteId":"site_13505","pathCommon":"\/@style\/common","pathSkin":"\/@style\/elm","relatedArticlesDetailed":true,"removeBlankTemplate":true,"removeDeleteCheckbox":true,"cidWarningOnDelete":true,"scriptParser":2,"sessionId":"NzVjZDFlODItOWU2ZC00NDBkLThkYzEtYzZhZjY4ZDA2ZmEyfDIwMjYtMTAtMjdUMDk6NDI6MzQ=","showAllTemplates":false,"siteAuthoringPageThumbnailManagementEnabled":true,"skinStyle":"columbia.elm","spaceballs2Enabled":false,"strictIdfEnabled":true,"uiLanguage":"en-us","userId":2,"isPageRedirectPermanent":false,"userIsAdmin":false,"userIsAnonymous":true,"userIsSeated":false,"userName":"Anonymous User","userPermissions":["LOGIN","BROWSE","READ","SUBSCRIBE"],"userSystemName":"Anonymous","userTimezone":"GMT","webFontConfig":{"google":{"families":null}},"apiToken":"xhr_2_1793099063_8b784a9b18f529d56fab56b5259bf5e80a279606863d08262ec1d7b97a3a584e","displayGenerativeSearchDisclaimer":true,"cognigyFlowsEnabled":false}</script><script type="text/javascript" data-mindtouch-module="true" nonce="1fdb651f54956ee7b0a5dbd6fa5ad4eca5c33cc1509b390b5dfbeb573fce70f8" src="https://a.mtstatic.com/deki/javascript/out/community.js?_=670f5a3cd0b46c0637012decc8ed035ba4a97eb4:site_13505"></script><script type="text/javascript" data-mindtouch-module="true" nonce="1fdb651f54956ee7b0a5dbd6fa5ad4eca5c33cc1509b390b5dfbeb573fce70f8" src="https://a.mtstatic.com/deki/javascript/out/standalone/skin_elm.js?_=670f5a3cd0b46c0637012decc8ed035ba4a97eb4:site_13505"></script><script type="text/javascript" data-mindtouch-module="true" nonce="1fdb651f54956ee7b0a5dbd6fa5ad4eca5c33cc1509b390b5dfbeb573fce70f8" src="https://a.mtstatic.com/deki/javascript/out/standalone/pageBootstrap.js?_=670f5a3cd0b46c0637012decc8ed035ba4a97eb4:site_13505"></script>
+
+    
+        
+<script type="text/javascript" src="https://www.cisco.com/c/dam/cdc/t/ctm-core.js"></script>
+    
+<script type="text/javascript" nonce="1fdb651f54956ee7b0a5dbd6fa5ad4eca5c33cc1509b390b5dfbeb573fce70f8">(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)})(window,document,'script','//www.google-analytics.com/analytics.js','ga');ga('create','UA-51174192-2','documentation.meraki.com',{allowLinker:true});ga('send','pageview');ga('create','UA-65721316-2','documentation.meraki.com',{name:'mtTracker',allowLinker:true});ga('mtTracker.require','linker');ga('mtTracker.set', 'anonymizeIp', true);ga('mtTracker.send','pageview');document.addEventListener('mindtouch-web-widget:f1:loaded',function(e){var t=e.data||{},d=t.widget;d&&''!==t.embedId&&document.addEventListener('mindtouch-web-widget:f1:clicked',function(e){var t=(e.data||{}).href;if(t){var n=document.createElement('a');n.setAttribute('href',t),'expert-help.nice.com'===n.hostname&&(e.preventDefault(),ga('linker:decorate',n),d.open(n.href))}})});</script>
+</head>
+<body class="elm-user-anonymous columbia-page-main columbia-article-reference columbia-browser- columbia-platform- columbia-breadcrumb-home-saseandsd-wan-mx-productinformation-overviewsanddatasheets-wanbehavioronmx75--85--95--105 columbia-live no-touch columbia-lang-en-us columbia-skin-elm">
+<a class="elm-skip-link" href="#elm-main-content" title="Press enter to skip to the main content">Skip to main content</a><main class="elm-skin-container" data-ga-category="Anonymous | page">
+    <header class="elm-header">
+        <div class="elm-header-custom">
+<script async="async" src="https://www.googletagmanager.com/gtag/js?id=G-NHZZG7QL8R"></script><script>/*<![CDATA[*/
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-NHZZG7QL8R');
+/*]]>*/</script><script src="//use.typekit.net/hum1oye.js"></script><script>/*<![CDATA[*/try{Typekit.load();}catch(e){}/*]]>*/</script>
+
+<div class="mt-header-help"><div class="mt-header-help-container"><div class="mt-logo-container"><div class="mt-logo"><a class="internal" href="https://documentation.meraki.com/" rel="internal"><img class="mt-cdn" src="https://documentation.meraki.com/@api/deki/site/logo?default=https%3A%2F%2Fdocumentation.meraki.com%2F%40cdn%2F%40style%2Fcommon-legacy%2Fimages%2Flogo.png" alt="" /></a></div></div><div id="navcontainer"><ul id="navlist"><li><a href="https://account.meraki.com/secure/login/dashboard_login" target="_blank" rel="external noopener nofollow" class="link-https">Dashboard</a></li><li><a href="https://community.cisco.com/t5/meraki/ct-p/meraki-home" target="_blank" rel="external noopener nofollow" class="link-https">Community</a></li><li><a href="https://meraki.cisco.com/support" target="_blank" rel="external noopener nofollow" class="link-https">Support</a></li><li><a id="current" href="https://meraki.cisco.com/form/contact" target="_blank" rel="external noopener nofollow" class="link-https">Contact Sales</a></li></ul></div></div><div class="mt-header-search"><div class="mt-help-search mt-lsf-search" id="mt-portfolio-search"><script type="application/json" id="mt-localizations-help-widget">/*<![CDATA[*/{"Help.Widget.button.text":"Search","Help.Widget.label.text":"Query","Help.Widget.placeholder.text":"Search WAN Behavior on MX75\/85\/95\/105"}/*]]>*/</script><div class="mt-inputredirect" data-query-key="q" data-path="SASE_and_SD-WAN/MX/Product_Information/Overviews_and_Datasheets/WAN_Behavior_on_MX75//85//95//105"></div></div></div></div>
+
+<p>&nbsp;</p>
+</div>
+        <div class="elm-nav mt-translate-module" hidden="true">
+            <div class="elm-nav-container mt-translate-container"></div>
+        </div>
+        <div class="elm-header-logo-container">
+            <a href="https://documentation.meraki.com" title="Cisco Meraki Documentation" aria-label='Link to home'><img src="https://documentation.meraki.com/@public/production/site_13505/1749845593-logo.png" alt="Cisco Meraki Documentation" /></a>
+        </div>
+        
+        <nav class="elm-header-user-nav elm-nav" role="navigation">
+            <div class="elm-nav-container">
+                <ol>
+                    <li class="elm-global-search" data-ga-action="Header search"><a class="mt-icon-site-search mt-toggle-form" href="#" title="Search site">Search site</a>
+<div class="mt-quick-search-container mt-toggle-form-container">
+    <form action="/Special:Search">
+        <input name="qid" id="mt-qid-skin" type="hidden" value="" />
+        <input name="fpid" id="mt-search-filter-id" type="hidden" value="230" />
+        <input name="fpth" id="mt-search-filter-path" type="hidden" />
+        <input name="path" id="mt-search-path" type="hidden" value="" />
+
+        <label class="mt-label" for="mt-site-search-input">
+            Search
+        </label>
+        <input class="mt-text mt-search search-field" name="q" id="mt-site-search-input" placeholder="How can we help you?" type="search" />
+        <button class="mt-button ui-button-icon mt-icon-site-search-button search-button" type="submit">
+            Search
+        </button>
+    </form>
+</div>
+<div class="elm-search-back"><a class="mt-icon-browser-back" data-ga-label="Browse back" href="#" id="mt-browser-back" title="Go back to previous article">Go back to previous article</a></div>
+</li>
+                    <li class="elm-user-menu"><ol class="mt-user-menu">
+
+
+    <li class="mt-user-menu-user">
+        <a class="mt-icon-quick-sign-in "
+           href="https://documentation.meraki.com/@app/auth/4/login?returnto=https%3A%2F%2Fdocumentation.meraki.com%2FSASE_and_SD-WAN%2FMX%2FProduct_Information%2FOverviews_and_Datasheets%2FWAN_Behavior_on_MX75%252F%2F85%252F%2F95%252F%2F105"
+           title="Sign in">Sign in</a>
+
+    </li>
+</ol>
+</li>
+                </ol>
+            </div>
+        </nav>
+        <nav class="elm-header-global-nav elm-nav" data-ga-action="Elm Navigation">
+            <div class="elm-nav-container">
+                <button class="elm-hierarchy-trigger mt-hierarchy-trigger ui-button-icon mt-icon-hierarchy-trigger-closed" title="Expand/collapse global hierarchy" data-ga-label="Hierarchy Toggle - Tree View">
+                    Expand/collapse global hierarchy
+                </button>
+                <ol class="mt-breadcrumbs" data-ga-action="Breadcrumbs">
+                        <li>
+                            <a href="https://documentation.meraki.com/" data-ga-label="Breadcrumb category">
+                                <span class="mt-icon-article-category mt-icon-article-home"></span>
+                                    Home
+                            </a>
+                        </li>
+                        <li>
+                            <a href="https://documentation.meraki.com/SASE_and_SD-WAN" data-ga-label="Breadcrumb category">
+                                <span class="mt-icon-article-category"></span>
+                                    SASE and SD-WAN
+                            </a>
+                        </li>
+                        <li>
+                            <a href="https://documentation.meraki.com/SASE_and_SD-WAN/MX" data-ga-label="Breadcrumb category">
+                                <span class="mt-icon-article-category"></span>
+                                    MX - Security &amp; SD-WAN
+                            </a>
+                        </li>
+                        <li>
+                            <a href="https://documentation.meraki.com/SASE_and_SD-WAN/MX/Product_Information" data-ga-label="Breadcrumb category">
+                                <span class="mt-icon-article-category"></span>
+                                    Product Information
+                            </a>
+                        </li>
+                        <li>
+                            <a href="https://documentation.meraki.com/SASE_and_SD-WAN/MX/Product_Information/Overviews_and_Datasheets" data-ga-label="Breadcrumb guide">
+                                <span class="mt-icon-article-guide"></span>
+                                    Overviews and Datasheets
+                            </a>
+                        </li>
+                        <li class="mt-breadcrumbs-current-page">
+                            <span class="mt-icon-article-reference"></span>
+                            WAN Behavior on MX75/85/95/105
+                        </li>
+                </ol>
+                <button class="mt-icon-hierarchy-mobile-view-trigger ui-button-icon mt-icon-hierarchy-mobile-trigger-closed" title="Expand/collapse global location" data-ga-label="Hierarchy Toggle - Breadcrumb Expand/Collapse">
+                    Expand/collapse global location
+                </button>
+            </div>
+        </nav>
+        <nav class="elm-nav elm-header-hierarchy">
+            <div class="elm-nav-container">
+                <div class="elm-hierarchy mt-hierarchy"></div>
+            </div>
+        </nav>    </header>
+    <article class="elm-content-container" id="elm-main-content" tabindex="-1">
+        <header>
+            <div id="flash-messages"><div class="dekiFlash"></div></div>
+            
+                
+<h1 id="title" data-title-editor-available="false">
+        WAN Behavior on MX75/85/95/105
+</h1>
+
+                
+
+                
+                    <ol class="elm-meta-data elm-meta-top" data-ga-action="Page actions">
+                        <li class="elm-last-modified"><dl class="mt-last-updated-container">
+    <dt class="mt-last-updated-label">Last updated</dt>
+    <dd>
+        <span class="mt-last-updated" data-timestamp="2025-02-21T17:17:26Z"></span>
+    </dd>
+</dl>
+</li>
+                        <li class="elm-pdf-export"><a data-ga-label="PDF" href="https://documentation.meraki.com/@api/deki/pages/6073/pdf/WAN%2bBehavior%2bon%2bMX75%252F85%252F95%252F105.pdf?stylesheet=default" rel="nofollow" target="_blank" title="Export page as a PDF">
+    <span class="mt-icon-article-pdf"></span>Save as PDF
+</a></li>
+                        <li class="elm-social-share"></li>
+                    </ol>
+                
+            
+        </header>
+                <header class="mt-content-header"></header>
+                <aside class="mt-content-side"></aside>
+            <aside id="mt-toc-container" data-title="Table of contents" data-collapsed="true">
+                <nav class="mt-toc-content mt-collapsible-section">
+                    <ol><li><a href="#Overview" rel="internal">Overview</a></li><li><a href="#Two_Active_WAN_Uplinks" rel="internal">Two Active WAN Uplinks</a></li><li><a href="#Physical_Interfaces" rel="internal">Physical Interfaces</a></li><li><a href="#MX75" rel="internal">MX75</a></li><li><a href="#MX85.2F95.2F105" rel="internal">MX85/95/105&nbsp;</a></li><li><a href="#Truth_Tables" rel="internal">Truth Tables</a><ol><li><a href="#Truth_Table_for_MX75" rel="internal">Truth Table for MX75&nbsp;</a></li><li><a href="#Truth_Table_for_MX85.2F95.2F105" rel="internal">Truth Table for MX85/95/105</a></li></ol></li><li><a href="#Interface_Selection" rel="internal">Interface Selection&nbsp; &nbsp;</a><ol><li><a href="#1._SFP_Interface_Prioritization" rel="internal">1. SFP&nbsp;Interface Prioritization&nbsp;</a></li><li><a href="#2._Detection_of_SFP_Module" rel="internal">2. Detection of SFP&nbsp;Module</a></li><li><a href="#3._Timing_of_Interface_Decision" rel="internal">3. Timing of Interface Decision</a></li><li><a href="#4._Two_Active_WAN_Interfaces" rel="internal">4. Two Active WAN Interfaces</a></li></ol></li><li><a href="#LED_Behavior" rel="internal">LED Behavior</a><ol><li><a href="#SFP_Module_Port_LEDs" rel="internal">SFP Module Port&nbsp;LEDs</a></li><li><a href="#RJ45_LEDs" rel="internal">RJ45 LEDs</a></li></ol></li><li><a href="#Dashboard_and_Firmware" rel="internal">Dashboard and Firmware</a></li><li><a href="#Local_Status_Page" rel="internal">Local Status Page</a></li></ol>
+                </nav>
+            </aside>
+            <section class="mt-content-container">
+                <div mt-section-origin="SASE_and_SD-WAN/MX/Product_Information/Overviews_and_Datasheets/WAN_Behavior_on_MX75//85//95//105" class="mt-section" id="section_1"><span id="Overview"></span><h2 dir="ltr" class="editable">Overview</h2>
+
+<p>This document defines&nbsp;the interface behaviors for MX75/85/95/105 models. The MX&nbsp;firmware has&nbsp;the&nbsp;capability to only have&nbsp;2 active interfaces. The core behavior outlined here explains how there can be&nbsp;only two active usable WAN uplinks&nbsp;while&nbsp;remaining WAN&nbsp;interfaces are disabled by firmware.</p>
+
+</div><div mt-section-origin="SASE_and_SD-WAN/MX/Product_Information/Overviews_and_Datasheets/WAN_Behavior_on_MX75//85//95//105" class="mt-section" id="section_2"><span id="Two_Active_WAN_Uplinks"></span><h2 dir="ltr" class="editable">Two Active WAN Uplinks</h2>
+
+<p dir="ltr">The current firmware supports up to two active WAN interfaces, except for the MX75/85/95/105 platforms running on MX 18.2+ firmware. These models allow the configuration of two active uplinks and one backup uplink. For further details on Multi-WAN setup, please see&nbsp;<a data-testid="inline-card-resolved-view" role="button" tabindex="0" href="https://documentation.meraki.com/SASE_and_SD-WAN/MX/Operate_and_Maintain/How-Tos/How_to_Configure_MultiWAN_Uplinks_on_Supported_MX_Appliances" rel="internal">MultiWAN Backup Uplink</a>.</p>
+
+<div class="note-info style-wrap">
+<p dir="ltr"><strong>Note:</strong>When MutliWAN is enabled, the WAN behavior on MX75/85/95/105 platforms is&nbsp;different&nbsp;from what is outlined in this article.&nbsp;</p>
+</div>
+
+</div><div mt-section-origin="SASE_and_SD-WAN/MX/Product_Information/Overviews_and_Datasheets/WAN_Behavior_on_MX75//85//95//105" class="mt-section" id="section_3"><span id="Physical_Interfaces"></span><h2 dir="ltr" class="editable">Physical Interfaces</h2>
+
+<table class="mt-responsive-table">
+    <tbody>
+        <tr>
+            <td class="mt-noheading mt-column-width-20">&nbsp;</td>
+            <td class="mt-noheading"><strong>MX75</strong></td>
+            <td class="mt-noheading"><strong>MX85</strong></td>
+            <td class="mt-noheading"><strong>MX95</strong></td>
+            <td class="mt-noheading"><strong>MX105</strong></td>
+        </tr>
+        <tr>
+            <td class="mt-noheading mt-column-width-20">Number of WAN interfaces</td>
+            <td class="mt-noheading">3 (1x SFP and 2x 1Gig RJ45)</td>
+            <td class="mt-noheading">4 (2x SFP and 2x 1Gig RJ45)</td>
+            <td class="mt-noheading">4 (2x SFP+ and 2x mGig RJ45)</td>
+            <td class="mt-noheading">4 (2x SFP+ and 2x mGig RJ45)</td>
+        </tr>
+    </tbody>
+</table>
+
+</div><div mt-section-origin="SASE_and_SD-WAN/MX/Product_Information/Overviews_and_Datasheets/WAN_Behavior_on_MX75//85//95//105" class="mt-section" id="section_4"><span id="MX75"></span><h2 dir="ltr" class="editable">MX75</h2>
+
+<p dir="ltr">The MX75&nbsp;model is a desktop form factor. The interfaces here are similar to the existing MX68/C/W desktop model that has two dedicated WAN interfaces. The following section will outline the behavior for the MX75.</p>
+
+<p>Below is a picture of the 3 physical interfaces available as WAN&nbsp;interfaces for the MX75.</p>
+
+<p dir="ltr"><a title="3 physical interfaces available as WAN&nbsp;interfaces for the MX75" class="thumb" rel="internal" href="https://documentation.meraki.com/@api/deki/files/15509/MX75_PortGuide.png?revision=1"><img alt="3 physical interfaces available as WAN&nbsp;interfaces for the MX75" style="width: 299px; height: 130px;" class="internal default" width="299px" height="130px" loading="lazy" src="https://documentation.meraki.com/@api/deki/files/15509/MX75_PortGuide.png?revision=1&amp;size=bestfit&amp;width=299&amp;height=130" /></a></p>
+
+<p dir="ltr"><em>On MX75&nbsp;the {X} and {Y} interfaces are labeled Internet 2&nbsp;and 3&nbsp;respectively.</em></p>
+
+<p>For the logic, assume the <span class="mt-color-3498db"><strong>[A]+{X}</strong> </span><strong><span class="mt-color-3498db">blue</span> </strong>interfaces are a pair and the <strong><span class="mt-color-2ecc71">RJ45 {Y}</span> </strong>interface is standalone. <span class="mt-color-2ecc71"><strong>RJ45 {Y}</strong></span><strong> </strong>has no partner interface.</p>
+
+<ul>
+    <li aria-level="1" dir="ltr">
+    <p dir="ltr" role="presentation">If <span class="mt-color-3498db"><strong>SFP [A]</strong></span> is used, <span class="mt-color-3498db"><strong>RJ45 {X}</strong></span>&nbsp;will be&nbsp;<strong>disabled</strong>. The firmware will allow&nbsp;the&nbsp;use of&nbsp;<span class="mt-color-3498db"><strong>SFP [A]</strong></span> and <span class="mt-color-2ecc71"><strong>RJ45 {Y}&nbsp;</strong></span>only.&nbsp;</p>
+    </li>
+    <li aria-level="1" dir="ltr">
+    <p dir="ltr" role="presentation">If both <span class="mt-color-3498db"><strong>RJ45 {X}</strong></span> and <span class="mt-color-2ecc71"><strong>RJ45 {Y}</strong></span> are used then <span class="mt-color-3498db"><strong>SFP [A]</strong></span> is disabled.</p>
+    </li>
+    <li aria-level="1" dir="ltr">
+    <p dir="ltr" role="presentation">On the Local Status Page of the Appliance with the logic described above ports <span class="mt-color-3498db"><strong>SFP [A] </strong></span>and <span class="mt-color-3498db"><strong>RJ45 {X}&nbsp;</strong></span>will be configured under the Internet 1 configuration settings&nbsp;and&nbsp;<strong><span class="mt-color-2ecc71">RJ45 {Y}&nbsp;</span></strong>will utilize Internet 2 for its&nbsp;configuration settings.&nbsp;</p>
+    </li>
+</ul>
+
+
+
+</div><div mt-section-origin="SASE_and_SD-WAN/MX/Product_Information/Overviews_and_Datasheets/WAN_Behavior_on_MX75//85//95//105" class="mt-section" id="section_5"><span id="MX85.2F95.2F105"></span><h2 dir="ltr" class="editable">MX85/95/105&nbsp;</h2>
+
+<p dir="ltr">Below is a picture of an MX85 4 physical interfaces available. The logic described here applies to the MX85/95/105.</p>
+
+<p dir="ltr"><a title=" MX85 4 physical interfaces connectivity logics" class="thumb" rel="internal" href="https://documentation.meraki.com/@api/deki/files/15510/MX85-95-105_PortGuide.png?revision=1"><img alt=" MX85 4 physical interfaces connectivity logics" style="width: 300px; height: 273px;" class="internal default" width="300px" height="273px" loading="lazy" src="https://documentation.meraki.com/@api/deki/files/15510/MX85-95-105_PortGuide.png?revision=1&amp;size=bestfit&amp;width=300&amp;height=273" /></a></p>
+
+<div class="note-info style-wrap">
+<p dir="ltr">Note: PoE+ on GbE Port 4 (RJ45 &ldquo;{Y}&rdquo;). The MX95/105 have 2.5Gbps mGig ports.</p>
+</div>
+
+<p dir="ltr">Port mappings in this scenario are interfaces 1 through 4. Where interfaces 1 and 2 are SFP interfaces [A] and [B] respectively. And interfaces 3 and 4 are represented by <span class="mt-color-3498db">{X}</span> and <span class="mt-color-2ecc71">{Y}</span> respectively.</p>
+
+<p dir="ltr">For the logic, assume the top&nbsp;<span class="mt-color-3498db"><strong><strong>[A]+{X}</strong></strong>&nbsp;<strong><strong>blue pair</strong></strong></span>&nbsp;and bottom&nbsp;<span class="mt-color-2ecc71"><strong><strong>[B]+{Y} green pair</strong></strong></span>&nbsp;are two sets of interfaces and they are linked together. To clarify, each pair of interfaces will have a&nbsp;<em><em>partner</em></em>.&nbsp;</p>
+
+<ul dir="ltr">
+    <li role="presentation">If&nbsp;<span class="mt-color-3498db"><strong><strong>SFP [A]</strong></strong>&nbsp;</span>is used,&nbsp;<span class="mt-color-3498db"><strong><strong>RJ45 {X}</strong></strong></span>&nbsp;is <strong>disabled</strong>. Likewise, if&nbsp;<span class="mt-color-2ecc71"><strong><strong>SFP [B]</strong></strong>&nbsp;</span>is used&nbsp;<span class="mt-color-2ecc71"><strong><strong>RJ45 {Y}</strong></strong></span>&nbsp;is <strong>disabled</strong>.&nbsp;</li>
+    <li role="presentation">If both&nbsp;<span class="mt-color-3498db"><strong><strong>RJ45 {X}</strong></strong></span>&nbsp;and&nbsp;<span class="mt-color-2ecc71"><strong><strong>RJ45 {Y}</strong></strong></span>&nbsp;are used then both&nbsp;<span class="mt-color-3498db"><strong><strong>SFP [A]</strong></strong></span>&nbsp;and&nbsp;<span class="mt-color-2ecc71"><strong><strong>SFP [B]</strong></strong>&nbsp;</span>are <strong>disabled</strong>, and vice versa will be true if both SFPs are used.&nbsp;</li>
+    <li role="presentation">If&nbsp;<span class="mt-color-3498db"><strong><strong>SFP [A]</strong></strong></span>&nbsp;and&nbsp;<span class="mt-color-2ecc71"><strong><strong>RJ45 {Y}</strong></strong></span>&nbsp;are used then&nbsp;<span class="mt-color-2ecc71"><strong><strong>SFP [B]</strong></strong></span>&nbsp;and&nbsp;<span class="mt-color-3498db"><strong><strong>RJ45 {X}</strong></strong></span>&nbsp;are <strong>disabled</strong>.&nbsp;
+    <ul>
+        <li role="presentation">This particular configuration gives users the ability to have a SFP interface for WAN 1&nbsp;and RJ45 interface for WAN 2.</li>
+        <li role="presentation">This configuration also accounts for the PoE+ feature on&nbsp;<span class="mt-color-2ecc71"><strong><strong>RJ45 {Y}</strong></strong>&nbsp;</span>on MX85/95/105.&nbsp;The PoE+&nbsp;feature can be used to power&nbsp;MG&nbsp;cellular gateway&nbsp;devices as an uplink.</li>
+    </ul>
+    </li>
+</ul>
+
+
+
+</div><div mt-section-origin="SASE_and_SD-WAN/MX/Product_Information/Overviews_and_Datasheets/WAN_Behavior_on_MX75//85//95//105" class="mt-section" id="section_6"><span id="Truth_Tables"></span><h2 dir="ltr" class="editable">Truth Tables</h2>
+
+<p dir="ltr">The following tables summarize&nbsp;the behaviors described in the previous section. The presence of the SFP&nbsp;physical module in the port (inserted all the way) determines if the value is &ldquo;NO&rdquo; or &ldquo;YES&rdquo;, where the acknowledgement of a physical SFP module is &ldquo;YES&rdquo; and vice versa. For the port state, the interface would then be enabled or disabled by the firmware.</p>
+
+<div class="note-info style-wrap">
+<p dir="ltr">The truth tables are applied as part of interface selection while the device is initializing. If a different interface needs to be used then the MX must be rebooted after making the desired physical changes.</p>
+</div>
+
+<div mt-section-origin="SASE_and_SD-WAN/MX/Product_Information/Overviews_and_Datasheets/WAN_Behavior_on_MX75//85//95//105" class="mt-section" id="section_7"><span id="Truth_Table_for_MX75"></span><h3 dir="ltr" class="editable">Truth Table for MX75&nbsp;</h3>
+
+<table>
+    <colgroup>
+        <col width="100" />
+        <col width="20" />
+        <col width="100" />
+        <col width="100" />
+        <col width="100" />
+    </colgroup>
+    <tbody>
+        <tr>
+            <td style="width:104px;"><strong>Module Presence</strong></td>
+            <td colspan="3" style="width:299px;"><strong>Port State (MX75)</strong></td>
+        </tr>
+        <tr>
+            <td style="width:104px;">
+            <p dir="ltr"><strong>SFP1 [A]</strong></p>
+            </td>
+            <td style="width:105px;">
+            <p dir="ltr"><strong>SFP1 [A]</strong></p>
+            </td>
+            <td style="width:105px;">
+            <p dir="ltr"><strong>RJ45 {X}</strong></p>
+            </td>
+            <td style="width:97px;">
+            <p dir="ltr"><strong>RJ45 {Y}</strong></p>
+            </td>
+        </tr>
+        <tr>
+            <td style="width:104px;">
+            <p dir="ltr"><font color="#c0392b" data-darkreader-inline-color="" style="--darkreader-inline-color: #d85c4f;">No</font></p>
+            </td>
+            <td style="width:105px;">
+            <p dir="ltr"><span class="mt-color-e74c3c">Disabled</span></p>
+            </td>
+            <td style="width:105px;">
+            <p dir="ltr"><span class="mt-color-2ecc71">Enabled</span></p>
+            </td>
+            <td style="width:97px;">
+            <p dir="ltr"><span class="mt-color-2ecc71">Enabled</span></p>
+            </td>
+        </tr>
+        <tr>
+            <td style="width:104px;">
+            <p dir="ltr"><font color="#27ae60" data-darkreader-inline-color="" style="--darkreader-inline-color: #5cda91;">Yes</font></p>
+            </td>
+            <td style="width:105px;">
+            <p dir="ltr"><span class="mt-color-2ecc71">Enabled</span></p>
+            </td>
+            <td style="width:105px;">
+            <p dir="ltr"><span class="mt-color-e74c3c">Disabled</span></p>
+            </td>
+            <td style="width:97px;">
+            <p dir="ltr"><span class="mt-color-2ecc71">Enabled</span></p>
+            </td>
+        </tr>
+    </tbody>
+</table>
+
+<p>&nbsp;</p>
+
+</div><div mt-section-origin="SASE_and_SD-WAN/MX/Product_Information/Overviews_and_Datasheets/WAN_Behavior_on_MX75//85//95//105" class="mt-section" id="section_8"><span id="Truth_Table_for_MX85.2F95.2F105"></span><h3 dir="ltr" class="editable">Truth Table for MX85/95/105</h3>
+
+<table>
+    <colgroup>
+        <col width="70" />
+        <col width="72" />
+        <col width="13" />
+        <col width="100" />
+        <col width="100" />
+        <col width="100" />
+        <col width="100" />
+    </colgroup>
+    <tbody>
+        <tr>
+            <td colspan="2" style="width:208px;">
+            <p dir="ltr"><strong>Module Presence</strong></p>
+            </td>
+            <td colspan="4" style="width:389px;">
+            <p dir="ltr"><strong>Port State (MX85/95/105)</strong></p>
+            </td>
+        </tr>
+        <tr>
+            <td style="width:103px;">
+            <p dir="ltr"><strong>SFP1 [A]</strong></p>
+            </td>
+            <td style="width:103px;">
+            <p dir="ltr"><strong>SFP2 [B]</strong></p>
+            </td>
+            <td style="width:80px;">
+            <p dir="ltr"><strong>SFP1 [A]</strong></p>
+            </td>
+            <td>
+            <p dir="ltr"><strong>SFP2 [B]</strong></p>
+            </td>
+            <td>
+            <p dir="ltr"><strong>RJ45 {X}</strong></p>
+            </td>
+            <td>
+            <p dir="ltr"><strong>RJ45 {Y}</strong></p>
+            </td>
+        </tr>
+        <tr>
+            <td style="width:103px;">
+            <p dir="ltr"><span class="mt-color-c0392b">NO</span></p>
+            </td>
+            <td style="width:103px;">
+            <p dir="ltr"><span class="mt-color-c0392b">NO</span></p>
+            </td>
+            <td style="width:80px;">
+            <p dir="ltr"><span class="mt-color-e74c3c">Disabled</span></p>
+            </td>
+            <td>
+            <p dir="ltr"><span class="mt-color-e74c3c">Disabled</span></p>
+            </td>
+            <td>
+            <p dir="ltr"><span class="mt-color-2ecc71">Enabled</span></p>
+            </td>
+            <td>
+            <p dir="ltr"><span class="mt-color-2ecc71">Enabled</span></p>
+            </td>
+        </tr>
+        <tr>
+            <td style="width:103px;">
+            <p dir="ltr"><span class="mt-color-c0392b">NO</span></p>
+            </td>
+            <td>
+            <p dir="ltr"><span class="mt-color-27ae60">YES</span></p>
+            </td>
+            <td style="width:80px;">
+            <p dir="ltr"><span class="mt-color-e74c3c">Disabled</span></p>
+            </td>
+            <td>
+            <p dir="ltr"><span class="mt-color-2ecc71">Enabled</span></p>
+            </td>
+            <td>
+            <p dir="ltr"><span class="mt-color-2ecc71">Enabled</span></p>
+            </td>
+            <td>
+            <p dir="ltr"><span class="mt-color-e74c3c">Disabled</span></p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+            <p dir="ltr"><span class="mt-color-27ae60">YES</span></p>
+            </td>
+            <td style="width:103px;">
+            <p dir="ltr"><span class="mt-color-c0392b">NO</span></p>
+            </td>
+            <td style="width:80px;">
+            <p dir="ltr"><span class="mt-color-2ecc71">Enabled</span></p>
+            </td>
+            <td>
+            <p dir="ltr"><span class="mt-color-e74c3c">Disabled</span></p>
+            </td>
+            <td>
+            <p dir="ltr"><span class="mt-color-e74c3c">Disabled</span></p>
+            </td>
+            <td>
+            <p dir="ltr"><span class="mt-color-2ecc71">Enabled</span></p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+            <p dir="ltr"><span class="mt-color-27ae60">YES</span></p>
+            </td>
+            <td>
+            <p dir="ltr"><span class="mt-color-27ae60">YES</span></p>
+            </td>
+            <td style="width:80px;">
+            <p dir="ltr"><span class="mt-color-2ecc71">Enabled</span></p>
+            </td>
+            <td>
+            <p dir="ltr"><span class="mt-color-2ecc71">Enabled</span></p>
+            </td>
+            <td>
+            <p dir="ltr"><span class="mt-color-e74c3c">Disabled</span></p>
+            </td>
+            <td>
+            <p dir="ltr"><span class="mt-color-e74c3c">Disabled</span></p>
+            </td>
+        </tr>
+    </tbody>
+</table>
+
+<p dir="ltr">&nbsp;</p>
+
+</div></div><div mt-section-origin="SASE_and_SD-WAN/MX/Product_Information/Overviews_and_Datasheets/WAN_Behavior_on_MX75//85//95//105" class="mt-section" id="section_9"><span id="Interface_Selection"></span><h2 dir="ltr" class="editable"><span class="mt-font-size-36">Interface Selection&nbsp; &nbsp;</span></h2>
+
+<p dir="ltr">This section outlines the behavior for an interface pair. It identifies which interface to prioritize, how it should be detected, when it should be detected, and why the behavior follows this logic.&nbsp;</p>
+
+<div mt-section-origin="SASE_and_SD-WAN/MX/Product_Information/Overviews_and_Datasheets/WAN_Behavior_on_MX75//85//95//105" class="mt-section" id="section_10"><span id="1._SFP_Interface_Prioritization"></span><h3 dir="ltr" role="presentation" class="editable">1. SFP&nbsp;Interface Prioritization&nbsp;</h3>
+
+<p dir="ltr">In an interface pair the SFP interface is prioritized over the RJ45 interface. The MX when deciding which partner interfaces to use in a pair will&nbsp;prefer the SFP interface over the RJ45 interface. If an SFP module is inserted into the MX, the MX will use the SFP&nbsp;interface and disable the partner RJ45 WAN interface.</p>
+
+</div><div mt-section-origin="SASE_and_SD-WAN/MX/Product_Information/Overviews_and_Datasheets/WAN_Behavior_on_MX75//85//95//105" class="mt-section" id="section_11"><span id="2._Detection_of_SFP_Module"></span><h3 dir="ltr" role="presentation" class="editable">2. Detection of SFP&nbsp;Module</h3>
+
+<p dir="ltr">If no physical SFP modules have&nbsp;been detected to be inserted into the MX, then the MX will assume that the preference is to use the RJ45 interfaces.&nbsp;In the case of a failed SFP module, the MX will detect if a module is physically inserted into the SFP interface slot and attempt to use the failed module.</p>
+
+</div><div mt-section-origin="SASE_and_SD-WAN/MX/Product_Information/Overviews_and_Datasheets/WAN_Behavior_on_MX75//85//95//105" class="mt-section" id="section_12"><span id="3._Timing_of_Interface_Decision"></span><h3 dir="ltr" role="presentation" class="editable">3. Timing of Interface Decision</h3>
+
+<p dir="ltr">Detection of interface selection is done when the device is initializing. This takes place during boot up. If the preference is to use the SFP&nbsp;interfaces, then the SFP module must be inserted when the device is powered off. Please ensure your modules are properly inserted into the MX&nbsp;before boot up.</p>
+
+<p>Once the MX is in a fully initialized state with the SFP module, hot swapping of the module is allowed. The MX will retain preference of the interface while in operation. SFP modules can be removed and another module can be inserted in the same interface without issues. Physically removing an SFP module during operation will not cause the MX to start using the RJ45 interface partner.</p>
+
+
+
+</div><div mt-section-origin="SASE_and_SD-WAN/MX/Product_Information/Overviews_and_Datasheets/WAN_Behavior_on_MX75//85//95//105" class="mt-section" id="section_13"><span id="4._Two_Active_WAN_Interfaces"></span><h3 dir="ltr" role="presentation" class="editable">4. Two Active WAN Interfaces</h3>
+
+<p dir="ltr">The MX is capable of only two active WAN interfaces, if a partner interface is in a disabled state then it will not be initialized at any point in a WAN failover event. WAN failover between two active interfaces is supported. (e.g. <a target="_blank" title="https://documentation.meraki.com/Architectures_and_Best_Practices/Cisco_Meraki_Best_Practice_Design/Best_Practice_Design_-_MX_Security_and_SD-WAN/Meraki_SD-WAN" href="https://documentation.meraki.com/Platform_Management/Dashboard_Administration/Design_and_Configure/Architectures_and_Best_Practices/Cisco_Meraki_Best_Practice_Design/Meraki_SD-WAN" rel="internal">SD-WAN</a>, or <a target="_blank" title="https://documentation.meraki.com/Architectures_and_Best_Practices/Cisco_Meraki_Best_Practice_Design/Best_Practice_Design_-_MX_Security_and_SD-WAN/SD-WAN_Internet_Policies_(SD-Internet)" href="https://documentation.meraki.com/Platform_Management/Dashboard_Administration/Design_and_Configure/Architectures_and_Best_Practices/Cisco_Meraki_Best_Practice_Design/SD-WAN_Internet_Policies_(SD-Internet)" rel="internal">SD-Internet</a>)</p>
+
+<p dir="ltr">Disabled partner interfaces will stay disabled unless the conditions upon which they were disabled are changed.</p>
+
+<div class="note-info style-wrap">
+<p dir="ltr">For example, to switch from the SFP interface to the RJ45 partner interface you&nbsp;must reinitialize (reboot) the MX after physically removing the SFP module and populating&nbsp;the RJ45 interface. The recommended method for&nbsp;physical reconfiguration of the WAN interfaces should be done when the MX is powered off.</p>
+</div>
+
+<p dir="ltr">&nbsp;</p>
+
+</div></div><div mt-section-origin="SASE_and_SD-WAN/MX/Product_Information/Overviews_and_Datasheets/WAN_Behavior_on_MX75//85//95//105" class="mt-section" id="section_14"><span id="LED_Behavior"></span><h2 dir="ltr" class="editable">LED Behavior</h2>
+
+<p dir="ltr">The following section describes the LED behavior of interfaces on the MX. This is applicable to both WAN and LAN ports.&nbsp;</p>
+
+<div mt-section-origin="SASE_and_SD-WAN/MX/Product_Information/Overviews_and_Datasheets/WAN_Behavior_on_MX75//85//95//105" class="mt-section" id="section_15"><span id="SFP_Module_Port_LEDs"></span><h3 dir="ltr" class="editable">SFP Module Port&nbsp;LEDs</h3>
+
+<p dir="ltr">In the table below are the LED states.</p>
+
+<table>
+    <colgroup>
+        <col width="126" />
+        <col width="96" />
+        <col width="402" />
+    </colgroup>
+    <tbody>
+        <tr>
+            <td>
+            <p dir="ltr">Behavior</p>
+            </td>
+            <td>
+            <p dir="ltr">LED</p>
+            </td>
+            <td>
+            <p dir="ltr">Description</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+            <p dir="ltr">No operation</p>
+            </td>
+            <td>
+            <p dir="ltr">Off</p>
+            </td>
+            <td>
+            <p dir="ltr">No module detected, port is not used</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+            <p dir="ltr">Module inserted with cable connected and operational</p>
+            </td>
+            <td>
+            <p dir="ltr"><span class="mt-color-e67e22">Solid amber</span></p>
+            </td>
+            <td>
+            <p dir="ltr"><em><em>Downshifted speed</em></em>&nbsp;on 10Gbps SFP+&nbsp;port. Meaning the&nbsp;port is working at less than&nbsp;10Gbps speed. <em><strong>Only for MX95/105</strong></em></p>
+
+            
+            </td>
+        </tr>
+        <tr>
+            <td>
+            <p dir="ltr">Module operational</p>
+            </td>
+            <td>
+            <p dir="ltr"><span class="mt-color-2ecc71">Solid green</span></p>
+            </td>
+            <td>
+            <p dir="ltr">10/100/1000 Mbps with 1 Gbps on copper SFP&nbsp;for&nbsp;MX75/85&nbsp;</p>
+
+            <p dir="ltr">1 Gbps on any SFP at full speed for MX75/85</p>
+
+            <p dir="ltr">10 Gbps&nbsp;with 10 Gbps&nbsp;SFP+ for&nbsp;MX95/105</p>
+            </td>
+        </tr>
+    </tbody>
+</table>
+
+<p>&nbsp;</p>
+
+</div><div mt-section-origin="SASE_and_SD-WAN/MX/Product_Information/Overviews_and_Datasheets/WAN_Behavior_on_MX75//85//95//105" class="mt-section" id="section_16"><span id="RJ45_LEDs"></span><h3 dir="ltr" class="editable">RJ45 LEDs</h3>
+
+<p>The table below outlines the RJ45 LED behavior.&nbsp;</p>
+
+<table style="width: 613px;">
+    <colgroup>
+        <col width="126" />
+        <col width="96" />
+        <col width="402" />
+    </colgroup>
+    <tbody>
+        <tr>
+            <td>
+            <p dir="ltr">Behavior</p>
+            </td>
+            <td>
+            <p dir="ltr">LED</p>
+            </td>
+            <td style="width:397px;">
+            <p dir="ltr">Description</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+            <p dir="ltr">No operation</p>
+            </td>
+            <td>
+            <p dir="ltr">Off</p>
+            </td>
+            <td style="width:397px;">
+            <p dir="ltr">No cable detected or connection, port is not used</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+            <p dir="ltr">Slow link</p>
+            </td>
+            <td>
+            <p dir="ltr"><span class="mt-color-e67e22">Solid amber</span></p>
+            </td>
+            <td style="width:397px;">
+            <p dir="ltr">10/100 Mbps</p>
+
+            <p dir="ltr">1Gbps for MX95/105</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+            <p dir="ltr">Full speed</p>
+            </td>
+            <td>
+            <p dir="ltr"><span class="mt-color-2ecc71">Solid green</span></p>
+            </td>
+            <td style="width:397px;">
+            <p dir="ltr">2.5 Gbps&nbsp;for MX95/105</p>
+
+            <p dir="ltr">1 Gbps&nbsp;for MX75/85</p>
+            </td>
+        </tr>
+    </tbody>
+</table>
+
+<p dir="ltr">&nbsp;</p>
+
+
+
+</div></div><div mt-section-origin="SASE_and_SD-WAN/MX/Product_Information/Overviews_and_Datasheets/WAN_Behavior_on_MX75//85//95//105" class="mt-section" id="section_17"><span id="Dashboard_and_Firmware"></span><h2 dir="ltr" class="editable">Dashboard and Firmware</h2>
+
+<p dir="ltr">The interfaces being used will be reported via the dashboard. The interfaces that are not being used and are disabled are grayed out.</p>
+
+<p dir="ltr"><img alt="MX ports tab view in the Dashboard's appliance status page " style="width: 600px; height: 197px;" class="internal default" width="600px" height="197px" loading="lazy" src="https://documentation.meraki.com/@api/deki/files/25784/mx_ports_view.png?revision=1&amp;size=bestfit&amp;width=600&amp;height=197" /></p>
+
+<div class="note-info style-wrap">
+<p dir="ltr">Dashboard currently does not provide any remote toggle to switch between the pairs remotely.</p>
+</div>
+
+
+
+</div><div mt-section-origin="SASE_and_SD-WAN/MX/Product_Information/Overviews_and_Datasheets/WAN_Behavior_on_MX75//85//95//105" class="mt-section" id="section_18"><span id="Local_Status_Page"></span><h2 dir="ltr" class="editable">Local Status Page</h2>
+
+<p dir="ltr">The Local Status page will show&nbsp;two Internet links. This would represent the&nbsp;3 ports on MX75 or the 4 ports on MX85/95/105 used for Internet connections.</p>
+
+<p dir="ltr"><img alt="Local status page of an MX105 looking at uplink settings" class="internal default" loading="lazy" src="https://documentation.meraki.com/@api/deki/files/23271/mx105-lsp-uplink.png?revision=1" /></p>
+
+<p dir="ltr">Setting the Active Port under the Local Status Page &gt; Configure will override the default behavior of Auto, forcing the Internet interface to Ethernet, or SFP.&nbsp;</p>
+
+<p dir="ltr">MX85/95/105 supports PoE+ on GbE Port 4. PoE on this port can be disabled from the Local Status Page if the MX is running firmware MX18.211.4 and above.</p>
+
+<p dir="ltr"><img alt="Screenshot showing PoE can be disabled/enabled from the LSP for an MX85/95/105 on firmware MX18.211.4 and above" class="internal default" style="width: 772px; height: 712px;" width="772px" height="712px" loading="lazy" src="https://documentation.meraki.com/@api/deki/files/30181/PoE_LocalStatusPage_MX85%253A95%253A105.png?revision=1&amp;size=bestfit&amp;width=772&amp;height=712" /></p>
+<style type="text/css"></style>
+<style class="darkreader darkreader--sync" media="screen" type="text/css"></style>
+</div>
+
+                    <footer class="mt-content-footer"></footer>
+            </section>
+
+        
+            <footer class="elm-content-footer">
+                <ol class="elm-meta-data elm-meta-article-navigation">
+                    <li class="elm-back-to-top"><a class="mt-icon-back-to-top" href="#title" id="mt-back-to-top" title="Jump back to top of this article">Back to top</a></li>
+                    <li class="elm-article-pagination"><ul class="mt-article-pagination" data-ga-action="Article pagination bottom">
+    <li class="mt-pagination-previous">
+
+            <a class="mt-icon-previous-article" data-ga-label="Previous page" href="https://documentation.meraki.com/SASE_and_SD-WAN/MX/Product_Information/Overviews_and_Datasheets/MX95%2F%2F105_Datasheet" title="MX95/105 Datasheet"><span>MX95/105 Datasheet</span></a>
+    </li>
+        <li class="mt-pagination-next">
+                <a class="mt-icon-next-article" data-ga-label="Next page" href="https://documentation.meraki.com/SASE_and_SD-WAN/MX/Integrations" title="Integrations"><span>Integrations</span></a>
+        </li>
+</ul>
+</li>
+                </ol>
+                    <div class="elm-article-feedback"><div class="mt-feedback-rating-container" data-ga-action="Page rating" data-page-revision="86" data-use-local-storage="true"><ul class="mt-feedback-rating-controls"><li class="mt-feedback-rating-message mt-feedback-rating-item">Was this article helpful?</li><li class="mt-rating-yes mt-feedback-rating-item"><button class="mt-rating-button-yes mt-feedback-rating-button ui-button-icon mt-icon-rating-yes" data-ga-label="Rate">Yes</button></li><li class="mt-rating-no mt-feedback-rating-item"><button class="mt-rating-button-no mt-feedback-rating-button ui-button-icon mt-icon-rating-no" data-ga-label="Rate">No</button></li><li class="mt-last-rating-date mt-feedback-rating-item"></li></ul><div id="mt-feedback-flash-message"></div></div><script type="application/json" id="mt-localizations-feedback-rating">/*<![CDATA[*/{"Page.FeedbackRating.label.last-rated":"-- You last rated this article on {0}","Page.FeedbackRating.message.contact.no":"No","Page.FeedbackRating.message.contact.yes":"Yes","Page.FeedbackRating.message.submit.error":"An error occurred while attempting to send your feedback.  Please try again at a later time.","Page.FeedbackRating.message.submit.success":"Your feedback has been successfully submitted.  You can submit more feedback at any time."}/*]]>*/</script></div>
+                <div class="elm-related-articles-container"><h2 class="mt-related-articles-header">Recommended articles</h2>
+<ol class="mt-related-listings-container"
+    data-ga-action="related"
+    >
+</ol>
+<script type="application/json" nonce="1fdb651f54956ee7b0a5dbd6fa5ad4eca5c33cc1509b390b5dfbeb573fce70f8" id="mt-localizations-related-pages">
+{"Skin.Columbia.label.no-recommended-articles":"There are no recommended articles."}</script></div>
+                <ol class="elm-meta-data elm-meta-bottom">
+                    <li class="elm-classifications">        <dl class="mt-classification mt-classification-article-reference" data-ga-action="Tag navigation">
+            <dt class="mt-classification-label">Article type</dt>
+            <dd class="mt-classification-value"><a href="https://documentation.meraki.com/Special:Search?tags=article%3Areference" data-ga-label="Classification">Reference</a></dd>
+        </dl>
+        <dl class="mt-classification mt-classification-product-category-routers" data-ga-action="Tag navigation">
+            <dt class="mt-classification-label">Product Category</dt>
+            <dd class="mt-classification-value"><a href="https://documentation.meraki.com/Special:Search?tags=product-category%3Arouters" data-ga-label="Classification">Routers</a></dd>
+        </dl>
+        <dl class="mt-classification mt-classification-template-datasheet" data-ga-action="Tag navigation">
+            <dt class="mt-classification-label">Template Type</dt>
+            <dd class="mt-classification-value"><a href="https://documentation.meraki.com/Special:Search?tags=template%3Adatasheet" data-ga-label="Classification">Datasheet</a></dd>
+        </dl>
+</li>
+                    <li class="elm-tags"><dl class="mt-tags">
+    <dt class="mt-tag-label">Tags</dt>
+    <dd class="mt-tag-value">
+        <ol class="mt-tags-list" data-ga-action="Tag navigation">
+                <li class="mt-tag-link mt-tag-cisco-meraki-dashboard" rel="nofollow"><a href="https://documentation.meraki.com/Special:Search?tags=Cisco+Meraki+Dashboard" data-ga-label="Free tag"> Cisco Meraki Dashboard</a></li>
+                <li class="mt-tag-link mt-tag-cisco-meraki-mx" rel="nofollow"><a href="https://documentation.meraki.com/Special:Search?tags=Cisco+Meraki+MX" data-ga-label="Free tag"> Cisco Meraki MX</a></li>
+                <li class="mt-tag-link mt-tag-local-status-page" rel="nofollow"><a href="https://documentation.meraki.com/Special:Search?tags=local+status+page" data-ga-label="Free tag"> local status page</a></li>
+        </ol>
+    </dd>
+</dl></li>
+                </ol>
+            </footer>
+        
+    </article>
+    <footer class="elm-footer">
+        <nav class="elm-footer-siteinfo-nav elm-nav">
+            <div class="elm-nav-container">
+                <ol>
+                    <li class="elm-footer-copyright">&copy; Copyright 2026 Cisco Meraki Documentation</li>
+                    <li class="elm-footer-powered-by"><a href="https://mindtouch.com/demo" class="mt-poweredby product " title="MindTouch" target="_blank">
+   Powered by NiCE Knowledge Management
+   <span class="mt-registered">&reg;</span>
+</a></li>
+                </ol>
+            </div>
+        </nav>
+        <div class="elm-footer-custom">
+
+<div class="mt-custom-footer-container"><div class="mt-top-footer"><div class="mt-top-logo"><a href="http://meraki.cisco.com/" target="_blank" rel="external noopener nofollow" class="external"><img class="mt-cdn" src="https://documentation.meraki.com/@api/deki/site/logo?default=https%3A%2F%2Fdocumentation.meraki.com%2F%40cdn%2F%40style%2Fcommon-legacy%2Fimages%2Flogo.png" alt="Cisco-Meraki" /></a></div><div class="mt-top-external-links"><div class="mt-top-ul-container" id="top-Company"><h6 class="mt-top-ul-title">Company</h6><ul class="mt-top-ul"><li class="mt-top-li"><a href="https://meraki.cisco.com/about/" target="_blank" rel="external noopener nofollow" class="mt-top-a link-https">About Meraki</a></li><li class="mt-top-li"><a href="https://meraki.cisco.com/jobs" target="_blank" rel="external noopener nofollow" class="mt-top-a link-https">Careers</a></li><li class="mt-top-li"><a href="https://meraki.cisco.com/support/#policies:privacy" target="_blank" rel="external noopener nofollow" class="mt-top-a link-https">Privacy</a></li><li class="mt-top-li"><a href="https://meraki.cisco.com/trust" target="_blank" rel="external noopener nofollow" class="mt-top-a link-https">Trust</a></li><li class="mt-top-li"><a href="https://meraki.cisco.com/gdpr" target="_blank" rel="external noopener nofollow" class="mt-top-a link-https">GDPR</a></li><li class="mt-top-li"><a href="https://meraki.cisco.com/support/#policies:tou" target="_blank" rel="external noopener nofollow" class="mt-top-a link-https">Terms of Use</a></li></ul></div><div class="mt-top-ul-container" id="top-Partners"><h6 class="mt-top-ul-title">Partners</h6><ul class="mt-top-ul"><li class="mt-top-li"><a href="https://www.merakipartners.com/" target="_blank" rel="external noopener nofollow" class="mt-top-a link-https">Partner Portal Login</a></li><li class="mt-top-li"><a href="https://meraki.cisco.com/partner/" target="_blank" rel="external noopener nofollow" class="mt-top-a link-https">Become a Partner</a></li><li class="mt-top-li"><a href="https://meraki.cisco.com/managedserviceproviders" target="_blank" rel="external noopener nofollow" class="mt-top-a link-https">Manage Service Providers</a></li><li class="mt-top-li"><a href="https://meraki.cisco.com/solutions/serviceprovider" target="_blank" rel="external noopener nofollow" class="mt-top-a link-https">Service Providers</a></li></ul></div><div class="mt-top-ul-container" id="top-getStarted"><h6 class="mt-top-ul-title">Get Started</h6><ul class="mt-top-ul"><li class="mt-top-li"><a href="https://meraki.cisco.com/form/contact/" target="_blank" rel="external noopener nofollow" class="mt-top-a link-https">Contact Us</a></li><li class="mt-top-li"><a href="https://meraki.cisco.com/form/demo/" target="_blank" rel="external noopener nofollow" class="mt-top-a link-https">Get a Demo</a></li><li class="mt-top-li"><a href="https://meraki.cisco.com/form/trial/" target="_blank" rel="external noopener nofollow" class="mt-top-a link-https">Start Your Trial</a></li></ul></div><div class="mt-top-ul-container" id="top-Resources"><h6 class="mt-top-ul-title">Resources</h6><ul class="mt-top-ul"><li class="mt-top-li"><a href="https://meraki.cisco.com/webinars/" target="_blank" rel="external noopener nofollow" class="mt-top-a link-https">Webinars</a></li><li class="mt-top-li"><a class="mt-top-a internal" href="https://documentation.meraki.com/" rel="internal">Documentation</a></li><li class="mt-top-li"><a href="https://community.cisco.com/t5/meraki/ct-p/meraki-home" target="_blank" rel="external noopener nofollow" class="mt-top-a link-https">Community</a></li><li class="mt-top-li"><a href="https://community.cisco.com/t5/networking-learning-hub/ct-p/learninghub-networking" target="_blank" rel="external noopener nofollow" class="mt-top-a link-https">Learning Hub</a></li></ul></div></div></div><div class="mt-bottom-footer"><div class="mt-social-container"><ul class="mt-social-ul"><li class="mt-social-li"><a href="https://twitter.com/meraki" target="_blank" rel="external noopener nofollow" class="mt-social-a mt-icon-twitter link-https"></a></li><li class="mt-social-li"><a href="https://www.instagram.com/ciscomeraki/?hl=en" target="_blank" rel="external noopener nofollow" class="mt-social-a mt-icon-instagram link-https"></a></li><li class="mt-social-li"><a href="https://www.facebook.com/CiscoMeraki/" target="_blank" rel="external noopener nofollow" class="mt-social-a mt-icon-facebook link-https"></a></li><li class="mt-social-li"><a href="https://www.youtube.com/channel/UCimwNLMzVRMp7SUPVRNaqew" target="_blank" rel="external noopener nofollow" class="mt-social-a mt-icon-youtube link-https"></a></li></ul></div><div class="mt-copyright-container"><p>&copy; 2026 Cisco Systems, Inc.</p></div></div></div>
+
+
+
+<script type="text/javascript">/*<![CDATA[*/
+var feedback_btn = document.querySelector(".mt-feedback-button"); 
+feedback_btn.innerText = "Request Update"/*]]>*/</script>
+
+
+
+<script type="text/javascript">/*<![CDATA[*/
+var feedback_label = document.querySelector(".mt-feedback-improve-label");
+feedback_label.innerText = "What would you like to change on this page? Your request will be sent to the Knowledge and Content team at Cisco Meraki. We are NOT product experts! Include all relevant details: section or exact text to update, new draft language, or related cases/mules.";/*]]>*/</script>
+
+
+</div>
+    </footer>
+</main>
+<div id="mt-modal-container"></div>
+
+    <script type="text/javascript" async="async" nonce="1fdb651f54956ee7b0a5dbd6fa5ad4eca5c33cc1509b390b5dfbeb573fce70f8" src="https://documentation.meraki.com/@embed/f1.js"></script>
+
+<script type="text/javascript" data-mindtouch-module="true" src="https://a.mtstatic.com/deki/javascript/out/standalone/ui.widget.helpWidget.js?_=670f5a3cd0b46c0637012decc8ed035ba4a97eb4:site_13505"></script><script type="text/javascript" data-mindtouch-module="true" nonce="1fdb651f54956ee7b0a5dbd6fa5ad4eca5c33cc1509b390b5dfbeb573fce70f8" src="https://a.mtstatic.com/deki/javascript/out/standalone/serviceworker-unregister.js?_=670f5a3cd0b46c0637012decc8ed035ba4a97eb4:site_13505"></script><script type="text/javascript" data-mindtouch-module="true" nonce="1fdb651f54956ee7b0a5dbd6fa5ad4eca5c33cc1509b390b5dfbeb573fce70f8" src="https://a.mtstatic.com/deki/javascript/out/standalone/pageLoaded.js?_=670f5a3cd0b46c0637012decc8ed035ba4a97eb4:site_13505"></script>
+
+
+</body>
+</html>
