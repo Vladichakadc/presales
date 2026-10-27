@@ -1,0 +1,17 @@
+[
+  {
+    "archivo": "fortinet-7000f-ipsec.html",
+    "para": "FORTINET",
+    "guardado": true,
+    "exploracion": true,
+    "intentos": [
+      {
+        "url": "https://docs.fortinet.com/document/fortigate/7.6.7/fortigate-7000f-administration-guide/813847/ipsec-vpn-load-balancing",
+        "status": 200,
+        "bytes": 269882,
+        "guardado": true,
+        "verificado": false
+      }
+    ]
+  }
+]
