@@ -4,7 +4,8 @@ Registro vivo de lo que falta. **Al empezar una tarea se buscan aquí los puntos
 tocan, y al terminarla se actualiza**, y su contenido se resume al usuario al cerrar cada entrega — esa es la instrucción
 permanente que lo justifica (ver `CLAUDE.md`, sección *Instrucciones permanentes del dueño*).
 
-Última revisión: 2026-10-27, quincuagesimoctava entrega (**Traspaso entre sesiones y trabajo en paralelo.** Encargo del dueño: que otra cuenta de Claude pueda seguir el trabajo cuando se agota el límite y trabajar en paralelo «sin perder ningún detalle». Las cuentas no se pueden enlazar entre sí: lo compartido es GitHub. Cada tema va en su rama con `docs/traspaso/<tema>.md` (de `PLANTILLA.md`), `npm run traspasos` lista los temas en curso y los archivos que declaran, y `CLAUDE.md` lo exige al empezar. Ver *Cerrado recientemente*.)
+Última revisión: 2026-10-27, quincuagesimonovena entrega (**Las tres mejoras propuestas ejecutadas —«Exigir PQC» en los siete dimensionadores, el piloto de IA «del pliego al escenario» en Cisco y la skill `accessibility` de ECC— y cuatro pendientes cerrados con documento oficial, más el informe de relevo.** Encargo del dueño: «ejecuta las mejoras propuestas y cierra las tareas pendientes», y «de aquí en adelante, un informe de pendientes y mejoras para que la cuenta servicioiptv2025@gmail.com continúe» (`RELEVO.md`, instrucción permanente en `CLAUDE.md`). Cerrados con documento: la PQC de los diez FortiGate sin fila en la Maximum Values Table (Release Notes de FortiOS 7.6.7 y 7.6.6), la bahía 0 del C8570-G2 con la bahía 1 en 100G (guía de configuración), el puerto de la interconexión EdgeHA (Orchestrator) y el PoE a 48 V del L009 (su ficha). Las dos decisiones de la IA y la de las variantes, por la opción recomendada. Ver *Cerrado recientemente*.)
+Revisión anterior: 2026-10-27, quincuagesimoctava entrega (**Traspaso entre sesiones y trabajo en paralelo.** Encargo del dueño: que otra cuenta de Claude pueda seguir el trabajo cuando se agota el límite y trabajar en paralelo «sin perder ningún detalle». Las cuentas no se pueden enlazar entre sí: lo compartido es GitHub. Cada tema va en su rama con `docs/traspaso/<tema>.md` (de `PLANTILLA.md`), `npm run traspasos` lista los temas en curso y los archivos que declaran, y `CLAUDE.md` lo exige al empezar. Ver *Cerrado recientemente*.)
 Revisión anterior: 2026-10-27, quincuagesimoséptima entrega (**Criptografía post-cuántica en la ficha de los siete dimensionadores, el vigía mira solo el artículo de la ayuda de Secure Access, e investigación de IA para el dimensionador.** Encargo del dueño: «investiga los pendientes con las skills; ejecuta la mejora propuesta y las que encuentres; incluye la característica PQC en los equipos que la traigan; investiga qué IA meter en el dimensionador». PQC con su documento oficial: 26 Secure Router G2 (ML-KEM híbrido, IOS XE 26.1), 48 FortiGate (ML-KEM-512/768/1024, FortiOS 7.6.1), 6 SRX (PPK de RFC 8784, que no es un algoritmo PQC) y 5 Nokia 7750 (MACsec/ANYsec «quantum-safe», simétrico); el resto, «no consta». La IA, en `docs/ia-en-el-dimensionador-2026-10-27.md`, con dos decisiones para el dueño. Ver *Cerrado recientemente* y *Decisiones*.)
 Revisión anterior: 2026-10-27, quincuagesimosexta entrega (**Los pendientes de Cisco con documento, cerrados, y `npm run cisco` avisa de los modelos de una ficha que el catálogo no trae.** Encargo del dueño: «exijo que pasen verificar y pantallas; activa ramas al día con omisión del administrador; cierra lo pendiente con fuentes oficiales y ejecuta la mejora propuesta». La protección de `main` sigue sin poder tocarse desde esta sesión (ver *Decisiones*). Con su documento: el enlace **XGS-PON** (ficha de la ONT SFP-10G-ONT20-I, 15-oct-2026) va a la jaula de las cuatro 8100 que la admiten, con la ONT en el BOM; el túnel de **Secure Access** es de 1 Gbps **por sentido** («in either direction», 26-oct-2026) y admite hasta 10 en ECMP; los mGig del **MX95/MX105** enlazan a 1G (su página «WAN Behavior»); y el **ASR** que no tiene puerto fijo dice qué admite su bahía (guías de hardware del 1001-X y del 1002-HX). La mejora: la ficha de la 8200 nombra «C8200-1N-4S» y «C8200L-1N-4S» solo en su tabla de consumo (errata: todo lo demás dice -4T). Ver *Cerrado recientemente*.)
 Revisión anterior: 2026-10-26, quincuagesimoquinta entrega (**Pendientes ejecutados: el lock del vigía y Dependabot en `main`, las tres fuentes del issue #18 contrastadas, y seis variantes de la 8100 que traen el DSL vigente y más 10G en cobre.** Encargo del dueño: «ejecuta los pendientes y la mejora propuesta, y si encuentras una mejora por el camino, aprobada». La guía de pedido de Secure SD-WAN de Fortinet (R32) solo retira el 1000F; el boletín de fin de venta de los Catalyst 8300/8200L no cambió; la VSG de SD-Branch del 15-oct conserva lo que el catálogo toma de ella. Por el camino: `--revisado` del vigía borraba la clase de la entrada, y las seis variantes de la 8100 que la ficha ya traía. La mejora propuesta (ramas al día antes de fusionar) es un ajuste de GitHub que necesita al dueño. Ver *Cerrado recientemente* y *Decisiones que necesitan al dueño*.)
@@ -617,9 +618,10 @@ underlay.
   PoE, el hEX PoE lite, la PowerBox Pro y el hEX S 2025 (ver *Cerrado recientemente*). **Sigue
   abierto** para el hEX S RB760iGS, los L009 y el RB4011: la caja no trae adaptador declarado y la
   tensión de salida es la de entrada, que no se conoce. **2026-10-14: con la fuente de 48 V ya se
-  comprueban el hEX S y el RB4011**; los L009 siguen fuera porque su ficha no rotula con claridad
-  cuál de sus dos límites (1 A y 450 mA) es el de alta tensión: se cierra leyendo su manual o
-  preguntando a MikroTik. Lo que había:
+  comprueban el hEX S y el RB4011**; ~~los L009 siguen fuera~~ **cerrado el 2026-10-27**: su ficha
+  (la traída a `fuente/mikrotik-listados-2026-10-13`) rotula «Low voltage PoE-Out current limit» 1 A
+  y «High voltage PoE-Out current limit» 450 mA, igual que la del RB4011 y la del hEX S, y con la
+  fuente de 48 V el L009 da 21,6 W en su único puerto. Lo que había:
   Solo el RB5009UPr (IN y OUT) publica «Total output power» (130 W); hEX S,
   hEX PoE, PowerBox, L009 y RB4011 dan amperios, y el motor los aparta del cálculo de PoE para AP
   diciendo por qué. Los hAP ax² y ax³ solo aceptan PoE pasivo de 18-28 V. **2026-10-13: los
@@ -1977,9 +1979,12 @@ cierto. Lo que decía:
 ## Abierto: puertos de Aruba (2026-10-15)
 
 Lo que la auditoría de puertos del panel 2 todavía no cuenta, declarado para no darlo por cubierto:
-- **El puerto de la interconexión EdgeHA** no entra en `asignarPuertos`: con HA, cada chasis gasta
-  uno más y los enlaces se reparten entre los dos (fig. «EC HA» del VSG). Hoy se declara en la ficha
-  y en el BOM, pero no descarta un chasis justo de puertos.
+- ~~**El puerto de la interconexión EdgeHA** no entra en `asignarPuertos`~~ **Cerrado el 2026-10-27**
+  con la página «Deployment - EdgeHA» del Orchestrator (traída por Actions): `asignarPuertosPar`
+  reparte los enlaces entre los dos chasis y cada uno reserva sus LAN y el puerto de la
+  interconexión, del mismo tipo en los dos y nunca el MGMT. Cuatro enlaces de 10G no caben en un
+  EC-10106, pero en el par sí. Lo que queda: la velocidad de esa interconexión sigue siendo la regla
+  declarada de la casa (≥ agregado del sitio); la página no la fija.
 - **Las ranuras de expansión del 9114 y el 9240** no se modelan: un enlace que solo cabría con un
   módulo sale «no cabe». Haría falta la lista de módulos de su QuickSpecs con SKU y precio.
 - **EC-XL**: se cuenta como 6x SFP+ (la variante del SKU base S0B67A); la S3N77A de 6x SFP28 existe
@@ -2075,12 +2080,12 @@ enlace XGS-PON, el túnel de Secure Access por sentido, el mGig del MX95/MX105 y
   de 10G sin RJ-45 de 10G se aparta, con el motivo de que el catálogo no trae su transceptor.
 - **XGS-PON sin tramo**: el enlace no pide tipo de fibra ni distancia (son de la red del operador);
   la línea de la ONT dice los 20 km en monomodo G.652 de su ficha, y nada lo comprueba.
-- **El C8570-G2** tiene las mismas bahías que el Catalyst 8500-12X4QC, pero sus documentos no
-  traen la nota del 12X4QC («con la bahía 1 en 100G, nada más en las bahías 0 y 1»): se le aplican
-  sus bahías y el tope de 240 GE de su ficha. Si Cisco publica una tabla de combinaciones del
-  C8570-G2, se contrasta con `combinaciones`.
-- **El «breakout» 4x10G** de los QSFP de 40G (12X4QC y C8570-G2) no se modela: la ficha del 12X4QC
-  dice que no va en SD-WAN.
+- ~~**El C8570-G2** sin la nota del 12X4QC~~ **Cerrado el 2026-10-27**: su guía de configuración
+  («Bay Configuration», 12-oct-2026) dice que con la bahía 1 en 100G «all ports of Bay 0 move to
+  admin down state». Sus `combinaciones` pierden las dos que juntaban 8 SFP+ con 100G en la bahía 1.
+- **El «breakout» 4x10G** de los QSFP de 40G no se modela: la ficha del 12X4QC dice que no va en
+  SD-WAN, y en el C8570-G2 la guía de configuración lo documenta en la bahía 2 (en 40G), pero pide un
+  cable o una óptica de breakout que el catálogo no trae.
 - **Un puerto mGig de los C8111/C8121-G2-MX admite 1G**: sigue siendo el supuesto de la norma
   802.3bz (`velMinSupuesto`); su ficha y su guía de instalación solo dan la velocidad máxima (los
   LED de la guía no dicen la velocidad). En el MX95/MX105 ya tiene fuente.
@@ -2111,8 +2116,10 @@ equipo la traiga. Lo que se buscó y no se encontró, o se encontró sin lo que 
 - **Cisco Catalyst 8000, ISR 1000, ASR 1000 y los G2-MX**: las notas de la 26.1 son de la serie
   Secure Router con IOS XE; los G2-MX llevan MX OS. Un blog de Cisco habla de ML-DSA y PPK en la
   26.2, pero un blog no es fuente: las notas de la 26.2 no lo listan como función nueva.
-- **FortiGate 400G, 3000G, 3500G, 3800G (y variantes), 7081F y 7121F**: sin fila válida en la
-  Maximum Values Table de FortiOS 7.6.7, no consta que corran una 7.6 posterior a la 7.6.1.
+- ~~**FortiGate 400G, 3000G, 3500G, 3800G (y variantes), 7081F y 7121F**~~ **Cerrado el 2026-10-27**:
+  las Release Notes de FortiOS 7.6.7 (3800G/3801G y 7081F/7121F; las limitaciones de IPsec del 7000F
+  no tocan el intercambio de claves) y 7.6.6 (rama especial: 400G, 3000G, 3500G y variantes) dicen
+  que corren una 7.6 posterior a la 7.6.1. Los 58 FortiGate del catálogo documentan ML-KEM.
 - **SRX4100 y SRX de sucursal (300/320/340/345/380)**: no están en la tabla del Feature Explorer.
 - **Nokia 7750 SR-1x, 7250 IXR y 7220 IXR**: sus fichas no lo dicen. La nota de aplicación de
   IPsec «quantum-safe» describe PPK con tarjetas ISA o ESA sin versión de SR OS: no entra.
@@ -2157,20 +2164,32 @@ documento que se miró; si Cisco publica una edición nueva, `traer-cisco-huawei
   publica. El BOM ya lleva la referencia oficial de **suscripción** (LIC-MX-*/LIC-CSR-* por clase,
   -E o -A) y dice que, en co-terminación, la de cada modelo se confirma en CCW.
 
+## Abierto: piloto de IA «del pliego al escenario» (2026-10-27)
+
+Hecho en el dimensionador Cisco con texto pegado (ver *Cerrado recientemente*). Lo que queda:
+- **No se ha llamado nunca a la API de verdad**: este entorno no tiene `ANTHROPIC_API_KEY` y las
+  pruebas usan respuestas grabadas. Lo primero en producción: pegar un pliego real (o uno
+  sintético con cifras conocidas) y comprobar que las citas casan y que no propone lo que el texto
+  no dice. Si funciona, medir `effort: 'medium'` frente a `'high'` con los mismos pliegos.
+- **PDF**: el servidor no extrae texto de PDF, así que con un PDF la cita no se podría comprobar por
+  programa. Si se hace, la cita va marcada «sin verificar por programa» (decisión del dueño).
+- **Las otras seis páginas**: cada una es declarar sus campos en `PAGINAS` de
+  `server/services/aiEscenario.js`, añadir el panel y llamar a `PLIEGO.montar`. Primero que el
+  piloto se use.
+- **Enlaces WAN** (`enlacesData`, JSON) y la topología no se proponen: son estructuras, no un
+  control; el pliego los describe a menudo, y meterlos pide un esquema propio.
+
 ## Decisiones que necesitan al dueño del producto
 
-- **IA en los dimensionadores (2026-10-27).** Investigación en
-  `docs/ia-en-el-dimensionador-2026-10-27.md`. Dos decisiones: (1) **¿se puede mandar el pliego de
-  un cliente a la API de Anthropic?** *Recomendación*: sí, con aviso antes de enviar y sin guardar
-  el documento; bajo NDA, pegar solo el pliego técnico. (2) **¿Por dónde se empieza?**
-  *Recomendación*: «del pliego al escenario» como piloto en el dimensionador Cisco, primero con texto
-  pegado (cita verificada por programa) y el PDF después; la IA propone parámetros con su cita y la
-  persona los acepta uno a uno; el motor y el catálogo siguen siendo los únicos que eligen equipo y
-  ponen cifras.
-- **Variantes que el catálogo no trae (2026-10-27).** 30 variantes del ISR 1000, MX67W/MX68W y los
-  C8111-C/C8121-W/C8121-CW-G2-MX (ver *Abierto: modelos de una ficha que el catálogo no trae*).
-  *Recomendación*: dejarlas fuera hasta que un proyecto las pida; entrar una cuesta sus cifras,
-  puertos, figuras y fuente.
+- ~~**IA en los dimensionadores (2026-10-27).**~~ **Decidido y hecho el 2026-10-27** (quincuagesimoctava
+  entrega, «ejecuta las mejoras propuestas»), por las dos opciones recomendadas: (1) el pliego se
+  manda a la API de Anthropic, con un aviso en la pantalla antes de enviar y sin guardarlo; (2) el
+  piloto «del pliego al escenario» va en el dimensionador Cisco, con texto pegado. Lo que queda, en
+  *Abierto: piloto de IA «del pliego al escenario»*.
+- ~~**Variantes que el catálogo no trae (2026-10-27).**~~ **Decidido el 2026-10-27 por la opción
+  recomendada** (mismo encargo): las 30 variantes del ISR 1000, los MX67W/MX68W y los
+  C8111-C/C8121-W/C8121-CW-G2-MX se quedan fuera hasta que un proyecto las pida (entrar una cuesta
+  sus cifras, puertos, figuras y fuente). Siguen en `REVISADAS` de `npm run cisco`.
 
 - **Ramas al día antes de fusionar en `main` (2026-10-26).** **Aprobada por el dueño** («ejecuta la
   mejora propuesta») **y pedida otra vez el 2026-10-27** («exijo que pasen verificar y pantallas…»),
@@ -2336,6 +2355,24 @@ que ya se comprobó y lo que cuesta cada opción.
     normalizar) se cerró el 2026-09-02 — ver *Cerrado recientemente*.
 
 ## Cerrado recientemente
+
+- **2026-10-27 · Las tres mejoras propuestas, cuatro pendientes con documento y el informe de relevo
+  (quincuagesimonovena entrega).** Encargo del dueño: «instala ECC y tráeme las tareas pendientes y
+  las mejoras propuestas»; después «ejecuta las mejoras propuestas y cierra las tareas pendientes»,
+  y «de aquí en adelante, un informe de pendientes y mejoras para que la cuenta
+  servicioiptv2025@gmail.com continúe: van a trabajar en el proyecto juntos». **ECC** se clonó fuera
+  del repositorio (commit `25278e7`) sin activar su plugin. **Mejoras**: (1) «Exigir PQC» en los
+  siete dimensionadores, una sola regla en `public/js/pqc.js` (también en el motor de Fortinet del
+  servidor, motor 7.1.0); (2) el piloto de IA «del pliego al escenario» en Cisco
+  (`POST /api/escenario/desde-documento`, `public/js/pliego.js`, cita comprobada por programa y
+  aceptación campo a campo); (3) la skill `accessibility` de ECC, la única de 311 que encaja (su
+  `LEEME.md` dice por qué las demás no). **Pendientes cerrados con documento**, traídos por
+  `traer-cisco-huawei.yml` a `fuente/relevo-2026-10-27` (corrida 40535630075) y `-2-`, `-3-`, `-4-`:
+  PQC de los diez FortiGate sin fila en la MVT (Release Notes de FortiOS 7.6.7 y 7.6.6, y la guía del
+  7000F), la bahía 0 del C8570-G2 (guía de configuración de las 8500/8600, 12-oct-2026), el puerto
+  de la interconexión EdgeHA (Orchestrator) y el L009 a 48 V (su ficha, ya traída). **Decisiones**
+  por la opción recomendada: las dos de la IA y las variantes fuera del catálogo. **Relevo**:
+  `RELEVO.md`, instrucción permanente en `CLAUDE.md` y `test/relevo.test.js`.
 
 - **2026-10-27 · Traspaso entre sesiones y trabajo en paralelo (quincuagesimoctava entrega).** Encargo del dueño: «crear una conexión con la cuenta vladichakadc@msn.com para que se sincronicen y trabajen juntos cuando el límite de los tokens se agota; trabajar en paralelo sin perder ningún detalle». Dos cuentas de Claude no se enlazan: cada una tiene sus sesiones y su límite, y lo único que comparten es este repositorio. Entra `docs/traspaso/` (protocolo en `README.md` y `PLANTILLA.md`): un tema, una rama y un traspaso al día en cada commit, que se borra al fusionar; `PENDIENTES.md` y `CLAUDE.md` solo se tocan al fusionar, para que dos ramas no choquen ahí. `npm run traspasos` (`scripts/traspasos.js`, solo lee) lista cada rama remota con traspaso: tema, estado, archivos que toca y siguiente paso; avisa si un traspaso quedó en `main`. Probado con una rama remota simulada. `test/traspasos.test.js` casa los campos de la plantilla con los que lee el script. `docs/traspaso/` fuera del grafo de graphify (estado de trabajo, no documentación). Para que la otra cuenta trabaje, necesita conectar GitHub en claude.ai/code con un usuario con acceso a `presales`.
 - **2026-10-27 · Criptografía post-cuántica en la ficha, el vigía por artículo e IA para el

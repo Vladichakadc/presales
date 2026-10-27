@@ -25,6 +25,15 @@ completo está allí.
   (qué evita, qué cuesta, qué se rompe si se hace mal). Se puede rechazar sin discusión: no se
   implementa sola ni se da por aprobada por silencio. Si no hay ninguna que merezca la pena, se
   dice eso en vez de inventarla.
+- **Informe de relevo en cada entrega** (decisión del dueño, 2026-10-27: «de aquí en adelante, un
+  informe de pendientes y mejoras para que la cuenta servicioiptv2025@gmail.com continúe; van a
+  trabajar en el proyecto juntos»). En el commit que fusiona cada entrega en `main` se reescribe
+  `RELEVO.md`: qué se entregó, los pendientes por prioridad con lo que los cierra, las mejoras
+  propuestas sin decidir, lo que decide el dueño y cómo retomar. Complementa el traspaso (punto
+  siguiente): el traspaso es el estado de UN tema en SU rama mientras se trabaja; el relevo, el
+  resumen de todo lo pendiente en `main` al cerrar. Lo que está en curso no se apunta en el
+  relevo (una tabla común chocaría en cada fusión): lo dice `npm run traspasos`.
+  `test/relevo.test.js` frena un relevo sin sus secciones o más viejo que `PENDIENTES.md`.
 - **Las decisiones del dueño no se toman por silencio.** Cuando el dueño pide «ejecuta los
   pendientes», la opción recomendada de una decisión pendiente se ejecuta y se anota; si no, se
   pregunta.
@@ -54,6 +63,7 @@ Tailwind…) se retira: empuja el trabajo hacia una arquitectura que aquí no ex
 | `supply-chain-risk-auditor` · `codeql` · `semgrep` · `semgrep-rule-creator` · `sarif-parsing` | Dependencias y análisis estático. |
 | `variant-analysis` · `fp-check` · `audit-context-building` · `differential-review` · `code-review-guide` | Auditoría y revisión de diffs. |
 | `frontend-design` · `feature-planning` · `project-kickoff` · `database-designer` | Interfaz (HTML y JS a mano, sin build), planes por archivo, arranque, modelo Sequelize. |
+| `accessibility` | WCAG 2.2 sobre HTML y ARIA nativos (de ECC, MIT; las secciones de iOS y Android no aplican). Lo que manda es `e2e-accesibilidad.js` (axe 2.1 AA): un criterio 2.2 que merezca frenar se convierte en una comprobación de esa batería. Ver su `LEEME.md`. |
 | `agent-browser` | Explorar una pantalla por su árbol de accesibilidad. **Explorar con agent-browser, comprobar con Playwright**: `pantallas`, `contraste`, `e2e` y `manual` siguen en Playwright porque son lo que CI mira. Pide `--executable-path` al Chromium de `/opt/pw-browsers`. |
 | `agent-reach` | Router a 16 plataformas sociales. **Desde este contenedor no trae nada** (el proxy de egreso corta las 16); sirve desde una máquina con salida. Lo que traiga es lectura humana, nunca vía de escritura a `legacyData/`. Credenciales: ver su `LEEME.md`. |
 | `graphify` | Grafo de conocimiento del código (`graphify update .`, `query`, `path`). Solo la skill: el modo «siempre activo» se dejó fuera a propósito. CLI fijada a 0.9.77 con su extensión `pdf`, que el arranque instala si falta (el grafo no lo construye). **El grafo orienta, no es fuente**: enlaza bien el servidor (`require`) y no los módulos de `public/js/` (globales del navegador). |
@@ -289,6 +299,18 @@ contra lo verificado, queda como diff de `legacyData/` y llega a producción con
   necesita el modelo responde 503 (`SinClave`); aquí vivió un simulacro que inventaba propuestas y
   se retiró. El tipo del adjunto lo decide la firma del contenido (`firmaArchivo.js`), no el
   mimetype.
+- **Del pliego al escenario** (`routes/escenario.js` + `services/aiEscenario.js` + `public/js/pliego.js`;
+  piloto en el dimensionador Cisco desde el 2026-10-27, `docs/ia-en-el-dimensionador-2026-10-27.md`).
+  `POST /api/escenario/desde-documento` (permiso `herramientas`) recibe el texto pegado de un
+  pliego y devuelve los parámetros de la página que el texto dice, **cada uno con su cita
+  literal comprobada por programa** en el texto (si no está, se descarta con su motivo). El campo
+  es un enum de los de la página y el tipo, el rango y las opciones salen de su HTML: un control
+  que cambie arrastra la validación. Mismo modelo, esfuerzo, esquema y `fallbacks` que la
+  sincronización, sin herramientas; el pliego va como documento (datos, no instrucciones) y **no
+  se guarda ni se escribe en el log**. La página enseña «actual → propuesto (cita)» y **solo
+  aplica lo que la persona marca**; el motor y el catálogo siguen siendo los únicos que eligen
+  equipo y ponen cifras. Sin `ANTHROPIC_API_KEY`, 503 y la página lo dice. Llevarlo a otra
+  página es declarar sus campos en `PAGINAS` y montar el mismo panel.
 - `server/fuentesSubidas.js` — carga manual de la fuente oficial por fabricante (permiso `sync`) en
   el volumen persistente: **actualiza la procedencia, no reescribe cifras** (subir no es
   contrastar). Una vigente por fabricante; la anterior pasa a un histórico consultable. Solo se
@@ -368,6 +390,15 @@ Módulos compartidos:
 - `tabla.js` — ordenación por columna; la coma es separador de miles y el punto decimal, y «sin
   dato» va siempre al final.
 - `fuentes.js` — las tipografías no bloquean el render (va en `PUBLICO`).
+- `pqc.js` — **el requisito «Exigir PQC»** (2026-10-27), una sola regla para los siete
+  dimensionadores y para el motor de Fortinet en el servidor: `''` no se exige, `'clave'` basta un
+  mecanismo quantum-safe documentado (PPK, MACsec/ANYsec o ML-KEM), `'mlkem'` exige ML-KEM. Sin
+  `pqc` documentado el equipo se aparta con «no consta en ningún documento oficial», nunca «no la
+  tiene»; con ML-KEM exigido, una PPK o un MACsec no bastan y se dice qué trae. Cada página lo
+  ofrece en `#reqPqc` (mismas opciones, `test/pqc-requisito.test.js`) y carga `pqc.js` antes que su
+  motor.
+- `pliego.js` — el panel «Del pliego al escenario» (ver *Arquitectura*). El texto no es un campo
+  de `ESTADO.vincular`: no viaja en el enlace ni se guarda en el almacenamiento local.
 
 ## Reglas del catálogo
 
@@ -418,7 +449,10 @@ Módulos compartidos:
   puerto pero no suma); `migrarEstadoV1()` traduce los enlaces viejos. **Cada enlace va a un puerto
   real** (`PUERTOS` en `aruba.js`, contado de su `ifaces`; `ArubaReglas.asignarPuertos`, más 2 LAN):
   un RJ-45 solo va a cobre nativo (en una jaula es «SFP 1G» con el transceptor 1000BASE-T), y el
-  modelo sin puerto para algún enlace sale con su motivo. El medio no elegido a mano sigue al
+  modelo sin puerto para algún enlace sale con su motivo. **Con el par EdgeHA**
+  (`asignarPuertosPar`, 2026-10-27) se audita el par: cada enlace aterriza en un chasis, y cada uno
+  reserva sus 2 LAN y el puerto de la interconexión, del mismo tipo en los dos («any LAN or WAN
+  port […] match the media type and speed […] not MGMT», página EdgeHA del Orchestrator). El medio no elegido a mano sigue al
   caudal (todo RJ-45 del catálogo es de 1 GbE). Una elección manual que no cabe se respeta hasta
   que cambien los enlaces. Sin selector de segmento: el tamaño de sitio lo fija el arquetipo. EdgeConnect se dimensiona
   contra su rango WAN publicado; los gateways 9000/9100/9200, contra firewall, clientes y APs, con la
@@ -480,7 +514,8 @@ Módulos compartidos:
   módulo NIM de la guía de su familia que lleve más enlaces (sin ranura NIM, en el portador
   C-SM-NIM-ADPT(R) de una ranura SM) o se aparta (en el ASR, el motivo cita lo que admite su bahía,
   `BAHIA_ASR`, sin proponer el módulo: chasis fuera de venta); el `maxWan` de Meraki manda, y las `combinaciones` (tabla 5 del
-  12X4QC; bahías y 240 GE del C8570-G2) apartan lo que la ficha no admite a la vez. **Cada fibra
+  12X4QC; bahías y 240 GE del C8570-G2, con la bahía 0 caída si la 1 va a 100G según su guía de
+  configuración) apartan lo que la ficha no admite a la vez. **Cada fibra
   lleva su óptica por alcance** (`elegirOptica`): con el tipo de fibra (OM1…OM4, monomodo) y el
   tramo en km, la primera de la lista que llega según el `alcance` de la ficha de la óptica (en
   `OPTICS`, columna `reach` de `Optic`), antes la que no pide RS-FEC ni cable de acondicionamiento;
@@ -535,7 +570,7 @@ Módulos compartidos:
   ficha los da (RB5009UPr) y, si la caja trae adaptador, con su tensión × la corriente de la ficha
   (`presupuestoPoe`: el manual dice que la salida va a la tensión de entrada; a 24 V es pasivo, no
   802.3af/at); con «Fuente de 48 V aparte» (`#poeFuente`) mandan los límites de alta tensión de
-  la ficha y su entrada máxima, el 802.3af/at solo donde el manual lo dice (hEX PoE, PowerBox Pro)
+  la ficha (desde el 2026-10-27 también el L009: 450 mA en su único puerto) y su entrada máxima, el 802.3af/at solo donde el manual lo dice (hEX PoE, PowerBox Pro)
   y la fuente va al BOM sin precio; sin tensión conocida, no se comprueba. La ficha pinta una barra por escenario de falla
   (solo con respaldo) y la del IPsec del respaldo cifrado. Niveles de licencia de la tabla oficial (el 5 no limita OpenVPN; CHR no tiene niveles).
   Figuras de la galería de cada ficha (`public/data/mikrotik-vistas-equipos.json`), sin pérdida y a
@@ -610,7 +645,7 @@ Módulos compartidos:
 ## Documentos de referencia
 
 `IMPORTAR-CATALOGO.md` (procedimiento de importación) · `docs/sincronizacion.md` ·
-`docs/decisiones-del-dueno-2026-09-24.md` · `docs/herramienta-externa-cisco-2026-10-20.md` · `docs/propuestas-cisco-conectividad-sdwan-seguridad-2026-10-21.md` (las nueve, hechas o cerradas el 2026-10-21, con su documento) · `docs/ia-en-el-dimensionador-2026-10-27.md` (qué IA cabe en los dimensionadores sin inventar datos; pendiente de dos decisiones del dueño) · `docs/portabilidad-aruba.md` (tres capas: escenario,
+`docs/decisiones-del-dueno-2026-09-24.md` · `docs/herramienta-externa-cisco-2026-10-20.md` · `docs/propuestas-cisco-conectividad-sdwan-seguridad-2026-10-21.md` (las nueve, hechas o cerradas el 2026-10-21, con su documento) · `docs/ia-en-el-dimensionador-2026-10-27.md` (qué IA cabe en los dimensionadores sin inventar datos; decidido el 2026-10-27: piloto «del pliego al escenario» en Cisco) · `RELEVO.md` (el informe de relevo de la última entrega: pendientes, mejoras y cómo retomar) · `docs/portabilidad-aruba.md` (tres capas: escenario,
 comercial, gobierno del dato) · `docs/revision-huawei-2026-09-29.md` · `docs/manual-usuario/`
 (manual a PDF con `npm run manual`; Playwright fuera de `package.json` a propósito) ·
 `docs/claude-md-cronica.md` (la historia de cada regla de este archivo).

@@ -203,7 +203,12 @@ function crudasDeRespuesta(response) {
 
 let cliente = null;
 function anthropicCliente() {
-  if (!process.env.ANTHROPIC_API_KEY) throw new SinClave();
+  if (!process.env.ANTHROPIC_API_KEY) {
+    // El mismo error que la sincronización (la ruta lo convierte en 503), con el mensaje de aquí.
+    const e = new SinClave();
+    e.message = 'Falta ANTHROPIC_API_KEY: el pliego no se puede analizar con IA sin ella. El dimensionador sigue funcionando a mano.';
+    throw e;
+  }
   if (!cliente) cliente = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
   return cliente;
 }
