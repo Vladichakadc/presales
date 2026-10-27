@@ -164,6 +164,23 @@ test('el permiso sync se exige en la ruta: consulta recibe 403, administrador pa
   assert.match(cuerpo.error, /ANTHROPIC_API_KEY/);
 });
 
+test('del pliego al escenario: tras el muro, valida el texto y sin clave falla cerrado', async () => {
+  const sinSesion = await fetch(`${BASE}/api/escenario/desde-texto`, { method: 'POST' });
+  assert.strictEqual(sinSesion.status, 401);
+  const ana = await sesionDe('ana', 'contrasena-de-ana-larga');
+  const pedir = (cuerpo) => fetch(`${BASE}/api/escenario/desde-texto`, {
+    method: 'POST',
+    headers: { cookie: ana, 'Content-Type': 'application/json' },
+    body: JSON.stringify(cuerpo),
+  });
+  assert.strictEqual((await pedir({ pagina: 'cisco', texto: 'corto' })).status, 400);
+  assert.strictEqual((await pedir({ pagina: 'nokia', texto: 'Se requieren 40 sucursales con 200 Mbps.' })).status, 400);
+  // El servidor de esta prueba arranca con la clave vacía: nunca una propuesta inventada.
+  const sinClave = await pedir({ pagina: 'cisco', texto: 'Se requieren 40 sucursales con 200 Mbps simétricos.' });
+  assert.strictEqual(sinClave.status, 503);
+  assert.match((await sinClave.json()).error, /ANTHROPIC_API_KEY/);
+});
+
 test('aplicar a la base sí sigue bloqueado en producción: la base es efímera', async () => {
   // La escritura a la base no tiene sentido en producción y ese muro se queda. El camino
   // durable es descargar la propuesta y abrir el PR desde el workflow.

@@ -381,4 +381,7 @@ function _clienteDePrueba(c) { cliente = c; }
 module.exports = {
   analyzeCatalog, analizarDocumento, cambiosDeRespuesta, bloqueAdjunto, SinClave, ClaveInvalida, LimiteIA, SinSaldo, RechazoIA,
   RespuestaCortada, errorDeIA, ESQUEMA_CAMBIOS, MODELO, ESFUERZO, _clienteDePrueba,
+  // El mismo cliente para el asistente del pliego (escenarioDesdeTexto.js): una sola clave y un
+  // solo sitio que falla cerrado sin ella.
+  clienteIA: anthropicCliente,
 };

@@ -20,6 +20,7 @@ const multer = require('multer');
 const fuentesSubidas = require('./fuentesSubidas');
 const { referenciasDe } = require('./services/referencias');
 const { tipoPorFirma } = require('./services/firmaArchivo');
+const pliego = require('./services/escenarioDesdeTexto');
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -319,6 +320,28 @@ app.get('/api/referencias/:vendor/:modelo', (req, res) => {
   const r = referenciasDe(req.params.vendor, req.params.modelo);
   if (!r) return res.status(400).json({ error: 'Fabricante no válido' });
   res.json(r);
+});
+
+// DEL PLIEGO AL ESCENARIO (piloto en Cisco, 2026-10-27): propone parámetros del escenario a partir
+// del texto pegado de un pliego, cada uno con su cita verificada contra el texto. Es usar la
+// herramienta, así que pide el mismo permiso que las pantallas. El texto no se guarda ni va al log.
+app.post('/api/escenario/desde-texto', exige('herramientas'), async (req, res) => {
+  const { pagina, texto } = req.body || {};
+  try {
+    res.json(await pliego.proponerEscenario(String(pagina || ''), texto));
+  } catch (err) {
+    const IA = require('./services/aiSync');
+    if (err instanceof pliego.TextoInvalido) return res.status(400).json({ error: err.message });
+    if (err instanceof IA.SinClave) {
+      return res.status(503).json({ error: 'El asistente del pliego no está disponible: falta ANTHROPIC_API_KEY en el servicio. Rellena el escenario a mano.' });
+    }
+    if (err instanceof IA.ClaveInvalida || err instanceof IA.SinSaldo) return res.status(503).json({ error: err.message });
+    if (err instanceof IA.LimiteIA) return res.status(429).json({ error: err.message });
+    if (err instanceof IA.RechazoIA) return res.status(422).json({ error: err.message });
+    if (err instanceof IA.RespuestaCortada) return res.status(502).json({ error: err.message });
+    console.error('[Pliego] Error inesperado:', err && err.message);
+    res.status(500).json({ error: 'No se pudo leer el pliego con IA. Rellena el escenario a mano.' });
+  }
 });
 
 app.use('/api', catalogRoutes);

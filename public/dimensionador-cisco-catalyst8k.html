@@ -113,6 +113,8 @@ ul.clean li.on:before{background:var(--red)}
 .req.opt{background:var(--paper);color:var(--steel)}
 
 table{width:100%;border-collapse:collapse;font-size:12.5px}
+.ia-tabla td{vertical-align:top;padding:6px 8px 6px 0;border-bottom:1px solid var(--rule)}
+.ia-tabla q{font-style:italic;color:var(--steel)}
 th{text-align:left;font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--steel);font-weight:500;padding:0 8px 7px 0;border-bottom:1px solid var(--rule)}
 td{padding:8px 8px 8px 0;border-bottom:1px solid var(--paper);vertical-align:top}
 td.n,code{font-family:'IBM Plex Mono',monospace;font-size:12px}
@@ -180,6 +182,21 @@ tr.sel td{background:rgba(4,159,217,.07);font-weight:600}
     <span><i style="background:var(--rule)"></i>No llega o se aparta</span>
     <span style="color:var(--red-txt)"><i style="background:var(--red)"></i>Elegido</span>
   </div>
+</section>
+
+<section class="panel" id="pliegoIA" data-pagina="cisco">
+  <details>
+    <summary style="cursor:pointer;font-weight:600">Del pliego al escenario <span class="hint">· asistente con IA, piloto</span></summary>
+    <p class="hint">Pega el texto técnico del pliego o la RFP. La IA propone parámetros de esta página, cada uno con la frase del pliego que lo respalda (comprobada letra a letra contra lo que pegaste), y tú aceptas uno a uno. No elige equipo ni pone cifras: eso lo siguen haciendo el motor y el catálogo.</p>
+    <p class="hint" style="color:var(--ink)"><b>Aviso:</b> el texto se envía a la API de Anthropic para analizarlo y no se guarda en este servidor. Si el pliego está bajo acuerdo de confidencialidad, pega solo la parte técnica, sin nombres ni datos del cliente.</p>
+    <label for="pliegoTexto" style="display:block;margin:10px 0 4px">Texto del pliego</label>
+    <textarea id="pliegoTexto" rows="7" style="width:100%;font:inherit;font-size:12.5px;padding:8px;border:1px solid var(--rule);border-radius:2px" placeholder="Ejemplo: 40 sucursales con enlace de 200 Mbps simétricos, SD-WAN con salida local a Internet y alta disponibilidad en la sede central…"></textarea>
+    <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:8px">
+      <button type="button" class="btn" id="pliegoEnviar">Proponer parámetros</button>
+      <span class="hint" id="pliegoEstado" role="status" aria-live="polite" style="margin:0"></span>
+    </div>
+    <div id="pliegoSalida" style="margin-top:12px"></div>
+  </details>
 </section>
 
 <div class="cols">
@@ -591,6 +608,7 @@ tr.sel td{background:rgba(4,159,217,.07);font-weight:600}
 <script src="/js/tabla.js"></script>
 <script src="/js/contraste.js"></script>
 <script src="/js/procedencia.js"></script>
+<script src="/js/escenario-ia.js"></script>
 <script src="/js/dimensionador-cisco-catalyst8k.js"></script>
 <script src="/js/navegacion.js"></script>
 </body>
