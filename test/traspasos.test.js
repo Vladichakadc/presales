@@ -31,3 +31,17 @@ test('README y plantilla no cuentan como tema', () => {
   assert.deepStrictEqual(archivosDeTema(listado), ['cisco-xgspon.md']);
 });
 
+
+// El arranque de cada sesión remota enseña los temas en curso (mejora aprobada el 2026-10-27).
+// Va antes de `npm install`: con `set -e`, una instalación que falla (el proxy dio 403 al
+// registro de npm ese mismo día) cortaría el arranque antes de llegar. Y no puede abortarlo.
+test('el arranque lista los temas en curso antes de npm install y sin abortar', () => {
+  const hook = fs.readFileSync(path.join(RAIZ, '.claude/hooks/session-start.sh'), 'utf8');
+  const lista = hook.indexOf('node scripts/traspasos.js');
+  const instala = hook.indexOf('npm install --no-audit');
+  assert.ok(lista > 0, 'session-start.sh ya no corre scripts/traspasos.js');
+  assert.ok(lista < instala, 'el listado de temas va antes de npm install');
+  const linea = hook.slice(hook.lastIndexOf('\n', lista) + 1, hook.indexOf('\n', lista));
+  assert.match(linea, /^if ! .*timeout \d+ node scripts\/traspasos\.js/,
+    'el listado va dentro de un if con timeout: un fetch colgado o fallido no puede cortar el arranque');
+});

@@ -4,7 +4,8 @@ Registro vivo de lo que falta. **Al empezar una tarea se buscan aquí los puntos
 tocan, y al terminarla se actualiza**, y su contenido se resume al usuario al cerrar cada entrega — esa es la instrucción
 permanente que lo justifica (ver `CLAUDE.md`, sección *Instrucciones permanentes del dueño*).
 
-Última revisión: 2026-10-27, quincuagesimonovena entrega (**Las tres mejoras propuestas ejecutadas —«Exigir PQC» en los siete dimensionadores, el piloto de IA «del pliego al escenario» en Cisco y la skill `accessibility` de ECC— y cuatro pendientes cerrados con documento oficial, más el informe de relevo.** Encargo del dueño: «ejecuta las mejoras propuestas y cierra las tareas pendientes», y «de aquí en adelante, un informe de pendientes y mejoras para que la cuenta servicioiptv2025@gmail.com continúe» (`RELEVO.md`, instrucción permanente en `CLAUDE.md`). Cerrados con documento: la PQC de los diez FortiGate sin fila en la Maximum Values Table (Release Notes de FortiOS 7.6.7 y 7.6.6), la bahía 0 del C8570-G2 con la bahía 1 en 100G (guía de configuración), el puerto de la interconexión EdgeHA (Orchestrator) y el PoE a 48 V del L009 (su ficha). Las dos decisiones de la IA y la de las variantes, por la opción recomendada. Ver *Cerrado recientemente*.)
+Última revisión: 2026-10-27, sexagésima entrega (**El arranque enseña los temas en curso, y el aviso de seguridad de Railway, leído.** Encargo del dueño: «hazla y ejecuta todos los pendientes». La mejora aprobada entra en `session-start.sh`. Los pendientes con decisión ya los había ejecutado en paralelo la sesión de la entrega 59 (el piloto de IA que esta sesión hizo a la vez se cerró sin fusionar: PR #22). Lo que queda es del dueño: rotar los secretos que el incidente de Railway pone en riesgo, proteger `main` y la URL de las fuentes de Aruba. Ver *Decisiones* y *Cerrado recientemente*.)
+Revisión anterior: 2026-10-27, quincuagesimonovena entrega (**Las tres mejoras propuestas ejecutadas —«Exigir PQC» en los siete dimensionadores, el piloto de IA «del pliego al escenario» en Cisco y la skill `accessibility` de ECC— y cuatro pendientes cerrados con documento oficial, más el informe de relevo.** Encargo del dueño: «ejecuta las mejoras propuestas y cierra las tareas pendientes», y «de aquí en adelante, un informe de pendientes y mejoras para que la cuenta servicioiptv2025@gmail.com continúe» (`RELEVO.md`, instrucción permanente en `CLAUDE.md`). Cerrados con documento: la PQC de los diez FortiGate sin fila en la Maximum Values Table (Release Notes de FortiOS 7.6.7 y 7.6.6), la bahía 0 del C8570-G2 con la bahía 1 en 100G (guía de configuración), el puerto de la interconexión EdgeHA (Orchestrator) y el PoE a 48 V del L009 (su ficha). Las dos decisiones de la IA y la de las variantes, por la opción recomendada. Ver *Cerrado recientemente*.)
 Revisión anterior: 2026-10-27, quincuagesimoctava entrega (**Traspaso entre sesiones y trabajo en paralelo.** Encargo del dueño: que otra cuenta de Claude pueda seguir el trabajo cuando se agota el límite y trabajar en paralelo «sin perder ningún detalle». Las cuentas no se pueden enlazar entre sí: lo compartido es GitHub. Cada tema va en su rama con `docs/traspaso/<tema>.md` (de `PLANTILLA.md`), `npm run traspasos` lista los temas en curso y los archivos que declaran, y `CLAUDE.md` lo exige al empezar. Ver *Cerrado recientemente*.)
 Revisión anterior: 2026-10-27, quincuagesimoséptima entrega (**Criptografía post-cuántica en la ficha de los siete dimensionadores, el vigía mira solo el artículo de la ayuda de Secure Access, e investigación de IA para el dimensionador.** Encargo del dueño: «investiga los pendientes con las skills; ejecuta la mejora propuesta y las que encuentres; incluye la característica PQC en los equipos que la traigan; investiga qué IA meter en el dimensionador». PQC con su documento oficial: 26 Secure Router G2 (ML-KEM híbrido, IOS XE 26.1), 48 FortiGate (ML-KEM-512/768/1024, FortiOS 7.6.1), 6 SRX (PPK de RFC 8784, que no es un algoritmo PQC) y 5 Nokia 7750 (MACsec/ANYsec «quantum-safe», simétrico); el resto, «no consta». La IA, en `docs/ia-en-el-dimensionador-2026-10-27.md`, con dos decisiones para el dueño. Ver *Cerrado recientemente* y *Decisiones*.)
 Revisión anterior: 2026-10-27, quincuagesimosexta entrega (**Los pendientes de Cisco con documento, cerrados, y `npm run cisco` avisa de los modelos de una ficha que el catálogo no trae.** Encargo del dueño: «exijo que pasen verificar y pantallas; activa ramas al día con omisión del administrador; cierra lo pendiente con fuentes oficiales y ejecuta la mejora propuesta». La protección de `main` sigue sin poder tocarse desde esta sesión (ver *Decisiones*). Con su documento: el enlace **XGS-PON** (ficha de la ONT SFP-10G-ONT20-I, 15-oct-2026) va a la jaula de las cuatro 8100 que la admiten, con la ONT en el BOM; el túnel de **Secure Access** es de 1 Gbps **por sentido** («in either direction», 26-oct-2026) y admite hasta 10 en ECMP; los mGig del **MX95/MX105** enlazan a 1G (su página «WAN Behavior»); y el **ASR** que no tiene puerto fijo dice qué admite su bahía (guías de hardware del 1001-X y del 1002-HX). La mejora: la ficha de la 8200 nombra «C8200-1N-4S» y «C8200L-1N-4S» solo en su tabla de consumo (errata: todo lo demás dice -4T). Ver *Cerrado recientemente*.)
@@ -2206,11 +2207,22 @@ Hecho en el dimensionador Cisco con texto pegado (ver *Cerrado recientemente*). 
   empujan directo a `main` con la cuenta del dueño y verifican antes en local; sin la omisión, ese
   empuje se rechazaría. Coste: cada PR de Dependabot pide «Update branch» (o `@dependabot rebase`) antes
   de fusionar, unos minutos más.
-- **El aviso de seguridad de Railway (2026-10-22).** La página de estado de Railway, junto a la
-  incidencia de builds, anunciaba guías con «recommended next steps regarding the security notice».
-  Desde aquí no se pueden leer (el proxy deniega Railway y el conector pide autorización). Si la guía
-  pide rotar variables, las secretas de `presales-web` son `AUTH_PASSWORD`, `SESSION_SECRET` (cambiarla
-  cierra todas las sesiones) y `ANTHROPIC_API_KEY`.
+- **El aviso de seguridad de Railway (2026-10-22), leído el 2026-10-27.** Es un incidente: según el
+  [informe preliminar de Railway](https://blog.railway.com/p/preliminary-report-october-security-incident),
+  un intruso tuvo acceso a sistemas internos del 20-oct (13:58 UTC) al 22-oct (03:32 UTC) y descifró
+  variables de entorno de hasta un 1,85 % de los espacios de trabajo; Railway no sabe cuáles, y cree
+  que buscaba claves de proveedores de IA. **Recomienda**: rotar las variables sensibles creadas antes
+  del 21-oct, revisar el registro de auditoría de GitHub y las apps instaladas, rehacer las
+  credenciales de CLI y CI, y quitar el acceso público a las bases de datos. **Para `presales-web`,
+  lo que toca al dueño** (esta sesión no rota secretos por su cuenta: crear la clave nueva y revocar
+  la vieja se hace en la consola de Anthropic): (1) `ANTHROPIC_API_KEY`, la de más riesgo por lo
+  que buscaba el intruso: crear una nueva en console.anthropic.com, ponerla en Railway y **revocar la
+  anterior**; revisar en la consola si hubo consumo que no reconoces; (2) `SESSION_SECRET`: un valor
+  aleatorio nuevo (cierra todas las sesiones abiertas); (3) `AUTH_PASSWORD`: solo vale para crear el
+  primer administrador cuando no hay `usuarios.json` en el volumen, así que cambiarla no cambia la
+  contraseña de nadie: si quieres rotar la tuya, hazlo en «Mi cuenta»; (4) en GitHub, *Settings →
+  Security log* y *Applications*: que no haya accesos ni apps que no reconozcas. Desde esta sesión
+  las rutas de claves, webhooks y secretos de GitHub dan 403 del proxy.
 
 - ~~**Propuestas de conectividad, SD-WAN y seguridad del dimensionador Cisco (2026-10-21).**~~
   **Hechas o cerradas las nueve el 2026-10-21**: la 2.1 y la 1.1 con sus encargos de ese día, y las
@@ -2356,6 +2368,7 @@ que ya se comprobó y lo que cuesta cada opción.
 
 ## Cerrado recientemente
 
+- **2026-10-27 · El arranque enseña los temas en curso (mejora aprobada de la quincuagesimoctava entrega).** Encargo del dueño: «hazla». `session-start.sh` corre `scripts/traspasos.js` **antes** de `npm install` (con `set -e`, una instalación fallida cortaba el hook antes de llegar; ese mismo día el proxy de la sesión dio 403 al registro de npm), dentro de un `if !` con `timeout 60`: si el fetch falla o se cuelga, avisa y el arranque sigue (conducido con un `git` roto en el PATH). El script ya no suelta una traza si `git for-each-ref` falla. `test/traspasos.test.js` frena el bloque si se mueve detrás de la instalación o pierde la guarda. Primera rama con su traspaso, borrado al fusionar.
 - **2026-10-27 · Las tres mejoras propuestas, cuatro pendientes con documento y el informe de relevo
   (quincuagesimonovena entrega).** Encargo del dueño: «instala ECC y tráeme las tareas pendientes y
   las mejoras propuestas»; después «ejecuta las mejoras propuestas y cierra las tareas pendientes»,
