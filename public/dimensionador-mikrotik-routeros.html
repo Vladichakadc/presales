@@ -281,6 +281,9 @@ tr.total td{border-top:2px solid var(--ink);border-bottom:0;font-weight:600;padd
         <p class="hint" id="poeFuenteHint">El PoE sale a la tensión con que se alimenta el router (manual de MikroTik). A 24 V es pasivo; el 802.3af/at necesita 48-57 V, y la fuente de 48 V va al BOM sin precio publicado.</p>
       </div>
       <label class="check"><input type="checkbox" id="chkHa"> <span><b>Alta disponibilidad</b> (VRRP — 2 unidades)<span class="sku">Cada unidad se dimensiona al caudal completo y lleva su propia licencia.</span></span></label>
+      <label for="reqPqc" style="margin-top:8px">Criptografía post-cuántica (exigir)</label>
+      <select id="reqPqc" aria-describedby="reqPqcHint"><option value="">No se exige</option><option value="clave">Mecanismo quantum-safe documentado (PPK, MACsec/ANYsec o ML-KEM)</option><option value="mlkem">Algoritmo post-cuántico ML-KEM (FIPS 203)</option></select>
+      <p class="hint" id="reqPqcHint">Ningún documento oficial de MikroTik traído la nombra: exigirla aparta todos los equipos como «no consta», nunca como «no la tiene».</p>
     </div>
     <div class="field" style="margin-top:16px">
       <label>Conectividad predominante del sitio</label>
@@ -591,6 +594,7 @@ Precios de referencia MSRP público, sin price list regional firmado — <b>veri
 <script src="/js/tabla.js"></script>
 <script src="/js/contraste.js"></script>
 <script src="/js/procedencia.js"></script>
+<script src="/js/pqc.js"></script>
 <script src="/js/mikrotik-motor.js"></script>
 <script src="/js/dimensionador-mikrotik-routeros.js"></script>
 <script src="/js/navegacion.js"></script>

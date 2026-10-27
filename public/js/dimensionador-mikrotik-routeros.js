@@ -53,7 +53,7 @@ segClick('tramaSeg',v=>{trama=Number(v)||M.TRAMA_DEFECTO;});
   $(chk).addEventListener('change',()=>$(box).classList.toggle('hidden',!$(chk).checked));
 });
 ['bw','head','dirMult','sedes','conc','firewall','cifrado','chkVirtual','chkQos','chkL3hw','chkBgp','bgpFeeds',
- 'chkPppoe','pppoeSess','ovpnTun','hotspotUsers','chkCapsman','apCount','apModel','chkPoe','poeFuente','chkHa']
+ 'chkPppoe','pppoeSess','ovpnTun','hotspotUsers','chkCapsman','apCount','apModel','chkPoe','poeFuente','chkHa','reqPqc']
   .forEach(id=>$(id).addEventListener('input',render));
 ['pickModel','qty','supportTier','chkTraining','bomApModel','bomApQty','aniosTco','plazoMrr','margenFin','feeMsp']
   .forEach(id=>$(id).addEventListener('input',renderBom));
@@ -112,7 +112,7 @@ function escenario(){
     hotspot:$('chkPppoe').checked?$('hotspotUsers').value:0,
     aps:$('chkCapsman').checked?$('apCount').value:0,
     apPoe:$('chkCapsman').checked&&$('chkPoe').checked, apDraw:ap?ap.poeDraw:0, apV:ap?ap.poeV:null, fuentePoe:fuentePoe(),
-    enlaces:leerEnlaces(), respaldoIpsec:$('chkRespaldoIpsec').checked,
+    enlaces:leerEnlaces(), respaldoIpsec:$('chkRespaldoIpsec').checked, pqc:$('reqPqc').value,
   };
 }
 // Matriz oficial de modulos y precios de las opticas: con ellos el motor pone puerto y modulo
@@ -852,7 +852,7 @@ document.addEventListener('click', (e) => {
    hub en un sitio, el cifrado fuera de IPsec) no viaja. */
 document.addEventListener('DOMContentLoaded', () => {
   const st = ESTADO.vincular({ campos: ['bw','unit','head','dirMult','sedes','conc','enlacesData','chkRespaldoIpsec','firewall','cifrado','chkVirtual','chkQos','chkL3hw',
-    'chkBgp','bgpFeeds','chkPppoe','pppoeSess','ovpnTun','hotspotUsers','chkCapsman','apCount','chkPoe','poeFuente','chkHa',
+    'chkBgp','bgpFeeds','chkPppoe','pppoeSess','ovpnTun','hotspotUsers','chkCapsman','apCount','chkPoe','poeFuente','chkHa','reqPqc',
     'mediaSeg','profileSeg','modoSeg','tramaSeg','verdict-sel','aniosTco','plazoMrr','margenFin','feeMsp'] });
   const anclaje = document.querySelector('.tabs') || document.querySelector('.masthead');
   if (anclaje && anclaje.parentNode) {

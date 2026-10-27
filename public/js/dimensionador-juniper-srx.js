@@ -161,7 +161,7 @@ $('capaSeg').addEventListener('click', (e) => {
   [...$('capaSeg').children].forEach((x) => x.setAttribute('aria-pressed', x === b));
   capa = b.dataset.v; render();
 });
-['bw', 'unit', 'head', 'users', 'sesUser', 'chkIps', 'chkAtp', 'chkVpn', 'natUsers', 'natBloque',
+['bw', 'unit', 'head', 'reqPqc', 'users', 'sesUser', 'chkIps', 'chkAtp', 'chkVpn', 'natUsers', 'natBloque',
   'ssrRol', 'ssrSpokes', 'ssrSimult', 'ssrBreakout', 'ssrCifrado', 'ssrDup', 'ssrSeg', 'ssrCapa', 'ssrAlcance']
   .forEach((id) => $(id).addEventListener('input', render));
 
@@ -257,7 +257,7 @@ function render() {
   // Un modelo sin cifra en la capa efectiva NO se cuela con la de otra capa: se descarta y
   // se explica. Sustituir una medición por otra es exactamente lo que produce el error de
   // factor 10 que esta herramienta existe para evitar.
-  const { candidatos, sinCifra, outBySess } = JM.candidatosSrx(MODELS, ef.k, need, sessNeed);
+  const { candidatos, sinCifra, outBySess, outByPqc } = JM.candidatosSrx(MODELS, ef.k, need, sessNeed, $('reqPqc').value);
   const ordenados = FICHA.ordenar(candidatos, (a, b) => a[ef.k] - b[ef.k]);
   const pick = FICHA.recomendar(ordenados);
   lastPick = pick;
@@ -271,6 +271,7 @@ function render() {
     if (ef.elevada) why.push(`<li>La capa se elevó de <b>${esc(CAPA_INFO[capa].n)}</b> a <b>${esc(CAPA_INFO[ef.k].n)}</b> por ${ef.elevan.map((f) => esc(f.n)).join(', ')}.</li>`);
     if (sinCifra) why.push(`<li><b>${sinCifra}</b> modelo(s) quedaron fuera porque <b>el catálogo no publica su cifra en esta capa</b>. No se sustituye por la de otra capa: son mediciones distintas y hacerlo es lo que produce propuestas que se quedan cortas por un orden de magnitud. Se pueden consultar en la pestaña de BOM.</li>`);
     if (outBySess) why.push(`<li><b>${outBySess}</b> modelo(s) descartado(s) por sesiones concurrentes: hacen falta ${miles(sessNeed)}.</li>`);
+    if (outByPqc.length) why.push(`<li><b>${outByPqc.length}</b> modelo(s) que cumplen la capa apartado(s) por la criptografía post-cuántica exigida: ${outByPqc.map((x) => `${esc(x.id)} (${esc(x.motivo)})`).join('; ')}.</li>`);
     why.push('<li>Si el diseño no exige inspección avanzada sobre todo el tráfico, evaluar una capa menos profunda o segmentar qué tráfico se inspecciona — es la palanca que más capacidad libera.</li>');
     FICHA.render({ ...FICHA_CFG, contenedor: 'verdict', candidatos: [], recomendado: null,
       vacioTitulo: 'Ningún modelo del catálogo cumple en esta capa',
@@ -291,7 +292,7 @@ function render() {
     titulo: (m) => m.id,
     subtitulo: (m) => `${m.ser} · ${m.seg}`,
     medidores: (m) => medidoresDe(m, ef.k, need, sessNeed),
-    porQue: (m) => porQueDe(m, ef, need, sessNeed, sinCifra),
+    porQue: (m) => porQueDe(m, ef, need, sessNeed, sinCifra, outByPqc),
     secciones: (m) => seccionesDe(m),
     alCambiar: (id) => {
       const m = MODELS.find((x) => x.id === id);
@@ -316,8 +317,11 @@ function medidoresDe(m, k, need, sessNeed) {
   return med;
 }
 
-function porQueDe(m, ef, need, sessNeed, sinCifra) {
+function porQueDe(m, ef, need, sessNeed, sinCifra, outByPqc) {
   const f = [];
+  if (outByPqc && outByPqc.length) {
+    f.push(`<b>Criptografía post-cuántica exigida:</b> ${m.pqc ? `${esc(m.id)} la documenta (${esc(m.pqc.mecanismo)}).` : ''} Se apartan ${outByPqc.length} que llegan a la capa: ${outByPqc.map((x) => `${esc(x.id)} (${esc(x.motivo)})`).join('; ')}.`);
+  }
   if (ef.elevada) {
     f.push(`<b class="warn">Capa elevada:</b> elegiste <b>${esc(CAPA_INFO[capa].n)}</b>, pero ${ef.elevan.map((x) => esc(x.n)).join(' y ')} obliga${ef.elevan.length > 1 ? 'n' : ''} a dimensionar contra <b>${esc(CAPA_INFO[ef.k].n)}</b>. Activar inspección saca la sesión del camino rápido: no es un recargo porcentual, es otra cifra del datasheet.`);
   }
@@ -454,7 +458,7 @@ function renderSsr(bwMbps, head) {
 
   // Se dimensiona con la cifra IMIX de la capa de cifrado; un modelo sin ella se aparta.
   const k = d.capa.k;
-  const { candidatos, sinCifra } = JM.candidatosSsr(SDWAN, k, need);
+  const { candidatos, sinCifra, outByPqc } = JM.candidatosSsr(SDWAN, k, need, $('reqPqc').value);
   const ordenados = FICHA.ordenar(candidatos, (a, b) => a[k] - b[k]);
   const pick = FICHA.recomendar(ordenados);
   lastPick = pick;
@@ -465,7 +469,7 @@ function renderSsr(bwMbps, head) {
     const tope = SDWAN.reduce((t, m) => (m[k] != null && m[k] > (t ? t[k] : -1) ? m : t), null);
     FICHA.render({ ...FICHA_CFG, cicloVida: CICLO_SSR, contenedor: 'verdict', candidatos: [], recomendado: null,
       vacioTitulo: `Ningún Session Smart Router del catálogo llega a ${fmt(need)} ${d.capa.n.toLowerCase()}`,
-      vacioDetalle: `<p class="warn">${tope ? `El mayor del catálogo en esta capa es el ${esc(tope.id)} con ${fmt(tope[k])}. ` : ''}Opciones: otra capa de cifrado si el diseño lo admite, repartir la carga en varias unidades o evaluar la versión virtual sobre servidor.${sinCifra ? ` ${sinCifra} modelo(s) no publican cifra en esta capa y se apartan.` : ''}</p>${desgloseSsr(d)}` });
+      vacioDetalle: `<p class="warn">${tope ? `El mayor del catálogo en esta capa es el ${esc(tope.id)} con ${fmt(tope[k])}. ` : ''}Opciones: otra capa de cifrado si el diseño lo admite, repartir la carga en varias unidades o evaluar la versión virtual sobre servidor.${sinCifra ? ` ${sinCifra} modelo(s) no publican cifra en esta capa y se apartan.` : ''}${outByPqc.length ? ` ${outByPqc.length} llegan a la capa pero se apartan por la criptografía post-cuántica exigida: ${outByPqc.map((x) => `${esc(x.id)} (${esc(x.motivo)})`).join('; ')}.` : ''}</p>${desgloseSsr(d)}` });
     $('sizingBox').innerHTML = desgloseSsr(d);
     return;
   }
@@ -476,7 +480,7 @@ function renderSsr(bwMbps, head) {
     titulo: (m) => m.id,
     subtitulo: (m) => `${m.ser} · ${m.seg}`,
     medidores: (m) => [{ etq: `${hub ? 'Overlay' : 'Caudal'} · ${d.capa.n} (IMIX)`, val: need, tope: m[k], txt: `${fmt(need)} / ${fmt(m[k])}` }],
-    porQue: (m) => porQueSsr(m, d, esc0),
+    porQue: (m) => porQueSsr(m, d, esc0, outByPqc),
     secciones: (m) => [{ titulo: 'Características',
       filas: [['Serie', esc(m.ser)], ['Segmento', esc(m.seg)],
         ['Sin cifrar (IMIX)', `${fmt(m.cap)} · ${fmt(m.cap1500)} con 1.500 B`],
@@ -536,9 +540,10 @@ function pintarEscala(lista, k, needMbps, elegido, nombre) {
   }
 }
 
-function porQueSsr(m, d, e) {
+function porQueSsr(m, d, e, outByPqc) {
   const hub = e.rol === 'hub';
   const f = [];
+  if (outByPqc && outByPqc.length) f.push(`<b>Criptografía post-cuántica exigida:</b> se apartan ${outByPqc.length} que llegan a la capa: ${outByPqc.map((x) => `${esc(x.id)} (${esc(x.motivo)})`).join('; ')}.`);
   const k = d.capa.k;
   f.push(`Demanda de diseño <b>${fmt(d.need)}</b> contra <b>${fmt(m[k])}</b> de <b>${esc(d.capa.n)}</b> en IMIX — holgura ${Math.round((1 - d.need / m[k]) * 100)} %.`);
   const portada = m[d.capa.k1500];
@@ -698,7 +703,7 @@ $('xlsBtn').addEventListener('click', async () => {
    otra recomendacion. Ahora el escenario viaja en la URL; ya no se guarda entre sesiones
    (ver /js/estado.js). */
 document.addEventListener('DOMContentLoaded', () => {
-  const st = ESTADO.vincular({ campos: ['bw','unit','head','users','sesUser','chkIps','chkAtp','chkVpn','natUsers','natBloque',
+  const st = ESTADO.vincular({ campos: ['bw','unit','head','reqPqc','users','sesUser','chkIps','chkAtp','chkVpn','natUsers','natBloque',
     'ssrRol','ssrSpokes','ssrSimult','ssrBreakout','ssrCifrado','ssrDup','ssrSeg','ssrCapa','ssrAlcance',
     'platSeg','capaSeg','verdict-sel'] });
   const anclaje = document.querySelector('.tabs') || document.querySelector('.masthead');

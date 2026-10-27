@@ -30,7 +30,9 @@
         escenarioBoost   — el Boost toma el escenario que mas tunel pide: una falla no suma
                            caudal, pero puede dejar el sitio sin breakout.
    Puertos · asignarPuertos (2026-10-15) — cada enlace a un puerto real del chasis, por su
-                           medio; medioMinimo y enlacesSobreMedio, el medio que lleva un caudal. */
+                           medio; medioMinimo y enlacesSobreMedio, el medio que lleva un caudal.
+           asignarPuertosPar (2026-10-27) — el par EdgeHA: los enlaces repartidos entre los dos
+                           chasis y, en cada uno, el puerto de la interconexion y los LAN. */
 (function(root, factory){
   const api = factory();
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
@@ -230,6 +232,54 @@
     }
     return { cabe: !sinAsignar.length && !lanFaltan, sinAsignar, lanFaltan, usados, celular };
   }
+  // Par EdgeHA (2026-10-27): dos chasis iguales. Cada enlace WAN aterriza en UNO del par (VSG
+  // SD-Branch, fig. «EC HA»; el de menos ocupación de los que tienen puerto para su medio), y
+  // cada chasis reserva sus `lan` y el puerto de la interconexión: «any LAN or WAN port […]
+  // You must match the media type and speed for both ends of the HA link […] you cannot use
+  // MGMT ports» (Orchestrator, «Deployment - EdgeHA»). Por eso el puerto HA es del mismo tipo en
+  // los dos, y primero el RJ-45 (un latiguillo). Devuelve lo mismo que asignarPuertos, con
+  // `usados` del par, `porChasis` y `ha` (el tipo elegido, o null y `haFalta`).
+  function asignarPuertosPar(puertos, enlaces, lan) {
+    if (!puertos) return { cabe: true, virtual: true, sinAsignar: [], lanFaltan: 0, usados: {}, celular: 0, ha: null, haFalta: false, porChasis: [] };
+    const chasis = [0, 1].map(() => {
+      const libre = {};
+      TIPOS_PUERTO.forEach((t) => { libre[t] = puertos[t] || 0; });
+      return { libre, usados: {}, celularLibre: puertos.celular || 0, celular: 0 };
+    });
+    const tomar = (c, t) => { c.libre[t] -= 1; c.usados[t] = (c.usados[t] || 0) + 1; };
+    const ocupados = (c) => TIPOS_PUERTO.reduce((s, t) => s + (c.usados[t] || 0), 0) + c.celular;
+    const activos = (enlaces || []).map((l, i) => ({ ...l, n: i + 1 })).filter((l) => l.down > 0 || l.up > 0);
+    const sinAsignar = [];
+    const pendientes = activos.filter((l) => {
+      if (!/^4G\/5G/.test(l.tipo || '')) return true;
+      const c = chasis.filter((x) => x.celularLibre > 0).sort((a, b) => ocupados(a) - ocupados(b))[0];
+      if (!c) return true;
+      c.celularLibre -= 1; c.celular += 1;
+      return false;
+    });
+    for (const medio of ORDEN_MEDIOS) {
+      for (const l of pendientes.filter((x) => x.medio === medio)) {
+        const opciones = chasis.map((c) => ({ c, t: RUTAS[medio].find((r) => c.libre[r] > 0) })).filter((o) => o.t);
+        opciones.sort((a, b) => ocupados(a.c) - ocupados(b.c));
+        if (opciones.length) tomar(opciones[0].c, opciones[0].t); else sinAsignar.push({ enlace: l.n, medio, tipo: l.tipo });
+      }
+    }
+    pendientes.filter((l) => !RUTAS[l.medio]).forEach((l) => sinAsignar.push({ enlace: l.n, medio: l.medio, tipo: l.tipo }));
+    const ha = TIPOS_PUERTO.find((t) => chasis.every((c) => c.libre[t] > 0)) || null;
+    if (ha) chasis.forEach((c) => tomar(c, ha));
+    let lanFaltan = 0;
+    for (const c of chasis) {
+      for (let i = 0; i < (lan || 0); i++) {
+        const t = TIPOS_PUERTO.find((r) => c.libre[r] > 0);
+        if (t) tomar(c, t); else lanFaltan += 1;
+      }
+    }
+    const usados = {};
+    chasis.forEach((c) => Object.entries(c.usados).forEach(([t, n]) => { usados[t] = (usados[t] || 0) + n; }));
+    return { cabe: !sinAsignar.length && !lanFaltan && !!ha, sinAsignar, lanFaltan, usados,
+      celular: chasis.reduce((s, c) => s + c.celular, 0), ha, haFalta: !ha,
+      porChasis: chasis.map((c) => ({ usados: c.usados, celular: c.celular })) };
+  }
   // Enlaces cuyo caudal pasa de lo que lleva su medio (un DIA de 3 Gbps por RJ-45 de 1 GbE). No
   // depende del modelo: es una declaración imposible, y se dice en la fila.
   function enlacesSobreMedio(enlaces) {
@@ -238,5 +288,5 @@
   }
 
   return { BOOST_CUOTA, tierParaCaudal, capacidadSo, boostMbpsSitio, boostRecMbps, admiteDtd, escenariosUnderlay, escenarioBoost,
-    MEDIO_MBPS, medioMinimo, asignarPuertos, enlacesSobreMedio };
+    MEDIO_MBPS, medioMinimo, asignarPuertos, asignarPuertosPar, enlacesSobreMedio };
 });

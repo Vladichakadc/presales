@@ -61,8 +61,10 @@ test('los fabricantes sin fecha documentada se declaran, no se rellenan', () => 
   assert.ok(sinFecha.length > 0, 'mikrotik declara que su fuente no trae fecha');
   // Aruba estuvo aqui hasta el 2026-10-06: su fuente sin fecha («Paginas de producto») se
   // sustituyo por los documentos que se cotejaron fila a fila. Lo que se cierra con un
-  // documento no vuelve a abrirse rellenando una fecha.
-  assert.deepStrictEqual(fuentesDe('aruba', AHORA).filter((f) => f.estado === 'sin fecha'), []);
+  // documento no vuelve a abrirse rellenando una fecha. La unica excepcion (2026-10-27) es la
+  // pagina de EdgeHA del Orchestrator: es documentacion en linea y no publica fecha.
+  assert.deepStrictEqual(fuentesDe('aruba', AHORA).filter((f) => f.estado === 'sin fecha').map((f) => f.url),
+    ['https://arubanetworking.hpe.com/techdocs/sdwan/docs/orch/configuration/overlays/deploy-edgeha/']);
 });
 
 test('fuentesQueAvisan recoge solo lo que no esta vigente, con su fabricante', () => {

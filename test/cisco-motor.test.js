@@ -587,12 +587,18 @@ test('reparto: el 12X4QC solo admite las combinaciones de la tabla 5 de su ficha
   // 1×100G + 3×40G es una combinación (sin SFP+); con un SFP+ más, ya no.
   assert.strictEqual(c('fibra-100g', 'fibra-40g', 'fibra-40g'), null);
   assert.match(c('fibra-100g', 'fibra-40g', 'fibra-40g', 'fibra-10g'), /1×100G \+ 2×40G \+ 1×SFP\+ no está entre/);
-  // El C8570-G2: las mismas bahías (su guía) y el tope de 240 GE de su ficha, sin la nota del 12X4QC.
+  // El C8570-G2: las mismas bahías (su guía de hardware), el tope de 240 GE de su ficha y, desde el
+  // 2026-10-27, la nota de su guía de configuración: con la bahía 1 en 100G, la bahía 0 cae.
   const g = (...xs) => M.motivoCombinacion(asig('Cisco Secure Router C8570-G2', ...xs));
-  assert.strictEqual(g('fibra-100g', 'fibra-100g', 'fibra-10g', 'fibra-10g'), null);
-  assert.match(g('fibra-100g', 'fibra-100g', 'fibra-10g', 'fibra-10g', 'fibra-10g', 'fibra-10g', 'fibra-10g'), /suman 250 GE de puertos y la ficha admite 240 GE a la vez/);
+  assert.match(g('fibra-100g', 'fibra-100g', 'fibra-10g', 'fibra-10g'), /2×100G \+ 2×SFP\+ no está entre las que admite a la vez \(bahías de sus guías de hardware y de configuración\)/);
+  assert.strictEqual(g('fibra-100g', 'fibra-100g'), null);
+  assert.strictEqual(g('fibra-100g', 'fibra-40g', 'fibra-40g', 'fibra-40g'), null);
+  assert.strictEqual(g('fibra-100g', 'fibra-40g', 'fibra-10g', 'fibra-10g'), null);
+  // 1×100G + 2×40G va con la bahía 1 en 100G (bahía 2 en 40G): ya no queda ningún SFP+.
+  assert.match(g('fibra-100g', 'fibra-40g', 'fibra-40g', 'fibra-10g'), /1×100G \+ 2×40G \+ 1×SFP\+ no está entre/);
+  assert.strictEqual(g('fibra-40g', 'fibra-40g', 'fibra-40g', 'fibra-40g', 'fibra-10g', 'fibra-10g', 'fibra-10g', 'fibra-10g'), null);
   // Las dos bahías en 100G dejan sin los QSFP de 40G de la bahía 2.
-  assert.match(g('fibra-100g', 'fibra-100g', 'fibra-40g', 'fibra-40g'), /2×100G \+ 2×40G no está entre las que admite a la vez \(bahías de su guía de hardware\)/);
+  assert.match(g('fibra-100g', 'fibra-100g', 'fibra-40g', 'fibra-40g'), /2×100G \+ 2×40G no está entre las que admite a la vez \(bahías de sus guías de hardware y de configuración\)/);
   // Tabla 3: cuatro jaulas QSFP (2 de 40/100G y 2 de 40G), no cinco.
   const qsfp = id('Catalyst 8500-12X4QC').puertos.filter((g) => /QSFP/.test(g.medios[0])).reduce((t, g) => t + g.n, 0);
   assert.strictEqual(qsfp, 4);

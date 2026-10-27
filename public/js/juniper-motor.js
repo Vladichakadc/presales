@@ -1,5 +1,5 @@
 'use strict';
-/* global module */
+/* global module, require */
 // `module` existe solo en Node (tests); en el navegador el typeof lo degrada.
 /* ══ MOTOR DEL DIMENSIONADOR JUNIPER (2026-10-19) ══
 
@@ -51,10 +51,12 @@
    DECLARA QUIEN DIMENSIONA, y la pantalla los enseña en el desglose. Si alguien «afina» uno, rompe
    `test/juniper-motor.test.js` y no la propuesta de un cliente. */
 (function (root, factory) {
-  const api = factory();
+  let PQC = root && root.PQC;
+  if (!PQC && typeof require === 'function') PQC = require('./pqc.js');
+  const api = factory(PQC);
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   if (root) root.JuniperMotor = api;
-})(typeof window !== 'undefined' ? window : globalThis, function () {
+})(typeof window !== 'undefined' ? window : globalThis, function (PQC) {
 
   // Capas de cifrado del SVR, con el campo del catálogo que trae cada una (IMIX, la que
   // dimensiona) y su pareja con paquetes de 1.500 B (portada, que se muestra y no dimensiona).
@@ -105,13 +107,19 @@
   }
 
   // El filtro del SSR: la cifra de la capa de cifrado; un modelo sin ella se aparta y se cuenta.
-  function candidatosSsr(models, k, need) {
+  // `pqc` (2026-10-27): el nivel de criptografía post-cuántica exigido; lo que no lo documenta se
+  // aparta con su motivo (la regla única de pqc.js), solo si cumple todo lo demás.
+  function candidatosSsr(models, k, need, pqc) {
     let sinCifra = 0;
+    const outByPqc = [];
     const candidatos = (models || []).filter((m) => {
       if (m[k] == null) { sinCifra++; return false; }
-      return m[k] >= need;
+      if (m[k] < need) return false;
+      const mot = PQC.motivo(m, pqc);
+      if (mot) { outByPqc.push({ id: m.id, motivo: mot }); return false; }
+      return true;
     });
-    return { candidatos, sinCifra };
+    return { candidatos, sinCifra, outByPqc };
   }
 
   // Caudal que un SRX desacoplado tiene que inspeccionar. En una sucursal puede ser todo el
@@ -126,15 +134,18 @@
 
   // El filtro de la plataforma SRX, compartido con el SRX desacoplado. Un modelo sin cifra en
   // la capa NO se cuela con la de otra capa: se aparta y se cuenta.
-  function candidatosSrx(models, k, need, sessNeed) {
+  function candidatosSrx(models, k, need, sessNeed, pqc) {
     let sinCifra = 0, outBySess = 0;
+    const outByPqc = [];
     const candidatos = (models || []).filter((m) => {
       if (m[k] == null) { sinCifra++; return false; }
       if (m[k] < need) return false;
       if (sessNeed && m.sess != null && m.sess < sessNeed) { outBySess++; return false; }
+      const mot = PQC.motivo(m, pqc);
+      if (mot) { outByPqc.push({ id: m.id, motivo: mot }); return false; }
       return true;
     });
-    return { candidatos, sinCifra, outBySess };
+    return { candidatos, sinCifra, outBySess, outByPqc };
   }
 
   // NAT de origen con asignación por bloques de puertos (PBA). Prefijo: el menor que contiene

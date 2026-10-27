@@ -611,7 +611,28 @@ const PQC_FORTIOS={tipo:'mlkem',
   donde:'IKEv2 (IPsec)', desde:'FortiOS 7.6.1',
   alcance:'Modelo listado en la Maximum Values Table de FortiOS 7.6.7: corre una versión que la trae.',
   fuente:'FortiOS 7.6.5 Administration Guide, «Post-Quantum Cryptography for IPsec key exchange»; la versión, de «New features» de FortiOS 7.6.0'};
-for (const m of MODELS) m.pqc = m.bgpDe ? PQC_FORTIOS : null;
+// Los FortiGate sin fila en la Maximum Values Table de 7.6.7 (2026-10-27): las Release Notes
+// dicen que version corren. Las de 7.6.7 listan el 3800G/3801G en «Supported models» y el
+// 7081F/7121F en «FortiGate 6000 and 7000 support» (sus limitaciones de IPsec, en la guia del
+// 7000F, son los tuneles por politica y las rutas por politica: no tocan el intercambio de
+// claves); las de 7.6.6, el 400G/401G, el 3000G/3001G y el 3500G/3501G en «Special branch
+// supported models» (rama especial de 7.6.6, punto de rama 3652). Todos, posteriores a 7.6.1.
+const PQC_POR_RN = {
+  'FortiGate 3800G':'Release Notes de FortiOS 7.6.7, «Supported models»',
+  'FortiGate 3801G':'Release Notes de FortiOS 7.6.7, «Supported models»',
+  'FortiGate 7081F':'Release Notes de FortiOS 7.6.7, «FortiGate 6000 and 7000 support»; guía del 7000F, «IPsec VPN load balancing»',
+  'FortiGate 7121F':'Release Notes de FortiOS 7.6.7, «FortiGate 6000 and 7000 support»; guía del 7000F, «IPsec VPN load balancing»',
+  'FortiGate 400G':'Release Notes de FortiOS 7.6.6, «Special branch supported models» (build 6689)',
+  'FortiGate 401G':'Release Notes de FortiOS 7.6.6, «Special branch supported models» (build 6689)',
+  'FortiGate 3000G':'Release Notes de FortiOS 7.6.6, «Special branch supported models» (build 6570)',
+  'FortiGate 3001G':'Release Notes de FortiOS 7.6.6, «Special branch supported models» (build 6570)',
+  'FortiGate 3500G':'Release Notes de FortiOS 7.6.6, «Special branch supported models» (build 6632)',
+  'FortiGate 3501G':'Release Notes de FortiOS 7.6.6, «Special branch supported models» (build 6632)',
+};
+for (const m of MODELS) {
+  m.pqc = m.bgpDe ? PQC_FORTIOS
+    : PQC_POR_RN[m.id] ? {...PQC_FORTIOS, alcance:`Corre una versión posterior a la 7.6.1: ${PQC_POR_RN[m.id]}.`} : null;
+}
 
 // ── PLATAFORMA POR MODELO: LO QUE EL MATRIX PUBLICA ADEMAS DEL RENDIMIENTO (2026-09-23) ──
 // Seis filas del Product Matrix (transcritas de la de septiembre; la de octubre las repite) que el catalogo no traia y que el informe de

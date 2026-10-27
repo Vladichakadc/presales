@@ -105,6 +105,7 @@ const UI = [
   ['trafico.picosNoConcurrentes', 'chkNoConcurrente', 'chk'],
   ['seguridad.tlsCifradoPct', 'pctCifrado', 'num', 100],
   ['seguridad.tlsExentoPct', 'pctTlsExento', 'num', 0],
+  ['seguridad.pqc', 'reqPqc', 'txt'],
   ['remoto.activo', 'chkRemoto', 'chk'],
   ['remoto.metodo', 'vpnTipo', 'txt'],
   ['remoto.usuarios', 'vpnUsers', 'num', 0],
@@ -157,6 +158,7 @@ const CAMPO_N = {
   'comercial.saseUsuarios': 'usuarios de FortiSASE', 'remoto.metodo': 'método de acceso remoto',
   'remoto.usuarios': 'usuarios de acceso remoto', 'remoto.mbps': 'caudal de acceso remoto', 'remoto.mfa': 'doble factor',
   'seguridad.tlsCifradoPct': 'parte cifrada del tráfico', 'seguridad.tlsExentoPct': 'tráfico exento de inspección TLS',
+  'seguridad.pqc': 'criptografía post-cuántica exigida',
   'fisico.registroGbDia': 'GB/día de registro', 'fisico.registroDias': 'días de retención',
   'comercial.emsEndpoints': 'endpoints de FortiClient EMS', 'comercial.sandbox': 'modo de FortiSandbox',
   'comercial.emsDespliegue': 'despliegue de FortiClient EMS', 'comercial.saseEdicion': 'edición de FortiSASE',
@@ -183,7 +185,7 @@ const CAMPOS_ESCENARIO = ['nombreCliente', 'refProyecto', 'wanLinksData',
   'chkRemoto', 'vpnTipo', 'vpnUsers', 'vpnMbps', 'chkMfa',
   'users', 'sesUser', 'sessNeed', 'vidaSes', 'cpsMedido', 'vdoms', 'fortiAps', 'fortiSwitches', 'bgpPeers',
   'pt_rj45_1g', 'pt_rj45_10g', 'pt_sfp_1g', 'pt_sfpp_10g', 'pt_sfp28_25g', 'pt_qsfp28_100g',
-  'poeW', 'chkPsuRed', 'registroDestino', 'registroGbDia', 'registroDias', 'head', 'techoUtil',
+  'poeW', 'chkPsuRed', 'reqPqc', 'registroDestino', 'registroGbDia', 'registroDias', 'head', 'techoUtil',
   'motivoCompra', 'serieInstalada', 'pickModel', 'justificacionEol', 'termYears', 'licBundle', 'careLevel',
   'chkSdwanMon', 'chkSdwanOrq', 'chkSdwanSase', 'saseUsuarios', 'saseEdicion', 'chkEms', 'emsEndpoints', 'emsDespliegue',
   'chkConverter', 'selDescuento', 'dtoCustom'];
@@ -592,7 +594,7 @@ const NUMERICOS = UI.filter(([, , t]) => t === 'num').map(([, id]) => id).concat
 for (const id of NUMERICOS) { const n = $(id); if (n) n.addEventListener('input', () => programar(n.type === 'range', id)); }
 const INMEDIATOS = ['fortiOS', 'modoInspeccion', 'chkHa', 'haModo', 'chkAv', 'chkWeb', 'chkIotDlp', 'chkSsl', 'pctCifrado',
   'pctTlsExento', 'chkSandbox', 'sandboxModo', 'sandboxModalidad', 'chkNoConcurrente', 'chkRemoto', 'vpnTipo', 'chkMfa',
-  'chkPsuRed', 'registroDestino', 'techoUtil', 'motivoCompra', 'termYears', 'licBundle', 'careLevel',
+  'chkPsuRed', 'reqPqc', 'registroDestino', 'techoUtil', 'motivoCompra', 'termYears', 'licBundle', 'careLevel',
   'chkSdwanMon', 'chkSdwanOrq', 'chkSdwanSase', 'saseEdicion', 'chkEms', 'emsDespliegue', 'chkConverter'];
 for (const id of INMEDIATOS) { const n = $(id); if (n) n.addEventListener(n.tagName === 'SELECT' ? 'change' : 'input', () => programar(true, id)); }
 // Los selects tambien disparan `input` en los navegadores actuales; con `change` basta y

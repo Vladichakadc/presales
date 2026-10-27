@@ -4,7 +4,7 @@
 //      post-cuántica (PPK, RFC 8784) y MACsec/ANYsec «quantum-safe» (simétrico);
 //   2. sin documento, «no consta», nunca «no» (la regla de la alimentación);
 //   3. solo lleva `pqc` el equipo que su documento nombra: la G2 con IOS XE (no los G2-MX ni
-//      los Catalyst), los FortiGate que lista la Maximum Values Table de 7.6.7, los SRX de la
+//      los Catalyst), los FortiGate que lista la Maximum Values Table de 7.6.7 o sus Release Notes, los SRX de la
 //      tabla del Feature Explorer y los 7750 de las fichas Release 26;
 //   4. cada equipo marcado tiene una fuente en fuentes.js que lo declara con el campo `pqc`;
 //   5. las siete páginas pintan la sección.
@@ -56,7 +56,14 @@ test('solo lleva `pqc` el equipo que su documento nombra', () => {
   assert.ok(!C.find((m) => m.id === 'Cisco Secure Router C8111-G2-MX').pqc);
   // Los que llegan en la 26.1.2, con esa versión.
   assert.match(C.find((m) => m.id === 'Cisco Secure Router C8650-G2').pqc.desde, /^IOS XE 26\.1\.2/);
-  for (const m of CATALOGOS.fortinet) assert.strictEqual(!!m.pqc, !!m.bgpDe, `${m.id}: pqc sin la MVT 7.6.7 o al revés`);
+  // Los de la Maximum Values Table de 7.6.7 y, desde el 2026-10-27, los diez que no tienen fila
+  // en ella pero que sus Release Notes dicen que corren una 7.6 posterior a la 7.6.1.
+  const porRn = ['FortiGate 400G', 'FortiGate 401G', 'FortiGate 3000G', 'FortiGate 3001G', 'FortiGate 3500G',
+    'FortiGate 3501G', 'FortiGate 3800G', 'FortiGate 3801G', 'FortiGate 7081F', 'FortiGate 7121F'];
+  for (const m of CATALOGOS.fortinet) {
+    assert.strictEqual(!!m.pqc, !!m.bgpDe || porRn.includes(m.id), `${m.id}: pqc sin la MVT 7.6.7 ni sus Release Notes, o al revés`);
+    if (!m.bgpDe && m.pqc) assert.match(m.pqc.alcance, /Release Notes de FortiOS 7\.6\.[67]/);
+  }
   assert.deepStrictEqual(CATALOGOS.juniper.filter((m) => m.pqc).map((m) => m.id).sort(),
     ['SRX1500', 'SRX1600', 'SRX2300', 'SRX4200', 'SRX4300', 'SRX4700']);
   assert.deepStrictEqual(CATALOGOS.nokia.filter((m) => m.pqc).map((m) => m.id).sort(),

@@ -142,6 +142,11 @@ test('PoE con fuente de 48 V: límites de alta tensión, 802.3af/at donde lo dic
   assert.strictEqual(M.presupuestoPoe(D.MODELS.find((m) => m.id === 'RB4011iGS+RM'), '48').porPuertoW, 20.2);
   // Un hAP (PoE pasivo de 18-28 V) no se alimenta a 48 V.
   assert.ok(fila(evaluar({ ...esc, aps: 1, apDraw: 12, apV: [18, 28], fuentePoe: '48' }), 'hEX PoE RB960PGS').miss.some((x) => /admite 18-28 V/.test(x)));
-  // El L009 no rotula con claridad su límite de alta tensión: no se calcula.
-  assert.match(fila(evaluar({ ...esc, aps: 1, fuentePoe: '48' }), 'L009UiGS-RM').miss.join(';'), /no da con claridad/);
+  // El L009 (2026-10-27): su ficha rotula 450 mA a alta tensión en su único puerto (21,6 W a 48 V).
+  const l009 = D.MODELS.find((m) => m.id === 'L009UiGS-RM');
+  assert.deepStrictEqual(M.presupuestoPoe(l009, '48'),
+    { v: 48, fuente: '48', puertos: 1, porPuertoW: 21.6, totalW: 21.6, af: false, consumoSinAcc: 8, nota: null });
+  assert.deepStrictEqual(fila(evaluar({ ...esc, aps: 1, fuentePoe: '48' }), 'L009UiGS-RM').miss
+    .filter((x) => /PoE/.test(x)), []);
+  assert.match(fila(evaluar({ ...esc, aps: 2, fuentePoe: '48' }), 'L009UiGS-RM').miss.join(';'), /1 puerto con PoE-out para 2 AP/);
 });

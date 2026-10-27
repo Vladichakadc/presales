@@ -71,7 +71,7 @@ const $=id=>document.getElementById(id);
 // inetType/bwInet) salen del flujo y los sustituye el Multi-Underlay Builder — los enlaces
 // viajan serializados como JSON {v:2, wanLinks:[...]} en el input oculto #wanLinksData.
 // La migración v1→v2 de enlaces antiguos vive en migrarEstadoV1().
-const CAMPOS_ESCENARIO=['wanLinksData','users','aps','perUser','head','fecMode','selTrafico','boostProfile','perfilEntorno','chkBoost','chkSeg','chkTopo','chkAiops','chkHa','chkDualPsu','famSeg','destSeg','soSeg','pickModel','personaSeg','selSeguridad','selTier','chkBreakout','selDescuento','dtoCustom',
+const CAMPOS_ESCENARIO=['wanLinksData','users','aps','perUser','head','fecMode','selTrafico','boostProfile','perfilEntorno','chkBoost','chkSeg','chkTopo','chkAiops','chkHa','chkDualPsu','reqPqc','famSeg','destSeg','soSeg','pickModel','personaSeg','selSeguridad','selTier','chkBreakout','selDescuento','dtoCustom',
   // Contexto MSP del escenario (etapa A / #39, 2026-09-14): viajan en la URL y en los
   // perfiles multi-sede como un campo más, y encabezan la lista de materiales y el Excel.
   'nombreCliente','refProyecto',
@@ -309,7 +309,9 @@ function pintarWanResumen(){
     if(nI) fam.push(`${nI} Internet`);
     if(nC) fam.push(`${nC} celular`);
     html+=`<span>${act.length} enlace${act.length===1?'':'s'} (${fam.join(', ')})</span><span class="wan-res-sep">·</span>`
-      +`<span>Puertos WAN: ${act.length} (+${LAN_RESERVADOS} LAN) = ${act.length+LAN_RESERVADOS}</span>`;
+      +(act.length>=2&&unidadesSitio()===2&&(typeof modeloActual!=='function'||!MODELS.length||(modeloActual()||{}).fam==='ec')
+        ?`<span>Puertos WAN: ${act.length}, repartidos en el par EdgeHA (+${LAN_RESERVADOS} LAN y 1 de interconexión en cada chasis)</span>`
+        :`<span>Puertos WAN: ${act.length} (+${LAN_RESERVADOS} LAN) = ${act.length+LAN_RESERVADOS}</span>`);
     const m=typeof modeloActual==='function'&&MODELS.length&&personaMode!=='micro'?modeloActual():null;
     if(m){
       const ev=evaluarPuertos(m,links);
@@ -1113,7 +1115,7 @@ $('famSeg').addEventListener('click',e=>{const b=e.target.closest('button');if(!
   render();});
 $('destSeg').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;[...$('destSeg').children].forEach(x=>x.setAttribute('aria-pressed',x===b));destMode=b.dataset.v;$('destHint').textContent=DEST_HINT[destMode]||'';render();});
 $('soSeg').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;[...$('soSeg').children].forEach(x=>x.setAttribute('aria-pressed',x===b));soMode=b.dataset.v;$('soHint').innerHTML=SO_HINT[soMode]||'';render();});
-['users','aps','perUser','head','fecMode','selTrafico','boostProfile','perfilEntorno','chkBoost','chkSeg','chkTopo','chkAiops','chkHa','chkDualPsu','chkBreakout','selTier',
+['users','aps','perUser','head','fecMode','selTrafico','boostProfile','perfilEntorno','chkBoost','chkSeg','chkTopo','chkAiops','chkHa','chkDualPsu','chkBreakout','selTier','reqPqc',
   // Cliente/referencia (etapa A / #39): también repintan — la cabecera MSP del BOM se
   // escribe en el render y sin este binding no aparecía hasta que cambiara otro campo.
   'nombreCliente','refProyecto'].forEach(id=>$(id).addEventListener('input',render));
@@ -1529,12 +1531,17 @@ function inventarioTxt(p){
 function cobreSfp(modelo){
   return opticasPorVelocidad(modelo.id,'1G').filter(o=>o.a.media==='COPPER').map(o=>o.sku);
 }
+// Con el par EdgeHA (2026-10-27) se audita el par: los enlaces se reparten entre los dos chasis
+// y cada uno reserva sus LAN y el puerto de la interconexión (ArubaReglas.asignarPuertosPar).
 function auditarPuertos(modelo, wanLinks){
   const enlaces=(wanLinks||[]).filter(l=>l.down>0||l.up>0);
+  const par=!!(modelo&&parEdgeHA(modelo.fam==='ec', unidadesSitio(), wanLinks));
   return {
-    puertosNecesarios:enlaces.length+LAN_RESERVADOS,
+    par,
+    puertosNecesarios:enlaces.length+LAN_RESERVADOS*(par?2:1)+(par?2:0),
     hayFibra:enlaces.some(l=>/^SFP/.test(l.medio)),
-    asignacion:ArubaReglas.asignarPuertos(modelo?modelo.puertos:null, wanLinks, LAN_RESERVADOS),
+    asignacion:par?ArubaReglas.asignarPuertosPar(modelo.puertos, wanLinks, LAN_RESERVADOS)
+      :ArubaReglas.asignarPuertos(modelo?modelo.puertos:null, wanLinks, LAN_RESERVADOS),
   };
 }
 // El porqué de un «no cabe», con el número de enlace y lo que hay que cambiar.
@@ -1552,6 +1559,11 @@ function motivoPuertos(modelo, asig){
       partes.push(`${cuales} por ${medio} sin jaula libre que lo admita`);
     }
   });
+  if(asig.porChasis){
+    if(asig.lanFaltan) partes.push(`${asig.lanFaltan===1?'falta 1':`faltan ${asig.lanFaltan}`} de los ${LAN_RESERVADOS} puertos LAN de cada chasis`);
+    if(asig.haFalta) partes.push('no queda en los dos chasis un puerto libre del mismo tipo para la interconexión EdgeHA (mismo medio y velocidad en los dos extremos, nunca el MGMT)');
+    return `Cada ${modelo.id} del par EdgeHA tiene ${inv}, con los enlaces repartidos entre los dos: ${partes.join('; ')}.`;
+  }
   if(asig.lanFaltan) partes.push(`${asig.lanFaltan===1?'falta 1':`faltan ${asig.lanFaltan}`} de los ${LAN_RESERVADOS} puertos LAN`);
   return `El ${modelo.id} tiene ${inv}: ${partes.join('; ')}.`;
 }
@@ -2059,6 +2071,9 @@ function render(){
   // el que algún enlace no tiene puerto queda fuera. Se anota con su motivo y solo si habría
   // cumplido todo lo demás: es lo que dispara #alertaEscalado y el porqué del veredicto.
   const outByPuertos=[];
+  // Criptografía post-cuántica exigida (2026-10-27): la regla única de pqc.js, también al final.
+  const outByPqc=[];
+  const nivelPqc=$('reqPqc').value;
   const candidates=MODELS.filter(m=>{
     if(!coincideFiltro(m,famMode)) return false;
     // Arquetipo de sede (fase 11): restringe el catalogo a los modelos que el VSG
@@ -2120,6 +2135,8 @@ function render(){
     // el medio de los enlaces, no por capacidad). La MISMA regla del semáforo de #wanResumen.
     const ev=evaluarPuertos(m,D.wanLinks);
     if(ev.nivel==='rojo'){ outByPuertos.push({m, motivo:ev.motivo}); return false; }
+    const motPqc=PQC.motivo(m,nivelPqc);
+    if(motPqc){ outByPqc.push({m, motivo:motPqc}); return false; }
     return true;
   });
   // Generacion actual primero: entre dos que cumplen, la linea AOS 8 (series 7000/7200)
@@ -2210,6 +2227,7 @@ function render(){
     if(outByAps) why.push(`<li><b>${outByAps}</b> gateway(s) descartado(s) por número de APs: hacen falta ${miles(aps)}.</li>`);
     if(outByFlujos) why.push(`<li><b>${outByFlujos}</b> modelo(s) descartado(s) por flujos simultáneos: el perfil de entorno estima ${miles(flujosReq)} flujos activos (${miles(users)} usuarios × ${tasaFlujos}/usuario). Bajar el perfil o repartir la carga entre dos sitios son las salidas.</li>`);
     if(outByPuertos.length) why.push(`<li>Por los puertos del chasis (cada enlace en un puerto de su medio, más ${LAN_RESERVADOS} LAN): ${outByPuertos.map(x=>esc(x.motivo)).join(' ')}</li>`);
+    if(outByPqc.length) why.push(`<li>Por la criptografía post-cuántica exigida: ${outByPqc.map(x=>`<b>${esc(x.m.id)}</b> — ${esc(x.motivo)}`).join('; ')}.</li>`);
     if(outBySinSec.length) why.push(`<li><b>${outBySinSec.map(esc).join(', ')}</b> descartado${outBySinSec.length>1?'s':''} para IDS/IPS en el gateway: su serie no tiene nivel «+ Security» de Central en el documento oficial de HPE (solo 9000, 9100 y 9200).</li>`);
     if(outByIds.length) why.push(`<li>Por el eje de IDS/IPS (cifra oficial del VSG SD-Branch): ${outByIds.map(x=>`<b>${esc(x.id)}</b> — ${esc(x.motivo)}`).join('; ')}.</li>`);
     if(outByIdsEc.length) why.push(`<li>Por la capacidad de IDS/IPS de Dynamic Threat Defense (cifra oficial de su spec sheet): ${outByIdsEc.map(x=>`<b>${esc(x.id)}</b> — ${esc(x.motivo)}`).join('; ')}.</li>`);
@@ -2287,6 +2305,12 @@ function render(){
       const evP=evaluarPuertos(m,D.wanLinks), us=evP.asignacion.usados||{};
       const nEnl=D.wanLinks.filter(l=>l.down>0||l.up>0).length;
       if(evP.nivel==='rojo') flags.push(`<b class="warn">Puertos:</b> ${esc(evP.motivo)}`);
+      else if(nEnl&&evP.par){
+        // Par EdgeHA: cada chasis con su parte de los enlaces, sus LAN y la interconexión.
+        const ocupa=(u,cel)=>Object.keys(NOMBRE_PUERTO).filter(k=>u[k]).map(k=>`${u[k]}x ${NOMBRE_PUERTO[k]}`).concat(cel?[`el ${NOMBRE_PUERTO.celular}`]:[]).join(', ');
+        const pc=evP.asignacion.porChasis;
+        flags.push(`<b>Puertos (par EdgeHA):</b> ${nEnl} enlace${nEnl===1?'':'s'} WAN repartidos entre los dos chasis, y en cada uno ${LAN_RESERVADOS} LAN y la interconexión por ${esc(NOMBRE_PUERTO[evP.asignacion.ha])} (mismo medio en los dos extremos, nunca el MGMT) sobre ${esc(inventarioTxt(m.puertos))} — el primero ocupa ${esc(ocupa(pc[0].usados,pc[0].celular))}; el segundo, ${esc(ocupa(pc[1].usados,pc[1].celular))}.${evP.nivel==='ambar'?` <span class="warn">${esc(evP.motivo)}</span>`:''}`);
+      }
       else if(nEnl) flags.push(`<b>Puertos:</b> ${nEnl} enlace${nEnl===1?'':'s'} WAN y ${LAN_RESERVADOS} LAN sobre ${esc(inventarioTxt(m.puertos))} — ocupa ${esc(Object.keys(NOMBRE_PUERTO).filter(k=>us[k]).map(k=>`${us[k]}x ${NOMBRE_PUERTO[k]}`).concat(evP.asignacion.celular?[`el ${NOMBRE_PUERTO.celular}`]:[]).join(', '))}.${evP.nivel==='ambar'?` <span class="warn">${esc(evP.motivo)}</span>`:''}`);
     }
     // M4 · EC-10150: doble PSU de fábrica (texto informativo, SPEC B.5) — no hay segunda

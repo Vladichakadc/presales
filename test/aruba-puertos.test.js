@@ -113,3 +113,32 @@ test('ningún RJ-45 del catálogo pasa de 1 GbE (la regla del medio lo da por he
   }
   assert.strictEqual(R.MEDIO_MBPS.RJ45, 1000);
 });
+
+// Par EdgeHA (2026-10-27): «You can choose any LAN or WAN port combination for this HA Link […]
+// You must match the media type and speed for both ends […] you cannot use MGMT ports»
+// (Orchestrator, «Deployment - EdgeHA»). Cada enlace WAN aterriza en un chasis del par; cada
+// chasis reserva sus 2 LAN y el puerto de la interconexión, del mismo tipo en los dos.
+test('par EdgeHA: los enlaces se reparten y cada chasis gasta el puerto de la interconexión', () => {
+  const dos = R.asignarPuertosPar(P('EC-10104'), [enlace(1, 'RJ45', 100), enlace(2, 'RJ45', 100)], 2);
+  assert.strictEqual(dos.cabe, true);
+  assert.strictEqual(dos.ha, 'rj45');
+  assert.deepStrictEqual(dos.porChasis.map((c) => c.usados.rj45), [4, 4], '1 enlace + 1 HA + 2 LAN en cada uno');
+  // Cuatro de 10G no caben en un EC-10106 (2 SFP+), pero en el par sí: dos en cada chasis, la
+  // interconexión por cobre y los LAN en las combo.
+  const diez = [1, 2, 3, 4].map((n) => enlace(n, 'SFP+ 10G', 5000));
+  assert.strictEqual(R.asignarPuertos(P('EC-10106'), diez, 2).cabe, false);
+  const par = R.asignarPuertosPar(P('EC-10106'), diez, 2);
+  assert.strictEqual(par.cabe, true, JSON.stringify(par));
+  assert.strictEqual(par.ha, 'rj45');
+  assert.deepStrictEqual(par.porChasis.map((c) => c.usados.sfpPlus), [2, 2]);
+  // Tres enlaces en un EC-10104: el chasis con dos se queda sin uno de sus LAN.
+  const tres = R.asignarPuertosPar(P('EC-10104'), [1, 2, 3].map((n) => enlace(n, 'RJ45', 100)), 2);
+  assert.strictEqual(tres.cabe, false);
+  assert.strictEqual(tres.lanFaltan, 1);
+  // Con los dos chasis llenos de enlaces no queda puerto para la interconexión.
+  const ocho = R.asignarPuertosPar(P('EC-10104'), [1, 2, 3, 4, 5, 6, 7, 8].map((n) => enlace(n, 'RJ45', 100)), 2);
+  assert.strictEqual(ocho.haFalta, true);
+  assert.strictEqual(ocho.cabe, false);
+  // Un respaldo ocupa puerto igual que en un chasis; un equipo virtual no tiene nada que auditar.
+  assert.strictEqual(R.asignarPuertosPar(null, diez, 2).virtual, true);
+});

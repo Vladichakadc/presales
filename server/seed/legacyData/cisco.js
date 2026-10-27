@@ -531,16 +531,18 @@ const BAHIA_ASR = {
 //   bahía 1 en 100G no queda ningún otro puerto de las bahías 0 y 1. Todas suman 240 GE o menos.
 // · C8570-G2: su guía de hardware («Bay configuration», 9-sep-2025) da las mismas bahías —0: 8 SFP+;
 //   1: 4 SFP+ o 1 QSFP de 40 o 100G; 2: 1x 100G o 3x 40G— y su ficha, «max 240GE ports can be
-//   enabled simultaneously». La nota del 12X4QC sobre la bahía 1 en 100G no está en sus documentos:
-//   no se le aplica; manda el tope de 240 GE.
+//   enabled simultaneously». Y su guía de configuración (capítulo «Bay Configuration», 12-oct-2026)
+//   la misma nota que el 12X4QC: con la bahía 1 en 100G, «all ports of Bay 0 move to admin down
+//   state» (2026-10-27). El «breakout» 4x10G de la bahía 2 que esa guía documenta no se modela: pide
+//   un cable o una óptica de breakout que el catálogo no trae.
 const COMBINACIONES = {
   'Catalyst 8500-12X4QC': {fuente:'tabla 5 de su ficha', lista:[
     {sfp:12, q40:0, q100:0}, {sfp:8, q40:4, q100:0}, {sfp:0, q40:0, q100:2}, {sfp:0, q40:3, q100:1},
     {sfp:8, q40:1, q100:1}, {sfp:12, q40:0, q100:1}, {sfp:12, q40:3, q100:0},
   ]},
-  'Cisco Secure Router C8570-G2': {fuente:'bahías de su guía de hardware', maxGE:240, lista:[
+  'Cisco Secure Router C8570-G2': {fuente:'bahías de sus guías de hardware y de configuración', maxGE:240, lista:[
     {sfp:12, q40:3, q100:0}, {sfp:12, q40:0, q100:1}, {sfp:8, q40:4, q100:0}, {sfp:8, q40:1, q100:1},
-    {sfp:8, q40:3, q100:1}, {sfp:8, q40:0, q100:2},
+    {sfp:0, q40:3, q100:1}, {sfp:0, q40:0, q100:2},
   ]},
 };
 // Puerto DSL integrado (`dsl`): ISR 1116-4P, tabla 20 de la ficha del ISR 1000 («WAN interface

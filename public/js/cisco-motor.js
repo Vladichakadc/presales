@@ -1,5 +1,5 @@
 'use strict';
-/* global module */
+/* global module, require */
 // `module` existe solo en Node (tests); en el navegador el typeof lo degrada.
 /* ══ MOTOR DEL DIMENSIONADOR CISCO (2026-10-20) ══
 
@@ -38,17 +38,19 @@
       una que la ficha no publica no lo aparta, pero se avisa. Los túneles se pueden escribir o
       derivar de la topología (`tunelesTopologia`, 2026-10-21): aritmética de sedes, hubs y
       transportes, sin ninguna cifra nueva de Cisco; la escrita manda sobre la calculada.
-   5. Requisitos de hardware (doble fuente, celular, NIM, SM, MACsec, PoE): un modelo que no
+   5. Requisitos de hardware (doble fuente, celular, NIM, SM, MACsec, PoE, PQC): un modelo que no
       confirma el requisito se aparta diciendo si es porque no lo tiene o porque no consta.
    6. Licencias de la G2 por la clase de la plataforma (guía de pedido, tablas 9 y 10).
 
    LAS CIFRAS SON DEL FABRICANTE; LOS COEFICIENTES LOS DECLARA QUIEN DIMENSIONA. Si alguien
    «afina» uno, rompe `test/cisco-motor.test.js` y no la propuesta de un cliente. */
 (function (root, factory) {
-  const api = factory();
+  let PQC = root && root.PQC;
+  if (!PQC && typeof require === 'function') PQC = require('./pqc.js');
+  const api = factory(PQC);
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   if (root) root.CiscoMotor = api;
-})(typeof window !== 'undefined' ? window : globalThis, function () {
+})(typeof window !== 'undefined' ? window : globalThis, function (PQC) {
 
   // Qué familia del catálogo pertenece a cada plataforma, por `ser`. No son intercambiables
   // aunque coincida el caudal: cambia el plano de gestión, el licenciamiento y quién opera.
@@ -211,6 +213,9 @@
       if (typeof m.poe !== 'number') motivos.push('el catálogo no trae su presupuesto PoE');
       else if (m.poe < Math.max(1, w)) motivos.push(`PoE de ${m.poe} W frente a ${w} W pedidos`);
     }
+    // Criptografía post-cuántica (2026-10-27): la regla única de pqc.js.
+    const pqc = PQC.motivo(m, r.pqc);
+    if (pqc) motivos.push(pqc);
     return { motivos, avisos, piezas };
   }
 

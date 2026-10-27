@@ -35,6 +35,7 @@
   let CATALOGO = { models: [], plataformas: {} };
   let plat = 'all';
   let lastPick = null;
+  let ultimoOutByPqc = [];
 
   const fmt = (g) => (g >= 1000 ? `${(g / 1000).toFixed(g % 1000 === 0 ? 0 : 1)} Tbps` : `${g} Gbps`);
 
@@ -77,13 +78,19 @@
     return !m.configs;
   }
 
-  function evaluar({ models, need, portQty, portVel, familia: plataforma }) {
+  // `pqc` (2026-10-27): el nivel de criptografía post-cuántica exigido. Lo que no lo documenta
+  // se aparta con su motivo (la regla única de pqc.js) y se dice, sin mezclarlo con los chasis
+  // que no se pudieron comprobar por puertos.
+  function evaluar({ models, need, portQty, portVel, familia: plataforma, pqc }) {
     const familia = models.filter((m) => enPlataforma(m, plataforma));
     const cumplenCaudal = familia.filter((m) => m.cap >= need);
 
     const candidatos = [];
     const apartados = [];
+    const outByPqc = [];
     for (const m of cumplenCaudal) {
+      const mot = PQC.motivo(m, pqc);
+      if (mot) { outByPqc.push({ m, motivo: mot }); continue; }
       if (!portQty) { candidatos.push(m); continue; }
       if (sinDensidad(m)) {
         apartados.push({ m, motivo: m.notaPuertos });
@@ -92,7 +99,7 @@
       const ok = configQueCumple(m, portQty, portVel);
       if (ok) candidatos.push(Object.assign({}, m, { __config: ok }));
     }
-    return { familia, candidatos, apartados };
+    return { familia, candidatos, apartados, outByPqc };
   }
 
   function requerimiento() {
@@ -112,7 +119,8 @@
       ? 'Con «Todas» se listan las cinco familias juntas: sirve para comparar, no para decidir.'
       : ((CATALOGO.plataformas[plat] || {}).d || '');
 
-    const { candidatos, apartados } = evaluar({ models: CATALOGO.models, need, portQty, portVel, familia: plat });
+    const { candidatos, apartados, outByPqc } = evaluar({ models: CATALOGO.models, need, portQty, portVel, familia: plat, pqc: $('reqPqc').value });
+    ultimoOutByPqc = outByPqc;
     const ordenados = FICHA.ordenar(candidatos, (a, b) => a.cap - b.cap);
     const pick = FICHA.recomendar(ordenados);
     lastPick = pick;
@@ -181,11 +189,17 @@
     if (apartados.length) {
       partes.push(`<p>Además, ${apartados.length} chasis modular(es) sí cumplen el caudal pero no publican densidad de puertos — se listan abajo.</p>`);
     }
+    if (ultimoOutByPqc.length) {
+      partes.push(`<p class="warn">${ultimoOutByPqc.length} modelo(s) cumplen el caudal pero se apartan por la criptografía post-cuántica exigida: ${ultimoOutByPqc.map((x) => `${esc(x.m.id)} (${esc(x.motivo)})`).join('; ')}.</p>`);
+    }
     return partes.join('') || '<p class="warn">Sin candidatos con estos parámetros.</p>';
   }
 
   function porQueDe(m, need, portQty, portVel) {
     const li = [];
+    if (ultimoOutByPqc.length) {
+      li.push(`<li>Criptografía post-cuántica exigida: ${m.pqc ? `${esc(m.id)} la documenta (${esc(m.pqc.mecanismo)}). ` : ''}Se apartan ${ultimoOutByPqc.length} que cumplen el caudal: ${ultimoOutByPqc.map((x) => `${esc(x.m.id)} (${esc(x.motivo)})`).join('; ')}.</li>`);
+    }
     li.push(`<li>Requerimiento <b>${fmt(need)}</b> contra una capacidad de conmutación de <b>${fmt(m.cap)}</b> — holgura ${Math.round((1 - need / m.cap) * 100)} %</li>`);
     li.push(`<li>Familia <b>${esc((CATALOGO.plataformas[m.plat] || {}).n || m.ser)}</b>: ${esc((CATALOGO.plataformas[m.plat] || {}).d || m.seg)}</li>`);
     if (portQty) {
@@ -335,11 +349,11 @@
     renderCatalogo();
     PROCEDENCIA.registrarModelos('nokia', () => CATALOGO.models.map((m) => ({ model: m.id, ...m })));
 
-    ['bw', 'unit', 'head', 'portQty', 'portVel'].forEach((id) => $(id).addEventListener('input', render));
+    ['bw', 'unit', 'head', 'portQty', 'portVel', 'reqPqc'].forEach((id) => $(id).addEventListener('input', render));
     $('chkHa').addEventListener('change', render);
 
     const st = ESTADO.vincular({
-      campos: ['bw', 'unit', 'head', 'portQty', 'portVel', 'chkHa', 'platSeg', 'verdict-sel'],
+      campos: ['bw', 'unit', 'head', 'portQty', 'portVel', 'chkHa', 'reqPqc', 'platSeg', 'verdict-sel'],
     });
     const anclaje = document.querySelector('.tabs') || document.querySelector('.masthead');
     if (anclaje && anclaje.parentNode) {

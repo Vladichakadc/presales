@@ -70,7 +70,7 @@ grupo('critSeg', v => { crit = v; });
 const ENTRADAS = ['bw', 'unit', 'sites', 'conc', 'head', 'profile', 'plataforma', 'diaPct', 'seguridad', 'chkTls',
   'chkFec', 'fecPct', 'dupPct', 'tuneles', 'rutas', 'sesiones', 'dispositivos', 'cgnatUsuarios', 'cgnatBloque',
   'chkRedund', 'chk4g', 'chkNim', 'chkSm', 'chkMacsec', 'chkPoe', 'poeW', 'chkHa', 'chkHaTloc', 'chkAppqoe', 'appqoeCon',
-  'topologia', 'topoSedes', 'topoHubs', 'topoColores', 'topoColoresHub', 'topoVen', 'enlacesData', 'fwCapa'];
+  'reqPqc', 'topologia', 'topoSedes', 'topoHubs', 'topoColores', 'topoColoresHub', 'topoVen', 'enlacesData', 'fwCapa'];
 ENTRADAS.forEach(id => $(id).addEventListener('input', render));
 // Las licencias se pintan en las dos pestañas: el centro del dimensionamiento y el BOM.
 const CAMPOS_SA = ['saLic', 'saNivel', 'saUsuarios', 'saPrivado', 'saIps', 'ctrlEquipos', 'ctrlSaie'];
@@ -106,7 +106,7 @@ function parametros(){
       colores:$('topoColores').value, coloresHub:$('topoColoresHub').value, ven:$('topoVen').checked},
     requisitos:{dualPsu:$('chkRedund').checked, celular:$('chk4g').checked, nim:$('chkNim').checked, sm:$('chkSm').checked,
       macsec:$('chkMacsec').checked, poe:$('chkPoe').checked, poeW:numDe('poeW'),
-      appqoe:$('chkAppqoe').checked, appqoeConexiones:numDe('appqoeCon')},
+      appqoe:$('chkAppqoe').checked, appqoeConexiones:numDe('appqoeCon'), pqc:$('reqPqc').value},
     ha:mode === 'link' && $('chkHa').checked, haTloc:mode === 'link' && $('chkHa').checked && $('chkHaTloc').checked,
   };
 }

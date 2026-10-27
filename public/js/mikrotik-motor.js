@@ -1,5 +1,5 @@
 'use strict';
-/* global module */
+/* global module, require */
 /* ══ MOTOR PURO DEL DIMENSIONADOR MIKROTIK ═══════════════════════════════════
    Mismo patron que `huawei-motor.js`: `evaluar(escenario, modelos)` devuelve todo lo que la
    pagina pinta y lo que el BOM necesita. Sin DOM ni estado; global `MikrotikMotor` en el
@@ -22,10 +22,12 @@
    mas rapido del equipo (`wanMax`): un hEX lite publica 493 Mbps agregados, pero su WAN es
    Fast Ethernet y no pasa de 100 Mbps por sentido. */
 (function (root, factory) {
-  const api = factory();
+  let PQC = root && root.PQC;
+  if (!PQC && typeof require === 'function') PQC = require('./pqc.js');
+  const api = factory(PQC);
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   if (root) root.MikrotikMotor = api;
-})(typeof window !== 'undefined' ? window : globalThis, function () {
+})(typeof window !== 'undefined' ? window : globalThis, function (PQC) {
 
   /* Tamano de trama: las tres columnas que publica MikroTik. IPsec se mide a 1400 B en lugar de
      1518 (cabeceras del tunel), asi que el perfil «grande» lee la columna de 1400. */
@@ -495,6 +497,9 @@
       const r = capDe(m);
       if (r.cap == null) miss.push(r.motivo);
       else if (r.porSentido ? r.cap < porSentido : r.cap < need) miss.push('capacidad insuficiente');
+      // Criptografía post-cuántica (2026-10-27): la regla única de pqc.js.
+      const pqc = PQC.motivo(m, esc.pqc);
+      if (pqc) miss.push(pqc);
       // Los enlaces, cada uno a su puerto con su módulo. Sin puertos transcritos (CHR), el tope
       // por sentido de antes contra el puerto más rápido.
       const puertos = m.ser !== 'CHR' ? asignarPuertos(m, enlaces, o) : null;

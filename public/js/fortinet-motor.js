@@ -37,12 +37,15 @@
 (function (root, factory) {
   let R = root && root.FortinetReglas;
   if (!R && typeof require === 'function') R = require('./fortinet-reglas.js');
-  const api = factory(R);
+  let PQC = root && root.PQC;
+  if (!PQC && typeof require === 'function') PQC = require('./pqc.js');
+  const api = factory(R, PQC);
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   if (root) root.FortinetMotor = api;
-}(typeof window !== 'undefined' ? window : globalThis, function (R) {
+}(typeof window !== 'undefined' ? window : globalThis, function (R, PQC) {
 
-  const VERSION_MOTOR = '7.0.0';
+  // 7.1.0 (2026-10-27): el requisito de criptografía post-cuántica (`seguridad.pqc`).
+  const VERSION_MOTOR = '7.1.0';
   const ESQUEMA = 1;
   // Encapsulacion ESP sobre la fraccion que viaja por el overlay. Supuesto de la herramienta,
   // no una cifra de Fortinet, y por eso se declara en `supuestos` en cada evaluacion.
@@ -157,7 +160,7 @@
       spokes: I(1, 100000), simultaneidadPct: N(0, 100) },
     trafico: { interVlanMbps: N(0, 1e8), picosNoConcurrentes: B },
     seguridad: { capa: E(['fw', 'vpn', 'ips', 'ngfw', 'tp']), funciones: L(FUNCIONES_ID),
-      tlsCifradoPct: N(0, 100), tlsExentoPct: N(0, 90) },
+      tlsCifradoPct: N(0, 100), tlsExentoPct: N(0, 90), pqc: E(['', 'clave', 'mlkem']) },
     remoto: { activo: B, metodo: E(['ipsec', 'sslvpn']), usuarios: I(0, 1e7), mbps: N(0, 1e8), mfa: B },
     escala: { usuarios: I(0, 1e8), sesionesPorUsuario: I(0, 1e5), sesionesMedidas: I(0, 1e11),
       vidaSesionS: I(1, 86400), cpsMedido: I(0, 1e10), vdoms: I(0, 100000),
@@ -186,7 +189,7 @@
     software: { fortiOS: '7.6.3+', inspeccion: 'flow' },
     topologia: { rol: 'none', enlaces: [], hubs: 1, spokes: 1, simultaneidadPct: 35 },
     trafico: { interVlanMbps: 0, picosNoConcurrentes: false },
-    seguridad: { capa: 'tp', funciones: [], tlsCifradoPct: 100, tlsExentoPct: 0 },
+    seguridad: { capa: 'tp', funciones: [], tlsCifradoPct: 100, tlsExentoPct: 0, pqc: '' },
     remoto: { activo: false, metodo: 'ipsec', usuarios: 0, mbps: 0, mfa: false },
     escala: { usuarios: 0, sesionesPorUsuario: 0, sesionesMedidas: 0, vidaSesionS: 30, cpsMedido: 0,
       vdoms: 0, fortiAps: 0, fortiSwitches: 0, bgpPeers: 0 },
@@ -534,6 +537,13 @@
         b.push({ codigo: 'PROXY_LIMITADO', mensaje: `${m.id}: el fabricante declara soporte limitado de las funciones proxy.`,
           fuente: c.regla.fuente, correccion: 'Inspección en modo flow, o un modelo sin esa limitación.' });
       }
+    }
+    // Criptografía post-cuántica exigida (2026-10-27): la regla única de pqc.js. Un FortiGate
+    // sin documento sale «no consta», nunca «no la tiene».
+    const motivoPqc = PQC.motivo(m, s.seguridad.pqc);
+    if (motivoPqc) {
+      b.push({ codigo: 'PQC_NO_CONSTA', mensaje: `${m.id}: ${motivoPqc}.`,
+        correccion: 'Un modelo que la documente, o no exigirla si el pliego no lo pide.' });
     }
     // Puertos: cantidad, velocidad y medio. Sin puertos estructurados, el eje se declara.
     const pidePuertos = TIPOS_PUERTO.some((t) => s.fisico.puertos[t.k] > 0);

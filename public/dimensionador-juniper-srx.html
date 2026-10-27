@@ -198,6 +198,12 @@ code{background:var(--paper);padding:1px 5px;border-radius:2px;white-space:nowra
       <input type="range" id="head" min="0" max="100" step="5" value="30" style="width:100%" autocomplete="off">
       <p class="hint">Único factor de seguridad que aplica la herramienta. No hay recargos porcentuales por función: activar inspección <b>cambia la cifra que aplica</b>, no la encarece un tanto por ciento.</p>
     </div>
+
+    <div class="field">
+      <label for="reqPqc">Criptografía post-cuántica (exigir)</label>
+      <select id="reqPqc" aria-describedby="reqPqcHint"><option value="">No se exige</option><option value="clave">Mecanismo quantum-safe documentado (PPK, MACsec/ANYsec o ML-KEM)</option><option value="mlkem">Algoritmo post-cuántico ML-KEM (FIPS 203)</option></select>
+      <p class="hint" id="reqPqcHint">Seis SRX documentan PPK (RFC 8784) en el Feature Explorer, que es una clave precompartida y no un algoritmo ML-KEM. Lo que no lo documenta se aparta como «no consta», nunca como «no la tiene».</p>
+    </div>
   </section>
 
   <section class="panel" id="panelSrx">
@@ -421,6 +427,7 @@ code{background:var(--paper);padding:1px 5px;border-radius:2px;white-space:nowra
 <script src="/js/tabla.js"></script>
 <script src="/js/contraste.js"></script>
 <script src="/js/procedencia.js"></script>
+<script src="/js/pqc.js"></script>
 <script src="/js/juniper-motor.js"></script>
 <script src="/js/dimensionador-juniper-srx.js"></script>
 <script src="/js/navegacion.js"></script>

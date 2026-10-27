@@ -524,6 +524,11 @@ details.cumplimiento-especial summary:focus-visible{outline:2px solid var(--red)
       <p class="hint" id="haAutoHint" hidden><b>HA pre-marcado por la regla de preventa de la casa</b> (≥2 enlaces de ≥5 Gbps ⇒ el sitio concentra ≥10 Gbps y un chasis único sería un punto único de fallo): es EdgeHA, el diseño oficial de sucursal — cada transporte aterriza en un chasis del par y el enlace EdgeHA lleva los túneles de cada underlay a AMBOS appliances, sin switches WAN (VSG SD-Branch, fig. «EC HA»). Ojo: HA suma <b>disponibilidad, no caudal</b> — el VRRP manda todo el tráfico al activo y el standby solo toma el relevo en fallo, así que cada chasis del par se dimensiona al agregado completo. Puedes desmarcarlo; la revisión del diseño lo registrará.</p>
     </div>
     <p class="hint" style="margin-top:10px">El steering dinámico por SLA de aplicación (Dynamic Path Control) y las funciones NGFW ya los incluye <b>Foundation</b> — no obligan a subir de nivel (QuickSpecs v18, p.31).</p>
+    <div class="field" style="margin-top:10px">
+      <label for="reqPqc">Criptografía post-cuántica (exigir)</label>
+      <select id="reqPqc" aria-describedby="reqPqcHint"><option value="">No se exige</option><option value="clave">Mecanismo quantum-safe documentado (PPK, MACsec/ANYsec o ML-KEM)</option><option value="mlkem">Algoritmo post-cuántico ML-KEM (FIPS 203)</option></select>
+      <p class="hint" id="reqPqcHint">Ningún documento oficial de HPE Aruba traído la nombra para EdgeConnect ni para los gateways: exigirla aparta todos los equipos como «no consta», nunca como «no la tiene».</p>
+    </div>
   </section>
 
   <section class="panel">
@@ -852,6 +857,7 @@ details.cumplimiento-especial summary:focus-visible{outline:2px solid var(--red)
 
 <script src="/js/motor-ingenieria.js"></script>
 <script src="/js/aruba-reglas.js"></script>
+<script src="/js/pqc.js"></script>
 <script src="/js/bom.js"></script>
 <script src="/js/ficha.js"></script>
 <script src="/js/estado.js"></script>

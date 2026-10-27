@@ -1,5 +1,5 @@
 'use strict';
-/* global module */
+/* global module, require */
 /* ══ MOTOR PURO DEL DIMENSIONADOR HUAWEI ═════════════════════════════════════
    Salio de `dimensionador-huawei-netengine.js` (revision de arquitectura del 2026-09-29,
    `docs/revision-huawei-2026-09-29.md`, hallazgos H-08 y H-09): `render()` decidia el equipo
@@ -18,10 +18,12 @@
    el 70/30 del breakout y el 20 % de A-FEC son SUPUESTOS DE DISEÑO declarados y editables, no cifras
    de Huawei: ninguna ficha las publica, y la memoria de calculo lo dice. */
 (function (root, factory) {
-  const api = factory();
+  let PQC = root && root.PQC;
+  if (!PQC && typeof require === 'function') PQC = require('./pqc.js');
+  const api = factory(PQC);
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   if (root) root.HuaweiMotor = api;
-})(typeof window !== 'undefined' ? window : globalThis, function () {
+})(typeof window !== 'undefined' ? window : globalThis, function (PQC) {
 
   /* PLATAFORMA ANTES QUE EL CAUDAL (H-04, etapa H3). Tres lineas que no son intercambiables
      aunque coincidan en Gbps: la serie AR es CPE/SD-WAN empresarial y se mide por throughput de
@@ -228,6 +230,9 @@
       if (!isWan && aps > 0 && m.apsMax != null && aps > m.apsMax) apartar('hardware', `gestiona ${m.apsMax} APs`, `gestiona ${m.apsMax} APs frente a ${aps} pedidos`);
       if (!isWan && aps > 0 && m.apsMax === null) sinDatoAps.add(m.id);
       if (tuneles && !isWan && m.tuneles != null && m.tuneles < tuneles) apartar('tuneles', `soporta ${m.tuneles} túneles`, `soporta ${m.tuneles} túneles frente a ${tuneles} sedes`);
+      // Criptografía post-cuántica (2026-10-27): la regla única de pqc.js, en las tres plataformas.
+      const pqc = PQC.motivo(m, esc.pqc);
+      if (pqc) apartar('pqc', pqc);
       const sinConfirmar = [];
       if (!isWan) {
         for (const k of req) {
@@ -510,6 +515,7 @@
     requisito: 'su ficha restringe un requisito SD-WAN pedido',
     tuneles: 'no llegan a los túneles del hub',
     plataforma: 'son de una serie de transporte',
+    pqc: 'no consta en ningún documento oficial la criptografía post-cuántica pedida',
   };
   function resumenApartados(ev) {
     if (!ev || !ev.raw) return { grupos: [], fuera: [] };

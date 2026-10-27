@@ -38,8 +38,10 @@
 //           (2026-10-14): entonces mandan los limites de alta tension de la ficha (`alta`), la
 //           entrada maxima del equipo (`vMax`, «DC jack input Voltage») y, donde el manual lo dice
 //           («It can power af/at mode B compatible devices, if 48-57 V input voltage is used»),
-//           la salida es 802.3af/at (`af48`). El L009 no entra: su ficha no rotula con claridad
-//           cual de sus dos limites es el de alta tension.
+//           la salida es 802.3af/at (`af48`). El L009 entra desde el 2026-10-27: su ficha rotula
+//           «Low voltage PoE-Out current limit» 1 A y «High voltage PoE-Out current limit» 450 mA,
+//           igual que la del RB4011 y la del hEX S, y su PoE-out solo funciona alimentado por el
+//           jack DC («Works only if powered by DC jack»), que es por donde entra la fuente de 48 V.
 //
 // LO QUE ANTES ESTABA MAL Y POR QUE (todas contra la ficha oficial): IPsec del RB5009 2.400
 // Mbps (ficha 1.354), del CCR2216 15.000 (ficha 2.013 con un tunel, 4.108 con 256) y del hEX 470
@@ -100,10 +102,10 @@ const MANO = [
    ports:'5x GE + 1x SFP · PoE-out 802.3af/at en ether2-ether5 (2 A en total) · caja de exterior', cages:{ge:1}, redund:false, psu:{tipo:'fuente única con 2 entradas de alimentación (jack DC y PoE-IN pasivo)', volts:'12-57 V DC', texto:'Consumo máximo 54 W, y 6 W sin accesorios ni PoE de salida — MikroTik publica máximos, no un consumo típico. Incluye adaptador de 24 V 2,5 A e inyector PoE gigabit.'}},
 
   // ── L009 / RB4011 / RB1100 / RB5009 — sucursal ─────────────────────────────
-  {id:'L009UiGS-2HaxD', codigo:'L009UiGS-2HaxD-IN', ser:'L009', seg:'Sucursal pequeña + Wi-Fi 6', cores:2, ram:512, lvl:5, wanMax:2500, poe:null, poeA:1,
-   ports:'8x GE + 1x SFP (admite 2,5G) · Wi-Fi 6 a 2,4 GHz (AX600) · PoE-out pasivo en ether8 (1 A)', cages:{ge:1}, redund:false, psu:{tipo:'fuente única con 2 entradas de alimentación (jack DC y PoE-IN 802.3af/at)', volts:'24-56 V DC', texto:'Consumo máximo 47 W, y 14 W sin accesorios ni PoE de salida — MikroTik publica máximos, no un consumo típico. Tiene 2 entradas independientes, así que se puede alimentar desde dos tomas distintas, aunque la fuente interna es única.'}},
-  {id:'L009UiGS-RM', codigo:'L009UiGS-RM', ser:'L009', seg:'Sucursal pequeña rackmount', cores:2, ram:512, lvl:5, wanMax:2500, poe:null, poeA:1,
-   ports:'8x GE + 1x SFP (admite 2,5G) · PoE-out pasivo en ether8 (1 A) · rack', cages:{ge:1}, redund:false, psu:{tipo:'fuente única con 2 entradas de alimentación (jack DC y PoE-IN 802.3af/at)', volts:'24-56 V DC', texto:'Consumo máximo 40 W, y 8 W sin accesorios ni PoE de salida — MikroTik publica máximos, no un consumo típico.'}},
+  {id:'L009UiGS-2HaxD', codigo:'L009UiGS-2HaxD-IN', ser:'L009', seg:'Sucursal pequeña + Wi-Fi 6', cores:2, ram:512, lvl:5, wanMax:2500, poe:null, poeA:1, poeSalida:{puertos:1, alta:{aPuerto:0.45, aTotal:1}, vMax:56}, consumoSinAcc:14,
+   ports:'8x GE + 1x SFP (admite 2,5G) · Wi-Fi 6 a 2,4 GHz (AX600) · PoE-out pasivo en ether8 (1 A a baja tensión, 450 mA a alta; solo alimentado por el jack DC)', cages:{ge:1}, redund:false, psu:{tipo:'fuente única con 2 entradas de alimentación (jack DC y PoE-IN 802.3af/at)', volts:'24-56 V DC', texto:'Consumo máximo 47 W, y 14 W sin accesorios ni PoE de salida — MikroTik publica máximos, no un consumo típico. Tiene 2 entradas independientes, así que se puede alimentar desde dos tomas distintas, aunque la fuente interna es única.'}},
+  {id:'L009UiGS-RM', codigo:'L009UiGS-RM', ser:'L009', seg:'Sucursal pequeña rackmount', cores:2, ram:512, lvl:5, wanMax:2500, poe:null, poeA:1, poeSalida:{puertos:1, alta:{aPuerto:0.45, aTotal:1}, vMax:56}, consumoSinAcc:8,
+   ports:'8x GE + 1x SFP (admite 2,5G) · PoE-out pasivo en ether8 (1 A a baja tensión, 450 mA a alta; solo alimentado por el jack DC) · rack', cages:{ge:1}, redund:false, psu:{tipo:'fuente única con 2 entradas de alimentación (jack DC y PoE-IN 802.3af/at)', volts:'24-56 V DC', texto:'Consumo máximo 40 W, y 8 W sin accesorios ni PoE de salida — MikroTik publica máximos, no un consumo típico.'}},
   {id:'RB4011iGS+RM', codigo:'RB4011iGS+RM', ser:'RB4011', seg:'Sucursal pequeña rackmount', cores:4, ram:1024, lvl:5, wanMax:10000, poe:null, poeA:0.6, poeSalida:{puertos:1, alta:{aPuerto:0.42, aTotal:0.6}, vMax:57}, consumoSinAcc:18,
    ports:'10x GE + 1x SFP+ · PoE-out pasivo en ether10 (0,6 A) · rack 1U', cages:{sfp10:1}, redund:false, psu:{tipo:'fuente única con 2 entradas de alimentación (jack DC y PoE-IN pasivo)', volts:'12-57 V DC', texto:'Consumo máximo 33 W, y 18 W sin accesorios ni PoE de salida — MikroTik publica máximos, no un consumo típico. Tiene 2 entradas independientes, así que se puede alimentar desde dos tomas distintas, aunque la fuente interna es única.'}},
   {id:'RB1100AHx4', codigo:'RB1100x4', ser:'RB1100', seg:'Sucursal rackmount 13 GE', cores:4, ram:1024, lvl:6, wanMax:1000, poe:null,

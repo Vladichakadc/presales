@@ -81,7 +81,7 @@ $('dirSeg').addEventListener('click', e => {
   dirMult = +b.dataset.v; render();
 });
 ['bw','unit','sites','conc','head','frame','profile','lan','aps','sSdwan','sUtm','sSlice','rPoe','rWan','rWifi','crit','onsite','remote','chkHa','anios',
-  'trafico','fec','fecPct','sDia','diaPct','sNgfw','utmPct','rutasBgp','cgnat','bng','rSrv6','rMpls','rMcast','rDsvpn','rCompr']
+  'trafico','fec','fecPct','sDia','diaPct','sNgfw','utmPct','rutasBgp','cgnat','bng','rSrv6','rMpls','rMcast','rDsvpn','rCompr','reqPqc']
   .forEach(id => $(id).addEventListener('input', render));
 ['pickModel','qty','plazoMrr','margenFin','feeMsp'].forEach(id => $(id).addEventListener('input', renderBom));
 
@@ -132,6 +132,7 @@ function render(){
     utmPct:$('utmPct').value, ngfw:$('sNgfw').checked,
     carrier:{bgp:$('rutasBgp').value, cgnat:$('cgnat').value, bng:$('bng').value},
     req:{srv6:$('rSrv6').checked, mpls:$('rMpls').checked, mcast:$('rMcast').checked, dsvpn:$('rDsvpn').checked, compresion:$('rCompr').checked},
+    pqc:$('reqPqc').value,
   }, MODELS, {rango:FICHA.rango, recomendable:FICHA.recomendable});
   ultimaEval = ev;
   const {raw, base, need, needMpps, pk, aps, svc, wanOk, rows, fit, pick, next} = ev;
@@ -834,7 +835,7 @@ $('copyBtn').addEventListener('click', async () => {
    Misma clave compartida que los demas fabricantes (`BOM.perfiles`): un despliegue real mezcla
    marcas. Cargar es de Huawei (los campos son ids de ESTA pagina); consolidar no. Aqui todo se
    multiplica por sedes: el modelo comercial de Huawei no declara pools ni lineas unicas. */
-const CAMPOS_PERFIL = ['bw','unit','sites','conc','head','frame','profile','lan','aps','sSdwan','sUtm','sSlice','rPoe','rWan','rWifi','crit','onsite','remote','chkHa','anios','qty','opticasData','trafico','fec','fecPct','sDia','diaPct','sNgfw','utmPct','rutasBgp','cgnat','bng','rSrv6','rMpls','rMcast','rDsvpn','rCompr'];
+const CAMPOS_PERFIL = ['bw','unit','sites','conc','head','frame','profile','lan','aps','sSdwan','sUtm','sSlice','rPoe','rWan','rWifi','crit','onsite','remote','chkHa','anios','qty','opticasData','trafico','fec','fecPct','sDia','diaPct','sNgfw','utmPct','rutasBgp','cgnat','bng','rSrv6','rMpls','rMcast','rDsvpn','rCompr','reqPqc'];
 const SEGS_PERFIL = ['platSeg','modeSeg','dirSeg'];
 function capturarCampos(){
   const v = {};
@@ -991,7 +992,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const qs0 = new URLSearchParams(location.search);
   const veniaDeCore = qs0.get('modeSeg') === 'core' && !qs0.has('platSeg');
   const st = ESTADO.vincular({ campos: ['bw','unit','sites','conc','head','frame','profile','lan','aps','sSdwan','sUtm','sSlice','rPoe','rWan','rWifi','crit','onsite','remote','chkHa','anios','opticasData','selDescuento','dtoCustom','platSeg','dirSeg','modeSeg','verdict-sel',
-    'trafico','fec','fecPct','sDia','diaPct','sNgfw','utmPct','rutasBgp','cgnat','bng','rSrv6','rMpls','rMcast','rDsvpn','rCompr','plazoMrr','margenFin','feeMsp'] });
+    'trafico','fec','fecPct','sDia','diaPct','sNgfw','utmPct','rutasBgp','cgnat','bng','rSrv6','rMpls','rMcast','rDsvpn','rCompr','reqPqc','plazoMrr','margenFin','feeMsp'] });
   if (veniaDeCore) {
     $('platSeg').querySelector('[data-v="ne8000"]').click();
     $('modeSeg').querySelector('[data-v="link"]').click();

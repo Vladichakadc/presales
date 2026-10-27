@@ -312,6 +312,11 @@ tr.sel td{background:rgba(199,0,11,.05);font-weight:600}
       <p class="hint">Se registran en la memoria de cálculo y <b>no filtran</b> el equipo: este catálogo no trae la FIB, el CGNAT ni el BNG de ningún modelo.</p>
     </div>
     </div>
+    <div class="field">
+      <label for="reqPqc">Criptografía post-cuántica (exigir)</label>
+      <select id="reqPqc" aria-describedby="reqPqcHint"><option value="">No se exige</option><option value="clave">Mecanismo quantum-safe documentado (PPK, MACsec/ANYsec o ML-KEM)</option><option value="mlkem">Algoritmo post-cuántico ML-KEM (FIPS 203)</option></select>
+      <p class="hint" id="reqPqcHint">Ninguna ficha de Huawei traída la nombra: exigirla aparta todos los equipos como «no consta», nunca como «no la tiene». La tarjeta QKD anunciada para la NE8000E no es criptografía post-cuántica.</p>
+    </div>
   </section>
 
   <section class="panel">
@@ -491,6 +496,7 @@ Las cifras de la serie AR son throughput de servicio en IMIX; las de A800 E y NE
 </div>
 </div>
 </div>
+<script src="/js/pqc.js"></script>
 <script src="/js/huawei-motor.js"></script>
 <script src="/js/bom.js"></script>
 <script src="/js/ficha.js"></script>
