@@ -16,6 +16,10 @@ const MODELO = 'Cisco Secure Router C8130-G2';
   const page = await browser.newPage({ acceptDownloads: true });
   const errores = [];
   page.on('pageerror', (e) => errores.push(e.message));
+  // La página escribe en la consola el error de una exportación que falla y no descarga nada:
+  // sin recogerlo, la batería solo diría «no hubo descarga».
+  const consola = [];
+  page.on('console', (msg) => { if (msg.type() === 'error') consola.push(msg.text()); });
   const t = contador();
 
   await abrirSesion(page);
@@ -26,7 +30,15 @@ const MODELO = 'Cisco Secure Router C8130-G2';
   await page.click('[data-tab=bom]');
   await asentar(page);
 
-  const [descarga] = await Promise.all([page.waitForEvent('download', { timeout: 30000 }), page.click('#xlsBtn')]);
+  let descarga = null;
+  try {
+    [descarga] = await Promise.all([page.waitForEvent('download', { timeout: 30000 }), page.click('#xlsBtn')]);
+  } catch (e) {
+    const boton = await page.textContent('#xlsBtn').catch(() => '?');
+    t.ok(false, `el Excel se descarga (botón «${boton}»; consola: ${consola.join(' | ').slice(0, 400) || 'sin errores'})`);
+    await browser.close();
+    process.exit(t.resumen('e2e-cisco-excel-figuras'));
+  }
   const buf = fs.readFileSync(await descarga.path());
   t.ok(buf.includes(Buffer.from('xl/media/image1.png')) && buf.includes(Buffer.from('xl/media/image2.png')),
     'el Excel incrusta la cara frontal y la trasera');
