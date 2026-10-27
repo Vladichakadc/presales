@@ -4,9 +4,9 @@
 - **Rama:** claude/edgeha-velocidad
 - **Cuenta:** servicioiptv2025@gmail.com
 - **Estado:** en curso
-- **Actualizado:** 2026-10-27 16:00
-- **Archivos que toca:** public/js/aruba-reglas.js, public/js/dimensionador-aruba-edgeconnect.js, test/aruba-puertos.test.js
-- **Siguiente paso:** pasar `haMbps` y `haVel` desde interconexionEdgeHA y auditarPuertos; pruebas
+- **Actualizado:** 2026-10-27 16:20
+- **Archivos que toca:** public/js/aruba-reglas.js, public/js/dimensionador-aruba-edgeconnect.js, test/aruba-puertos.test.js, test/e2e/e2e-aruba-edgeha-velocidad.js
+- **Siguiente paso:** CI (`verificar`, `pantallas` con la e2e nueva) y fusión
 
 ## Encargo del dueño
 
