@@ -46,8 +46,16 @@ function main(argv) {
       console.error('Se listan las que ya había en local.');
     }
   }
-  const refs = git(['for-each-ref', '--sort=-committerdate',
-    '--format=%(refname:short)\t%(committerdate:iso8601)', 'refs/remotes/origin'])
+  let salida;
+  try {
+    salida = git(['for-each-ref', '--sort=-committerdate',
+      '--format=%(refname:short)\t%(committerdate:iso8601)', 'refs/remotes/origin']);
+  } catch (e) {
+    console.error(`No se pudieron leer las ramas remotas (git for-each-ref): ${String(e.stderr || e.message).trim()}`);
+    process.exitCode = 1;
+    return;
+  }
+  const refs = salida
     .split('\n').filter(Boolean).map((l) => l.split('\t'))
     .filter(([ref]) => ref !== 'origin/HEAD' && ref !== 'origin');
 

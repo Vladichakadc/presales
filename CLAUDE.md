@@ -154,7 +154,8 @@ que existe.
 
 **Hooks de `.claude/`** (registrados en `.claude/settings.json`, versionado; `settings.local.json`
 sigue ignorado):
-- `session-start.sh` (solo en remoto): `npm install`, comprueba Playwright y Chromium, **instala
+- `session-start.sh` (solo en remoto): lista los temas en curso de otras sesiones (`npm run
+  traspasos`, antes de instalar nada y sin cortar el arranque si falla), `npm install`, comprueba Playwright y Chromium, **instala
   la CLI de graphify fijada al sello de la skill si falta** (con `uv`, nunca `--upgrade`; si falla,
   dice el comando y sigue; otra versión ya instalada no la toca), avisa si el grafo local no refleja
   algún archivo que lee (se lo pregunta a graphify contra su manifiesto; sin CLI, compara el commit)

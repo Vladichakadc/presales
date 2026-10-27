@@ -51,6 +51,17 @@ if [ -s .claude/learning/en-curso.jsonl ]; then
   ' 2>/dev/null || true
 fi
 
+# TEMAS EN CURSO DE OTRAS SESIONES (docs/traspaso/README.md). Varias sesiones, a veces de
+# cuentas distintas, trabajan a la vez y solo comparten GitHub: antes de tomar un tema hay que
+# ver cuales tienen rama y que archivos declaran. Va ANTES de `npm install` a proposito: el
+# script no necesita dependencias, y si la instalacion falla (el 2026-10-27 el proxy dio 403 al
+# registro de npm) `set -e` cortaria el arranque antes de llegar aqui. Nunca bloquea: si el
+# fetch no responde, avisa y sigue.
+echo "[arranque] Temas en curso de otras sesiones (no tomes un tema ni un archivo ajeno):"
+if ! GIT_TERMINAL_PROMPT=0 timeout 60 node scripts/traspasos.js 2>&1 | sed 's/^/[arranque]   /'; then
+  echo "[arranque] AVISO: no se pudieron listar los temas en curso; corre 'npm run traspasos' a mano."
+fi
+
 echo "[arranque] Instalando dependencias de npm..."
 # `npm install` y no `npm ci`: el estado del contenedor se cachea despues del hook, asi que
 # una instalacion incremental aprovecha esa cache. El fallo cerrado de `npm ci` ante un
