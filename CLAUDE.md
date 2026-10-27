@@ -28,6 +28,13 @@ completo está allí.
 - **Las decisiones del dueño no se toman por silencio.** Cuando el dueño pide «ejecuta los
   pendientes», la opción recomendada de una decisión pendiente se ejecuta y se anota; si no, se
   pregunta.
+- **Trabajo en paralelo y traspaso entre sesiones** (`docs/traspaso/README.md`). Varias sesiones,
+  a veces de cuentas distintas, trabajan a la vez y solo comparten GitHub. Al empezar, `npm run
+  traspasos` dice qué temas tienen rama y qué archivos declaran: **no se toma un tema ni un
+  archivo ajeno**. Cada tema va en su rama con `docs/traspaso/<tema>.md` (de `PLANTILLA.md`) al
+  día en cada commit, y se empuja a menudo: lo no empujado se pierde si la sesión se corta.
+  Retomar es leer ese traspaso y seguir su «Siguiente paso». `PENDIENTES.md` y `CLAUDE.md` se
+  tocan solo al fusionar, y en ese commit el traspaso se borra.
 - **Nunca se inventa un dato.** Un campo sin fuente queda en `null` y la pantalla lo dice («sin
   dato», «consultar», «sin cotizar»). Un resumen de buscador o de un tercero no es fuente: el dato
   entra desde el documento oficial, por los importadores con anclaje o leído y citado en
@@ -111,6 +118,7 @@ npm run lista-aruba # lista del distribuidor de Aruba: dry-run salvo --aplicar
 npm run propuesta   # aplica una propuesta de la sincronización sobre legacyData/, con anclaje
 
 # Fuentes y documentos (lo que descarga necesita salida a internet: IMPORTAR-CATALOGO.md)
+npm run traspasos   # temas en curso: ramas remotas con su docs/traspaso/<tema>.md (solo lee)
 npm run vigia       # ¿cambió el documento de cada fuente? (hash contra fuentes.lock.json)
 npm run vigencia    # ¿desapareció algún modelo de Aruba de su guía de pedido oficial?
 npm run candidatas  # grupo de control: distingue el 403 de un fabricante del de un proxy
