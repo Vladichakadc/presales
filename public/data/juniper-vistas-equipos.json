@@ -1,5 +1,6 @@
 {
   "_procedencia": "Figuras oficiales de los 18 equipos del catalogo Juniper (12 SRX y 6 Session Smart Router), extraidas el 2026-10-19 sin pérdida (WebP VP8L con los pixeles exactos de la imagen incrustada en el PDF; nada redibujado ni reescalado). Fuente: la guia de hardware de cada modelo (juniper.net/documentation/us/en/hardware/<modelo>/<modelo>.pdf), seccion «Chassis», figuras rotuladas «Front Panel» y «Rear/Back Panel». Las guias de los SRX se trajeron por Actions en septiembre (ramas fuente/aruba-juniper y fuente/tres-pendientes); la del SRX380 y las de SSR120/1200/1300/1400, el 2026-10-19 (corridas 39359374306 y 39359448021). Son dibujos tecnicos con los componentes numerados: el pie de cada uno cita la figura, cuya leyenda esta en la guia. SSR130 y SSR1500 no tienen guia descargable (su indice no enlaza el PDF): sus figuras salen de las fichas de linea SSR100 (1000728-005, japones, figs. 4 y 6) y SSR1000 (1000757-002-EN, figs. 7 y 8), a la resolucion del documento (500 y 700 px). Tres traseras son el MISMO dibujo en el documento oficial, no una copia de un hermano: SRX340/SRX345 (fuente unica), SRX4100/SRX4200 y SSR1300/SSR1400 comparten chasis. Del SRX345 se sirve la variante de fuente unica, que es la de serie; la de doble AC esta en su guia (figs. 3 y 6). FOTOS DE PRODUCTO (2026-10-20, tercera pestaña «Foto»): 18 de 18, sin pérdida sobre los píxeles del documento. SRX300/320/340/345/380 de la imagen de su ficha de línea, que rotula cada modelo; SRX1600/2300/4300/4700 de la imagen de familia de la página de la serie, casadas con la foto de cada ficha de un solo modelo; SRX1500 de su ficha; los SSR de sus fichas de línea. Traídas el 2026-10-20 (corrida 39409681340, rama fuente/juniper-fotos-2026-10-20). SRX4100 y SRX4200, de su ficha japonesa (la inglesa devuelve HTML), corrida 39410983522; las 18 tienen foto. La del SSR120 es la variante con LTE y su pie lo dice. TAMAÑO Y PESO (2026-10-20): de la tabla «Physical Specifications» de cada guía de hardware (SSR130 y SSR1500, de su ficha de línea). Donde la guía da solo pulgadas o libras se convierte (1 in = 25,4 mm; 1 lb = 0,4536 kg) y la cifra original va en el texto.",
+  "_leyendas": "frontLeyenda y rearLeyenda (2026-10-27): la tabla que acompaña a cada figura en su documento, el mismo que cita fuente: [número, rótulo literal, traducción] y de qué tabla o leyenda sale. En los SRX es la tabla «Components» que sigue a la figura en la guía de hardware (columna Component); en los SSR120, 1200, 1300 y 1400, la leyenda bajo la figura; en el SSR130 y el SSR1500, la de su ficha de línea (la del SSR130, en japonés: lang ja). Una fila que agrupa dos números («2, 8 Console ports») se repite en cada uno; la fila 9 del SRX4700 nombra dos componentes («SSD0», «SSD1») y aquí van juntos.",
   "SRX300": {
     "front": "/img/equipos/jn-srx300-front.webp",
     "rear": "/img/equipos/jn-srx300-rear.webp",
@@ -7,7 +8,30 @@
     "url": "https://www.juniper.net/documentation/us/en/hardware/srx300/srx300.pdf",
     "foto": "/img/equipos/jn-srx300-foto.webp",
     "fotoFuente": "Foto de producto de la ficha «SRX300 Line of Firewalls for the Branch» (juniper.net, imagen «SRX300, SRX320, SRX340, SRX345, SRX380 Image»), recortada de la composición donde la propia imagen rotula «SRX300».",
-    "tamano": "35 × 321 × 193 mm (Al × An × Fo) · 1,99 kg (4,38 lb) — guía, tabla 14"
+    "tamano": "35 × 321 × 193 mm (Al × An × Fo) · 1,99 kg (4,38 lb) — guía, tabla 14",
+    "frontLeyenda": {
+      "tabla": "tabla 5 de la guía",
+      "filas": [
+        [1, "Reset Config button", "Botón de restablecer la configuración"],
+        [2, "Serial Console port", "Puerto de consola serie"],
+        [3, "1-GbE Ethernet ports", "Puertos Ethernet de 1 GbE"],
+        [4, "1-GbE small form-factor pluggable (SFP) ports", "Puertos SFP de 1 GbE"],
+        [5, "ESD point", "Punto de conexión antiestática (ESD)"],
+        [6, "Mini-USB console port", "Puerto de consola Mini-USB"],
+        [7, "USB port", "Puerto USB"],
+        [8, "LEDs", "LED"],
+        [9, "Power button", "Botón de encendido"]
+      ]
+    },
+    "rearLeyenda": {
+      "tabla": "tabla 8 de la guía",
+      "filas": [
+        [1, "Grounding point", "Punto de tierra"],
+        [2, "Lock", "Ranura de bloqueo"],
+        [3, "Cable tie holder", "Sujetacables"],
+        [4, "Power supply input", "Entrada de alimentación"]
+      ]
+    }
   },
   "SRX320": {
     "front": "/img/equipos/jn-srx320-front.webp",
@@ -16,7 +40,31 @@
     "url": "https://www.juniper.net/documentation/us/en/hardware/srx320/srx320.pdf",
     "foto": "/img/equipos/jn-srx320-foto.webp",
     "fotoFuente": "Foto de producto de la ficha «SRX300 Line of Firewalls for the Branch» (juniper.net, imagen «SRX300, SRX320, SRX340, SRX345, SRX380 Image»), recortada de la composición donde la propia imagen rotula «SRX320».",
-    "tamano": "44 × 300 × 191 mm (Al × An × Fo, de 1,73 × 11,81 × 7,52 in) · 1,49 kg (3,28 lb); 1,54 kg la variante PoE — guía, tabla 15"
+    "tamano": "44 × 300 × 191 mm (Al × An × Fo, de 1,73 × 11,81 × 7,52 in) · 1,49 kg (3,28 lb); 1,54 kg la variante PoE — guía, tabla 15",
+    "frontLeyenda": {
+      "tabla": "tabla 5 de la guía",
+      "filas": [
+        [1, "Reset Config button", "Botón de restablecer la configuración"],
+        [2, "Console port", "Puerto de consola"],
+        [3, "Mini-PIM slots", "Ranuras Mini-PIM"],
+        [4, "1-GbE small form-factor pluggable (SFP) ports", "Puertos SFP de 1 GbE"],
+        [5, "1-GbE RJ-45 ports", "Puertos RJ-45 de 1 GbE"],
+        [6, "Console port", "Puerto de consola"],
+        [7, "USB port", "Puerto USB"],
+        [8, "LEDs", "LED"],
+        [9, "Power button", "Botón de encendido"]
+      ]
+    },
+    "rearLeyenda": {
+      "tabla": "tabla 8 de la guía",
+      "filas": [
+        [1, "Lock", "Ranura de bloqueo"],
+        [2, "Fans", "Ventiladores"],
+        [3, "Cable tie holder", "Sujetacables"],
+        [4, "Power supply input (DC power input)", "Entrada de alimentación (CC)"],
+        [5, "Grounding point", "Punto de tierra"]
+      ]
+    }
   },
   "SRX340": {
     "front": "/img/equipos/jn-srx340-front.webp",
@@ -25,7 +73,31 @@
     "url": "https://www.juniper.net/documentation/us/en/hardware/srx340/srx340.pdf",
     "foto": "/img/equipos/jn-srx340-foto.webp",
     "fotoFuente": "Foto de producto de la ficha «SRX300 Line of Firewalls for the Branch» (juniper.net, imagen «SRX300, SRX320, SRX340, SRX345, SRX380 Image»), recortada de la composición donde la propia imagen rotula «SRX340».",
-    "tamano": "43,7 × 440,9 × 370,1 mm (Al × An × Fo) · 4,89 kg — guía, tabla 15"
+    "tamano": "43,7 × 440,9 × 370,1 mm (Al × An × Fo) · 4,89 kg — guía, tabla 15",
+    "frontLeyenda": {
+      "tabla": "tabla 5 de la guía",
+      "filas": [
+        [1, "Reset Config button", "Botón de restablecer la configuración"],
+        [2, "Console ports", "Puertos de consola"],
+        [3, "Management port", "Puerto de gestión"],
+        [4, "Mini-PIM slots", "Ranuras Mini-PIM"],
+        [5, "ESD point", "Punto de conexión antiestática (ESD)"],
+        [6, "1-GbE small form-factor pluggable (SFP) ports", "Puertos SFP de 1 GbE"],
+        [7, "1-GbE Ethernet ports", "Puertos Ethernet de 1 GbE"],
+        [8, "Console ports", "Puertos de consola"],
+        [9, "USB port", "Puerto USB"],
+        [10, "LEDs", "LED"],
+        [11, "Power button", "Botón de encendido"]
+      ]
+    },
+    "rearLeyenda": {
+      "tabla": "tabla 9 de la guía",
+      "filas": [
+        [1, "SSD slot", "Ranura SSD"],
+        [2, "Fans", "Ventiladores"],
+        [3, "Power supply input", "Entrada de alimentación"]
+      ]
+    }
   },
   "SRX345": {
     "front": "/img/equipos/jn-srx345-front.webp",
@@ -34,7 +106,31 @@
     "url": "https://www.juniper.net/documentation/us/en/hardware/srx345/srx345.pdf",
     "foto": "/img/equipos/jn-srx345-foto.webp",
     "fotoFuente": "Foto de producto de la ficha «SRX300 Line of Firewalls for the Branch» (juniper.net, imagen «SRX300, SRX320, SRX340, SRX345, SRX380 Image»), recortada de la composición donde la propia imagen rotula «SRX345».",
-    "tamano": "43,7 × 440,9 × 370,1 mm (Al × An × Fo) · 4,90 kg con una fuente AC; con dos, 475 mm de fondo y 6,50 kg — guía, tabla 17"
+    "tamano": "43,7 × 440,9 × 370,1 mm (Al × An × Fo) · 4,90 kg con una fuente AC; con dos, 475 mm de fondo y 6,50 kg — guía, tabla 17",
+    "frontLeyenda": {
+      "tabla": "tabla 5 de la guía",
+      "filas": [
+        [1, "Reset Config button", "Botón de restablecer la configuración"],
+        [2, "Console ports", "Puertos de consola"],
+        [3, "Management port", "Puerto de gestión"],
+        [4, "Mini-PIM slots", "Ranuras Mini-PIM"],
+        [5, "ESD point", "Punto de conexión antiestática (ESD)"],
+        [6, "1-GbE small form-factor pluggable (SFP) ports", "Puertos SFP de 1 GbE"],
+        [7, "1-GbE Ethernet ports", "Puertos Ethernet de 1 GbE"],
+        [8, "Console ports", "Puertos de consola"],
+        [9, "USB port", "Puerto USB"],
+        [10, "LEDs", "LED"],
+        [11, "Power button", "Botón de encendido"]
+      ]
+    },
+    "rearLeyenda": {
+      "tabla": "tabla 9 de la guía",
+      "filas": [
+        [1, "SSD slot", "Ranura SSD"],
+        [2, "Fans", "Ventiladores"],
+        [3, "Power supply input", "Entrada de alimentación"]
+      ]
+    }
   },
   "SRX380": {
     "front": "/img/equipos/jn-srx380-front.webp",
@@ -43,7 +139,32 @@
     "url": "https://www.juniper.net/documentation/us/en/hardware/srx380/srx380.pdf",
     "foto": "/img/equipos/jn-srx380-foto.webp",
     "fotoFuente": "Foto de producto de la ficha «SRX300 Line of Firewalls for the Branch» (juniper.net, imagen «SRX300, SRX320, SRX340, SRX345, SRX380 Image»), recortada de la composición donde la propia imagen rotula «SRX380».",
-    "tamano": "43,7 × 440,9 × 475 mm (Al × An × Fo; 520 mm con asas) · 6,80 kg con una fuente — guía, tabla 16"
+    "tamano": "43,7 × 440,9 × 475 mm (Al × An × Fo; 520 mm con asas) · 6,80 kg con una fuente — guía, tabla 16",
+    "frontLeyenda": {
+      "tabla": "tabla 5 de la guía",
+      "filas": [
+        [1, "LEDs", "LED"],
+        [2, "Reset Config button", "Botón de restablecer la configuración"],
+        [3, "Mini-USB console port", "Puerto de consola Mini-USB"],
+        [4, "Mini-PIM slots", "Ranuras Mini-PIM"],
+        [5, "ESD outlet", "Toma antiestática (ESD)"],
+        [6, "1-Gigabit Ethernet or SFP or SFP+ ports", "Puertos 1-Gigabit Ethernet, SFP o SFP+"],
+        [7, "1-Gigabit Ethernet ports", "Puertos 1-Gigabit Ethernet"],
+        [8, "Management port", "Puerto de gestión"],
+        [9, "USB port", "Puerto USB"],
+        [10, "RJ-45 console port", "Puerto de consola RJ-45"],
+        [11, "Power button", "Botón de encendido"]
+      ]
+    },
+    "rearLeyenda": {
+      "tabla": "tabla 8 de la guía",
+      "filas": [
+        [1, "Grounding point", "Punto de tierra"],
+        [2, "Fans", "Ventiladores"],
+        [3, "Power supply input", "Entrada de alimentación"],
+        [4, "SSD slot", "Ranura SSD"]
+      ]
+    }
   },
   "SRX1500": {
     "front": "/img/equipos/jn-srx1500-front.webp",
@@ -52,7 +173,33 @@
     "url": "https://www.juniper.net/documentation/us/en/hardware/srx1500/srx1500.pdf",
     "foto": "/img/equipos/jn-srx1500-foto.webp",
     "fotoFuente": "Foto de producto de la ficha SRX1500 Firewall, p. 3, rotulada «SRX1500».",
-    "tamano": "44,5 × 438,9 × 462,3 mm (Al × An × Fo, de 1,75 × 17,28 × 18,2 in) · 6,80 kg (15 lb) — guía, tabla 20"
+    "tamano": "44,5 × 438,9 × 462,3 mm (Al × An × Fo, de 1,75 × 17,28 × 18,2 in) · 6,80 kg (15 lb) — guía, tabla 20",
+    "frontLeyenda": {
+      "tabla": "tabla 5 de la guía",
+      "filas": [
+        [1, "10/100/1000 Base-T ports", "Puertos 10/100/1000 Base-T"],
+        [2, "100/1000 SFP ports", "Puertos SFP 100/1000"],
+        [3, "1G/10G SFP+ ports", "Puertos SFP+ de 1G/10G"],
+        [4, "WAN PIM slots", "Ranuras WAN PIM"],
+        [5, "Power button", "Botón de encendido"],
+        [6, "Reset config button", "Botón de restablecer la configuración"],
+        [7, "LEDs", "LED"],
+        [8, "Management port", "Puerto de gestión"],
+        [9, "Console port", "Puerto de consola"],
+        [10, "USB port", "Puerto USB"],
+        [11, "HA control port", "Puerto de control de alta disponibilidad (HA)"],
+        [12, "ESD point", "Punto de conexión antiestática (ESD)"]
+      ]
+    },
+    "rearLeyenda": {
+      "tabla": "tabla 10 de la guía",
+      "filas": [
+        [1, "Grounding point", "Punto de tierra"],
+        [2, "SSD slot", "Ranura SSD"],
+        [3, "Power supply", "Fuente de alimentación"],
+        [4, "Fans", "Ventiladores"]
+      ]
+    }
   },
   "SRX1600": {
     "front": "/img/equipos/jn-srx1600-front.webp",
@@ -61,7 +208,34 @@
     "url": "https://www.juniper.net/documentation/us/en/hardware/srx1600/srx1600.pdf",
     "foto": "/img/equipos/jn-srx1600-foto.webp",
     "fotoFuente": "Foto de producto de la página «SRX Series Firewalls» (juniper.net, imagen srx-series-product-family.png), recortada; identificada con la foto de su ficha de un solo modelo (correlación 0,98).",
-    "tamano": "44,2 × 438,9 × 462,3 mm (Al × An × Fo) · 7,2 kg con una fuente, 8,1 kg con dos — guía, tabla 4"
+    "tamano": "44,2 × 438,9 × 462,3 mm (Al × An × Fo) · 7,2 kg con una fuente, 8,1 kg con dos — guía, tabla 4",
+    "frontLeyenda": {
+      "tabla": "tabla 5 de la guía",
+      "filas": [
+        [1, "Ethernet ports", "Puertos Ethernet"],
+        [2, "SFP28 ports", "Puertos SFP28"],
+        [3, "SFP+ ports", "Puertos SFP+"],
+        [4, "Chassis cluster ports (HA)", "Puertos del clúster de chasis (HA)"],
+        [5, "Management port (MGMT)", "Puerto de gestión (MGMT)"],
+        [6, "USB port", "Puerto USB"],
+        [7, "Chassis LEDs", "LED del chasis"],
+        [8, "Power button", "Botón de encendido"],
+        [9, "Pull tab", "Lengüeta extraíble (código CLEI y número de serie)"],
+        [10, "RESET", "Botón de reinicio (RESET)"],
+        [11, "Console port (CON)", "Puerto de consola (CON)"],
+        [12, "Claim code", "Código de alta (QR)"]
+      ]
+    },
+    "rearLeyenda": {
+      "tabla": "tabla 6 de la guía",
+      "filas": [
+        [1, "Grounding point", "Punto de tierra"],
+        [2, "Fan modules", "Módulos de ventilador"],
+        [3, "ESD", "Toma antiestática (ESD)"],
+        [4, "PSU", "Fuente de alimentación (PSU)"],
+        [5, "Empty PSU slot", "Bahía de fuente vacía"]
+      ]
+    }
   },
   "SRX2300": {
     "front": "/img/equipos/jn-srx2300-front.webp",
@@ -70,7 +244,35 @@
     "url": "https://www.juniper.net/documentation/us/en/hardware/srx2300/srx2300.pdf",
     "foto": "/img/equipos/jn-srx2300-foto.webp",
     "fotoFuente": "Foto de producto de la página «SRX Series Firewalls» (juniper.net, imagen srx-series-product-family.png), recortada; identificada con la foto de su ficha de un solo modelo (correlación 0,98).",
-    "tamano": "44,2 × 438,9 × 462,3 mm (Al × An × Fo) · 7,6 kg con una fuente, 8,5 kg con dos — guía, tabla 4"
+    "tamano": "44,2 × 438,9 × 462,3 mm (Al × An × Fo) · 7,6 kg con una fuente, 8,5 kg con dos — guía, tabla 4",
+    "frontLeyenda": {
+      "tabla": "tabla 5 de la guía",
+      "filas": [
+        [1, "Ethernet ports", "Puertos Ethernet"],
+        [2, "SFP+ ports", "Puertos SFP+"],
+        [3, "SFP28 ports", "Puertos SFP28"],
+        [4, "QSFP28", "Puertos QSFP28"],
+        [5, "Chassis cluster ports (HA)", "Puertos del clúster de chasis (HA)"],
+        [6, "Management port (MGMT)", "Puerto de gestión (MGMT)"],
+        [7, "USB port", "Puerto USB"],
+        [8, "Chassis LEDs", "LED del chasis"],
+        [9, "Power button", "Botón de encendido"],
+        [10, "Pull tab", "Lengüeta extraíble (código CLEI y número de serie)"],
+        [11, "RESET", "Botón de reinicio (RESET)"],
+        [12, "Console port (CON)", "Puerto de consola (CON)"],
+        [13, "Claim code", "Código de alta (QR)"]
+      ]
+    },
+    "rearLeyenda": {
+      "tabla": "tabla 6 de la guía",
+      "filas": [
+        [1, "Grounding point", "Punto de tierra"],
+        [2, "Fan modules", "Módulos de ventilador"],
+        [3, "ESD", "Toma antiestática (ESD)"],
+        [4, "PSU (Power Supply Unit)", "Fuente de alimentación (PSU)"],
+        [5, "Empty PSU slot", "Bahía de fuente vacía"]
+      ]
+    }
   },
   "SRX4100": {
     "front": "/img/equipos/jn-srx4100-front.webp",
@@ -79,7 +281,30 @@
     "url": "https://www.juniper.net/documentation/us/en/hardware/srx4100/srx4100.pdf",
     "tamano": "44,5 × 444,0 × 635,0 mm (Al × An × Fo) · 13,15 kg con dos fuentes AC — guía, tabla 19",
     "foto": "/img/equipos/jn-srx4100-foto.webp",
-    "fotoFuente": "Foto de producto de la ficha SRX4100 および SRX4200 ファイアウォール (1000600-021-JP), p. 3, recortada de la imagen donde la ficha rotula «SRX4100»."
+    "fotoFuente": "Foto de producto de la ficha SRX4100 および SRX4200 ファイアウォール (1000600-021-JP), p. 3, recortada de la imagen donde la ficha rotula «SRX4100».",
+    "frontLeyenda": {
+      "tabla": "tabla 5 de la guía",
+      "filas": [
+        [1, "Management port", "Puerto de gestión"],
+        [2, "USB ports", "Puertos USB"],
+        [3, "HA ports", "Puertos de alta disponibilidad (HA)"],
+        [4, "SFP+ ports", "Puertos SFP+"],
+        [5, "LEDs", "LED"],
+        [6, "Console port", "Puerto de consola"],
+        [7, "Reset button", "Botón de reinicio"]
+      ]
+    },
+    "rearLeyenda": {
+      "tabla": "tabla 10 de la guía",
+      "filas": [
+        [1, "Grounding point", "Punto de tierra"],
+        [2, "Power switch", "Interruptor de encendido"],
+        [3, "Alarm Off button", "Botón para apagar la alarma"],
+        [4, "ESD point", "Punto de conexión antiestática (ESD)"],
+        [5, "Fan trays", "Bandejas de ventiladores"],
+        [6, "Power supply", "Fuente de alimentación"]
+      ]
+    }
   },
   "SRX4200": {
     "front": "/img/equipos/jn-srx4200-front.webp",
@@ -88,7 +313,30 @@
     "url": "https://www.juniper.net/documentation/us/en/hardware/srx4200/srx4200.pdf",
     "tamano": "44,5 × 444,0 × 635,0 mm (Al × An × Fo) · 13,15 kg con dos fuentes AC — guía, tabla 19",
     "foto": "/img/equipos/jn-srx4200-foto.webp",
-    "fotoFuente": "Foto de producto de la ficha SRX4100 および SRX4200 ファイアウォール (1000600-021-JP), p. 3, recortada de la imagen donde la ficha rotula «SRX4200»."
+    "fotoFuente": "Foto de producto de la ficha SRX4100 および SRX4200 ファイアウォール (1000600-021-JP), p. 3, recortada de la imagen donde la ficha rotula «SRX4200».",
+    "frontLeyenda": {
+      "tabla": "tabla 5 de la guía",
+      "filas": [
+        [1, "Management port", "Puerto de gestión"],
+        [2, "USB ports", "Puertos USB"],
+        [3, "HA ports", "Puertos de alta disponibilidad (HA)"],
+        [4, "SFP+ ports", "Puertos SFP+"],
+        [5, "LEDs", "LED"],
+        [6, "Console port", "Puerto de consola"],
+        [7, "Reset button", "Botón de reinicio"]
+      ]
+    },
+    "rearLeyenda": {
+      "tabla": "tabla 10 de la guía",
+      "filas": [
+        [1, "Grounding point", "Punto de tierra"],
+        [2, "Power switch", "Interruptor de encendido"],
+        [3, "Alarm Off button", "Botón para apagar la alarma"],
+        [4, "ESD point", "Punto de conexión antiestática (ESD)"],
+        [5, "Fan trays", "Bandejas de ventiladores"],
+        [6, "Power supply", "Fuente de alimentación"]
+      ]
+    }
   },
   "SRX4300": {
     "front": "/img/equipos/jn-srx4300-front.webp",
@@ -97,7 +345,35 @@
     "url": "https://www.juniper.net/documentation/us/en/hardware/srx4300/srx4300.pdf",
     "foto": "/img/equipos/jn-srx4300-foto.webp",
     "fotoFuente": "Foto de producto de la página «SRX Series Firewalls» (juniper.net, imagen srx-series-product-family.png), recortada; identificada con la foto de su ficha de un solo modelo (correlación 0,99).",
-    "tamano": "44,2 × 438,9 × 462,3 mm (Al × An × Fo) · 8,3 kg con una fuente, 9,3 kg con dos — guía, tabla 5"
+    "tamano": "44,2 × 438,9 × 462,3 mm (Al × An × Fo) · 8,3 kg con una fuente, 9,3 kg con dos — guía, tabla 5",
+    "frontLeyenda": {
+      "tabla": "tabla 7 de la guía",
+      "filas": [
+        [1, "Ethernet ports", "Puertos Ethernet"],
+        [2, "SFP+ ports", "Puertos SFP+"],
+        [3, "SFP28 ports", "Puertos SFP28"],
+        [4, "Chassis cluster ports (HA)", "Puertos del clúster de chasis (HA)"],
+        [5, "Management port (MGMT)", "Puerto de gestión (MGMT)"],
+        [6, "USB port", "Puerto USB"],
+        [7, "Chassis LEDs", "LED del chasis"],
+        [8, "Power button", "Botón de encendido"],
+        [9, "Pull tab", "Lengüeta extraíble (código CLEI y número de serie)"],
+        [10, "RESET", "Botón de reinicio (RESET)"],
+        [11, "Console port (CON)", "Puerto de consola (CON)"],
+        [12, "QSFP28 ports", "Puertos QSFP28"],
+        [13, "Claim code", "Código de alta (QR)"]
+      ]
+    },
+    "rearLeyenda": {
+      "tabla": "tabla 8 de la guía",
+      "filas": [
+        [1, "Grounding point", "Punto de tierra"],
+        [2, "Fan modules", "Módulos de ventilador"],
+        [3, "PSU (Power Supply Unit)", "Fuente de alimentación (PSU)"],
+        [4, "Empty PSU slot", "Bahía de fuente vacía"],
+        [5, "ESD", "Toma antiestática (ESD)"]
+      ]
+    }
   },
   "SRX4700": {
     "front": "/img/equipos/jn-srx4700-front.webp",
@@ -106,7 +382,31 @@
     "url": "https://www.juniper.net/documentation/us/en/hardware/srx4700/srx4700.pdf",
     "foto": "/img/equipos/jn-srx4700-foto.webp",
     "fotoFuente": "Foto de producto de la página «SRX Series Firewalls» (juniper.net, imagen srx-series-product-family.png), recortada; la cuarta de la composición, sin rótulo: el SRX4700 por descarte y por casar con la distribución de puertos de su guía de hardware (dos mitades simétricas).",
-    "tamano": "43,7 × 439 × 683,1 mm (Al × An × Fo) · 14,9 kg el chasis, 18,2 kg con las fuentes AC — guía, tabla 6"
+    "tamano": "43,7 × 439 × 683,1 mm (Al × An × Fo) · 14,9 kg el chasis, 18,2 kg con las fuentes AC — guía, tabla 6",
+    "frontLeyenda": {
+      "tabla": "leyenda de la figura 1 de la guía",
+      "filas": [
+        [1, "QSFP56-DD ports", "Puertos QSFP56-DD"],
+        [2, "QSFP28 ports", "Puertos QSFP28"],
+        [3, "SFP56 ports", "Puertos SFP56"],
+        [4, "HA ports", "Puertos de alta disponibilidad (HA)"],
+        [5, "Management port (MGMT)", "Puerto de gestión (MGMT)"],
+        [6, "USB port", "Puerto USB"],
+        [7, "Chassis LEDs", "LED del chasis"],
+        [8, "Pull-out information tab", "Lengüeta de información extraíble (número de serie)"],
+        [9, "SSD0, SSD1", "SSD0 y SSD1"],
+        [10, "RESET", "Botón de reinicio (RESET)"],
+        [11, "Power button", "Botón de encendido"],
+        [12, "Console port (CON)", "Puerto de consola (CON)"]
+      ]
+    },
+    "rearLeyenda": {
+      "tabla": "leyenda de la figura 2 de la guía",
+      "filas": [
+        [1, "Fan modules", "Módulos de ventilador"],
+        [2, "Power supply unit (PSU)", "Fuentes de alimentación (PSU)"]
+      ]
+    }
   },
   "SSR120": {
     "front": "/img/equipos/jn-ssr120-front.webp",
@@ -115,7 +415,28 @@
     "url": "https://www.juniper.net/documentation/us/en/hardware/ssr120/ssr120.pdf",
     "foto": "/img/equipos/jn-ssr120-foto.webp",
     "fotoFuente": "Foto de producto de la ficha SSR100 Line of Routers (1000728-005-JP), p. 2, sección «SSR120：小規模な支社/拠点向けルーター». Es la variante con LTE (antenas SMA en los extremos): el SSR120 base no las lleva.",
-    "tamano": "44 × 222 × 241 mm (Al × An × Fo) · 1,69 kg — guía, tabla 10"
+    "tamano": "44 × 222 × 241 mm (Al × An × Fo) · 1,69 kg — guía, tabla 10",
+    "frontLeyenda": {
+      "tabla": "leyenda de la figura 1 de la guía",
+      "filas": [
+        [1, "Chassis LEDs", "LED del chasis"],
+        [2, "Power button", "Botón de encendido"],
+        [3, "Console Port", "Puerto de consola"],
+        [4, "1 GbE Ethernet Ports", "Puertos Ethernet de 1 GbE"],
+        [5, "1 GbE RJ-45/SFP Combo Ports", "Puertos combo RJ-45/SFP de 1 GbE"],
+        [6, "USB 3.0 port", "Puerto USB 3.0"],
+        [7, "Reset button (non-functional)", "Botón de reinicio (sin función)"]
+      ]
+    },
+    "rearLeyenda": {
+      "tabla": "leyenda de la figura 3 de la guía",
+      "filas": [
+        [1, "Ground terminal", "Terminal de tierra"],
+        [2, "Fan", "Ventilador"],
+        [3, "Redundant power input (do not use)", "Entrada de alimentación redundante (no usar)"],
+        [4, "Main power input", "Entrada de alimentación principal"]
+      ]
+    }
   },
   "SSR1200": {
     "front": "/img/equipos/jn-ssr1200-front.webp",
@@ -124,7 +445,32 @@
     "url": "https://www.juniper.net/documentation/us/en/hardware/ssr1200/ssr1200.pdf",
     "foto": "/img/equipos/jn-ssr1200-foto.webp",
     "fotoFuente": "Foto de producto de la ficha SSR1000 Line of Routers (1000757-002-EN), p. 2, sección «SSR1200: Small Campus, Hub, and Data Center».",
-    "tamano": "44 × 438 × 431 mm (Al × An × Fo) · 16,5 kg — guía, tabla 1"
+    "tamano": "44 × 438 × 431 mm (Al × An × Fo) · 16,5 kg — guía, tabla 1",
+    "frontLeyenda": {
+      "tabla": "leyenda de la figura 1 de la guía",
+      "filas": [
+        [1, "Chassis LEDs", "LED del chasis"],
+        [2, "LCD screen", "Pantalla LCD"],
+        [3, "RESET button", "Botón de reinicio (RESET)"],
+        [4, "USB 3.0 ports", "Puertos USB 3.0"],
+        [5, "1 GbE management port (for Mist operations)", "Puerto de gestión de 1 GbE (para la operación con Mist)"],
+        [6, "1/10 GbE SFP+ ports (1/0 through 1/3)", "Puertos SFP+ de 1/10 GbE (1/0 a 1/3)"],
+        [7, "1 GbE Ethernet ports (0/0 through 0/6)", "Puertos Ethernet de 1 GbE (0/0 a 0/6)"],
+        [8, "Console port", "Puerto de consola"],
+        [9, "Claim code", "Código de alta (QR)"],
+        [10, "Navigation buttons for LCD screen (reserved for future use)", "Botones de navegación de la pantalla LCD (reservados para uso futuro)"]
+      ]
+    },
+    "rearLeyenda": {
+      "tabla": "leyenda de la figura 2 de la guía",
+      "filas": [
+        [1, "Earth grounding", "Toma de tierra"],
+        [2, "AC power supply units", "Fuentes de alimentación de CA"],
+        [3, "Power switch", "Interruptor de encendido"],
+        [4, "Fans", "Ventiladores"],
+        [5, "ESD point", "Punto de conexión antiestática (ESD)"]
+      ]
+    }
   },
   "SSR1300": {
     "front": "/img/equipos/jn-ssr1300-front.webp",
@@ -133,7 +479,33 @@
     "url": "https://www.juniper.net/documentation/us/en/hardware/ssr1300/ssr1300.pdf",
     "foto": "/img/equipos/jn-ssr1300-foto.webp",
     "fotoFuente": "Foto de producto de la ficha SSR1000 Line of Routers (1000757-002-EN), p. 2, sección «SSR1300: Medium Campus, Hub, and Data Center».",
-    "tamano": "44 × 438 × 650 mm (Al × An × Fo) · 19,2 kg — guía, tabla 1"
+    "tamano": "44 × 438 × 650 mm (Al × An × Fo) · 19,2 kg — guía, tabla 1",
+    "frontLeyenda": {
+      "tabla": "leyenda de la figura 1 de la guía",
+      "filas": [
+        [1, "Chassis LEDs", "LED del chasis"],
+        [2, "RJ-45 Console port", "Puerto de consola RJ-45"],
+        [3, "10 GbE SFP+ ports (0/0 through 0/3)", "Puertos SFP+ de 10 GbE (0/0 a 0/3)"],
+        [4, "1 GbE management port (for Mist operations)", "Puerto de gestión de 1 GbE (para la operación con Mist)"],
+        [5, "1/10 GbE SFP+ ports (2/0 through 2/3)", "Puertos SFP+ de 1/10 GbE (2/0 a 2/3)"],
+        [6, "1 GbE Ethernet ports (1/0 through 1/3)", "Puertos Ethernet de 1 GbE (1/0 a 1/3)"],
+        [7, "Micro-USB Console port", "Puerto de consola Micro-USB"],
+        [8, "USB 3.0 ports", "Puertos USB 3.0"],
+        [9, "RESET button", "Botón de reinicio (RESET)"],
+        [10, "Claim code", "Código de alta (QR)"]
+      ]
+    },
+    "rearLeyenda": {
+      "tabla": "leyenda de la figura 2 de la guía",
+      "filas": [
+        [1, "Alarm switch", "Interruptor de alarma"],
+        [2, "AC or DC power supply units", "Fuentes de alimentación de CA o CC"],
+        [3, "Fans", "Ventiladores"],
+        [4, "Power switch", "Interruptor de encendido"],
+        [5, "Earth grounding", "Toma de tierra"],
+        [6, "ESD point", "Punto de conexión antiestática (ESD)"]
+      ]
+    }
   },
   "SSR1400": {
     "front": "/img/equipos/jn-ssr1400-front.webp",
@@ -142,7 +514,33 @@
     "url": "https://www.juniper.net/documentation/us/en/hardware/ssr1400/ssr1400.pdf",
     "foto": "/img/equipos/jn-ssr1400-foto.webp",
     "fotoFuente": "Foto de producto de la ficha SSR1000 Line of Routers (1000757-002-EN), p. 3, sección «SSR1400: Large Campus, Hub, and Data Center».",
-    "tamano": "44 × 438 × 650 mm (Al × An × Fo) · 19,2 kg — guía, tabla 1"
+    "tamano": "44 × 438 × 650 mm (Al × An × Fo) · 19,2 kg — guía, tabla 1",
+    "frontLeyenda": {
+      "tabla": "leyenda de la figura 1 de la guía",
+      "filas": [
+        [1, "Chassis LEDs", "LED del chasis"],
+        [2, "RJ-45 Console port", "Puerto de consola RJ-45"],
+        [3, "10 GbE SFP+ ports (0/0 through 0/3)", "Puertos SFP+ de 10 GbE (0/0 a 0/3)"],
+        [4, "1 GbE management port (for Mist operations)", "Puerto de gestión de 1 GbE (para la operación con Mist)"],
+        [5, "1/10/25 GbE SFP28 ports (2/0 through 2/3)", "Puertos SFP28 de 1/10/25 GbE (2/0 a 2/3)"],
+        [6, "1 GbE Ethernet ports (1/0 through 1/3)", "Puertos Ethernet de 1 GbE (1/0 a 1/3)"],
+        [7, "Micro-USB Console port", "Puerto de consola Micro-USB"],
+        [8, "USB 3.0 ports", "Puertos USB 3.0"],
+        [9, "RESET button", "Botón de reinicio (RESET)"],
+        [10, "Claim code", "Código de alta (QR)"]
+      ]
+    },
+    "rearLeyenda": {
+      "tabla": "leyenda de la figura 2 de la guía",
+      "filas": [
+        [1, "Alarm switch", "Interruptor de alarma"],
+        [2, "AC or DC power supply units", "Fuentes de alimentación de CA o CC"],
+        [3, "Fans", "Ventiladores"],
+        [4, "Power switch", "Interruptor de encendido"],
+        [5, "Earth grounding", "Toma de tierra"],
+        [6, "ESD point", "Punto de conexión antiestática (ESD)"]
+      ]
+    }
   },
   "SSR130": {
     "front": "/img/equipos/jn-ssr130-front.webp",
@@ -151,7 +549,30 @@
     "url": "https://www.juniper.net/content/dam/www/assets/datasheets/jp/ja/routers/ssr100-line-of-routers-datasheet.pdf",
     "foto": "/img/equipos/jn-ssr130-foto.webp",
     "fotoFuente": "Foto de producto de la ficha SSR100 Line of Routers (1000728-005-JP), p. 3, sección «SSR130：中規模支社/拠点向けルーター».",
-    "tamano": "44 × 222 × 241 mm (Al × An × Fo) · 1,67 kg — ficha SSR100: una sola celda para SSR120 y SSR130, sin guía propia que la separe"
+    "tamano": "44 × 222 × 241 mm (Al × An × Fo) · 1,67 kg — ficha SSR100: una sola celda para SSR120 y SSR130, sin guía propia que la separe",
+    "frontLeyenda": {
+      "tabla": "leyenda de la figura 4 de la ficha",
+      "filas": [
+        [1, "シャーシ LED", "LED del chasis"],
+        [2, "電源ボタン", "Botón de encendido"],
+        [3, "コンソールポート", "Puerto de consola"],
+        [4, "1GbE イーサネットポート（0～5）", "Puertos Ethernet de 1 GbE (0 a 5)"],
+        [5, "1GbE RJ-45/SFP ポート（6＆7）", "Puertos RJ-45/SFP de 1 GbE (6 y 7)"],
+        [6, "USB 3.0 ポート", "Puerto USB 3.0"],
+        [7, "リセットボタン", "Botón de reinicio"]
+      ],
+      "lang": "ja"
+    },
+    "rearLeyenda": {
+      "tabla": "leyenda de la figura 6 de la ficha",
+      "filas": [
+        [1, "アース端子", "Terminal de tierra"],
+        [2, "ファン", "Ventilador"],
+        [3, "冗長電源入力（サポート対象外–使用不可）", "Entrada de alimentación redundante (no admitida, no usar)"],
+        [4, "主電源入力", "Entrada de alimentación principal"]
+      ],
+      "lang": "ja"
+    }
   },
   "SSR1500": {
     "front": "/img/equipos/jn-ssr1500-front.webp",
@@ -160,6 +581,28 @@
     "url": "https://www.juniper.net/content/dam/www/assets/datasheets/jp/ja/routers/ssr100-line-of-routers-datasheet.pdf",
     "foto": "/img/equipos/jn-ssr1500-foto.webp",
     "fotoFuente": "Foto de producto de la ficha SSR1000 Line of Routers (1000757-002-EN), p. 3, sección «SSR1500: Extra Large Campus, Hub, and Data Center».",
-    "tamano": "44 × 438 × 610 mm (Al × An × Fo) · 22 kg — ficha SSR1000, «System size» y «System weight»"
+    "tamano": "44 × 438 × 610 mm (Al × An × Fo) · 22 kg — ficha SSR1000, «System size» y «System weight»",
+    "frontLeyenda": {
+      "tabla": "leyenda de la figura 7 de la ficha",
+      "filas": [
+        [1, "Chassis LEDs", "LED del chasis"],
+        [2, "USB 3.0 ports", "Puertos USB 3.0"],
+        [3, "1GbE/10GbE/25GbE SFP28 ports (2/0 through 4/3)", "Puertos SFP28 de 1/10/25 GbE (2/0 a 4/3)"],
+        [4, "1GbE Ethernet ports (1/0 through 1/3)", "Puertos Ethernet de 1 GbE (1/0 a 1/3)"],
+        [5, "RJ-45 console port", "Puerto de consola RJ-45"],
+        [6, "1GbE management port (for Mist AI operations)", "Puerto de gestión de 1 GbE (para la operación con Mist AI)"],
+        [7, "Reset button", "Botón de reinicio"],
+        [8, "Claim code", "Código de alta (QR)"]
+      ]
+    },
+    "rearLeyenda": {
+      "tabla": "leyenda de la figura 8 de la ficha",
+      "filas": [
+        [1, "AC power supply units", "Fuentes de alimentación de CA"],
+        [2, "Power switch", "Interruptor de encendido"],
+        [3, "Fans", "Ventiladores"],
+        [4, "ESD point", "Punto de conexión antiestática (ESD)"]
+      ]
+    }
   }
 }

@@ -1,6 +1,6 @@
 # Relevo
 
-Última actualización: 2026-10-27 · sexagesimosegunda entrega
+Última actualización: 2026-10-27 · sexagesimotercera entrega
 
 Informe para continuar el trabajo. Lo pidió el dueño del repositorio el 2026-10-27: «de aquí en
 adelante, un informe de pendientes y mejoras para que la cuenta **servicioiptv2025@gmail.com**
@@ -31,6 +31,9 @@ está en curso no va aquí: lo dice `npm run traspasos` (protocolo en `docs/tras
 
 ## Estado al cerrar esta entrega
 
+- **Sexagesimotercera entrega**: las figuras de Juniper (36) y del Aruba 7010 (2) dicen qué es
+  cada número en la lupa, con su tabla literal y traducida (PR #29); la interconexión EdgeHA va
+  por el puerto que cubre el agregado del sitio (PR #30, si está fusionado: ver `git log`).
 - **Retoque tras la sexagesimosegunda** (PR #28): el número de la leyenda de Cisco sin
   `aria-label` (prohibido en un `span` sin rol). El PR #23 se cerró, superado por el #24.
 - **Sexagesimosegunda entrega**: las tres mejoras propuestas, hechas (cita mínima del piloto del
@@ -66,9 +69,9 @@ esta entrega, ninguna rama remota llevaba un traspaso abierto.
 
 ### Solo los puede hacer el dueño
 
-0. **Cerrar el PR #23** (superado por el #24, ya fusionado) y, si quieres, borrar las ramas
-   `claude/ia-pliego-cisco` y `claude/leyendas-figuras-cisco`: esta sesión no puede cerrar un PR
-   ajeno ni borrar ramas remotas.
+0. **Borrar las ramas** `claude/leyendas-figuras-cisco`, `claude/leyendas-retoques` y
+   `claude/ia-pliego-cisco` (el PR #23 ya está cerrado): el control de permisos de la sesión no deja
+   borrar ramas remotas. Sus commits están en `main` o en sus PR cerrados; es solo limpieza.
 
 1. **Proteger `main`**: *Settings → Rules → Rulesets* (o *Branches*): exigir las comprobaciones
    `verificar` y `pantallas` y «Require branches to be up to date before merging», **con el
@@ -126,6 +129,13 @@ existen los workflows de transporte. Huawei y HPE niegan además el navegador au
 
 ## Mejoras propuestas sin decidir
 
+- **Las figuras de Juniper, con su leyenda, en el Excel del BOM** (propuesta al cerrar la
+  sexagesimotercera entrega). Aruba, Fortinet, Huawei y Cisco pasan su figura al Excel (`meta.fotos`,
+  hoja «Fotos del equipo»); Juniper no, y es el fabricante con más figuras numeradas (36). Con el
+  dato ya en `juniper-vistas-equipos.json`: pasar `fotos` (con `frontLeyenda`/`rearLeyenda`) desde
+  el dimensionador de Juniper. Evita una propuesta sin la figura ni su tabla; cuesta unas líneas en
+  la página y una comprobación en su e2e; si se hace mal, el Excel de Juniper dejaría de
+  descargarse (le pasó a Cisco con la hoja «Supuestos»), y eso lo vería el e2e. Se decide por el dueño.
 - **Que la auditoría del par EdgeHA elija el puerto de la interconexión también por velocidad**
   (propuesta al cerrar la sexagesimosegunda entrega). Hoy `asignarPuertosPar` toma el primer tipo
   libre en los dos chasis, empezando por el RJ-45, y la interconexión va por él aunque su 1 GbE no

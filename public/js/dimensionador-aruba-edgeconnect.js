@@ -3158,7 +3158,9 @@ function renderBom(){
   const vBom=(FICHA_CFG.vistas||{})[m.id];
   const fotosBom=vBom&&vBom.front
     ?{modelo:m.id, origen:'Extraídas de los documentos oficiales de HPE', front:vBom.front, rear:vBom.rear||null,
-      pie:[vBom.tamano,vBom.fuente].filter(Boolean).join(' · ')}
+      pie:[vBom.tamano,vBom.fuente].filter(Boolean).join(' · '),
+      // La tabla de los números de la figura (hoy solo el 7010), como en pantalla.
+      frontLeyenda:vBom.frontLeyenda||null, rearLeyenda:vBom.rearLeyenda||null}
     :null;
   const meta={
     titulo:`Lista de materiales — ${m.id}`,

@@ -106,7 +106,29 @@
   "front": "/img/equipos/gw-7010-front.webp",
   "rear": "/img/equipos/gw-7010-rear.webp",
   "fuente": "Guía de instalación del 7010, figuras 1 y 2, p. 8 — ilustración oficial con sus rótulos numerados, no fotografía",
-  "tamano": "4,42 × 31,75 × 33,7 cm · 3,4 kg — 1U (QuickSpecs de la serie 7000, p. 11)"
+  "tamano": "4,42 × 31,75 × 33,7 cm · 3,4 kg — 1U (QuickSpecs de la serie 7000, p. 11)",
+  "frontLeyenda": {
+   "tabla": "tabla 4 de la guía de instalación (figura 1)",
+   "filas": [
+    [1, "Access Ports", "Puertos de acceso"],
+    [2, "Uplink Ports", "Puertos de enlace ascendente"],
+    [3, "Power, Status, and Peered LEDs", "LED de alimentación, estado y emparejamiento"],
+    [4, "LCD", "Pantalla LCD"],
+    [5, "Menu Button", "Botón de menú"],
+    [6, "Enter Button", "Botón de confirmar"],
+    [7, "USB Interface", "Interfaz USB"],
+    [8, "Management Port", "Puerto de gestión"],
+    [9, "Mini USB Console Port", "Puerto de consola Mini-USB"],
+    [10, "Console Port", "Puerto de consola"]
+   ]
+  },
+  "rearLeyenda": {
+   "tabla": "tabla 4 de la guía de instalación (figura 2; la tabla numera las dos caras seguidas)",
+   "filas": [
+    [11, "AC in", "Entrada de CA"],
+    [12, "Grounding Points", "Puntos de tierra"]
+   ]
+  }
  },
  "7024": {
   "front": "/img/equipos/gw-7024-front.webp",
