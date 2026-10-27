@@ -1,6 +1,6 @@
 # Relevo
 
-Última actualización: 2026-10-27 · sexagésima entrega
+Última actualización: 2026-10-27 · sexagesimoprimera entrega
 
 Informe para continuar el trabajo. Lo pidió el dueño del repositorio el 2026-10-27: «de aquí en
 adelante, un informe de pendientes y mejoras para que la cuenta **servicioiptv2025@gmail.com**
@@ -33,6 +33,10 @@ está en curso no va aquí: lo dice `npm run traspasos` (protocolo en `docs/tras
 
 - **Producción**: `main` lleva esta entrega (ver `git log`); Railway despliega cuando CI pasa y la
   sonda (`sonda-produccion.yml`) abre un issue con la etiqueta `despliegue` si algo falla.
+- **Sexagesimoprimera entrega**: las figuras del dimensionador Cisco dicen qué es cada número.
+  67 caras de 38 modelos traen la leyenda de su ficha o guía de hardware (número, rótulo literal y
+  traducción); la lupa la pinta bajo la figura y la cambia con la cara, y la tarjeta la ofrece
+  plegada (`frontLeyenda`/`rearLeyenda` en `cisco-vistas-equipos.json`, opt-in de `ficha.js`).
 - **Sexagésima entrega**: el arranque de cada sesión remota lista los temas en curso (`npm run
   traspasos`) antes de instalar nada. **Aviso**: esta sesión y la de la entrega 59 hicieron a la vez
   el mismo piloto de IA porque aquella empujó a `main` sin rama de traspaso; el duplicado se cerró
@@ -109,6 +113,15 @@ existen los workflows de transporte. Huawei y HPE niegan además el navegador au
 
 ## Mejoras propuestas sin decidir
 
+- **Las figuras de Cisco, con su leyenda, en el Excel del BOM** (propuesta al cerrar la
+  sexagesimoprimera entrega). Aruba, Fortinet y Huawei pasan su figura al Excel (`meta.fotos`, hoja
+  «Fotos del equipo»); Cisco no, así que la propuesta que se envía no lleva ni la figura ni la
+  tabla de números que esa entrega puso en pantalla. Con el dato ya en
+  `cisco-vistas-equipos.json`: pasar `fotos` desde el dimensionador Cisco y, bajo cada figura, sus
+  filas (número, qué es, rótulo del documento). Evita una propuesta impresa sin figura; cuesta una
+  línea en la página de Cisco y la leyenda opt-in en la hoja de fotos de `bom.js` (compartida por
+  los siete) con su prueba; si se hace mal, descuadra la hoja de los fabricantes sin leyenda. Se
+  decide por el dueño.
 - **La interconexión EdgeHA en el BOM, por el puerto que le toca** (propuesta al cerrar esta
   entrega). La auditoría de puertos del par ya sabe por qué puerto va la interconexión (el mismo
   tipo en los dos chasis, primero RJ-45); el BOM, en cambio, sigue pidiendo a la persona que elija
