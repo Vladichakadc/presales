@@ -382,8 +382,11 @@ Módulos compartidos:
   «BOM» en el índice 0 y detrás **«Supuestos»** (`matrizSupuestos`: fecha, enlace, plataforma,
   resultado que declare `meta.supuestos`, parámetros de `ESTADO.escenario()` y las fuentes que
   **declaran** al equipo en `modelos`, o las que lo nombran si no declaran, con su «Asociación»); el
-  consolidado multi-sede no la lleva. La hoja «Fotos del equipo» (`meta.fotos`: Aruba, Fortinet, Huawei y
-  Cisco) escribe bajo cada figura su leyenda opt-in (`frontLeyenda`/`rearLeyenda`), como la ficha.
+  consolidado multi-sede no la lleva. La hoja «Fotos del equipo» (`meta.fotos`: Aruba, Fortinet, Huawei,
+  Cisco y Juniper) escribe bajo cada figura su leyenda opt-in (`frontLeyenda`/`rearLeyenda`), como la ficha.
+  Llevan leyenda las figuras con números: las de Cisco, las 36 de Juniper y el Aruba 7010 (decidido
+  figura a figura en `cisco-leyendas.test.js` y `vistas-leyendas.test.js`); en la tarjeta clavada
+  (`panelFijo`) no va el desplegable, solo en la lupa, y el rótulo literal lleva su idioma (`lang`).
 - `estado.js` — el escenario en la URL (manda si trae parámetros) y en el almacenamiento local;
   solo se serializa lo que difiere del valor por defecto; lo que va dentro de `[data-inactivo]` no
   viaja; un enlace con parámetros que la pantalla ya no entiende lo dice (`avisoOrigen`), salvo lo
