@@ -51,13 +51,18 @@ test('las siete páginas: mismo desplegable, pqc.js antes que quien lo usa y el 
   }
 });
 
-test('Cisco: la G2 cumple ML-KEM; un Catalyst 8000 se aparta como «no consta»', () => {
+test('Cisco: la G2 cumple ML-KEM; un Catalyst 8000 trae PPK; un ASR se aparta como «no consta»', () => {
   const M = require('../public/js/cisco-motor.js');
   const { MODELS } = require('../server/seed/legacyData/cisco.js');
   const g2 = MODELS.find((m) => m.id === 'Cisco Secure Router C8231-G2');
   const c8k = MODELS.find((m) => m.ser === 'Catalyst 8000');
+  const asr = MODELS.find((m) => m.ser === 'ASR 1000');
   assert.deepStrictEqual(M.requisitos(g2, { pqc: 'mlkem' }).motivos, []);
-  assert.deepStrictEqual(M.requisitos(c8k, { pqc: 'clave' }).motivos,
+  // Desde el 2026-10-27 (guía de IOS XE 17): la PPK basta para «clave», no para ML-KEM.
+  assert.deepStrictEqual(M.requisitos(c8k, { pqc: 'clave' }).motivos, []);
+  assert.deepStrictEqual(M.requisitos(c8k, { pqc: 'mlkem' }).motivos,
+    ['criptografía post-cuántica: su documento da PPK (RFC 8784), no un algoritmo ML-KEM']);
+  assert.deepStrictEqual(M.requisitos(asr, { pqc: 'clave' }).motivos,
     ['criptografía post-cuántica: no consta en ningún documento oficial que la traiga']);
 });
 
@@ -74,13 +79,19 @@ test('Juniper: con PPK basta, los seis SRX pasan; con ML-KEM se apartan diciendo
   assert.deepStrictEqual(M.candidatosSrx(srx, 'fw', 1, 0, '').outByPqc, []);
 });
 
-test('MikroTik y Huawei: nada documentado, todo se aparta con su motivo y su grupo', () => {
+test('MikroTik: la PPK basta para «clave» y no para ML-KEM; Huawei: nada documentado, todo se aparta', () => {
   const MK = require('../public/js/mikrotik-motor.js');
   const DK = require('../server/seed/legacyData/mikrotik');
-  const ev = MK.evaluar({ bw: 100, head: 0, firewall: 'completo', trama: 512, pqc: 'clave' }, DK.MODELS,
-    { licencias: DK.LICENSE_LEVELS, bgpRam: DK.BGP_RAM, rango: () => 0 });
-  assert.strictEqual(ev.pick, null);
-  assert.ok(ev.rows.every((r) => r.miss.some((x) => /no consta en ningún documento oficial/.test(x))));
+  const opc = { licencias: DK.LICENSE_LEVELS, bgpRam: DK.BGP_RAM, rango: () => 0 };
+  const ev = MK.evaluar({ bw: 100, head: 0, firewall: 'completo', trama: 512, pqc: 'clave' }, DK.MODELS, opc);
+  assert.ok(ev.pick && ev.pick.m.pqc, 'recomienda un equipo con PPK documentada');
+  const sinDoc = /no consta en ningún documento oficial/;
+  for (const r of ev.rows) {
+    assert.strictEqual(r.miss.some((x) => sinDoc.test(x)), !r.m.pqc, `${r.m.id}: el motivo sale donde no hay documento`);
+  }
+  const ml = MK.evaluar({ bw: 100, head: 0, firewall: 'completo', trama: 512, pqc: 'mlkem' }, DK.MODELS, opc);
+  assert.strictEqual(ml.pick, null);
+  assert.ok(ml.rows.some((r) => r.miss.some((x) => /PPK \(RFC 8784\), no un algoritmo ML-KEM/.test(x))));
 
   const HW = require('../public/js/huawei-motor.js');
   const { MODELS } = require('../server/seed/legacyData/huawei.js');

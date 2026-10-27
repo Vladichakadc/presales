@@ -363,8 +363,11 @@ Módulos compartidos:
   `'no-aplica'` y «no consta», nunca `undefined` leído como `false`), puertos (configuraciones
   alternativas, no acumulables; un chasis modular no publica densidad), **criptografía
   post-cuántica** (`seccionPqc`, de `m.pqc` con su fuente: `mlkem` —algoritmo ML-KEM, G2 con IOS XE
-  26.1 y FortiGate con FortiOS 7.6.1—, `ppk` —clave precompartida de RFC 8784, SRX de gama alta— y
-  `macsec` —MACsec/ANYsec simétrico, Nokia 7750—, cada uno dicho como lo que es; sin documento,
+  26.1 y FortiGate con FortiOS 7.6.1—, `ppk` —clave precompartida de RFC 8784: SRX de gama alta,
+  Catalyst 8000 e ISR 1000 con IOS XE 17.11/17.12, EdgeConnect y MikroTik con RouterOS 7.21 (solo
+  donde su ficha dice «RouterOS v7», y CHR)— y `macsec` —MACsec/ANYsec simétrico, Nokia 7750 y
+  SR-1x—, cada uno dicho como lo que es; la PPK de un sistema operativo no se extiende a un modelo
+  sin documento de que corre esa versión (los ASR fuera de venta, «no consta»); sin documento,
   «no consta»; el Comparador del portal lo da en una línea), licenciamiento, software,
   soporte, referencias de pedido (bajo demanda por modelo) y figuras con su página y rótulo literal
   (frontal, trasera y, opt-in `foto` + `fotoFuente`, una tercera pestaña con la foto de producto a

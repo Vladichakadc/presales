@@ -527,7 +527,7 @@ details.cumplimiento-especial summary:focus-visible{outline:2px solid var(--red)
     <div class="field" style="margin-top:10px">
       <label for="reqPqc">Criptografía post-cuántica (exigir)</label>
       <select id="reqPqc" aria-describedby="reqPqcHint"><option value="">No se exige</option><option value="clave">Mecanismo quantum-safe documentado (PPK, MACsec/ANYsec o ML-KEM)</option><option value="mlkem">Algoritmo post-cuántico ML-KEM (FIPS 203)</option></select>
-      <p class="hint" id="reqPqcHint">Ningún documento oficial de HPE Aruba traído la nombra para EdgeConnect ni para los gateways: exigirla aparta todos los equipos como «no consta», nunca como «no la tiene».</p>
+      <p class="hint" id="reqPqcHint">Los EdgeConnect documentan PPK (RFC 8784) en los túneles IPsec con IKE (guía de cifrados de ECOS), que es una clave precompartida y no un algoritmo ML-KEM. Los gateways AOS no tienen documento: se apartan como «no consta», nunca como «no la tiene».</p>
     </div>
   </section>
 

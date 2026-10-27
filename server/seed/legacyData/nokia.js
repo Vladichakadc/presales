@@ -199,11 +199,18 @@ const MODELS_ROUTER = [
 // SR (SR-1) y del 7750 SR-s (SR-1s, SR-2s, SR-7s, SR-14s) dan MACsec IEEE 802.1AE con MKA y clave
 // precompartida «quantum-safe», y ANYsec (MACsec extendido a flujos MPLS e IP): cifrado
 // simétrico, no un algoritmo post-cuántico. La ficha lo dice así. Depende del adaptador o de la
-// tarjeta de línea, y la ficha no da versión de SR OS. Los SR-1x, los 7250 IXR y los 7220 IXR no
-// tienen documento que lo diga: «no consta». La nota de aplicación «IPsec quantum-safe
+// tarjeta de línea, y la ficha no da versión de SR OS. La nota de aplicación «IPsec quantum-safe
 // cryptography» describe PPK (RFC 8784) en IPsec con tarjetas ISA o ESA, sin versión: no entra.
+// 2026-10-27 (tema pqc-documentos): la ficha «Release 26» del 7750 SR-1x (asset 212738) nombra el
+// SR-1x-48D y el SR-1x-92S con MACsec y MKA «combined with quantum-safe pre-shared key
+// cryptography» y ANYsec a velocidad de línea en todos los conectores. Las fichas Release 26 de
+// los 7250 IXR del catálogo no lo dicen: la del IXR-6e/10e da MACsec e IPsec sin llamarlos
+// quantum-safe, la del IXR-X los da como «planned future capabilities» y la del IXR-R no los
+// nombra. Los 7250 IXR y los 7220 IXR siguen en «no consta».
 const PQC_7750 = {
   '7750 SR-1':  'Nokia 7750 Service Router data sheet, Release 26',
+  '7750 SR-1x-48D': 'Nokia 7750 Service Router-1x data sheet, Release 26',
+  '7750 SR-1x-92S': 'Nokia 7750 Service Router-1x data sheet, Release 26',
   '7750 SR-1s': 'Nokia 7750 SR-s Service Router data sheet, Release 26',
   '7750 SR-2s': 'Nokia 7750 SR-s Service Router data sheet, Release 26',
   '7750 SR-7s': 'Nokia 7750 SR-s Service Router data sheet, Release 26',

@@ -1,6 +1,6 @@
 {
  "medidoEn": {
-  "commit": "269db15",
+  "commit": "be7baf7",
   "fecha": "2026-10-27"
  },
  "umbralRozado": 25,
@@ -134,8 +134,8 @@
   {
    "modulo": "dimensionador-aruba-edgeconnect.js",
    "estado": "ejercitado",
-   "total": 392,
-   "usadas": 266,
+   "total": 393,
+   "usadas": 267,
    "pct": 68
   },
   {
@@ -162,9 +162,9 @@
   {
    "modulo": "ficha.js",
    "estado": "ejercitado",
-   "total": 78,
-   "usadas": 59,
-   "pct": 76
+   "total": 86,
+   "usadas": 66,
+   "pct": 77
   },
   {
    "modulo": "dimensionador-nokia-7750sr.js",
@@ -190,8 +190,8 @@
   {
    "modulo": "dimensionador-fortinet-fortigate.js",
    "estado": "ejercitado",
-   "total": 284,
-   "usadas": 226,
+   "total": 283,
+   "usadas": 225,
    "pct": 80
   },
   {
@@ -239,9 +239,9 @@
   {
    "modulo": "aruba-reglas.js",
    "estado": "ejercitado",
-   "total": 37,
+   "total": 38,
    "usadas": 33,
-   "pct": 89
+   "pct": 87
   },
   {
    "modulo": "motor-ingenieria.js",

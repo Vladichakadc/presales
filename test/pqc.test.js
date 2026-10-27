@@ -3,9 +3,11 @@
 //   1. tres cosas distintas no se mezclan: un algoritmo PQC (ML-KEM), una clave precompartida
 //      post-cuántica (PPK, RFC 8784) y MACsec/ANYsec «quantum-safe» (simétrico);
 //   2. sin documento, «no consta», nunca «no» (la regla de la alimentación);
-//   3. solo lleva `pqc` el equipo que su documento nombra: la G2 con IOS XE (no los G2-MX ni
-//      los Catalyst), los FortiGate que lista la Maximum Values Table de 7.6.7 o sus Release Notes, los SRX de la
-//      tabla del Feature Explorer y los 7750 de las fichas Release 26;
+//   3. solo lleva `pqc` el equipo que su documento nombra: la G2 con IOS XE (no los G2-MX),
+//      los FortiGate que lista la Maximum Values Table de 7.6.7 o sus Release Notes, los SRX de la
+//      tabla del Feature Explorer y los 7750 de las fichas Release 26; y desde el 2026-10-27 (tema
+//      pqc-documentos) la PPK de los Catalyst 8000 y el ISR 1000 (guía de IOS XE 17), de los
+//      EdgeConnect (cifrados de ECOS) y de los MikroTik cuya ficha dice «RouterOS v7» y CHR;
 //   4. cada equipo marcado tiene una fuente en fuentes.js que lo declara con el campo `pqc`;
 //   5. las siete páginas pintan la sección.
 const test = require('node:test');
@@ -49,11 +51,17 @@ test('la ficha distingue algoritmo PQC, clave precompartida y MACsec, y sin dato
 
 test('solo lleva `pqc` el equipo que su documento nombra', () => {
   const C = CATALOGOS.cisco;
+  const TIPO_CISCO = { 'Secure Router (G2)': 'mlkem', 'Catalyst 8000': 'ppk', 'ISR 1000': 'ppk' };
   for (const m of C) {
-    assert.strictEqual(!!m.pqc, m.ser === 'Secure Router (G2)', `${m.id}: pqc donde no toca (${m.ser})`);
+    assert.strictEqual(m.pqc ? m.pqc.tipo : undefined, TIPO_CISCO[m.ser], `${m.id}: pqc donde no toca (${m.ser})`);
   }
-  // Los G2-MX llevan MX OS: la nota de IOS XE no los cubre.
+  // Los G2-MX llevan MX OS: ni la nota ni la guía de IOS XE los cubren. Los ASR están fuera de
+  // venta y nada del catálogo dice que lleguen a la 17.11.1a.
   assert.ok(!C.find((m) => m.id === 'Cisco Secure Router C8111-G2-MX').pqc);
+  assert.ok(C.filter((m) => m.ser === 'ASR 1000').every((m) => !m.pqc));
+  assert.strictEqual(C.find((m) => m.id === 'Catalyst 8300-1N1S-6T').pqc.desde, 'IOS XE 17.11.1a');
+  assert.strictEqual(C.find((m) => m.id === 'Catalyst 8500L-8S4X').pqc.desde, 'IOS XE 17.12.1a');
+  assert.strictEqual(C.find((m) => m.id === 'ISR 1111-8P').pqc.desde, 'IOS XE 17.12.1a');
   // Los que llegan en la 26.1.2, con esa versión.
   assert.match(C.find((m) => m.id === 'Cisco Secure Router C8650-G2').pqc.desde, /^IOS XE 26\.1\.2/);
   // Los de la Maximum Values Table de 7.6.7 y, desde el 2026-10-27, los diez que no tienen fila
@@ -67,9 +75,19 @@ test('solo lleva `pqc` el equipo que su documento nombra', () => {
   assert.deepStrictEqual(CATALOGOS.juniper.filter((m) => m.pqc).map((m) => m.id).sort(),
     ['SRX1500', 'SRX1600', 'SRX2300', 'SRX4200', 'SRX4300', 'SRX4700']);
   assert.deepStrictEqual(CATALOGOS.nokia.filter((m) => m.pqc).map((m) => m.id).sort(),
-    ['7750 SR-14s', '7750 SR-1', '7750 SR-1s', '7750 SR-2s', '7750 SR-7s'].sort());
-  for (const v of ['huawei', 'aruba', 'mikrotik']) {
-    assert.ok(CATALOGOS[v].every((m) => !m.pqc), `${v}: no hay documento oficial de PQC en el catálogo`);
+    ['7750 SR-14s', '7750 SR-1', '7750 SR-1s', '7750 SR-2s', '7750 SR-7s', '7750 SR-1x-48D', '7750 SR-1x-92S'].sort());
+  assert.ok(CATALOGOS.huawei.every((m) => !m.pqc), 'huawei: no hay documento oficial de PQC en el catálogo');
+  // Aruba: los EdgeConnect (ECOS), no los gateways AOS; la fuente no da la versión.
+  for (const m of CATALOGOS.aruba) {
+    assert.strictEqual(!!m.pqc, m.fam === 'ec', `${m.id}: pqc donde no toca`);
+    if (m.pqc) assert.strictEqual(m.pqc.desde, null);
+  }
+  // MikroTik: donde la ficha dice «RouterOS v7» y en CHR; las fichas que dicen solo «RouterOS»
+  // se quedan en «no consta».
+  const sinV7 = ['RB750r2', 'RB750UPr2', 'RB750Gr3', 'RB760iGS', 'RB960PGS', 'RB960PGS-PB', 'RB1100x4'];
+  for (const m of CATALOGOS.mikrotik) {
+    assert.strictEqual(!!m.pqc, !sinV7.includes(m.codigo), `${m.id}: pqc donde no toca`);
+    if (m.pqc) assert.strictEqual(m.pqc.desde, 'RouterOS 7.21');
   }
   for (const [v, L] of Object.entries(CATALOGOS)) {
     for (const m of L.filter((x) => x.pqc)) {

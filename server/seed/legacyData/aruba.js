@@ -1491,6 +1491,24 @@ const ACCESSORY_COMPAT = {
   '7240XM': { items: ['JW107A'], nota: 'Parque instalado: kit de rack oficial (SPR-RK-MNT).' },
 };
 
+// CRIPTOGRAFÍA POST-CUÁNTICA (2026-10-27, tema pqc-documentos). «EdgeConnect SD-WAN
+// Cryptographic Algorithms, Cipher Profiles, & Commercial Solutions for Classified (CSfC)»,
+// technical brief Rev C (ago-2025), Orchestrator y ECOS 9.4.4, 9.5.4 y 9.6.0: cubre los
+// «EdgeConnect appliances running ECOS software (Physical or Virtual)», y entre lo que obliga a
+// usar túneles IPsec con IKE en vez de los IPsec UDP propios (el valor por defecto) pone «RFC 8784
+// Post Quantum Pre-Shared Key». No dice en qué versión entra: la ficha lo dice. Es una clave
+// simétrica, no un algoritmo post-cuántico. Los gateways 9000/9100/9200 y la línea 7000/7200
+// llevan AOS, al que el documento no aplica: «no consta». Las notas de ECOS 9.7.1.0 traen PQC
+// solo para la firma de la imagen, no para el tráfico.
+for (const m of MODELS) {
+  if (m.fam !== 'ec') continue;
+  m.pqc = {tipo:'ppk',
+    mecanismo:'Clave precompartida post-cuántica (PPK, RFC 8784) en IKEv2',
+    donde:'Túneles IPsec con IKE (no en los IPsec UDP propios de EdgeConnect, que son el valor por defecto)', desde:null,
+    alcance:'la fuente cubre ECOS 9.4.4, 9.5.4 y 9.6.0 y no dice en qué versión entra',
+    fuente:'HPE Aruba Networking, «EdgeConnect SD-WAN Cryptographic Algorithms, Cipher Profiles, & CSfC», technical brief Rev C (ago-2025)'};
+}
+
 module.exports = {
   MODELS, BUNDLES, CARE, CARE_SKU, LICENSES, LICENSES_HA, BW_TIERS, BOOST, FEC_OVERHEAD,
   SOFTWARE, CENTRAL_TIERS, CENTRAL_POR_SERIE, DATASHEETS, EOL_ANNOUNCED, RETIRADOS_SIN_FECHA, PUERTOS, OS_MATRIX,
