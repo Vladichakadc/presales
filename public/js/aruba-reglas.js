@@ -237,10 +237,30 @@
   // cada chasis reserva sus `lan` y el puerto de la interconexión: «any LAN or WAN port […]
   // You must match the media type and speed for both ends of the HA link […] you cannot use
   // MGMT ports» (Orchestrator, «Deployment - EdgeHA»). Por eso el puerto HA es del mismo tipo en
-  // los dos, y primero el RJ-45 (un latiguillo). Devuelve lo mismo que asignarPuertos, con
-  // `usados` del par, `porChasis` y `ha` (el tipo elegido, o null y `haFalta`).
-  function asignarPuertosPar(puertos, enlaces, lan) {
-    if (!puertos) return { cabe: true, virtual: true, sinAsignar: [], lanFaltan: 0, usados: {}, celular: 0, ha: null, haFalta: false, porChasis: [] };
+  // los dos. Devuelve lo mismo que asignarPuertos, con `usados` del par, `porChasis` y `ha` (el
+  // tipo elegido, o null y `haFalta`).
+  // POR VELOCIDAD (mejora aprobada, 2026-10-27): en un fallo, la interconexión lleva lo que
+  // cruza de un chasis al otro, y la regla de la casa pide que cubra el agregado del sitio. Con
+  // `opts.haMbps` se elige el tipo común libre MÁS BARATO que lo cubre (primero el cobre: un
+  // latiguillo), y si ninguno, el más rápido que se pueda usar; `haCubre` dice si llega.
+  // `opts.haVel(tipo)` da los Mbps que alcanza la interconexión por ese tipo EN ESTE MODELO (la
+  // página lo sabe por las ópticas de su catálogo; 0 = no se puede usar); sin ella, la del puerto.
+  // Sin `haMbps`, el primer tipo común libre, como antes. La interconexión se elige después de
+  // los enlaces y antes de los LAN, que van a cualquier puerto: cambiar su tipo no cambia
+  // cuántos puertos se gastan, así que un chasis que cabía sigue cabiendo.
+  const VEL_TIPO = { rj45: 1000, combo: 1000, sfp: 1000, sfpPlus: 10000, sfp28: 25000 };
+  function elegirHa(comunes, opts) {
+    const o = opts || {};
+    if (!(o.haMbps > 0) || !comunes.length) return { ha: comunes[0] || null, haCubre: null };
+    const vel = (t) => (typeof o.haVel === 'function' ? (Number(o.haVel(t)) || 0) : VEL_TIPO[t]);
+    const usables = comunes.filter((t) => vel(t) > 0);
+    const cubre = usables.find((t) => vel(t) >= o.haMbps);
+    if (cubre) return { ha: cubre, haCubre: true };
+    const mas = usables.slice().sort((a, b) => vel(b) - vel(a))[0];
+    return { ha: mas || comunes[0], haCubre: false };
+  }
+  function asignarPuertosPar(puertos, enlaces, lan, opts) {
+    if (!puertos) return { cabe: true, virtual: true, sinAsignar: [], lanFaltan: 0, usados: {}, celular: 0, ha: null, haFalta: false, haCubre: null, porChasis: [] };
     const chasis = [0, 1].map(() => {
       const libre = {};
       TIPOS_PUERTO.forEach((t) => { libre[t] = puertos[t] || 0; });
@@ -265,7 +285,7 @@
       }
     }
     pendientes.filter((l) => !RUTAS[l.medio]).forEach((l) => sinAsignar.push({ enlace: l.n, medio: l.medio, tipo: l.tipo }));
-    const ha = TIPOS_PUERTO.find((t) => chasis.every((c) => c.libre[t] > 0)) || null;
+    const { ha, haCubre } = elegirHa(TIPOS_PUERTO.filter((t) => chasis.every((c) => c.libre[t] > 0)), opts);
     if (ha) chasis.forEach((c) => tomar(c, ha));
     let lanFaltan = 0;
     for (const c of chasis) {
@@ -277,7 +297,7 @@
     const usados = {};
     chasis.forEach((c) => Object.entries(c.usados).forEach(([t, n]) => { usados[t] = (usados[t] || 0) + n; }));
     return { cabe: !sinAsignar.length && !lanFaltan && !!ha, sinAsignar, lanFaltan, usados,
-      celular: chasis.reduce((s, c) => s + c.celular, 0), ha, haFalta: !ha,
+      celular: chasis.reduce((s, c) => s + c.celular, 0), ha, haFalta: !ha, haCubre,
       porChasis: chasis.map((c) => ({ usados: c.usados, celular: c.celular })) };
   }
   // Enlaces cuyo caudal pasa de lo que lleva su medio (un DIA de 3 Gbps por RJ-45 de 1 GbE). No
