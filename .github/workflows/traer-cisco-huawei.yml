@@ -1196,6 +1196,37 @@ jobs:
               { archivo: 'cisco-nim-dsl-eol.html', tipo: 'html', para: 'CISCO', debeContener: 'NIM-VA', urls: [
                 'https://www.cisco.com/c/en/us/products/collateral/interfaces-modules/network-modules/select-wan-interface-modules-eol.html',
               ] },
+              // Pendientes de enlaces y puertos de Cisco (2026-10-27): la velocidad mínima de los mGig
+              // de Meraki, el sentido del túnel de Secure Access, la ONT XGSPON de la jaula de las
+              // 8100 VAI/VAP y CVAI/CVAP, y los módulos del ASR 1000 (NIM del 1001-X, EPA del 1002-HX).
+              { archivo: 'meraki-wan-behavior.html', tipo: 'html', para: 'CISCO', debeContener: 'MX105', urls: [
+                'https://documentation.meraki.com/SASE_and_SD-WAN/MX/Product_Information/Overviews_and_Datasheets/WAN_Behavior_on_MX75%2F%2F85%2F%2F95%2F%2F105',
+                'https://documentation.meraki.com/MX/MX_Overviews_and_Specifications/WAN_Behavior_on_MX75%2F%2F85%2F%2F95%2F%2F105',
+              ] },
+              { archivo: 'cisco-sa-tunel-tamano.html', tipo: 'html', para: 'CISCO', debeContener: 'Gbps', urls: [
+                'https://securitydocs.cisco.com/docs/csa/olh/119020.dita',
+              ] },
+              { archivo: 'cisco-sa-tunel-ecmp.html', tipo: 'html', para: 'CISCO', exploracion: true, urls: [
+                'https://securitydocs.cisco.com/docs/csa/olh/119011.dita',
+              ] },
+              { archivo: 'cisco-sa-tunel-guia.html', tipo: 'html', para: 'CISCO', exploracion: true, urls: [
+                'https://securitydocs.cisco.com/docs/csa/olh/118929.dita',
+              ] },
+              { archivo: 'cisco-pon-ont-ds.html', tipo: 'html', para: 'CISCO', debeContener: 'SFP-10G-ONT20-I', urls: [
+                'https://www.cisco.com/c/en/us/products/collateral/networking/optics-transceiver-modules/10g-pon-ont-modules-ds.html',
+              ] },
+              { archivo: 'cisco-pon-ont-ds.pdf', tipo: 'pdf', para: 'CISCO', urls: [
+                'https://www.cisco.com/c/en/us/products/collateral/networking/optics-transceiver-modules/10g-pon-ont-modules-ds.pdf',
+              ] },
+              { archivo: 'cisco-asr1001x-hig-hw.html', tipo: 'html', para: 'CISCO', exploracion: true, urls: [
+                'https://www.cisco.com/c/en/us/td/docs/routers/asr1000/install/guide/1001-x/asr1hig-book/asr1hig-book_chapter_011.html',
+              ] },
+              { archivo: 'cisco-asr1002hx-hig-hw.html', tipo: 'html', para: 'CISCO', exploracion: true, urls: [
+                'https://www.cisco.com/c/en/us/td/docs/routers/asr1000/install/guide/1001HX_1002HX/b_ASR1001HX-1002HX_HIG/b_ASR1001HX-1002HX_HIG_chapter_010.html',
+              ] },
+              { archivo: 'cisco-asr-epa-ds.html', tipo: 'html', para: 'CISCO', debeContener: 'EPA', urls: [
+                'https://www.cisco.com/c/en/us/products/collateral/application-networking-services/wide-area-application-services-waas-software/data-sheet-c78-729778.html',
+              ] },
               { archivo: 'cisco-hig3-img', tipo: 'imagenes', para: 'CISCO', urls: [],
                 descubrirPiezas: { de: ['cisco-isr1100-hig-overview.html', 'cisco-sr8200-hig-overview.html'],
                   base: 'https://www.cisco.com/', dominios: ['cisco.com'], relativas: true,
