@@ -148,11 +148,6 @@ tr.sel td{background:rgba(4,159,217,.07);font-weight:600}
 #modalConsolidado{position:fixed;inset:0;background:rgba(14,26,43,.45);z-index:60;display:flex;align-items:center;justify-content:center;padding:20px}
 #modalConsolidado[hidden]{display:none}
 @media(prefers-reduced-motion:reduce){*{transition:none!important}}
-/* Del pliego al escenario (piloto de IA, 2026-10-27) */
-#pliegoTexto{width:100%;min-height:120px;font-family:inherit;font-size:13px;padding:8px;border:1px solid var(--rule);border-radius:2px;resize:vertical}
-.tabla-pliego td{vertical-align:top;padding:6px 8px 6px 0;border-bottom:1px solid var(--rule)}
-.tabla-pliego q{font-style:italic}
-.ia-tag{font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;border:1px solid var(--rule);padding:1px 5px;margin-left:6px;vertical-align:middle;color:var(--steel)}
 </style>
 <script src="/js/fuentes.js" defer></script>
 </head>
@@ -189,19 +184,6 @@ tr.sel td{background:rgba(4,159,217,.07);font-weight:600}
 
 <div class="cols">
 <div>
-  <section class="panel" id="pliegoPanel">
-    <h2>Del pliego al escenario <span class="ia-tag">IA · piloto</span></h2>
-    <p class="hint">Pega el texto técnico del pliego o de la RFP. La IA propone los parámetros de esta página que el texto <b>dice</b>, cada uno con su cita literal (el servidor comprueba que está en el texto); tú marcas los que aceptas y el dimensionador de siempre elige el equipo. La IA no elige equipos ni pone cifras.</p>
-    <p class="hint warn" id="pliegoAviso">El texto se envía a la API de Anthropic para analizarlo y no se guarda en este servidor ni viaja en el enlace del escenario. Si el pliego está bajo confidencialidad, pega solo la parte técnica, sin nombres del cliente.</p>
-    <div class="field">
-      <label for="pliegoTexto">Texto del pliego</label>
-      <textarea id="pliegoTexto" maxlength="200000" autocomplete="off" spellcheck="false" placeholder="Ej.: «La sede central requiere un enlace de 2 Gbps simétricos, doble fuente de alimentación y cifrado resistente a la computación cuántica…»"></textarea>
-    </div>
-    <button type="button" class="btn" id="btnPliego">Proponer parámetros</button>
-    <div id="pliegoEstado" aria-live="polite" style="margin-top:8px"></div>
-    <div id="pliegoResultado"></div>
-  </section>
-
   <section class="panel">
     <h2>1 · Cómo se dimensiona</h2>
     <div class="field">
@@ -611,7 +593,6 @@ tr.sel td{background:rgba(4,159,217,.07);font-weight:600}
 <script src="/js/tabla.js"></script>
 <script src="/js/contraste.js"></script>
 <script src="/js/procedencia.js"></script>
-<script src="/js/pliego.js"></script>
 <script src="/js/dimensionador-cisco-catalyst8k.js"></script>
 <script src="/js/navegacion.js"></script>
 </body>

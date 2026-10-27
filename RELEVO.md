@@ -1,6 +1,6 @@
 # Relevo
 
-Última actualización: 2026-10-27 · sexagesimosexta entrega
+Última actualización: 2026-10-27 · sexagesimoséptima entrega
 
 Informe para continuar el trabajo. Lo pidió el dueño del repositorio el 2026-10-27: «de aquí en
 adelante, un informe de pendientes y mejoras para que la cuenta **servicioiptv2025@gmail.com**
@@ -31,6 +31,10 @@ está en curso no va aquí: lo dice `npm run traspasos` (protocolo en `docs/tras
 
 ## Estado al cerrar esta entrega
 
+- **Sexagesimoséptima entrega**: **retirado el piloto de IA «del pliego al escenario»** del
+  dimensionador Cisco, por decisión del dueño (gastaba tokens y no servía): panel, ruta
+  `/api/escenario/desde-documento`, servicio, módulo del navegador y sus pruebas. La IA que queda es
+  la sincronización del catálogo.
 - **Sexagesimosexta entrega** (PR #31): la criptografía post-cuántica, con documento oficial en
   43 equipos más. PPK (RFC 8784) en los 10 Catalyst 8000 y los 5 ISR 1000 (capítulo de PPK de la
   guía de IOS XE 17: 17.11.1a, y 17.12.1a en el ISR y el 8500), en los 10 EdgeConnect (technical
@@ -98,19 +102,14 @@ esta entrega, ninguna rama remota llevaba un traspaso abierto.
    vieja; mirar si hubo consumo raro) y `SESSION_SECRET` (cierra las sesiones); `AUTH_PASSWORD` solo
    crea el primer administrador, así que la contraseña se cambia en «Mi cuenta». Revisar el *Security
    log* y las apps de GitHub. Detalle en *Decisiones* de `PENDIENTES.md`.
-4. **`ANTHROPIC_API_KEY` en Railway**: sin ella, la sincronización y el piloto de IA responden 503
+4. **`ANTHROPIC_API_KEY` en Railway**: sin ella, la sincronización del catálogo responde 503
    (lo dicen en pantalla). `/api/sync/estado` dice si está puesta.
 5. **Cuenta de Huawei** (Info-Finder pide sesión): sin ella no hay ciclo de vida de Huawei, ni el
    tope de túneles y rutas por modelo AR.
 
 ### Se pueden hacer desde una sesión, sin acceso especial
 
-1. **Probar el piloto de IA con la API de verdad** (cuando la clave esté en producción): un pliego
-   sintético con cifras conocidas, comprobar que las citas casan y que no propone lo que el texto
-   no dice; después medir `effort: 'medium'` frente a `'high'`.
-2. **Llevar el piloto a otra página**, si el de Cisco se usa: declarar sus campos en `PAGINAS` de
-   `server/services/aiEscenario.js` y montar el panel con `PLIEGO.montar`.
-3. **Mejoras propuestas**: ninguna abierta al cerrar la sexagesimocuarta entrega (abajo).
+1. **Mejoras propuestas**: ninguna abierta al cerrar la sexagesimocuarta entrega (abajo).
 
 ### Esperan un documento oficial (se cierran trayéndolo por Actions)
 

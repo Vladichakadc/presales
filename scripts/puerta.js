@@ -49,12 +49,6 @@ async function main() {
       const tipo = r.headers.get('content-type') || '';
       if (!tipo.includes('application/json')) throw new Error(`responde "${tipo}", no JSON`);
     }),
-    // La ruta del piloto de IA (2026-10-27) manda texto a una API de pago: sin sesión, ni la toca.
-    comprobar('/api/escenario/desde-documento sin sesion responde 401', async () => {
-      const r = await fetch(`${BASE}/api/escenario/desde-documento`, { method: 'POST',
-        headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ pagina: 'cisco', texto: 'x' }) });
-      if (r.status !== 401) throw new Error(`status ${r.status} (esperaba 401)`);
-    }),
     comprobar('/cotizador.html sin sesion redirige a /login', async () => {
       const r = await fetch(`${BASE}/cotizador.html`, { redirect: 'manual' });
       if (r.status !== 302) throw new Error(`status ${r.status} (esperaba 302)`);

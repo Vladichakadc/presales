@@ -1,5 +1,11 @@
 # Inteligencia artificial en los dimensionadores: qué se puede hacer sin inventar datos
 
+> **Retirado el 2026-10-27 por decisión del dueño** («elimina del dimensionador de Cisco «Del pliego al
+> escenario», la IA piloto, porque gasta tokens y no nos sirve»). Se llegó a construir la función A
+> como piloto en Cisco y se quitó entera: página, ruta, servicio y pruebas. Este documento queda
+> como la investigación que fue; si algún día se retoma, el código está en el historial de git
+> (`34f508c`).
+
 Investigación del 2026-10-27, por encargo del dueño («empieza a investigar qué funcionalidades
 tienes de inteligencia artificial para incluir en el dimensionador»). Es una investigación, no
 una implementación: termina en una recomendación y en dos decisiones que son del dueño.

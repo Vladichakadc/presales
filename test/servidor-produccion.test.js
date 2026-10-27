@@ -164,21 +164,6 @@ test('el permiso sync se exige en la ruta: consulta recibe 403, administrador pa
   assert.match(cuerpo.error, /ANTHROPIC_API_KEY/);
 });
 
-test('del pliego al escenario: sin sesión 401, el rol de herramientas pasa y sin clave falla cerrado', async () => {
-  const ruta = `${BASE}/api/escenario/desde-documento`;
-  const cuerpo = (o) => ({ method: 'POST', headers: { 'Content-Type': 'application/json', ...(o.cookie ? { cookie: o.cookie } : {}) },
-    body: JSON.stringify(o.body) });
-  assert.strictEqual((await fetch(ruta, cuerpo({ body: { pagina: 'cisco', texto: 'x' } }))).status, 401);
-  // Consulta tiene `herramientas`: proponer parámetros es usar el dimensionador.
-  const bruno = await sesionDe('bruno', 'contrasena-de-bruno-larga');
-  const sinClave = await fetch(ruta, cuerpo({ cookie: bruno, body: { pagina: 'cisco', texto: 'Enlace de 500 Mbps.' } }));
-  assert.strictEqual(sinClave.status, 503);
-  assert.match((await sinClave.json()).error, /ANTHROPIC_API_KEY/);
-  assert.strictEqual((await fetch(ruta, cuerpo({ cookie: bruno, body: { pagina: 'huawei', texto: 'x' } }))).status, 400);
-  assert.strictEqual((await fetch(ruta, cuerpo({ cookie: bruno, body: { pagina: 'cisco', texto: '   ' } }))).status, 400);
-  assert.strictEqual((await fetch(ruta, cuerpo({ cookie: bruno, body: { pagina: 'cisco', texto: 'a'.repeat(200001) } }))).status, 413);
-});
-
 test('aplicar a la base sí sigue bloqueado en producción: la base es efímera', async () => {
   // La escritura a la base no tiene sentido en producción y ese muro se queda. El camino
   // durable es descargar la propuesta y abrir el PR desde el workflow.

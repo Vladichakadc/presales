@@ -302,18 +302,6 @@ contra lo verificado, queda como diff de `legacyData/` y llega a producción con
   necesita el modelo responde 503 (`SinClave`); aquí vivió un simulacro que inventaba propuestas y
   se retiró. El tipo del adjunto lo decide la firma del contenido (`firmaArchivo.js`), no el
   mimetype.
-- **Del pliego al escenario** (`routes/escenario.js` + `services/aiEscenario.js` + `public/js/pliego.js`;
-  piloto en el dimensionador Cisco desde el 2026-10-27, `docs/ia-en-el-dimensionador-2026-10-27.md`).
-  `POST /api/escenario/desde-documento` (permiso `herramientas`) recibe el texto pegado de un
-  pliego y devuelve los parámetros de la página que el texto dice, **cada uno con su cita
-  literal comprobada por programa** en el texto (si no está, se descarta con su motivo). El campo
-  es un enum de los de la página y el tipo, el rango y las opciones salen de su HTML: un control
-  que cambie arrastra la validación. Mismo modelo, esfuerzo, esquema y `fallbacks` que la
-  sincronización, sin herramientas; el pliego va como documento (datos, no instrucciones) y **no
-  se guarda ni se escribe en el log**. La página enseña «actual → propuesto (cita)» y **solo
-  aplica lo que la persona marca**; el motor y el catálogo siguen siendo los únicos que eligen
-  equipo y ponen cifras. Sin `ANTHROPIC_API_KEY`, 503 y la página lo dice. Llevarlo a otra
-  página es declarar sus campos en `PAGINAS` y montar el mismo panel.
 - `server/fuentesSubidas.js` — carga manual de la fuente oficial por fabricante (permiso `sync`) en
   el volumen persistente: **actualiza la procedencia, no reescribe cifras** (subir no es
   contrastar). Una vigente por fabricante; la anterior pasa a un histórico consultable. Solo se
@@ -407,8 +395,6 @@ Módulos compartidos:
   tiene»; con ML-KEM exigido, una PPK o un MACsec no bastan y se dice qué trae. Cada página lo
   ofrece en `#reqPqc` (mismas opciones, `test/pqc-requisito.test.js`) y carga `pqc.js` antes que su
   motor.
-- `pliego.js` — el panel «Del pliego al escenario» (ver *Arquitectura*). El texto no es un campo
-  de `ESTADO.vincular`: no viaja en el enlace ni se guarda en el almacenamiento local.
 
 ## Reglas del catálogo
 
@@ -657,7 +643,7 @@ Módulos compartidos:
 ## Documentos de referencia
 
 `IMPORTAR-CATALOGO.md` (procedimiento de importación) · `docs/sincronizacion.md` ·
-`docs/decisiones-del-dueno-2026-09-24.md` · `docs/herramienta-externa-cisco-2026-10-20.md` · `docs/propuestas-cisco-conectividad-sdwan-seguridad-2026-10-21.md` (las nueve, hechas o cerradas el 2026-10-21, con su documento) · `docs/ia-en-el-dimensionador-2026-10-27.md` (qué IA cabe en los dimensionadores sin inventar datos; decidido el 2026-10-27: piloto «del pliego al escenario» en Cisco) · `RELEVO.md` (el informe de relevo de la última entrega: pendientes, mejoras y cómo retomar) · `docs/portabilidad-aruba.md` (tres capas: escenario,
+`docs/decisiones-del-dueno-2026-09-24.md` · `docs/herramienta-externa-cisco-2026-10-20.md` · `docs/propuestas-cisco-conectividad-sdwan-seguridad-2026-10-21.md` (las nueve, hechas o cerradas el 2026-10-21, con su documento) · `docs/ia-en-el-dimensionador-2026-10-27.md` (qué IA cabe en los dimensionadores sin inventar datos; el piloto «del pliego al escenario» se hizo y se retiró el 2026-10-27 por decisión del dueño) · `RELEVO.md` (el informe de relevo de la última entrega: pendientes, mejoras y cómo retomar) · `docs/portabilidad-aruba.md` (tres capas: escenario,
 comercial, gobierno del dato) · `docs/revision-huawei-2026-09-29.md` · `docs/manual-usuario/`
 (manual a PDF con `npm run manual`; Playwright fuera de `package.json` a propósito) ·
 `docs/claude-md-cronica.md` (la historia de cada regla de este archivo).
