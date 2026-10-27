@@ -1,6 +1,6 @@
 # Relevo
 
-Última actualización: 2026-10-27 · sexagesimoquinta entrega
+Última actualización: 2026-10-27 · sexagesimosexta entrega
 
 Informe para continuar el trabajo. Lo pidió el dueño del repositorio el 2026-10-27: «de aquí en
 adelante, un informe de pendientes y mejoras para que la cuenta **servicioiptv2025@gmail.com**
@@ -31,6 +31,14 @@ está en curso no va aquí: lo dice `npm run traspasos` (protocolo en `docs/tras
 
 ## Estado al cerrar esta entrega
 
+- **Sexagesimosexta entrega** (PR #31): la criptografía post-cuántica, con documento oficial en
+  43 equipos más. PPK (RFC 8784) en los 10 Catalyst 8000 y los 5 ISR 1000 (capítulo de PPK de la
+  guía de IOS XE 17: 17.11.1a, y 17.12.1a en el ISR y el 8500), en los 10 EdgeConnect (technical
+  brief de cifrados de ECOS) y en 16 MikroTik (RouterOS 7.21, donde la ficha dice «RouterOS v7», y
+  CHR); MACsec/ANYsec quantum-safe en el 7750 SR-1x. Los documentos, en `fuente/pqc-2-2026-10-27`.
+  **Criterio que conviene conservar**: la PPK de un sistema operativo solo se marca en el modelo
+  que tiene documento de que corre esa versión (por eso los ASR, fuera de venta, y siete MikroTik
+  siguen en «no consta»).
 - **Sexagesimoquinta entrega**: `npm run traspasos` (y el arranque) enseña también los PR abiertos
   sin traspaso, con sus archivos, y ya no confunde las ramas `fuente/*` con temas. **Antes de tomar
   un tema, míralo entero**: dos veces el 27-oct se duplicó trabajo por no ver la rama de otra sesión.
@@ -106,9 +114,11 @@ esta entrega, ninguna rama remota llevaba un traspaso abierto.
 
 ### Esperan un documento oficial (se cierran trayéndolo por Actions)
 
-- **Criptografía post-cuántica sin documento**: Huawei, Aruba, MikroTik, Catalyst 8000, ISR, ASR,
-  Meraki G2-MX, SRX4100 y SRX de sucursal, Nokia 7750 SR-1x, 7250 IXR y 7220 IXR. Hoy dicen «no
-  consta» y el requisito los aparta con ese motivo.
+- **Criptografía post-cuántica sin documento**: Huawei (pide la cuenta), los gateways AOS de
+  Aruba, siete MikroTik cuya ficha dice solo «RouterOS» (lo cerraría un documento con la versión
+  que corre cada uno), los ASR 1000 (su boletín de fin de venta con la última versión), los G2-MX
+  (MX OS), el SRX4100 y los SRX de sucursal, y los Nokia 7250 IXR y 7220 IXR. Dicen «no consta» y
+  el requisito los aparta con ese motivo.
 - **Cisco**: ficha del Secure Firewall dedicado (y decidir si entra al portal), precio de Secure
   Access por usuario (CCW), velocidad mínima de los mGig de los C8111/C8121-G2-MX, 10GBASE-T en
   SFP+ fuera de la serie 8300 y de las 8100 VAI/VAP, módulos del ASR (fuera de venta), breakout
@@ -134,8 +144,16 @@ existen los workflows de transporte. Huawei y HPE niegan además el navegador au
 
 ## Mejoras propuestas sin decidir
 
-- Ninguna nueva que merezca la pena al cerrar la sexagesimocuarta entrega: las figuras con números
-  (Cisco, Juniper y el Aruba 7010) ya llevan su tabla en la lupa y en el Excel.
+- **La versión mínima de software en la propuesta cuando se exige PQC** (propuesta al cerrar la
+  sexagesimosexta entrega). Con «Exigir PQC», el equipo recomendado lo cumple **desde una versión**
+  (IOS XE 17.12.1a en el ISR, RouterOS 7.21 en MikroTik, Junos 24.4R1-S2 en el SRX4700…), pero la
+  hoja «Supuestos» del Excel solo dice el nivel exigido. Añadir en `matrizSupuestos` (`bom.js`) una
+  fila «Criptografía post-cuántica: <mecanismo> desde <versión> (fuente)» cuando el escenario la
+  exige, leída de `m.pqc`. Evita entregar una propuesta que exige PQC a un cliente con el equipo en
+  una versión anterior (un ISR en 17.9 no la trae). Cuesta una fila en `bom.js` (compartido por los
+  siete) y su prueba en `bom-supuestos.test.js`; si se hace mal, la hoja «Supuestos» de los siete
+  descuadra o el Excel no se descarga (le pasó a Cisco), y lo vería el e2e. Se decide por el dueño.
+- (Al cerrar la sexagesimocuarta y la sexagesimoquinta: ninguna nueva.)
 
 ## Decisiones del dueño abiertas
 

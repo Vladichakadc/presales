@@ -4,7 +4,8 @@ Registro vivo de lo que falta. **Al empezar una tarea se buscan aquí los puntos
 tocan, y al terminarla se actualiza**, y su contenido se resume al usuario al cerrar cada entrega — esa es la instrucción
 permanente que lo justifica (ver `CLAUDE.md`, sección *Instrucciones permanentes del dueño*).
 
-Última revisión: 2026-10-27, sexagesimoquinta entrega (**`npm run traspasos` enseña también los PR abiertos sin traspaso.** Encargo del dueño: «sí, avanza con la mejora propuesta». Dos veces ese día dos sesiones hicieron el mismo trabajo porque la rama de la otra no salía en el listado. Ver *Cerrado recientemente*.)
+Última revisión: 2026-10-27, sexagesimosexta entrega (**La criptografía post-cuántica, con documento en 43 equipos más.** Encargo del dueño: «ejecuta la mejora y lo pendiente» (la mejora de entonces, la interconexión EdgeHA en el BOM, ya la había fusionado otra sesión). Traídos por Actions: el capítulo de PPK de la guía de IOS XE 17 (Catalyst 8000 e ISR 1000), el manual y el changelog 7.21 de RouterOS (MikroTik), el technical brief de cifrados de EdgeConnect (Aruba) y la ficha Release 26 del 7750 SR-1x (Nokia). PR #31. Ver *Cerrado recientemente* y *Abierto: criptografía post-cuántica sin documento*.)
+Revisión anterior: 2026-10-27, sexagesimoquinta entrega (**`npm run traspasos` enseña también los PR abiertos sin traspaso.** Encargo del dueño: «sí, avanza con la mejora propuesta». Dos veces ese día dos sesiones hicieron el mismo trabajo porque la rama de la otra no salía en el listado. Ver *Cerrado recientemente*.)
 Revisión anterior: 2026-10-27, sexagesimocuarta entrega (**Las figuras de Juniper, con su tabla de números, en el Excel del BOM.** Encargo del dueño: «si, ejecuta la mejora propuesta» (PR #32). Ver *Cerrado recientemente*.)
 Revisión anterior: 2026-10-27, sexagesimotercera entrega (**Las figuras de Juniper y del Aruba 7010 dicen qué es cada número, y la interconexión EdgeHA se elige por velocidad.** Encargo del dueño: «ejecutar mejora propuesta y pendientes». Las dos mejoras propuestas, hechas (PR #29 y #30); el PR #28 fusionado. Ver *Cerrado recientemente*.)
 Revisión anterior: 2026-10-27, sexagesimosegunda entrega (**Las tres mejoras propuestas, hechas, y los fallos del e2e, legibles desde una sesión.** Encargo del dueño: «valida si ya ejecutaste la mejora de los gráficos con la condición indicada y ejecuta las mejoras propuestas». La de los gráficos (la leyenda de los números al ampliar la figura de Cisco) estaba hecha en otra sesión pero sin fusionar, con `pantallas` en rojo: se retomó y está en `main` (PR #24). Las tres mejoras: la cita mínima del piloto del pliego (#25), la interconexión EdgeHA por el puerto que le toca (#26) y las figuras de Cisco con su leyenda en el Excel. Ver *Cerrado recientemente*.)
@@ -2112,23 +2113,39 @@ enlace XGS-PON, el túnel de Secure Access por sentido, el mGig del MX95/MX105 y
 - **AppQoE no publica caudal**: el nodo se elige por las conexiones DRE de su perfil y la página
   avisa de que el caudal optimizado no tiene cifra.
 
-## Abierto: criptografía post-cuántica sin documento (2026-10-27)
+## Abierto: criptografía post-cuántica sin documento (2026-10-27, revisado el mismo día)
 
 La ficha (y el Comparador) dicen «no consta» donde ningún documento oficial traído dice que el
-equipo la traiga. Lo que se buscó y no se encontró, o se encontró sin lo que hace falta:
-- **Huawei (AR, NetEngine), Aruba (EdgeConnect y gateways) y MikroTik**: ninguna ficha ni nota
-  oficial que nombre ML-KEM, PPK o «quantum-safe». Huawei anunció en marzo de 2026 una tarjeta QKD
-  para la serie NetEngine 8000E (no está en el catálogo, y QKD no es PQC).
-- **Cisco Catalyst 8000, ISR 1000, ASR 1000 y los G2-MX**: las notas de la 26.1 son de la serie
-  Secure Router con IOS XE; los G2-MX llevan MX OS. Un blog de Cisco habla de ML-DSA y PPK en la
-  26.2, pero un blog no es fuente: las notas de la 26.2 no lo listan como función nueva.
+equipo la traiga. Lo que queda, y por qué:
+- **Huawei (AR, NetEngine)**: ninguna ficha ni nota oficial que nombre ML-KEM, PPK o
+  «quantum-safe»; support.huawei.com pide sesión (ver la cuenta de Huawei en *Decisiones*). Huawei
+  anunció en marzo de 2026 una tarjeta QKD para la serie NetEngine 8000E (no está en el catálogo, y
+  QKD no es PQC).
+- **Aruba: los gateways AOS (9000/9100/9200 y la línea 7000/7200)**. ~~EdgeConnect~~ **cerrado el
+  2026-10-27**: el technical brief de cifrados (Rev C, ago-2025, ECOS 9.4.4/9.5.4/9.6.0) da «RFC 8784
+  Post Quantum Pre-Shared Key» en los túneles IPsec con IKE; no dice en qué versión entra. Las notas
+  de ECOS 9.7.1.0 traen PQC solo para la firma de la imagen.
+- **MikroTik: siete equipos cuya ficha dice solo «RouterOS»** (RB1100AHx4, hEX RB750Gr3, hEX lite,
+  hEX PoE lite, hEX PoE, PowerBox Pro, hEX S RB760iGS). ~~El resto~~ **cerrado el 2026-10-27**: la
+  PPK de IPsec está en RouterOS desde la 7.21 (manual «QKD Integration in RouterOS IPsec (PPK)» y
+  changelog oficial, «CLI only»); se marca donde la ficha dice «RouterOS v7» y en CHR. Lo que lo
+  cerraría: un documento de MikroTik que diga qué versión corre cada uno de los siete (la página de
+  descargas solo sirve el cascarón sin JavaScript).
+- **Cisco: los ASR 1000 y los G2-MX**. ~~Catalyst 8000 e ISR 1000~~ **cerrado el 2026-10-27**: el
+  capítulo «Configuring Quantum-Safe Encryption Using Postquantum Preshared Keys» de la guía de IOS XE
+  17 da PPK (RFC 8784, manual o con Cisco SKIP) desde la 17.11.1a, y desde la 17.12.1a en el ISR 1000
+  y el Catalyst 8500. Nombra también la serie ASR 1000, pero los del catálogo están fuera de venta y
+  ningún documento del catálogo dice que lleguen a la 17.11.1a (un hilo de la comunidad dice que el
+  ASR1001-X se queda en la 17.9: no es fuente, pero es razón para no extenderlo). Lo cerraría el
+  boletín de fin de venta de cada ASR con su última versión. Los G2-MX llevan MX OS.
 - ~~**FortiGate 400G, 3000G, 3500G, 3800G (y variantes), 7081F y 7121F**~~ **Cerrado el 2026-10-27**:
-  las Release Notes de FortiOS 7.6.7 (3800G/3801G y 7081F/7121F; las limitaciones de IPsec del 7000F
-  no tocan el intercambio de claves) y 7.6.6 (rama especial: 400G, 3000G, 3500G y variantes) dicen
-  que corren una 7.6 posterior a la 7.6.1. Los 58 FortiGate del catálogo documentan ML-KEM.
+  las Release Notes de FortiOS 7.6.7 y 7.6.6. Los 58 FortiGate del catálogo documentan ML-KEM.
 - **SRX4100 y SRX de sucursal (300/320/340/345/380)**: no están en la tabla del Feature Explorer.
-- **Nokia 7750 SR-1x, 7250 IXR y 7220 IXR**: sus fichas no lo dicen. La nota de aplicación de
-  IPsec «quantum-safe» describe PPK con tarjetas ISA o ESA sin versión de SR OS: no entra.
+- **Nokia 7250 IXR y 7220 IXR**. ~~7750 SR-1x~~ **cerrado el 2026-10-27**: su ficha Release 26
+  (asset 212738) da MACsec y MKA con clave precompartida quantum-safe, y ANYsec. Las fichas Release
+  26 de los 7250 IXR del catálogo no lo dicen (IXR-6e/10e: MACsec e IPsec sin llamarlos quantum-safe;
+  IXR-X: «planned future capabilities»; IXR-R: no los nombra). La nota de aplicación de IPsec
+  «quantum-safe» describe PPK con tarjetas ISA o ESA sin versión de SR OS: no entra.
 Si un fabricante publica el documento, entra por `traer-cisco-huawei.yml` y su fuente en
 `fuentes.js` con `campos: ['pqc']` (la prueba frena un equipo marcado sin fuente).
 
@@ -2373,6 +2390,7 @@ que ya se comprobó y lo que cuesta cada opción.
 
 ## Cerrado recientemente
 
+- **2026-10-27 · La criptografía post-cuántica, con documento en 43 equipos más (sexagesimosexta entrega, PR #31).** Encargo del dueño: «ejecuta la mejora y lo pendiente». La mejora propuesta (la interconexión EdgeHA en el BOM) ya la había fusionado otra sesión (#26), y no se repitió; de lo pendiente se tomó la PQC que decía «no consta», con su traspaso (`pqc-documentos`). Traídos por `traer-cisco-huawei.yml` a `fuente/pqc-2-2026-10-27` (corrida 40580555051, los 15 documentos): **Cisco**, capítulo de PPK de la guía de IOS XE 17: PPK (RFC 8784) en los 10 Catalyst 8000 (8200/8300 desde 17.11.1a, 8500 desde 17.12.1a) y los 5 ISR 1000 (17.12.1a); los ASR, no (fuera de venta, sin documento de que lleguen a esa versión). **MikroTik**, manual «QKD Integration in RouterOS IPsec (PPK)» y changelog de la 7.21 (12-ene-2026): PPK en los 13 equipos cuya ficha dice «RouterOS v7» y en los 3 CHR; los 7 que dicen solo «RouterOS», «no consta». **Aruba**, technical brief de cifrados de EdgeConnect (Rev C): PPK en los 10 EdgeConnect, sin versión. **Nokia**, ficha Release 26 del 7750 SR-1x: MACsec/ANYsec quantum-safe en el SR-1x-48D y el SR-1x-92S. Ninguno es ML-KEM: con «Exigir ML-KEM» se apartan diciendo qué traen. Las pistas de «Exigir PQC» de Aruba, MikroTik y Nokia decían que nada estaba documentado: corregidas. Conducido en Chromium (MikroTik recomienda el hEX E50UG con 13 que cumplen; el Catalyst 8300 entra con «clave» y se aparta con ML-KEM); `test/pqc.test.js` y `test/pqc-requisito.test.js` fijan qué equipo lleva qué tipo.
 - **2026-10-27 · `npm run traspasos` enseña los PR abiertos sin traspaso (sexagesimoquinta entrega).** Encargo del dueño: «sí, avanza con la mejora propuesta». Ese día dos sesiones hicieron dos veces el mismo trabajo (el piloto del pliego, PR #22 cerrado; la interconexión EdgeHA por velocidad, que otra sesión ya tenía en el PR #30) porque la rama de la otra no salía en el listado: una empujaba directo a `main` y otra había borrado su traspaso con el PR sin fusionar. Ahora `scripts/traspasos.js` pide a GitHub (con `gh`) los PR abiertos y enseña, con los archivos que tocan, los de una rama sin traspaso; si `gh` no responde, avisa con el enlace a los PR y sigue (conducido con un `gh` roto en el PATH, también dentro del arranque). **Por el camino**: las ramas `fuente/*` salían como temas porque un workflow las corta desde la rama del tema y arrastran su traspaso; ya no (ni las de Dependabot). El arranque da 90 s al listado (las consultas por PR podían acercarse a los 60). Pruebas puras en `test/traspasos.test.js`.
 - **2026-10-27 · Las figuras de Juniper y su tabla de números, en el Excel del BOM (sexagesimocuarta entrega, PR #32).** La mejora propuesta en la entrega anterior, aprobada por el dueño. Aruba, Fortinet, Huawei y Cisco ya pasaban su figura a la hoja «Fotos del equipo»; Juniper, el fabricante con más figuras numeradas (36), no. `dimensionador-juniper-srx.js` pasa `meta.fotos` con frontal, trasera, pie y `frontLeyenda`/`rearLeyenda` (la foto de producto, como en los demás, no va a esa hoja). `e2e-leyendas-juniper.js` descarga el Excel y comprueba las dos imágenes, la tabla bajo cada cara con su rótulo literal y que BOM y Supuestos siguen primeras.
 - **2026-10-27 · La interconexión EdgeHA va por el puerto que cubre el agregado del sitio (sexagesimotercera entrega, PR #30).** La mejora propuesta del relevo. `asignarPuertosPar` elegía el primer tipo libre en los dos chasis, empezando por el RJ-45, aunque su 1 GbE no cubriera el agregado (solo se avisaba). Ahora, con `opts.haMbps` y `opts.haVel` (lo que alcanza cada tipo en ese modelo según las ópticas de su catálogo), elige el tipo común libre más barato que lo cubre; si ninguno, el más rápido que se pueda montar (`haCubre: false`). La página pasa las mismas opciones a la interconexión y a la auditoría (`opcionesHa`). El riesgo que se temía (que la jaula de la interconexión le falte a un enlace) no se da: se elige tras los enlaces y antes de los LAN, que van a cualquier puerto; una prueba lo comprueba en todo el catálogo. e2e: un par de EC-10106 con 1,6 Gbps va por SFP+ con óptica de 10G (`e2e-aruba-edgeha-velocidad.js`).
