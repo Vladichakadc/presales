@@ -1011,6 +1011,9 @@ document.addEventListener('DOMContentLoaded', () => {
     ESTADO.avisoOrigen(caja, st);
   }
   render();
+  // Del pliego al escenario (piloto de IA, 2026-10-27): los parámetros aceptados se escriben en
+  // los controles de siempre y repintan por sus propios eventos (ver /js/pliego.js).
+  PLIEGO.montar({ pagina:'cisco' });
 });
 
 /* ══ ENVIAR AL COTIZADOR ══
