@@ -228,7 +228,7 @@
     const titulo = `Qué es cada número de la vista ${nombreCara}${ley.tabla ? ` · ${esc(ley.tabla)}` : ''}`;
     const tabla = (filas) => `<table class="ficha-leyenda" aria-label="${titulo}">`
       + '<thead><tr><th scope="col">N.º</th><th scope="col">Qué es</th><th scope="col" class="ficha-leyenda-lit">Rótulo del documento</th></tr></thead><tbody>'
-      + filas.map(([n, lit, es]) => `<tr><td class="ficha-leyenda-n"><span aria-label="Número ${n}">${n}</span></td><td>${esc(es)}</td><td class="ficha-leyenda-lit" lang="en">${esc(lit)}</td></tr>`).join('')
+      + filas.map(([n, lit, es]) => `<tr><td class="ficha-leyenda-n"><span>${n}</span></td><td>${esc(es)}</td><td class="ficha-leyenda-lit" lang="en">${esc(lit)}</td></tr>`).join('')
       + '</tbody></table>';
     const mitad = Math.ceil(ley.filas.length / 2);
     const cuerpo = ley.filas.length > 8
