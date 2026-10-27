@@ -4,9 +4,9 @@
 - **Rama:** claude/leyendas-cisco-fusion (la anterior, claude/leyendas-figuras-cisco con el PR #23, queda intacta)
 - **Cuenta:** servicioiptv2025, sesión 01V8T7S92WvujFK1KCusavSu (retoma)
 - **Estado:** en curso
-- **Actualizado:** 2026-10-27 13:12
+- **Actualizado:** 2026-10-27 14:05
 - **Archivos que toca:** public/data/cisco-vistas-equipos.json, public/js/ficha.js, test/cisco-leyendas.test.js, test/e2e/e2e-cisco-leyendas.js, .github/workflows/pantallas.yml, PENDIENTES.md, RELEVO.md
-- **Siguiente paso:** leer las anotaciones `e2e` de la comprobación `pantallas` de esta rama (`gh api repos/Vladichakadc/presales/check-runs/<id>/annotations`), corregir y fusionar
+- **Siguiente paso:** CI del commit que arregla la lectura de filas del e2e; en verde, borrar este traspaso, fusionar y cerrar el PR #23
 
 ## Encargo del dueño
 
@@ -28,6 +28,10 @@ indicada y ejecuta las mejoras propuestas».
 - Fusionar, cerrar el PR #23; después, las mejoras propuestas.
 
 ## Decisiones y hallazgos
+
+- Las anotaciones dijeron qué fallaba: la prueba, no la tabla. Leía cada fila con `textContent`,
+  que pega las celdas sin espacio («1LED de estado…»), y buscaba «1 LED de estado». Ahora une las
+  celdas con un espacio.
 
 - El PR #23 no tenía CI en su último commit: con conflictos, GitHub no crea la ref de fusión.
 

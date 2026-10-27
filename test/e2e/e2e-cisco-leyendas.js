@@ -10,12 +10,13 @@ const { cargarPlaywright, BASE, abrirSesion, asentar, trasNavegar, contador } = 
 const PAGINA = `${BASE}/dimensionador-cisco-catalyst8k.html?bw=100`;
 const MODELO = 'Cisco Secure Router C8130-G2';
 
+// Las celdas se unen con un espacio: `textContent` de la fila las pega («1LED de estado…»).
 const leerTarjeta = (page) => page.evaluate(() => {
   const d = globalThis.document.querySelector('#verdict .ficha-vista-leyenda');
   return d ? {
     visible: !d.hidden,
     resumen: (d.querySelector('summary') || {}).textContent || '',
-    filas: [...d.querySelectorAll('tbody tr')].map((tr) => tr.textContent.replace(/\s+/g, ' ').trim()),
+    filas: [...d.querySelectorAll('tbody tr')].map((tr) => [...tr.cells].map((c) => c.textContent.trim()).join(' ').replace(/\s+/g, ' ')),
   } : null;
 });
 const leerLupa = (page) => page.evaluate(() => {
@@ -25,7 +26,7 @@ const leerLupa = (page) => page.evaluate(() => {
     abierta: !!(l && !l.hidden),
     visible: !!(c && !c.hidden),
     titulo: ((c && c.querySelector('.ficha-leyenda-tit')) || {}).textContent || '',
-    filas: c ? [...c.querySelectorAll('tbody tr')].map((tr) => tr.textContent.replace(/\s+/g, ' ').trim()) : [],
+    filas: c ? [...c.querySelectorAll('tbody tr')].map((tr) => [...tr.cells].map((x) => x.textContent.trim()).join(' ').replace(/\s+/g, ' ')) : [],
     // La tabla tiene que verse con la figura, no quedar fuera de la caja sin poder llegar.
     alcanzable: !!(c && c.getBoundingClientRect().top < globalThis.innerHeight),
   };
