@@ -1,6 +1,6 @@
 {
  "medidoEn": {
-  "commit": "084630d",
+  "commit": "269db15",
   "fecha": "2026-10-27"
  },
  "umbralRozado": 25,
@@ -76,6 +76,13 @@
    "pct": 18
   },
   {
+   "modulo": "pliego.js",
+   "estado": "ejercitado",
+   "total": 10,
+   "usadas": 4,
+   "pct": 40
+  },
+  {
    "modulo": "procedencia.js",
    "estado": "ejercitado",
    "total": 36,
@@ -127,7 +134,7 @@
   {
    "modulo": "dimensionador-aruba-edgeconnect.js",
    "estado": "ejercitado",
-   "total": 390,
+   "total": 392,
    "usadas": 266,
    "pct": 68
   },
@@ -149,8 +156,8 @@
    "modulo": "index.js",
    "estado": "ejercitado",
    "total": 58,
-   "usadas": 43,
-   "pct": 74
+   "usadas": 42,
+   "pct": 72
   },
   {
    "modulo": "ficha.js",
@@ -158,6 +165,13 @@
    "total": 78,
    "usadas": 59,
    "pct": 76
+  },
+  {
+   "modulo": "dimensionador-nokia-7750sr.js",
+   "estado": "ejercitado",
+   "total": 53,
+   "usadas": 42,
+   "pct": 79
   },
   {
    "modulo": "mikrotik-motor.js",
@@ -176,8 +190,8 @@
   {
    "modulo": "dimensionador-fortinet-fortigate.js",
    "estado": "ejercitado",
-   "total": 283,
-   "usadas": 225,
+   "total": 284,
+   "usadas": 226,
    "pct": 80
   },
   {
@@ -209,13 +223,6 @@
    "pct": 81
   },
   {
-   "modulo": "dimensionador-nokia-7750sr.js",
-   "estado": "ejercitado",
-   "total": 52,
-   "usadas": 42,
-   "pct": 81
-  },
-  {
    "modulo": "fortinet-motor.js",
    "estado": "ejercitado",
    "total": 109,
@@ -232,15 +239,22 @@
   {
    "modulo": "aruba-reglas.js",
    "estado": "ejercitado",
-   "total": 36,
+   "total": 37,
    "usadas": 33,
-   "pct": 92
+   "pct": 89
   },
   {
    "modulo": "motor-ingenieria.js",
    "estado": "ejercitado",
    "total": 4,
    "usadas": 4,
+   "pct": 100
+  },
+  {
+   "modulo": "pqc.js",
+   "estado": "ejercitado",
+   "total": 5,
+   "usadas": 5,
    "pct": 100
   }
  ]
