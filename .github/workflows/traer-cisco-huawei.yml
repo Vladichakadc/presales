@@ -1382,6 +1382,22 @@ jobs:
               { archivo: 'nokia-asset-215309.pdf', tipo: 'pdf', para: 'NOKIA', urls: [
                 'https://www.nokia.com/asset/f/215309/', 'https://www.nokia.com/asset/215309/',
               ] },
+              // PQC que sigue en «no consta» (2026-10-27, tema pqc-version-supuestos):
+              // · Los ASR 1000: la PPK de IOS XE llega en la 17.11.1a; el boletin de fin de venta de
+              //   cada chasis dice cual es su ultima version.
+              { archivo: 'cisco-asr1001x-eol.html', tipo: 'html', para: 'CISCO', debeContener: 'ASR1001-X', urls: [
+                'https://www.cisco.com/c/en/us/products/collateral/routers/asr-1000-series-aggregation-services-routers/asr1001-x-1002-x-eol.html',
+              ] },
+              { archivo: 'cisco-asr1002hx-eol.html', tipo: 'html', para: 'CISCO', debeContener: 'ASR1002-HX', urls: [
+                'https://www.cisco.com/c/en/us/products/collateral/routers/asr-1000-series-aggregation-services-routers/asr1002-hx-asso-part-eol.html',
+              ] },
+              { archivo: 'cisco-asr1006x-eol.html', tipo: 'html', para: 'CISCO', debeContener: 'ASR1006-X', urls: [
+                'https://www.cisco.com/c/en/us/products/collateral/routers/asr-1000-series-aggregation-services-routers/asr1006-x-chassis-eol.html',
+              ] },
+              // · Los 7250 IXR-e y IXR-e2: su ficha de serie (la del IXR-e3 remite a ella).
+              { archivo: 'nokia-7250ixr-e-ds.pdf', tipo: 'pdf', para: 'NOKIA', urls: [
+                'https://www.nokia.com/asset/f/206825/', 'https://www.nokia.com/asset/206825/',
+              ] },
               { archivo: 'cisco-hig3-img', tipo: 'imagenes', para: 'CISCO', urls: [],
                 descubrirPiezas: { de: ['cisco-isr1100-hig-overview.html', 'cisco-sr8200-hig-overview.html'],
                   base: 'https://www.cisco.com/', dominios: ['cisco.com'], relativas: true,

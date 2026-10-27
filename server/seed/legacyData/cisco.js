@@ -585,13 +585,19 @@ const PQC_DESDE_26_1_2 = ['C8130H-G2', 'C8151H-C-G2', 'C8221-G2', 'C8221L-G2', '
 // fuente externa con Cisco SKIP, en FlexVPN y DMVPN (no en GETVPN). Su tabla de funciones: IOS XE
 // 17.11.1a, y la 17.12.1a la lleva al ISR 1000 y al Catalyst 8500; su lista de plataformas nombra
 // ISR 1000, ASR 1000, Catalyst 8200, 8300 y 8500, Catalyst 8000V y las Secure Router 8100 a 8500
-// (que ya traen ML-KEM). No es un algoritmo post-cuántico: la ficha lo dice. Los ASR 1000 del
-// catálogo están fuera de venta y ningún documento del catálogo dice que lleguen a la 17.11.1a:
-// «no consta». Los Meraki llevan MX OS, al que la guía no aplica.
+// (que ya traen ML-KEM). No es un algoritmo post-cuántico: la ficha lo dice. Los Meraki llevan
+// MX OS, al que la guía no aplica. Los ASR 1000 están fuera de venta: cada uno, hasta la última
+// versión que dice su boletín de fin de venta (2026-10-27): el ASR1002-HX, la 17.15 («The last
+// supported release is 17.15») y el ASR1006-X, la 17.18; el ASR1001-X se queda en la 17.9 («The last
+// supported IOS XE release […] is IOS XE 17.9»), anterior a la 17.11.1a: sin PPK.
 const PQC_IOSXE = [
   {ser:'Catalyst 8000', de:/^Catalyst 8[23]00/, desde:'IOS XE 17.11.1a'},
   {ser:'Catalyst 8000', de:/^Catalyst 8500/, desde:'IOS XE 17.12.1a'},
   {ser:'ISR 1000', de:/^ISR /, desde:'IOS XE 17.12.1a'},
+  {ser:'ASR 1000', de:/^ASR 1002-HX$/, desde:'IOS XE 17.11.1a',
+    alcance:'hasta la IOS XE 17.15, la última que soporta según su boletín de fin de venta (5-feb-2025)'},
+  {ser:'ASR 1000', de:/^ASR 1006-X$/, desde:'IOS XE 17.11.1a',
+    alcance:'hasta la IOS XE 17.18, la última que soporta según su boletín de fin de venta (29-ene-2026)'},
 ];
 const PQC_PPK = {tipo:'ppk',
   mecanismo:'Claves precompartidas post-cuánticas (PPK, RFC 8784) mezcladas en IKEv2 e IPsec: manuales o importadas de una fuente externa con Cisco SKIP',
@@ -610,7 +616,7 @@ for (const m of MODELS) {
     m.pqc = {...PQC_G2, desde: tarde ? 'IOS XE 26.1.2 (primera versión de este modelo; la función llega en la 26.1.1)' : 'IOS XE 26.1.1'};
   }
   const ppk = PQC_IOSXE.find((x) => x.ser === m.ser && x.de.test(m.id));
-  if (ppk) m.pqc = {...PQC_PPK, desde: ppk.desde};
+  if (ppk) m.pqc = {...PQC_PPK, desde: ppk.desde, ...(ppk.alcance ? {alcance: ppk.alcance} : {})};
   if (COMBINACIONES[m.id]) m.combinaciones = COMBINACIONES[m.id];
   if (DSL[m.id]) m.dsl = DSL[m.id];
   if (APPQOE[m.id]) m.appqoe = APPQOE[m.id];

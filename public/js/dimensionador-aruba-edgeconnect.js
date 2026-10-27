@@ -3181,7 +3181,7 @@ function renderBom(){
     :null;
   const meta={
     titulo:`Lista de materiales — ${m.id}`,
-    supuestos:{vendor:'aruba', fabricante:'Aruba (HPE)', modelo:m.id, serie:m.serie},
+    supuestos:{vendor:'aruba', fabricante:'Aruba (HPE)', modelo:m.id, serie:m.serie, pqc:m.pqc || null},
     subtitulo:`${m.seg} · ${famLabel(m)} · ${termino}`,
     archivo:`BOM_${m.id}`,
     ...(fotosBom?{fotos:fotosBom}:{}),

@@ -709,7 +709,8 @@
      fuentes que respaldan al equipo. Va DESPUES de la hoja «BOM», que sigue siendo la primera: quien
      la lee por indice no nota nada. Nucleo puro, como `matrizExcel`: las pruebas lo afirman sin
      navegador. `entorno` = { fecha, url, parametros: [{etiqueta, valor, cambiado}],
-     fuentes: { error?, lista: [...], todas? } }. Nada se rellena: lo que no consta lo dice. */
+     fuentes: { error?, lista: [...], todas? }, pqc?: { nivel, etiqueta } }. Nada se rellena: lo que
+     no consta lo dice. */
   function matrizSupuestos(meta, entorno) {
     const m = meta || {};
     const s = m.supuestos || {};
@@ -730,6 +731,32 @@
       aoa.push([]);
       aoa.push(['RESULTADO DEL DIMENSIONAMIENTO']);
       for (const [k, v] of resumen) aoa.push([k, v == null || v === '' ? 'sin dato' : String(v)]);
+    }
+    // CRIPTOGRAFÍA POST-CUÁNTICA EXIGIDA (2026-10-27, mejora propuesta en la sexagesimosexta
+    // entrega). Con «Exigir PQC» el equipo la cumple DESDE una versión de software: sin decirlo, la
+    // propuesta vale también para el cliente que tiene el equipo en una versión anterior (un ISR en
+    // 17.9 no trae la PPK). Sale solo si el escenario la exige; el dato es el `pqc` del catálogo, que
+    // la página pasa tal cual, y si el equipo no lo cumple (elegido a mano) se dice con el motivo de
+    // `pqc.js`, el mismo que aparta al equipo en el dimensionador.
+    const exigida = e.pqc && e.pqc.nivel;
+    if (exigida) {
+      const p = s.pqc || null;
+      const P = global.PQC || null;
+      aoa.push([]);
+      aoa.push(['CRIPTOGRAFÍA POST-CUÁNTICA EXIGIDA']);
+      aoa.push(['Requisito del escenario', e.pqc.etiqueta || exigida]);
+      const motivo = P && P.motivo ? P.motivo({ pqc: p }, exigida) : null;
+      aoa.push(['¿El equipo del BOM lo cumple?', motivo ? `No: ${motivo.replace(/^criptografía post-cuántica: /, '')}` : (p ? 'Sí' : 'No consta')]);
+      if (p) {
+        const tipo = (P && P.TIPO && P.TIPO[p.tipo]) || p.tipo;
+        aoa.push(['Mecanismo documentado', `${tipo}: ${p.mecanismo || 'sin descripción'}`]);
+        aoa.push(['Versión mínima de software', p.desde ? `${p.desde} o superior` : 'la fuente no da la versión: confirmarla con el fabricante antes de comprometerla']);
+        if (p.donde) aoa.push(['Dónde se aplica', p.donde]);
+        if (p.alcance) aoa.push(['Alcance', p.alcance]);
+        aoa.push(['Fuente', p.fuente || 'sin fuente declarada']);
+      } else {
+        aoa.push(['', 'Ningún documento oficial del catálogo dice que este equipo la traiga; eso no prueba que no la tenga. Confirmarlo con el fabricante antes de comprometerlo.']);
+      }
     }
     aoa.push([]);
     aoa.push(['PARÁMETROS ACTIVOS DE LA PANTALLA', 'Valor', 'Cambiado respecto al valor por defecto']);
@@ -789,11 +816,15 @@
         fuentes = { error: err.message || 'error de red' };
       }
     }
+    // El nivel exigido sale del mismo control que lee el motor de cada página (`#reqPqc`).
+    const sel = global.document && global.document.getElementById ? global.document.getElementById('reqPqc') : null;
+    const nivel = sel && sel.value ? sel.value : '';
     return {
       fecha: new Date().toLocaleString('es'),
       url: global.location ? global.location.href : '',
       parametros: global.ESTADO && global.ESTADO.escenario ? global.ESTADO.escenario() : [],
       fuentes,
+      pqc: nivel ? { nivel, etiqueta: (global.PQC && global.PQC.NIVELES && global.PQC.NIVELES[nivel]) || nivel } : null,
     };
   }
 

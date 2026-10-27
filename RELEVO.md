@@ -1,6 +1,6 @@
 # Relevo
 
-Última actualización: 2026-10-27 · sexagesimoséptima entrega
+Última actualización: 2026-10-27 · sexagesimoctava entrega
 
 Informe para continuar el trabajo. Lo pidió el dueño del repositorio el 2026-10-27: «de aquí en
 adelante, un informe de pendientes y mejoras para que la cuenta **servicioiptv2025@gmail.com**
@@ -31,6 +31,13 @@ está en curso no va aquí: lo dice `npm run traspasos` (protocolo en `docs/tras
 
 ## Estado al cerrar esta entrega
 
+- **Sexagesimoctava entrega**: la mejora propuesta, hecha: con «Exigir PQC», la hoja «Supuestos» del
+  Excel dice el requisito, si el equipo lo cumple, el mecanismo, **la versión mínima de software** y
+  la fuente (`matrizSupuestos` en `bom.js`; las siete páginas pasan el `pqc` del equipo; batería
+  `e2e-pqc-supuestos.js`). Y seis equipos más con PQC documentada: el ASR 1002-HX y el ASR 1006-X
+  (PPK desde la 17.11.1a, hasta la 17.15 y la 17.18 que dan sus boletines de fin de venta) y el hEX
+  lite, el hEX, el hEX PoE y el hEX S de MikroTik (su manual: «RouterOS v7 and above»). El ASR 1001-X
+  se queda en la 17.9 según su boletín: sin PPK. Documentos en `fuente/pqc-3-2026-10-27`.
 - **Sexagesimoséptima entrega**: **retirado el piloto de IA «del pliego al escenario»** del
   dimensionador Cisco, por decisión del dueño (gastaba tokens y no servía): panel, ruta
   `/api/escenario/desde-documento`, servicio, módulo del navegador y sus pruebas. La IA que queda es
@@ -114,10 +121,11 @@ esta entrega, ninguna rama remota llevaba un traspaso abierto.
 ### Esperan un documento oficial (se cierran trayéndolo por Actions)
 
 - **Criptografía post-cuántica sin documento**: Huawei (pide la cuenta), los gateways AOS de
-  Aruba, siete MikroTik cuya ficha dice solo «RouterOS» (lo cerraría un documento con la versión
-  que corre cada uno), los ASR 1000 (su boletín de fin de venta con la última versión), los G2-MX
-  (MX OS), el SRX4100 y los SRX de sucursal, y los Nokia 7250 IXR y 7220 IXR. Dicen «no consta» y
-  el requisito los aparta con ese motivo.
+  Aruba, tres MikroTik (RB1100AHx4, hEX PoE lite y PowerBox Pro: su manual solo dice «la versión de
+  /system resource o superior»), los G2-MX (MX OS), el SRX4100 y los SRX de sucursal, y los Nokia
+  7250 IXR (sus fichas Release 26 no llaman quantum-safe a su MACsec) y 7220 IXR. Dicen «no consta»
+  y el requisito los aparta con ese motivo. El ASR 1001-X no es un hueco: su boletín lo deja en la
+  17.9, anterior a la PPK.
 - **Cisco**: ficha del Secure Firewall dedicado (y decidir si entra al portal), precio de Secure
   Access por usuario (CCW), velocidad mínima de los mGig de los C8111/C8121-G2-MX, 10GBASE-T en
   SFP+ fuera de la serie 8300 y de las 8100 VAI/VAP, módulos del ASR (fuera de venta), breakout
@@ -143,16 +151,17 @@ existen los workflows de transporte. Huawei y HPE niegan además el navegador au
 
 ## Mejoras propuestas sin decidir
 
-- **La versión mínima de software en la propuesta cuando se exige PQC** (propuesta al cerrar la
-  sexagesimosexta entrega). Con «Exigir PQC», el equipo recomendado lo cumple **desde una versión**
-  (IOS XE 17.12.1a en el ISR, RouterOS 7.21 en MikroTik, Junos 24.4R1-S2 en el SRX4700…), pero la
-  hoja «Supuestos» del Excel solo dice el nivel exigido. Añadir en `matrizSupuestos` (`bom.js`) una
-  fila «Criptografía post-cuántica: <mecanismo> desde <versión> (fuente)» cuando el escenario la
-  exige, leída de `m.pqc`. Evita entregar una propuesta que exige PQC a un cliente con el equipo en
-  una versión anterior (un ISR en 17.9 no la trae). Cuesta una fila en `bom.js` (compartido por los
-  siete) y su prueba en `bom-supuestos.test.js`; si se hace mal, la hoja «Supuestos» de los siete
-  descuadra o el Excel no se descarga (le pasó a Cisco), y lo vería el e2e. Se decide por el dueño.
-- (Al cerrar la sexagesimocuarta y la sexagesimoquinta: ninguna nueva.)
+- **Decir «no la trae, y por qué» cuando un documento lo prueba** (propuesta al cerrar la
+  sexagesimoctava entrega). Hoy el ASR 1001-X sale con «no consta en ningún documento oficial», pero
+  su boletín de fin de venta dice que su última versión es la IOS XE 17.9, y la PPK llega en la
+  17.11.1a: eso no es un hueco, es un «no» documentado. Un campo opcional `pqcNo: {motivo, fuente}`
+  (solo con documento) que `pqc.js` y la ficha pinten como «no la trae: su última versión es la 17.9
+  (boletín…)». Evita que el preventa pierda tiempo preguntando al fabricante algo que ya está
+  escrito, y distingue el «no consta» real del «no». Cuesta el campo en `cisco.js`, una rama en
+  `PQC.motivo` y en `seccionPqc`, y sus pruebas; si se hace mal, un «no» sin documento se colaría
+  donde hoy dice «no consta», que es justo lo que la regla de datos prohíbe: la prueba tiene que
+  exigir la fuente. Se decide por el dueño.
+- (Hecha en la sexagesimoctava: la versión mínima de la PQC en la hoja «Supuestos».)
 
 ## Decisiones del dueño abiertas
 
