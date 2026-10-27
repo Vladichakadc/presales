@@ -1229,6 +1229,42 @@ jobs:
               { archivo: 'cisco-sa-caudal.html', tipo: 'html', para: 'CISCO', exploracion: true, urls: [
                 'https://securitydocs.cisco.com/docs/csa/olh/120799.dita',
               ] },
+              // Criptografía post-cuántica (PQC, 2026-10-27, encargo del dueño): qué equipos la traen,
+              // con qué mecanismo y desde qué software. Solo documentos del fabricante; lo que no
+              // tenga documento queda «no consta».
+              { archivo: 'cisco-sr-rn-26-1.html', tipo: 'html', para: 'CISCO', debeContener: '26.1', urls: [
+                'https://www.cisco.com/c/en/us/td/docs/routers/secure-routers/cisco-8000-series-secure-routers-release-26-1-x.html',
+              ] },
+              { archivo: 'cisco-sr-rn-26-2.html', tipo: 'html', para: 'CISCO', debeContener: '26.2', urls: [
+                'https://www.cisco.com/c/en/us/td/docs/routers/secure-routers/cisco-8000-series-secure-routers-release-26-2-x.html',
+              ] },
+              { archivo: 'cisco-blog-pqc-ke.html', tipo: 'html', para: 'CISCO', exploracion: true, urls: [
+                'https://blogs.cisco.com/developer/post-quantum-key-exchange-on-cisco-routers-ipsec-series-part-9',
+              ] },
+              { archivo: 'fortinet-pqc-ipsec.html', tipo: 'html', para: 'FORTINET', exploracion: true, urls: [
+                'https://docs.fortinet.com/document/fortigate/7.6.5/administration-guide/229631',
+              ] },
+              { archivo: 'fortinet-pqc-nuevas-7.6.0.html', tipo: 'html', para: 'FORTINET', exploracion: true, urls: [
+                'https://docs.fortinet.com/document/fortigate/7.6.0/new-features/90507',
+              ] },
+              { archivo: 'juniper-quantum-safe-ipsec.html', tipo: 'html', para: 'JUNIPER', exploracion: true, urls: [
+                'https://www.juniper.net/documentation/us/en/software/junos/vpn-ipsec/topics/topic-map/quantum-safe-ipsec-vpn.html',
+              ] },
+              { archivo: 'juniper-pqc-intro.html', tipo: 'html', para: 'JUNIPER', exploracion: true, urls: [
+                'https://www.juniper.net/documentation/us/en/software/junos/pki/topics/concept/get-started-with-pqc.html',
+              ] },
+              { archivo: 'juniper-fe-7502.html', tipo: 'html', para: 'JUNIPER', exploracion: true, urls: [
+                'https://apps.juniper.net/feature-explorer/feature/7502',
+              ] },
+              { archivo: 'nokia-7750sr-ds.pdf', tipo: 'pdf', para: 'NOKIA', urls: [
+                'https://www.nokia.com/asset/f/164728/', 'https://www.nokia.com/asset/164728/',
+              ] },
+              { archivo: 'nokia-7750sr-s-ds.pdf', tipo: 'pdf', para: 'NOKIA', urls: [
+                'https://www.nokia.com/asset/f/205421/', 'https://www.nokia.com/asset/205421/',
+              ] },
+              { archivo: 'nokia-ipsec-quantum-safe.pdf', tipo: 'pdf', para: 'NOKIA', urls: [
+                'https://www.nokia.com/asset/f/174280/', 'https://www.nokia.com/asset/174280/',
+              ] },
               { archivo: 'cisco-pon-ont-ds.html', tipo: 'html', para: 'CISCO', debeContener: 'SFP-10G-ONT20-I', urls: [
                 'https://www.cisco.com/c/en/us/products/collateral/networking/optics-transceiver-modules/10g-pon-ont-modules-ds.html',
               ] },
