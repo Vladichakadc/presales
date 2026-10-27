@@ -1531,7 +1531,8 @@ function sinJaulasSfp(modelo){
 // Texto del inventario para los motivos: «4x RJ-45 · 2x SFP+».
 // LA INTERCONEXIÓN, POR EL PUERTO QUE LE TOCA (mejora aprobada, 2026-10-27). La auditoría del
 // par (ArubaReglas.asignarPuertosPar) ya elige el puerto de la interconexión: el mismo tipo en
-// los dos chasis y primero el RJ-45 (Orchestrator, «Deployment - EdgeHA»). El builder, el
+// los dos chasis, el primero que cubre el agregado empezando por el RJ-45 (Orchestrator,
+// «Deployment - EdgeHA»; la velocidad, regla de la casa). El builder, el
 // asistente de cableado y la lista de materiales leen ESE puerto, para no cotizar dos ópticas
 // que sobran (va por cobre) ni proponer una velocidad que la jaula elegida no admite:
 //   · cobre (RJ-45 o combo): un latiguillo, ninguna óptica; si su 1 GbE no cubre el agregado
@@ -1551,7 +1552,7 @@ function interconexionEdgeHA(m, unidades, links, pick){
     if(!asig.ha){ r.modo='sinPuerto'; return r; }
     if(asig.ha==='rj45'||asig.ha==='combo'){
       r.modo='cobre';
-      if(agregado>(VELOCIDAD_OPTICA['1G'])) r.aviso=`el RJ-45 es de 1 GbE y el agregado del sitio es ${fmt(agregado)}: la regla de la casa pide ≥ agregado; si importa, deja libre una jaula del mismo tipo en los dos chasis y va con ópticas`;
+      if(agregado>(VELOCIDAD_OPTICA['1G'])) r.aviso=`el RJ-45 es de 1 GbE y el agregado del sitio es ${fmt(agregado)}: no queda en los dos chasis una jaula libre más rápida, y la regla de la casa pide ≥ agregado; si importa, deja una libre en cada chasis (otro modelo o menos enlaces por jaula)`;
       return r;
     }
     const cfg=ACCESSORY_COMPAT[m.id];

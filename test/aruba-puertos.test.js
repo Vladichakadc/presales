@@ -106,6 +106,21 @@ test('el medio sube al primero que lleva el caudal, y no baja del típico del tr
   assert.deepStrictEqual(sobre.map((l) => l.n), [1]);
 });
 
+// La interconexión, también por velocidad (2026-10-27): por ella cruza lo que no aterriza en el
+// chasis activo. Con jaulas libres en los dos que cubren el agregado, va por ellas; el RJ-45 solo
+// si basta o si no queda nada más rápido. Lo que cabe no cambia: un puerto por chasis igual.
+test('par EdgeHA: la interconexión va por el primer puerto común que cubre el agregado', () => {
+  const pocos = R.asignarPuertosPar(P('EC-10106'), [enlace(1, 'RJ45', 100), enlace(2, 'RJ45', 100)], 2);
+  assert.strictEqual(pocos.ha, 'rj45', '200 Mbps: basta un latiguillo');
+  const grandes = R.asignarPuertosPar(P('EC-10106'), [enlace(1, 'SFP+ 10G', 5000), enlace(2, 'SFP+ 10G', 5000)], 2);
+  assert.strictEqual(grandes.ha, 'sfpPlus', '10 Gbps de agregado: va por la SFP+ que queda libre en cada chasis');
+  assert.strictEqual(grandes.cabe, true);
+  assert.deepStrictEqual(grandes.porChasis.map((c) => c.usados.sfpPlus), [2, 2], '1 enlace + la interconexión en cada uno');
+  // Agregado que nada cubre: el más rápido de los comunes (no el primero de la lista).
+  const enorme = R.asignarPuertosPar(P('EC-10106'), [enlace(1, 'RJ45', 100), enlace(2, 'RJ45', 100), enlace(3, 'SFP 1G', 900, { down: 40000 })], 2);
+  assert.strictEqual(enorme.ha, 'sfpPlus');
+});
+
 test('ningún RJ-45 del catálogo pasa de 1 GbE (la regla del medio lo da por hecho)', () => {
   for (const m of aruba.MODELS) {
     if (!m.puertos || !(m.puertos.rj45 || m.puertos.combo)) continue;

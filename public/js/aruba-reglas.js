@@ -198,6 +198,8 @@
   };
   const ORDEN_MEDIOS = ['SFP28 25G', 'SFP+ 10G', 'RJ45', 'SFP 1G'];
   const TIPOS_PUERTO = ['rj45', 'combo', 'sfp', 'sfpPlus', 'sfp28'];
+  // Velocidad máxima de cada tipo de puerto, en Mbps (todo RJ-45 del catálogo es de 1 GbE).
+  const VEL_TIPO = { rj45: 1000, combo: 1000, sfp: 1000, sfpPlus: 10000, sfp28: 25000 };
   // `puertos` null = equipo virtual (EC-V): no hay chasis que auditar. `lan` = puertos LAN que
   // se reservan además de los enlaces. Devuelve {cabe, sinAsignar:[{enlace, medio}], lanFaltan,
   // usados:{tipo:n}, celular:n}. Solo cuentan los enlaces con caudal; los de respaldo, sí: ocupan
@@ -237,7 +239,7 @@
   // cada chasis reserva sus `lan` y el puerto de la interconexión: «any LAN or WAN port […]
   // You must match the media type and speed for both ends of the HA link […] you cannot use
   // MGMT ports» (Orchestrator, «Deployment - EdgeHA»). Por eso el puerto HA es del mismo tipo en
-  // los dos, y primero el RJ-45 (un latiguillo). Devuelve lo mismo que asignarPuertos, con
+  // los dos: el primero que cubre el agregado, empezando por el RJ-45 (un latiguillo). Devuelve lo mismo que asignarPuertos, con
   // `usados` del par, `porChasis` y `ha` (el tipo elegido, o null y `haFalta`).
   function asignarPuertosPar(puertos, enlaces, lan) {
     if (!puertos) return { cabe: true, virtual: true, sinAsignar: [], lanFaltan: 0, usados: {}, celular: 0, ha: null, haFalta: false, porChasis: [] };
@@ -265,7 +267,15 @@
       }
     }
     pendientes.filter((l) => !RUTAS[l.medio]).forEach((l) => sinAsignar.push({ enlace: l.n, medio: l.medio, tipo: l.tipo }));
-    const ha = TIPOS_PUERTO.find((t) => chasis.every((c) => c.libre[t] > 0)) || null;
+    // El puerto de la interconexión, también por velocidad (mejora aprobada, 2026-10-27): por él
+    // cruza el tráfico de los underlays que no aterrizan en el chasis activo, así que entre los
+    // tipos libres en los dos chasis va el primero que cubre el agregado de los enlaces (el RJ-45
+    // si basta: un latiguillo); si ninguno lo cubre, el más rápido. Gasta un puerto por chasis
+    // igual que antes, y los LAN aceptan cualquier tipo: lo que cabe no cambia.
+    const agregado = activos.reduce((s, l) => s + (l.down || 0), 0);
+    const comunes = TIPOS_PUERTO.filter((t) => chasis.every((c) => c.libre[t] > 0));
+    const vMax = comunes.reduce((v, t) => Math.max(v, VEL_TIPO[t]), 0);
+    const ha = comunes.find((t) => VEL_TIPO[t] >= agregado) || comunes.find((t) => VEL_TIPO[t] === vMax) || null;
     if (ha) chasis.forEach((c) => tomar(c, ha));
     let lanFaltan = 0;
     for (const c of chasis) {
@@ -288,5 +298,5 @@
   }
 
   return { BOOST_CUOTA, tierParaCaudal, capacidadSo, boostMbpsSitio, boostRecMbps, admiteDtd, escenariosUnderlay, escenarioBoost,
-    MEDIO_MBPS, medioMinimo, asignarPuertos, asignarPuertosPar, enlacesSobreMedio };
+    MEDIO_MBPS, VEL_TIPO, medioMinimo, asignarPuertos, asignarPuertosPar, enlacesSobreMedio };
 });

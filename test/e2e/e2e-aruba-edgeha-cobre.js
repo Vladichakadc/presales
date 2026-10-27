@@ -4,7 +4,8 @@
    pero el builder y la lista de materiales pedían igual dos ópticas. Con un par de EC-10104 y dos
    enlaces RJ-45 de 100 Mbps, cada chasis se queda con RJ-45 libres: la interconexión es un
    latiguillo, sin óptica que elegir ni cotizar. (El caso de jaula —EC-10150 con dos enlaces de
-   5 Gbps, óptica 10G por elegir— lo conduce e2e-desbordamiento-ec.js.) */
+   5 Gbps, óptica 10G por elegir— lo conduce e2e-desbordamiento-ec.js.) Y con la regla por velocidad
+   (2026-10-27), un par de EC-10106 con dos SFP+ de 5 Gbps lleva la interconexión por su SFP+ libre. */
 const { cargarPlaywright, abrirDimensionador, asentar, contador } = require('./ayuda');
 
 (async () => {
@@ -44,6 +45,21 @@ const { cargarPlaywright, abrirDimensionador, asentar, contador } = require('./a
   t.ok(filasHA.length === 1 && /Latiguillo RJ-45/.test(filasHA[0]),
     `la lista de materiales lleva un latiguillo, no dos ópticas (${filasHA.join(' | ').slice(0, 140)})`);
   t.ok(!filasHA.some((x) => /PENDIENTE DE SELECCIÓN/.test(x)), 'y nada queda pendiente de elegir');
+
+  // Con agregado de 10 Gbps y una SFP+ libre en cada chasis, la interconexión deja el RJ-45 (1 GbE)
+  // y va por la jaula: 2 ópticas 10G a elegir (mejora aprobada, 2026-10-27).
+  await page.click('[data-tab=calc]');
+  await asentar(page);
+  for (let i = 0; i < 2; i++) {
+    await filas.nth(i).locator('select[data-campo=medio]').selectOption('SFP+ 10G');
+    await filas.nth(i).locator('input[data-campo=down]').fill('5000');
+  }
+  await asentar(page);
+  await page.selectOption('#pickModel', 'EC-10106');
+  await asentar(page);
+  const chooser10 = ((await page.textContent('#sfpChooser')) || '').replace(/\s+/g, ' ');
+  t.ok(/Interconexión EdgeHA/.test(chooser10) && /por SFP\+ 1\/10G/.test(chooser10) && /10G/.test(chooser10) && !/Latiguillo/.test(chooser10),
+    `con 10 Gbps de agregado va por la SFP+ libre de cada chasis, no por el RJ-45 (${chooser10.slice(0, 160)})`);
 
   t.ok(errores.length === 0, 'sin errores de JS' + (errores.length ? ': ' + errores.join(' | ') : ''));
   await browser.close();
