@@ -58,7 +58,7 @@ fi
 # registro de npm) `set -e` cortaria el arranque antes de llegar aqui. Nunca bloquea: si el
 # fetch no responde, avisa y sigue.
 echo "[arranque] Temas en curso de otras sesiones (no tomes un tema ni un archivo ajeno):"
-if ! GIT_TERMINAL_PROMPT=0 timeout 60 node scripts/traspasos.js 2>&1 | sed 's/^/[arranque]   /'; then
+if ! GIT_TERMINAL_PROMPT=0 timeout 90 node scripts/traspasos.js 2>&1 | sed 's/^/[arranque]   /'; then
   echo "[arranque] AVISO: no se pudieron listar los temas en curso; corre 'npm run traspasos' a mano."
 fi
 

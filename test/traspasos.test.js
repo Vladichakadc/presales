@@ -6,7 +6,7 @@ const test = require('node:test');
 const assert = require('node:assert');
 const fs = require('fs');
 const path = require('path');
-const { leerCabecera, archivosDeTema, CAMPOS } = require('../scripts/traspasos');
+const { leerCabecera, archivosDeTema, prsSinTraspaso, repoDeOrigen, RAMA_NO_TEMA, CAMPOS } = require('../scripts/traspasos');
 
 const RAIZ = path.join(__dirname, '..');
 
@@ -44,4 +44,29 @@ test('el arranque lista los temas en curso antes de npm install y sin abortar', 
   const linea = hook.slice(hook.lastIndexOf('\n', lista) + 1, hook.indexOf('\n', lista));
   assert.match(linea, /^if ! .*timeout \d+ node scripts\/traspasos\.js/,
     'el listado va dentro de un if con timeout: un fetch colgado o fallido no puede cortar el arranque');
+});
+
+// Dos veces el 2026-10-27 dos sesiones hicieron el mismo trabajo porque la otra rama no salía en el
+// listado: un PR abierto con el traspaso ya borrado es un tema tomado igual.
+test('un PR abierto cuya rama no lleva traspaso sale aparte; uno con traspaso no se repite', () => {
+  const prs = [
+    { number: 30, title: 'EdgeHA por velocidad', head: { ref: 'claude/edgeha-velocidad' }, user: { login: 'v' }, updated_at: 'x' },
+    { number: 31, title: 'PQC', head: { ref: 'claude/elegant-pascal-7ymts7' }, user: { login: 'v' }, updated_at: 'y' },
+  ];
+  assert.deepStrictEqual(prsSinTraspaso(prs, ['claude/elegant-pascal-7ymts7']).map((p) => [p.numero, p.rama]),
+    [[30, 'claude/edgeha-velocidad']]);
+  assert.deepStrictEqual(prsSinTraspaso(null, []), []);
+});
+
+test('el repositorio sale del remoto en https o ssh', () => {
+  assert.strictEqual(repoDeOrigen('https://github.com/Vladichakadc/presales.git\n'), 'Vladichakadc/presales');
+  assert.strictEqual(repoDeOrigen('git@github.com:Vladichakadc/presales'), 'Vladichakadc/presales');
+  assert.strictEqual(repoDeOrigen('https://gitlab.com/x/y'), null);
+});
+
+test('las ramas de transporte de documentos y las de Dependabot no son temas', () => {
+  // Un workflow de transporte corta `fuente/*` desde la rama del tema y arrastra su traspaso.
+  assert.ok(RAMA_NO_TEMA.test('origin/fuente/pqc-2-2026-10-27'));
+  assert.ok(RAMA_NO_TEMA.test('origin/dependabot/npm_and_yarn/x'));
+  assert.ok(!RAMA_NO_TEMA.test('origin/claude/fuente-nueva'));
 });

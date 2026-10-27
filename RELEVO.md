@@ -1,6 +1,6 @@
 # Relevo
 
-Última actualización: 2026-10-27 · sexagesimocuarta entrega
+Última actualización: 2026-10-27 · sexagesimoquinta entrega
 
 Informe para continuar el trabajo. Lo pidió el dueño del repositorio el 2026-10-27: «de aquí en
 adelante, un informe de pendientes y mejoras para que la cuenta **servicioiptv2025@gmail.com**
@@ -16,7 +16,7 @@ está en curso no va aquí: lo dice `npm run traspasos` (protocolo en `docs/tras
    proyecto `Presales` de Railway. Con Claude Code, abre una sesión sobre el repositorio:
    `CLAUDE.md` se carga solo y dice cómo se trabaja aquí.
 2. **Antes de tocar nada**: trae `main` y corre `npm run traspasos`: lista cada rama con su
-   `docs/traspaso/<tema>.md` y los archivos que declara. No se toma un tema ni un archivo ajeno.
+   `docs/traspaso/<tema>.md` y los archivos que declara, y los PR abiertos sin traspaso con los suyos. No se toma un tema ni un archivo ajeno.
 3. **Mientras trabajas**: un tema, una rama y su traspaso (de `docs/traspaso/PLANTILLA.md`) al día en
    cada commit, y empuja a menudo: lo no empujado se pierde si la sesión se corta. Antes de fusionar
    en `main`: `npm run verificar`, `npm run auditar`, el servidor con `NODE_ENV=production`, la
@@ -31,6 +31,9 @@ está en curso no va aquí: lo dice `npm run traspasos` (protocolo en `docs/tras
 
 ## Estado al cerrar esta entrega
 
+- **Sexagesimoquinta entrega**: `npm run traspasos` (y el arranque) enseña también los PR abiertos
+  sin traspaso, con sus archivos, y ya no confunde las ramas `fuente/*` con temas. **Antes de tomar
+  un tema, míralo entero**: dos veces el 27-oct se duplicó trabajo por no ver la rama de otra sesión.
 - **Sexagesimocuarta entrega**: las figuras de Juniper, con la tabla de sus números, van en la
   hoja «Fotos del equipo» del Excel del BOM (PR #32), como ya hacían Aruba, Fortinet, Huawei y Cisco.
 - **Sexagesimotercera entrega**: las figuras de Juniper (36) y del Aruba 7010 (2) dicen qué es
