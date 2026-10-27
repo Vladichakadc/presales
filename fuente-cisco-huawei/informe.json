@@ -1,0 +1,227 @@
+[
+  {
+    "archivo": "mikrotik-l009-2haxd.html",
+    "para": "MIKROTIK",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://mikrotik.com/product/l009uigs_2haxd_in",
+        "status": 200,
+        "bytes": 373680,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "mikrotik-ppk-qkd.html",
+    "para": "MIKROTIK",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://manual.mikrotik.com/docs/virtual-private-networks/ipsec/qkd-integration-in-routeros-ipsec-ppk",
+        "status": 200,
+        "bytes": 61310,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "mikrotik-ipsec.html",
+    "para": "MIKROTIK",
+    "guardado": true,
+    "exploracion": true,
+    "intentos": [
+      {
+        "url": "https://manual.mikrotik.com/docs/virtual-private-networks/ipsec",
+        "status": 200,
+        "bytes": 407923,
+        "guardado": true,
+        "verificado": false
+      }
+    ]
+  },
+  {
+    "archivo": "mikrotik-changelog-7.21.txt",
+    "para": "MIKROTIK",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://download.mikrotik.com/routeros/7.21/CHANGELOG",
+        "status": 200,
+        "bytes": 29300,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "mikrotik-descargas.html",
+    "para": "MIKROTIK",
+    "guardado": true,
+    "exploracion": true,
+    "intentos": [
+      {
+        "url": "https://mikrotik.com/download",
+        "status": 200,
+        "bytes": 227056,
+        "guardado": true,
+        "verificado": false
+      }
+    ]
+  },
+  {
+    "archivo": "mikrotik-chr-intro.html",
+    "para": "MIKROTIK",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://manual.mikrotik.com/docs/getting-started/routeros-licensing/chr/",
+        "status": 200,
+        "bytes": 31430,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "cisco-iosxe-ppk.html",
+    "para": "CISCO",
+    "guardado": true,
+    "exploracion": true,
+    "intentos": [
+      {
+        "url": "https://www.cisco.com/c/en/us/td/docs/routers/ios/config/17-x/sec-vpn/b-security-vpn/m-sec-cfg-quantum-encryption-ppk.html",
+        "status": 200,
+        "bytes": 227015,
+        "guardado": true,
+        "verificado": false
+      }
+    ]
+  },
+  {
+    "archivo": "cisco-iosxe-sec-vpn-libro.html",
+    "para": "CISCO",
+    "guardado": true,
+    "exploracion": true,
+    "intentos": [
+      {
+        "url": "https://www.cisco.com/c/en/us/td/docs/routers/ios/config/17-x/sec-vpn/b-security-vpn.html",
+        "status": 200,
+        "bytes": 77844,
+        "guardado": true,
+        "verificado": false
+      }
+    ]
+  },
+  {
+    "archivo": "aruba-ec-cifrados.pdf",
+    "para": "ARUBA",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://arubanetworking.hpe.com/techdocs/sdwan-PDFs/docs/ECSecurityAlgorithmsCipherProfiles_latest.pdf",
+        "status": 200,
+        "bytes": 2332304,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "aruba-ecos-9.7.1.0-rn.pdf",
+    "para": "ARUBA",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://arubanetworking.hpe.com/techdocs/ArubaEdgeConnectEnterprise/GatewaysSoftware/9.7.1.0_109666/ECOS_9.7.1.0_Release_Notes.pdf",
+        "status": 200,
+        "bytes": 780455,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "nokia-7750sr1x-ds.pdf",
+    "para": "NOKIA",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://www.nokia.com/asset/f/212738/",
+        "status": 200,
+        "bytes": 1010195,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "nokia-7250ixr-r-ds.pdf",
+    "para": "NOKIA",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://www.nokia.com/asset/f/206658/",
+        "status": 200,
+        "bytes": 1967476,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "nokia-7250ixr-x-ds.pdf",
+    "para": "NOKIA",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://www.nokia.com/asset/f/214173/",
+        "status": 200,
+        "bytes": 702598,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "nokia-7250ixr-6e-ds.pdf",
+    "para": "NOKIA",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://www.nokia.com/asset/f/212673/",
+        "status": 200,
+        "bytes": 1339752,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "nokia-asset-215309.pdf",
+    "para": "NOKIA",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://www.nokia.com/asset/f/215309/",
+        "status": 200,
+        "bytes": 754093,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  }
+]
