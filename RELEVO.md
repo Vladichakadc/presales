@@ -1,6 +1,6 @@
 # Relevo
 
-Última actualización: 2026-10-27 · quincuagesimonovena entrega
+Última actualización: 2026-10-27 · sexagésima entrega
 
 Informe para continuar el trabajo. Lo pidió el dueño del repositorio el 2026-10-27: «de aquí en
 adelante, un informe de pendientes y mejoras para que la cuenta **servicioiptv2025@gmail.com**
@@ -33,6 +33,10 @@ está en curso no va aquí: lo dice `npm run traspasos` (protocolo en `docs/tras
 
 - **Producción**: `main` lleva esta entrega (ver `git log`); Railway despliega cuando CI pasa y la
   sonda (`sonda-produccion.yml`) abre un issue con la etiqueta `despliegue` si algo falla.
+- **Sexagésima entrega**: el arranque de cada sesión remota lista los temas en curso (`npm run
+  traspasos`) antes de instalar nada. **Aviso**: esta sesión y la de la entrega 59 hicieron a la vez
+  el mismo piloto de IA porque aquella empujó a `main` sin rama de traspaso; el duplicado se cerró
+  (PR #22). Antes de empezar un tema, rama y traspaso empujados: es lo que lo hace visible.
 - **Entregado**: el requisito «Exigir criptografía post-cuántica» en los siete dimensionadores
   (`public/js/pqc.js`); el piloto de IA «del pliego al escenario» en el dimensionador Cisco
   (`POST /api/escenario/desde-documento`, `public/js/pliego.js`); la skill `accessibility` de ECC;
@@ -52,12 +56,15 @@ esta entrega, ninguna rama remota llevaba un traspaso abierto.
 1. **Proteger `main`**: *Settings → Rules → Rulesets* (o *Branches*): exigir las comprobaciones
    `verificar` y `pantallas` y «Require branches to be up to date before merging», **con el
    administrador en la lista de omisión** (las sesiones empujan directo a `main`). Aprobado, sin
-   configurar: el conector de GitHub no expone la protección de ramas.
+   configurar: el 27-oct una sesión con acceso de administrador lo intentó por la API y el control
+   de permisos de la sesión lo denegó; se hace a mano.
 2. **Invitar a la cuenta colaboradora** en GitHub y, si hace falta, en Railway.
-3. **Aviso de seguridad de Railway (22-oct)**: leer sus «recommended next steps»; si pide rotar
-   variables, las secretas de `presales-web` son `AUTH_PASSWORD`, `SESSION_SECRET` (cerrarla cierra
-   todas las sesiones) y `ANTHROPIC_API_KEY`. El conector de Railway pide autorización en los
-   ajustes de conectores de claude.ai.
+3. **Incidente de seguridad de Railway (20 al 22-oct), leído el 27-oct**: descifraron variables de
+   entorno de hasta un 1,85 % de los espacios de trabajo y buscaban claves de IA. Rotar
+   `ANTHROPIC_API_KEY` (crear una nueva en la consola de Anthropic, ponerla en Railway y revocar la
+   vieja; mirar si hubo consumo raro) y `SESSION_SECRET` (cierra las sesiones); `AUTH_PASSWORD` solo
+   crea el primer administrador, así que la contraseña se cambia en «Mi cuenta». Revisar el *Security
+   log* y las apps de GitHub. Detalle en *Decisiones* de `PENDIENTES.md`.
 4. **`ANTHROPIC_API_KEY` en Railway**: sin ella, la sincronización y el piloto de IA responden 503
    (lo dicen en pantalla). `/api/sync/estado` dice si está puesta.
 5. **Cuenta de Huawei** (Info-Finder pide sesión): sin ella no hay ciclo de vida de Huawei, ni el
@@ -85,7 +92,8 @@ esta entrega, ninguna rama remota llevaba un traspaso abierto.
   FEC del SSR; no hay lista de precios ni SKU de chasis.
 - **Aruba**: ranuras de expansión del 9114 y el 9240 (QuickSpecs con SKU y precio), EC-XL S3N77A, y
   las dos fuentes que solo devuelven el cascarón de la página (la URL del PDF se copia desde el
-  Chrome del dueño en `hpe.com`).
+  Chrome del dueño en `hpe.com`; una sesión puede hacerlo con Claude en Chrome si el Chrome del
+  dueño está abierto con la extensión: el 27-oct no lo estaba).
 - **MikroTik**: si la cifra IPsec es por sentido o la suma (respuesta escrita de soporte), figuras
   traseras que la galería no publica, el CCR2004-16G-2S+PC en la matriz de compatibilidad.
 - **Huawei**: ficha de iMaster NCE-Campus, nubes del vCPE, funciones de N1 Advanced frente a
