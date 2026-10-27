@@ -1,0 +1,541 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html><html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en-us" lang="en-us">
+<head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+
+<meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=0" />
+<meta name="description" content="Read this topic to learn about PQC features in Junos OS and Junos OS Evolved." /><meta name="topicid" content="xi1594738" /><meta name="branchId" content="1" /><meta name="jdoc-content-type" content="dita-topic" /><meta name="release" content="junos 26.2" /><script type="application/ld+json">{"@context": "http://schema.org","@type": "WebPage","name": "Get Started with PQC | Junos OS | Juniper Networks","@id": "https://www.juniper.net/documentation/us/en/software/junos26.2/pki/topics/concept/get-started-with-pqc.html#WebPage","url": "https://www.juniper.net/documentation/us/en/software/junos26.2/pki/topics/concept/get-started-with-pqc.html"}</script><title>Get Started with PQC | Junos OS | Juniper Networks</title><link rel="modulepreload" crossorigin href="/documentation/webstatic/js/vue-core-ELZsIhmp.js"><link rel="modulepreload" crossorigin href="/documentation/webstatic/js/state-2_pXbnk3.js"><link rel="modulepreload" crossorigin href="/documentation/webstatic/js/vendor-QbGKFtLE.js"><link rel="modulepreload" crossorigin href="/documentation/webstatic/js/http-DNwu3bhQ.js"><link rel="modulepreload" crossorigin href="/documentation/webstatic/js/utils-BrjAfiP7.js"><link rel="modulepreload" crossorigin href="/documentation/webstatic/js/common-aHd1_eCa.js"><link rel="stylesheet" crossorigin="" href="/documentation/webstatic/css/common-B--Uzk1E.css"><link rel="stylesheet" crossorigin="" href="/documentation/webstatic/css/dita-yXMc-UTb.css"><script src="https://www.juniper.net/etc.clientlibs/clientlibs/granite/jquery.min.js"></script><link href="https://www.juniper.net/assets/styles/custom/juniper-survey.css" rel="stylesheet" type="text/css"><link rel="dns-prefetch" href="//h50007.www5.hpe.com" />
+<link rel="preconnect" href="https://h50007.www5.hpe.com" crossorigin />
+<!--IXF: JavaScript begin-->
+<script class="trustecm" trackertype="functional">
+    /*
+    --LICENSE--
+    Access to and use of BrightEdge Link Equity Manager is governed by the 
+    Infrastructure Product Terms located at: www.brightedge.com/infrastructure-product-terms. 
+    Customer acknowledges and agrees it has read, understands and agrees to be bound by the 
+    Infrastructure Product Terms.
+    */
+
+    function startBESDK() {
+        var be_sdk_options = {
+            'api.endpoint': 'https://ixf2-api.bc0a.com',
+            'sdk.account': 'f00000000063367',
+            'requestparameters.caseinsensitive': true,
+            'whitelist.parameter.list': 'ixf'
+        };
+        BEJSSDK.construct(be_sdk_options);
+    }
+    (function () {
+        var sdkjs = document.createElement('script');
+        sdkjs.type = 'text/javascript';
+        sdkjs.async = true;
+        sdkjs.src = document.location.protocol + '//cdn.bc0a.com/be_ixf_js_sdk.js';
+        var s = document.getElementsByTagName('script')[0];
+        s.parentNode.insertBefore(sdkjs, s);
+        if (document.addEventListener) {
+            sdkjs.addEventListener('load', startBESDK);
+        } else {
+            sdkjs.onreadystatechange = startBESDK;
+        }
+    })();
+</script>
+<!--IXF: JavaScript end-->
+<script>
+    function insertcanonical() {
+        var canonicalexists = !!document.querySelector("link[rel='canonical']");
+        if (!canonicalexists) {
+            var tag = document.createElement("link");
+            var pathname = location.pathname;
+            var pattern = /\/$/;
+            if(pattern.test(pathname)){
+                pathname = pathname.replace(pattern,"/index.html");
+            }
+            // check if last character is slash else add / to be consistent
+            var href = "https://www.juniper.net" + pathname;
+            tag.setAttribute("rel", "canonical");
+            tag.setAttribute("href", href);
+            document.head.appendChild(tag);
+        }
+    }
+    insertcanonical();
+</script><link rel="preload" href="/documentation/webstatic/fonts/swmaterialicon.woff" as="font" type="font/woff" crossorigin="anonymous"><link rel="preload" href="/documentation/webstatic/fonts/Lato-Black.woff2" as="font" type="font/woff2" crossorigin="anonymous"><link rel="preload" href="https://www.juniper.net/etc.clientlibs/juniper/clientlibs/clientlib-global-navigation.css" as="style" /><script src="https://assets.adobedtm.com/998b2d6d4944658536fe36266a249b07e626b86d/satelliteLib-6d05b7c7a99e1cbbdcac4fcfe7005e6bee80a0e9.js"></script><script type="text/javascript" src="../../__toc.js?v+20260622T204737" basepath="../../" id="tocscript"></script></head>
+<body id="xd_ea802945c31238bf--852731c-19a923fc65c--7fec" style="visibility:hidden;">
+<!--[if lte IE 9]>
+	<div class="message-warning"> You are using unsupported version of Internet Explorer. Please upgrade your browser to latest version.</div>
+<![endif]-->
+<!-- Start survey script MaritzCX -->
+<script type="text/javascript" class="trustecm" trackertype="functional"
+	src="https://siteintercept.allegiancetech.com/dist/jn1si001/MCX_Juniper2.js" async></script>
+<script type="text/javascript" class="trustecm" trackertype="functional"
+	src="https://siteintercept.allegiancetech.com/InterceptScripts/mcxSiteIntercept-1.9.1.js" async></script>
+<div id="mcxInvitationModal">
+	<div id="mcxFloating">
+		<div id="mcxInfo2">
+			<div id="mcxNoButton">
+				<button id="mcxNo" onclick="McxSiteInterceptOnExit.declineSurvey();mcxDisplay();">X</button>
+			</div>
+			<div id="mcxLogos">
+				<img src="https://junipernetworks.allegiancetech.com/surveys/images/MRVCXM/juniper_logo.jpg">
+			</div>
+			<div class="clearfix">
+				<p id="mcxHeading">Help us improve your experience.</p>
+				<p id="mcxText1">Let us know what you think. </p>
+				<p id="mcxText2">Do you have time for a two-minute survey?</p>
+			</div>
+			<div id="mcxYesButton" onClick="McxSiteInterceptOnExit.acceptSurvey();mcxDisplay();" class="clearfix">
+				<button id="mcxYes">Yes</button>
+			</div>
+			<div>
+				<button id="noLater" onclick="McxSiteInterceptOnExit.declineSurvey();mcxDisplay();">Maybe Later</button>
+			</div>
+		</div>
+	</div>
+</div>
+<script>
+	window.addEventListener('message', function (e) {
+		var key = e.message ? 'message' : 'data';
+		var data = e[key];
+		if (data === 'MaritzCX Survey Close') {
+			McxSiteInterceptOnExit.closeSurveyModal(); //close iframe
+		}
+	}, false);
+</script>
+<!-- End survey script MaritzCX --><script type="application/ld+json">
+  {
+"@context": "http://schema.org",
+"@type": "Organization",
+"name": "Juniper Networks",
+"url": "https://www.juniper.net/us/en/",
+"logo": "https://www.juniper.net/assets/svg/jnpr-logo.svg",
+"sameAs": ["https://en.wikipedia.org/wiki/Juniper_Networks",
+  "https://www.facebook.com/JuniperNetworks/",
+  "https://twitter.com/JuniperNetworks/",
+  "https://www.linkedin.com/company/juniper-networks",
+  "https://www.youtube.com/junipernetworks",
+  "https://www.instagram.com/junipernetworks/"
+  ]
+}
+</script>
+
+<script type="application/ld+json">
+{
+"@context": "http://schema.org",
+"@id": "https://www.juniper.net/us/en/#website",
+"@type": "WebSite",
+"url": "https://www.juniper.net/us/en/",
+"name": "Juniper Networks",
+"alternateName": "Juniper, Juniper Networks Inc.",
+"publisher": {
+  "@type": "Corporation",
+  "name": "Juniper Networks"
+  }
+}
+</script><div id="app"><sw-app inline-template=""><div><sw-header></sw-header><sw-change-widget></sw-change-widget><div class="main wrapper"><sw-leftnav> </sw-leftnav><sw-rightnav><div class="minitoc desktop-only"><h5>ON THIS PAGE</h5><ul v-scrollspy=""><li><p><a href="#xd_ea802945c31238bf--852731c-19a923fc65c--7fec__section_pvk_gcy_khc">Quantum-Resistant Security Features</a></p></li><li><p><a href="#xd_ea802945c31238bf--852731c-19a923fc65c--7fec__section_rjm_tqq_dhc">Assess Your Quantum-Resistant Security Requirements</a></p></li><li><p><a href="#xd_ea802945c31238bf--852731c-19a923fc65c--7fec__section_jm3_gdy_khc">Next Steps</a></p></li></ul></div></sw-rightnav><div class="l-body"><div class="page-options clearfix"><sw-breadcrumb> </sw-breadcrumb></div><div class="topicBody"><div id="topic-content">
+
+
+
+  
+  <h1 class="title topictitle1" id="ariaid-title1">Get Started with PQC</h1>
+<sw-topic-details date="2026-06-22"></sw-topic-details>
+  
+  
+  <div class="body conbody"><p class="shortdesc shortdesc-title">Read this topic to learn about PQC features in Junos OS and Junos OS
+    Evolved.</p>
+
+    <div class="section" id="xd_ea802945c31238bf--852731c-19a923fc65c--7fec__section_pvk_gcy_khc"><h2 class="title sectiontitle">Quantum-Resistant Security Features</h2>
+      
+      <p class="p">Juniper Networks provides advanced cryptographic capabilities to safeguard networks against
+        emerging quantum threats. You can address these threats in two ways—using post‑quantum
+        cryptography (PQC) and quantum cryptography.</p>
+
+      <ul class="ul" id="xd_ea802945c31238bf--852731c-19a923fc65c--7fec__ul_q1j_2nf_2jc">
+        <li class="li">
+          <p class="p">PQC uses cryptographic algorithms based on mathematical problems that are
+            computationally infeasible to solve, even for quantum computers. PQC algorithms protect
+            existing cryptographic systems against classical and quantum attacks and do not require
+            specialized hardware.</p>
+
+        </li>
+
+        <li class="li">
+          <p class="p">Quantum cryptography can be implemented using quantum key distribution (QKD). QKD is a
+            physics-based approach that applies the principles of quantum mechanics for secure key
+            exchange. QKD requires specialized hardware infrastructure such as external key delivery
+            systems. When an external key distribution infrastructure is available, Juniper Networks
+            quantum-safe IPsec and MACsec deployments can integrate with QKD using the ETSI GS QKD
+            014 V1.1.1 (2019-02) API to request keys. This integration enables out-of-band delivery
+            of cryptographic keys for IPsec VPN and MACsec sessions.</p>
+
+        </li>
+
+      </ul>
+
+      <p class="p">Junos® OS and Junos® OS Evolved incorporate both approaches and use the following
+        methods to ensure protection:</p>
+
+      <ul class="ul" id="xd_ea802945c31238bf--852731c-19a923fc65c--7fec__ul_rxn_ndz_khc">
+        <li class="li">
+          <p class="p">Implement quantum-safe technologies such as the
+            QKD to interface with key delivery servers for
+            secure key exchange in VPNs.</p>
+
+        </li>
+
+        <li class="li">
+          <p class="p">Adapt cryptoagility with Quantum Buffer to meet the evolving cryptographic standards
+            and enable flexible key management through fungible key delivery
+            servers.</p>
+
+        </li>
+
+        <li class="li">
+          <p class="p">Adopt the National Institute of Standards and Technology (NIST)-approved
+            PQC algorithms for encryption, authentication, and key
+            exchange. </p>
+
+        </li>
+
+      </ul>
+
+      <p class="p">Juniper Networks PQC implementation provides seamless integration with backward
+        compatibility and no service disruption.</p>
+
+      <p class="p">Use <a class="xref" href="https://apps.juniper.net/feature-explorer/feature/105?fn=IPsec%20VPN" target="_blank">Feature
+        Explorer</a>
+        to confirm platform and release support for specific features.</p>
+
+      <p class="p">Learn about the following key features and implementations.</p>
+
+      <ul class="ul mini-toc"><li class="li"><a class="xref" href="#xd_ea802945c31238bf--852731c-19a923fc65c--7fec__subsection_q1s_whz_khc"><span class="undefined_element">Quantum-Safe Support</span></a></li>
+<li class="li"><a class="xref" href="#xd_ea802945c31238bf--852731c-19a923fc65c--7fec__subsection_g2c_zhz_khc"><span class="undefined_element">PQC Libraries and Algorithms</span></a></li>
+<li class="li"><a class="xref" href="#xd_ea802945c31238bf--852731c-19a923fc65c--7fec__subsection_qhj_13z_khc"><span class="undefined_element">Quantum Buffer</span></a></li>
+<li class="li"><a class="xref" href="#xd_ea802945c31238bf--852731c-19a923fc65c--7fec__subsection_vjz_mvm_lhc"><span class="undefined_element">Quantum-Resistant Key Exchange in SSH</span></a></li>
+<li class="li"><a class="xref" href="#xd_ea802945c31238bf--852731c-19a923fc65c--7fec__subsection_igg_c3z_khc"><span class="undefined_element">PQC-Signed Software Images</span></a></li>
+</ul>
+<div class="subsection" id="xd_ea802945c31238bf--852731c-19a923fc65c--7fec__subsection_q1s_whz_khc"><h3 class="sectiontitle">Quantum-Safe Support</h3>
+        
+        <p class="p"><a class="xref" href="#xd_ea802945c31238bf--852731c-19a923fc65c--7fec__table_rny_44z_khc">Table 1</a> shows a
+          list of features supported with quantum-safe implementations in Junos OS and Junos OS
+          Evolved.</p>
+
+      </div>
+      <sw-table>
+<div class="tablenoborder"><table cellpadding="4" cellspacing="0" summary="" id="xd_ea802945c31238bf--852731c-19a923fc65c--7fec__table_rny_44z_khc" class="table"><caption><span class="tablecap"><span class="table--title-label">Table 1: </span>Quantum-Safe Support</span></caption><colgroup><col /><col /></colgroup><thead class="thead" style="text-align:left;">
+            <tr class="row">
+              <th class="entry cellrowborder" style="vertical-align:top;" id="d1946e157">
+                <p class="p">Feature Name</p>
+
+              </th>
+
+              <th class="entry cellrowborder" style="vertical-align:top;" id="d1946e163">
+                <p class="p">Details</p>
+
+              </th>
+
+            </tr>
+
+          </thead>
+<tbody class="tbody">
+            <tr class="row">
+              <td class="entry cellrowborder" style="vertical-align:top;" headers="d1946e157 ">
+                <p class="p">Quantum-Safe IPsec VPN</p>
+
+              </td>
+
+              <td class="entry cellrowborder" style="vertical-align:top;" headers="d1946e163 ">
+                <p class="p">Supports RFC 8784 in IPsec VPNs. </p>
+
+                <ul class="ul" id="xd_ea802945c31238bf--852731c-19a923fc65c--7fec__ul_nmg_w21_lhc">
+                  <li class="li">
+                    <p class="p">Uses out-of-band key exchange mechanisms, such as QKD, to strengthen IPsec
+                      tunnel security.</p>
+
+                  </li>
+
+                  <li class="li">
+                    <p class="p">Implements preshared key mixing, also known as post-quantum preshared keys
+                      (PPKs), in Internet Key Exchange Version 2 (IKEv2) for post-quantum
+                      security.</p>
+
+                  </li>
+
+                </ul>
+
+                <p class="p">See <a class="xref" href="https://www.juniper.net/documentation/us/en/software/junos/vpn-ipsec/topics/topic-map/quantum-safe-ipsec-vpn.html" target="_blank">Quantum Safe IPsec VPN</a>.</p>
+
+              </td>
+
+            </tr>
+
+            <tr class="row">
+              <td class="entry cellrowborder" style="vertical-align:top;" headers="d1946e157 ">
+                <p class="p">Quantum-Safe MACsec</p>
+
+              </td>
+
+              <td class="entry cellrowborder" style="vertical-align:top;" headers="d1946e163 "><ul class="ul" id="xd_ea802945c31238bf--852731c-19a923fc65c--7fec__ul_vvd_v5p_4hc">
+                  <li class="li">
+                    <p class="p">Implements frequent key refresh through QKD using key delivery servers.</p>
+
+                  </li>
+
+                  <li class="li">
+                    <p class="p">Uses AES-256 encryption, which is inherently quantum-safe.</p>
+
+                  </li>
+
+                </ul>
+See <a class="xref" href="https://www.juniper.net/documentation/us/en/software/junos/security-services/topics/topic-map/understanding-macsec.html" target="_blank">Understanding Media Access Control Security
+                (MACsec)</a>.</td>
+
+            </tr>
+
+          </tbody>
+</table>
+</div>
+</sw-table>
+      <div class="subsection" id="xd_ea802945c31238bf--852731c-19a923fc65c--7fec__subsection_g2c_zhz_khc"><h3 class="sectiontitle">PQC Libraries and Algorithms</h3>
+        
+        <p class="p"><a class="xref" href="#xd_ea802945c31238bf--852731c-19a923fc65c--7fec__table_ubh_ldf_lhc">Table 2</a> shows
+          NIST-standardized quantum-resistant PQC algorithms.</p>
+
+      </div>
+      <sw-table>
+<div class="tablenoborder"><table cellpadding="4" cellspacing="0" summary="" id="xd_ea802945c31238bf--852731c-19a923fc65c--7fec__table_ubh_ldf_lhc" class="table"><caption><span class="tablecap"><span class="table--title-label">Table 2: </span>NIST-Standardized PQC algorithms</span></caption><colgroup><col /><col /><col /></colgroup><thead class="thead" style="text-align:left;">
+            <tr class="row">
+              <th class="entry cellrowborder" style="vertical-align:top;" id="d1946e274">
+                <p class="p">Algorithm</p>
+
+              </th>
+
+              <th class="entry cellrowborder" style="vertical-align:top;" id="d1946e280">
+                <p class="p">Type</p>
+
+              </th>
+
+              <th class="entry cellrowborder" style="vertical-align:top;" id="d1946e286">
+                <p class="p">Description</p>
+
+              </th>
+
+            </tr>
+
+          </thead>
+<tbody class="tbody">
+            <tr class="row">
+              <td class="entry cellrowborder" style="vertical-align:top;" headers="d1946e274 ">
+                <p class="p">ML-KEM</p>
+
+              </td>
+
+              <td class="entry cellrowborder" style="vertical-align:top;" headers="d1946e280 ">
+                <p class="p">Key Encapsulation</p>
+
+              </td>
+
+              <td class="entry cellrowborder" style="vertical-align:top;" headers="d1946e286 ">
+                <p class="p">Module-lattice-based key encapsulation mechanism built on CRYSTALS-Kyber
+                  algorithm.</p>
+
+              </td>
+
+            </tr>
+
+            <tr class="row">
+              <td class="entry cellrowborder" style="vertical-align:top;" headers="d1946e274 ">
+                <p class="p">ML-DSA</p>
+
+              </td>
+
+              <td class="entry cellrowborder" style="vertical-align:top;" headers="d1946e280 ">
+                <p class="p">Digital Signature</p>
+
+              </td>
+
+              <td class="entry cellrowborder" style="vertical-align:top;" headers="d1946e286 ">
+                <p class="p">Module-lattice-based digital signature based on CRYSTALS-Dilithium algorithm.</p>
+
+              </td>
+
+            </tr>
+
+            <tr class="row">
+              <td class="entry cellrowborder" style="vertical-align:top;" headers="d1946e274 ">
+                <p class="p">SLH-DSA</p>
+
+              </td>
+
+              <td class="entry cellrowborder" style="vertical-align:top;" headers="d1946e280 ">
+                <p class="p">Digital Signature</p>
+
+              </td>
+
+              <td class="entry cellrowborder" style="vertical-align:top;" headers="d1946e286 ">
+                <p class="p">Stateless hash-based digital signature based on SPHINCS+ algorithm.</p>
+
+              </td>
+
+            </tr>
+
+          </tbody>
+</table>
+</div>
+</sw-table>
+      <p class="p">Juniper Networks includes PQC libraries to ensure readiness for PQC algorithms.</p>
+
+      <p class="p"><a class="xref" href="#xd_ea802945c31238bf--852731c-19a923fc65c--7fec__table_l4s_n51_lhc">Table 3</a> shows the
+        list of supported cryptographic libraries for PQC.</p>
+
+      <sw-table>
+<div class="tablenoborder"><table cellpadding="4" cellspacing="0" summary="" id="xd_ea802945c31238bf--852731c-19a923fc65c--7fec__table_l4s_n51_lhc" class="table"><caption><span class="tablecap"><span class="table--title-label">Table 3: </span>Supported PQC Libraries</span></caption><colgroup><col /><col /></colgroup><thead class="thead" style="text-align:left;">
+            <tr class="row">
+              <th class="entry cellrowborder" style="vertical-align:top;" id="d1946e390">
+                <p class="p">Library</p>
+
+              </th>
+
+              <th class="entry cellrowborder" style="vertical-align:top;" id="d1946e396">
+                <p class="p">Purpose</p>
+
+              </th>
+
+            </tr>
+
+          </thead>
+<tbody class="tbody">
+            <tr class="row">
+              <td class="entry cellrowborder" style="vertical-align:top;" headers="d1946e390 ">
+                <p class="p">OpenSSL 3.5</p>
+
+              </td>
+
+              <td class="entry cellrowborder" style="vertical-align:top;" headers="d1946e396 ">
+                <p class="p">Provides support for PQC algorithms for secure communications.</p>
+
+              </td>
+
+            </tr>
+
+            <tr class="row">
+              <td class="entry cellrowborder" style="vertical-align:top;" headers="d1946e390 ">
+                <p class="p">Leancrypto</p>
+
+              </td>
+
+              <td class="entry cellrowborder" style="vertical-align:top;" headers="d1946e396 ">
+                <p class="p">Serves as the kernel cryptographic library for PQC readiness.</p>
+
+              </td>
+
+            </tr>
+
+          </tbody>
+</table>
+</div>
+</sw-table>
+      <div class="subsection" id="xd_ea802945c31238bf--852731c-19a923fc65c--7fec__subsection_qhj_13z_khc"><h3 class="sectiontitle">Quantum Buffer</h3>
+        
+        <p class="p">Juniper Networks strengthens finite field cryptography (FFC) parameters in existing
+          public key cryptography. This approach reduces the risk from Cryptographically Relevant
+          Quantum Computers (CRQCs) and supports a smooth transition to PQC. This Quantum Buffer
+          approach extends the time window and resists cryptanalytic attacks by reinforcing FFC
+          parameters.</p>
+
+        <p class="p">Juniper Networks implements Quantum Buffer for the SSH protocol. See <a class="xref" href="quantum-buffer-pqc.html" title="Read this topic to learn about the Juniper Networks Quantum Buffer feature to protect network devices from quantum threats and keep the network secure for longer periods.">The Quantum Buffer</a>.</p>
+
+      </div>
+      <div class="subsection" id="xd_ea802945c31238bf--852731c-19a923fc65c--7fec__subsection_vjz_mvm_lhc"><h3 class="sectiontitle">Quantum-Resistant Key Exchange in SSH</h3>
+        
+        <p class="p">Juniper Networks supports Shor-resistant key exchange to strengthen SSH security against
+          quantum attacks. Network devices can use the hybrid Streamlined NTRU Prime 761 plus X25519
+          key exchange algorithm. This algorithm combines lattice-based and elliptic curve
+          techniques to provide strong protection against quantum threats. See <a class="xref" href="https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/system-edit-ssh-key-exchange.html" target="_blank">key-exchange</a>.</p>
+
+      </div>
+      <div class="subsection" id="xd_ea802945c31238bf--852731c-19a923fc65c--7fec__subsection_igg_c3z_khc"><h3 class="sectiontitle">PQC-Signed Software Images</h3>
+        
+        <p class="p">Juniper Networks provides PQC-signed Junos OS and Junos OS Evolved images. These images
+          use digital signatures for integrity verification that comply with the Commercial National
+          Security Algorithm Suite 2.0 (CNSA 2.0) recommendations. You can validate the image
+          signature off-box using your preferred verifier on a local machine. See <a class="xref" href="image-signing-pqc.html" title="Read this topic to learn about PQC-signed Junos OS and Junos OS Evolved software images and how to verify the PQC signatures.">PQC Signatures for Software Images</a>.</p>
+
+      </div>
+    </div>
+
+    <div class="section" id="xd_ea802945c31238bf--852731c-19a923fc65c--7fec__section_rjm_tqq_dhc"><h2 class="title sectiontitle">Assess Your Quantum-Resistant Security Requirements</h2>
+      
+      <p class="p">Organizations face evolving security challenges as quantum computing advances. To protect
+        your network and maintain compliance, understand your security requirements and implement
+        appropriate quantum-resistant security features. Use the following assessment to determine
+        which quantum-resistant security features are essential for your
+        network:</p>
+
+      <ul class="ul" id="xd_ea802945c31238bf--852731c-19a923fc65c--7fec__ul_g43_m1h_lhc">
+        <li class="li">
+          <p class="p"><strong class="ph b">Asses infrastructure</strong>—Assess your network infrastructure including your Juniper
+            Networks hardware and software. Use PQC-signed software images as first line of defense
+            to ensure image integrity and compliance with CNSA 2.0 recommendations. See <a class="xref" href="#xd_ea802945c31238bf--852731c-19a923fc65c--7fec__subsection_igg_c3z_khc">PQC-Signed Software Images</a>.</p>
+
+        </li>
+
+        <li class="li">
+          <p class="p"><strong class="ph b">Explore PQC readiness and quantum-safe options</strong>—Understand Juniper Networks
+            readiness with PQC algorithms. Review the available technologies for quantum-safe VPNs,
+            including quantum-safe IPsec and quantum-safe MACsec. See <a class="xref" href="#xd_ea802945c31238bf--852731c-19a923fc65c--7fec__subsection_g2c_zhz_khc">PQC Libraries and Algorithms</a>, <a class="xref" href="#xd_ea802945c31238bf--852731c-19a923fc65c--7fec__subsection_vjz_mvm_lhc">Quantum-Resistant Key Exchange in SSH</a>, and
+              <a class="xref" href="#xd_ea802945c31238bf--852731c-19a923fc65c--7fec__subsection_q1s_whz_khc">Quantum-Safe Support</a>.</p>
+
+        </li>
+
+        <li class="li">
+          <p class="p"><strong class="ph b">Evaluate risk tolerance</strong>—Know your network's risk tolerance for quantum computing
+            threats. Implement cryptoagility with Quantum Buffer solution and fungible key
+            management systems to strengthen existing cryptography during migration. See <a class="xref" href="#xd_ea802945c31238bf--852731c-19a923fc65c--7fec__subsection_qhj_13z_khc">Quantum Buffer</a> and
+              <a class="xref" href="#xd_ea802945c31238bf--852731c-19a923fc65c--7fec__subsection_q1s_whz_khc">Quantum-Safe Support</a>.</p>
+
+        </li>
+
+        <li class="li">
+          <p class="p"><strong class="ph b">Secure critical deployments</strong>—Determine your critical deployments such as IPsec
+            and MACsec implementations. Secure these deployments with quantum-safe technologies. See
+              <a class="xref" href="#xd_ea802945c31238bf--852731c-19a923fc65c--7fec__subsection_q1s_whz_khc">Quantum-Safe Support</a>.</p>
+
+        </li>
+
+      </ul>
+
+      <p class="p">QKD provides physics-based security for key distribution, while PQC algorithms secure
+        cryptographic operations. Evaluate your infrastructure capabilities and security
+        requirements to determine the optimal approach. Plan your upgrade for a quantum-resistant
+        network.</p>
+
+    </div>
+
+    <div class="section" id="xd_ea802945c31238bf--852731c-19a923fc65c--7fec__section_jm3_gdy_khc"><h2 class="title sectiontitle">Next Steps</h2>
+      
+      <p class="p">Read the following topics to know more about the quantum-resistant security features:</p>
+
+      <ul class="ul" id="xd_ea802945c31238bf--852731c-19a923fc65c--7fec__ul_ipz_bfh_lhc">
+        <li class="li">
+          <p class="p"><a class="xref" href="quantum-buffer-pqc.html" title="Read this topic to learn about the Juniper Networks Quantum Buffer feature to protect network devices from quantum threats and keep the network secure for longer periods.">The Quantum Buffer</a></p>
+
+        </li>
+
+        <li class="li">
+          <p class="p"><a class="xref" href="image-signing-pqc.html" title="Read this topic to learn about PQC-signed Junos OS and Junos OS Evolved software images and how to verify the PQC signatures.">PQC Signatures for Software Images</a></p>
+
+        </li>
+
+        <li class="li">
+          <p class="p"><a class="xref" href="https://www.juniper.net/documentation/us/en/software/junos/vpn-ipsec/topics/topic-map/quantum-safe-ipsec-vpn.html" target="_blank">Quantum Safe IPsec VPN</a></p>
+
+        </li>
+
+      </ul>
+
+    </div>
+
+  </div>
+
+  <div class="l-aside-box related-documentation"><h3 class="related-links-title">Related Documentation</h3><div class="related-links-body"><ul><li><div><a class="link" href="https://www.juniper.net/documentation/us/en/software/junos/pki/topics/concept/pqc-overview.html" target="_blank">PQC Overview</a></div>
+</li></ul></div></div>
+</div><sw-prev-next> </sw-prev-next></div><sw-comments> </sw-comments></div></div><sw-pop-over></sw-pop-over><sw-footer></sw-footer></div></sw-app></div><script type="module" crossorigin="" src="/documentation/webstatic/js/dita-CO28yWh5.js"></script><script type="text/javascript" src="/assets/scripts/custom/cookie-consent.js"></script><script type="text/javascript">_satellite.pageBottom();</script></body>
+</html>

@@ -1,0 +1,167 @@
+[
+  {
+    "archivo": "cisco-sr-rn-26-1.html",
+    "para": "CISCO",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://www.cisco.com/c/en/us/td/docs/routers/secure-routers/cisco-8000-series-secure-routers-release-26-1-x.html",
+        "status": 200,
+        "bytes": 161590,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "cisco-sr-rn-26-2.html",
+    "para": "CISCO",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://www.cisco.com/c/en/us/td/docs/routers/secure-routers/cisco-8000-series-secure-routers-release-26-2-x.html",
+        "status": 200,
+        "bytes": 215057,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "cisco-blog-pqc-ke.html",
+    "para": "CISCO",
+    "guardado": true,
+    "exploracion": true,
+    "intentos": [
+      {
+        "url": "https://blogs.cisco.com/developer/post-quantum-key-exchange-on-cisco-routers-ipsec-series-part-9",
+        "status": 200,
+        "bytes": 120629,
+        "guardado": true,
+        "verificado": false
+      }
+    ]
+  },
+  {
+    "archivo": "fortinet-pqc-ipsec.html",
+    "para": "FORTINET",
+    "guardado": true,
+    "exploracion": true,
+    "intentos": [
+      {
+        "url": "https://docs.fortinet.com/document/fortigate/7.6.5/administration-guide/229631",
+        "status": 200,
+        "bytes": 801592,
+        "guardado": true,
+        "verificado": false
+      }
+    ]
+  },
+  {
+    "archivo": "fortinet-pqc-nuevas-7.6.0.html",
+    "para": "FORTINET",
+    "guardado": true,
+    "exploracion": true,
+    "intentos": [
+      {
+        "url": "https://docs.fortinet.com/document/fortigate/7.6.0/new-features/90507",
+        "status": 200,
+        "bytes": 355068,
+        "guardado": true,
+        "verificado": false
+      }
+    ]
+  },
+  {
+    "archivo": "juniper-quantum-safe-ipsec.html",
+    "para": "JUNIPER",
+    "guardado": true,
+    "exploracion": true,
+    "intentos": [
+      {
+        "url": "https://www.juniper.net/documentation/us/en/software/junos/vpn-ipsec/topics/topic-map/quantum-safe-ipsec-vpn.html",
+        "status": 200,
+        "bytes": 387750,
+        "guardado": true,
+        "verificado": false
+      }
+    ]
+  },
+  {
+    "archivo": "juniper-pqc-intro.html",
+    "para": "JUNIPER",
+    "guardado": true,
+    "exploracion": true,
+    "intentos": [
+      {
+        "url": "https://www.juniper.net/documentation/us/en/software/junos/pki/topics/concept/get-started-with-pqc.html",
+        "status": 200,
+        "bytes": 29183,
+        "guardado": true,
+        "verificado": false
+      }
+    ]
+  },
+  {
+    "archivo": "juniper-fe-7502.html",
+    "para": "JUNIPER",
+    "guardado": true,
+    "exploracion": true,
+    "intentos": [
+      {
+        "url": "https://apps.juniper.net/feature-explorer/feature/7502",
+        "status": 200,
+        "bytes": 109128,
+        "guardado": true,
+        "verificado": false
+      }
+    ]
+  },
+  {
+    "archivo": "nokia-7750sr-ds.pdf",
+    "para": "NOKIA",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://www.nokia.com/asset/f/164728/",
+        "status": 200,
+        "bytes": 957427,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "nokia-7750sr-s-ds.pdf",
+    "para": "NOKIA",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://www.nokia.com/asset/f/205421/",
+        "status": 200,
+        "bytes": 1442532,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "nokia-ipsec-quantum-safe.pdf",
+    "para": "NOKIA",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://www.nokia.com/asset/f/174280/",
+        "status": 200,
+        "bytes": 471167,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  }
+]
