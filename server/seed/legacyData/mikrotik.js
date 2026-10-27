@@ -290,6 +290,31 @@ const SUPPORT = {
   'training':   {n:'Certificación MTCNA / MTCRE', sla:'Capacitación formal', d:'Programa oficial: MTCNA (básico), MTCRE (routing), MTCWE (wireless), MTCTCE (traffic control), MTCINE (inter-networking).'},
 };
 
+// CRIPTOGRAFÍA POST-CUÁNTICA (2026-10-27, tema pqc-documentos). El manual de RouterOS, «QKD
+// Integration in RouterOS IPsec (PPK)», describe la PPK de IPsec (RFC 9867, que amplía la 8784):
+// estática por par, PSK de un solo uso o tomada de un servidor QKD, en IKEv2. El changelog oficial
+// de la 7.21 (12-ene-2026) la anuncia: «ipsec - support Post-Quantum Pre-shared Key (PPK) with QKD
+// integration (CLI only)». Es una clave simétrica, no un algoritmo post-cuántico: la ficha lo dice
+// así. La PPK es de RouterOS, no de un modelo: se marca donde la ficha del equipo dice «RouterOS
+// v7» (la 7.21 es una versión de la 7), y en CHR, que el manual describe como la edición virtual
+// de RouterOS con las mismas funciones de VPN. Las fichas del RB1100AHx4, el hEX RB750Gr3, el hEX
+// lite, el hEX PoE lite, el hEX PoE, la PowerBox Pro y el hEX S RB760iGS dicen solo «RouterOS», y
+// la página de descargas solo sirve el cascarón sin JavaScript: «no consta», sin deducirlo de la
+// arquitectura del procesador.
+const PQC_ROUTEROS_V7 = new Set(['L009UiGS-2HaxD-IN', 'L009UiGS-RM', 'RB4011iGS+RM', 'RB5009UG+S+IN', 'RB5009UPr+S+IN',
+  'RB5009UPr+S+OUT', 'CCR2004-16G-2S+', 'CCR2004-16G-2S+PC', 'CCR2004-1G-12S+2XS', 'CCR2116-12G-4S+',
+  'CCR2216-1G-12XS-2XQ', 'E50UG', 'E60iUGS']);
+for (const m of MODELS) {
+  const chr = m.ser === 'CHR';
+  if (!chr && !PQC_ROUTEROS_V7.has(m.codigo)) continue;
+  m.pqc = {tipo:'ppk',
+    mecanismo:'Claves precompartidas post-cuánticas (PPK, RFC 9867 sobre la 8784) mezcladas en IKEv2: estáticas por par, PSK de un solo uso o tomadas de un servidor QKD',
+    donde:'IKEv2 (IPsec); en la 7.21, solo por CLI', desde:'RouterOS 7.21',
+    alcance: chr ? 'CHR es la edición virtual de RouterOS, con las mismas funciones de VPN (manual de RouterOS 7.26)'
+      : 'su ficha dice «RouterOS v7»; la PPK es de RouterOS, no de un modelo',
+    fuente:'«QKD Integration in RouterOS IPsec (PPK)» del manual de RouterOS y el changelog oficial de RouterOS 7.21'};
+}
+
 module.exports = {
   MODELS, OPTICS, ACCESS_POINTS, SUPPORT, COMPATIBILIDAD, NOTAS_COMPAT,
   LICENSE_LEVELS, BGP_RAM, DESANCLADOS, SIN_FICHA,

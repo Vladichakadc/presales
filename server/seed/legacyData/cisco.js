@@ -572,13 +572,31 @@ const RJ45_GUIA = [
 // Series Secure Routers, Release 26.1.x» (12-oct-2026), tabla de funciones nuevas de la 26.1.1:
 // «Post Quantum Crypto for IKEv2 and SSH Sessions», plataformas «Cisco 8000 Series Secure
 // Routers», en modo híbrido: ML-KEM (p. ej. mlkem768) con ECDH P-256 o X25519 y SHA-256. Solo
-// la G2 con IOS XE: los G2-MX llevan MX OS, y los Catalyst 8000, el ISR y el ASR no tienen
-// documento que lo diga («no consta»). Seis modelos llegan en la 26.1.2 (tabla 1 de las mismas
-// notas): para ellos, esa es la primera versión.
+// la G2 con IOS XE: los G2-MX llevan MX OS, y ni los Catalyst 8000, ni el ISR ni el ASR tienen
+// documento de ML-KEM (los dos primeros traen PPK, abajo). Seis modelos llegan en la 26.1.2
+// (tabla 1 de las mismas notas): para ellos, esa es la primera versión.
 const PQC_G2 = {tipo:'mlkem', mecanismo:'ML-KEM (p. ej. mlkem768) en modo híbrido con ECDH P-256 o X25519 y SHA-256',
   donde:'IKEv2 (IPsec) y SSH',
   fuente:'Release Notes for Cisco 8000 Series Secure Routers, Release 26.1.x (12-oct-2026), «Post Quantum Crypto for IKEv2 and SSH Sessions»'};
 const PQC_DESDE_26_1_2 = ['C8130H-G2', 'C8151H-C-G2', 'C8221-G2', 'C8221L-G2', 'C8225-G2', 'C8650-G2'];
+// Y la PPK (2026-10-27, tema pqc-documentos). «Configuring Quantum-Safe Encryption Using
+// Postquantum Preshared Keys», de la «Security and VPN Configuration Guide, Cisco IOS XE 17.x»:
+// claves precompartidas post-cuánticas (RFC 8784) en IKEv2 e IPsec, manuales o importadas de una
+// fuente externa con Cisco SKIP, en FlexVPN y DMVPN (no en GETVPN). Su tabla de funciones: IOS XE
+// 17.11.1a, y la 17.12.1a la lleva al ISR 1000 y al Catalyst 8500; su lista de plataformas nombra
+// ISR 1000, ASR 1000, Catalyst 8200, 8300 y 8500, Catalyst 8000V y las Secure Router 8100 a 8500
+// (que ya traen ML-KEM). No es un algoritmo post-cuántico: la ficha lo dice. Los ASR 1000 del
+// catálogo están fuera de venta y ningún documento del catálogo dice que lleguen a la 17.11.1a:
+// «no consta». Los Meraki llevan MX OS, al que la guía no aplica.
+const PQC_IOSXE = [
+  {ser:'Catalyst 8000', de:/^Catalyst 8[23]00/, desde:'IOS XE 17.11.1a'},
+  {ser:'Catalyst 8000', de:/^Catalyst 8500/, desde:'IOS XE 17.12.1a'},
+  {ser:'ISR 1000', de:/^ISR /, desde:'IOS XE 17.12.1a'},
+];
+const PQC_PPK = {tipo:'ppk',
+  mecanismo:'Claves precompartidas post-cuánticas (PPK, RFC 8784) mezcladas en IKEv2 e IPsec: manuales o importadas de una fuente externa con Cisco SKIP',
+  donde:'IKEv2 e IPsec (FlexVPN y DMVPN; no GETVPN)',
+  fuente:'«Configuring Quantum-Safe Encryption Using Postquantum Preshared Keys», Security and VPN Configuration Guide, Cisco IOS XE 17.x'};
 for (const m of MODELS) {
   m.eolAnnounced = EOL_ANNOUNCED[m.id] || null;
   if (PSU_SEGUNDA[m.id]) m.psu2 = PSU_SEGUNDA[m.id];
@@ -591,6 +609,8 @@ for (const m of MODELS) {
     const tarde = PQC_DESDE_26_1_2.some((c) => m.id.endsWith(` ${c}`));
     m.pqc = {...PQC_G2, desde: tarde ? 'IOS XE 26.1.2 (primera versión de este modelo; la función llega en la 26.1.1)' : 'IOS XE 26.1.1'};
   }
+  const ppk = PQC_IOSXE.find((x) => x.ser === m.ser && x.de.test(m.id));
+  if (ppk) m.pqc = {...PQC_PPK, desde: ppk.desde};
   if (COMBINACIONES[m.id]) m.combinaciones = COMBINACIONES[m.id];
   if (DSL[m.id]) m.dsl = DSL[m.id];
   if (APPQOE[m.id]) m.appqoe = APPQOE[m.id];

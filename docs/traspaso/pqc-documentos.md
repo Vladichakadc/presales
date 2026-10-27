@@ -4,9 +4,9 @@
 - **Rama:** claude/elegant-pascal-7ymts7
 - **Cuenta:** vladichakadc, sesión 01TxCQ3W2sHYVmimAdMKht3j
 - **Estado:** en curso
-- **Actualizado:** 2026-10-27 19:10
+- **Actualizado:** 2026-10-27 21:20
 - **Archivos que toca:** server/seed/legacyData/cisco.js, server/seed/legacyData/juniper.js, server/seed/legacyData/mikrotik.js, server/seed/legacyData/aruba.js, server/seed/legacyData/nokia.js, server/seed/legacyData/huawei.js, server/seed/legacyData/fuentes.js, .github/workflows/traer-cisco-huawei.yml, test/pqc.test.js
-- **Siguiente paso:** leer lo que trae la corrida de `traer-cisco-huawei.yml` a `fuente/pqc-2-2026-10-27` (manual de PPK y changelog 7.21 de RouterOS, ficha del L009 con wifi, capítulo de PPK de IOS XE, cifrados y notas de ECOS, fichas de Nokia 7750 SR-1x y 7250 IXR) y marcar `pqc` solo donde el documento lo diga
+- **Siguiente paso:** conducir las pantallas (pantallas, contraste, e2e, puerta) con el requisito PQC; después rebase sobre `main`, PENDIENTES, RELEVO y CLAUDE.md (la línea de PQC de `ficha.js`), borrar este traspaso y fusionar por el PR #31
 
 ## Encargo del dueño
 
@@ -28,7 +28,17 @@ la criptografía post-cuántica, que hoy aparta como «no consta» a Huawei, Aru
 - Fichas de MikroTik ya traídas (`fuente/mikrotik-listados-2026-10-13`): dicen «RouterOS v7» las de
   los CCR2004/2116/2216, hEX 2024, hEX S 2025, L009 RM, RB4011 y RB5009; solo «RouterOS» las del
   RB1100AHx4, hEX RB750Gr3, hEX lite, hEX PoE lite, hEX PoE, PowerBox Pro y hEX S RB760iGS.
-- Entradas nuevas en `traer-cisco-huawei.yml` para todo lo anterior.
+- Entradas nuevas en `traer-cisco-huawei.yml` para todo lo anterior; corrida 40580555051 a
+  `fuente/pqc-2-2026-10-27`: los 15 documentos llegaron.
+- Marcado con fuente en `fuentes.js` (campos ['pqc']) y prueba en `test/pqc.test.js` y
+  `test/pqc-requisito.test.js`:
+  - Cisco: PPK en los 10 Catalyst 8000 (8200/8300 desde IOS XE 17.11.1a, 8500 desde 17.12.1a) y los
+    5 ISR 1000 (17.12.1a), del capítulo de PPK de la guía de IOS XE 17. Los ASR, no (fuera de venta;
+    nada dice que lleguen a la 17.11.1a). Los G2 conservan ML-KEM.
+  - MikroTik: PPK desde RouterOS 7.21 en los 13 cuya ficha dice «RouterOS v7» y en los 3 CHR.
+  - Aruba: PPK en los 10 EdgeConnect (cifrados de ECOS, Rev C ago-2025), sin versión.
+  - Nokia: MACsec/ANYsec quantum-safe en el 7750 SR-1x-48D y el SR-1x-92S (ficha Release 26).
+- `npm run verificar`: 1155 pruebas en verde.
 
 ## Falta
 
@@ -45,4 +55,4 @@ la criptografía post-cuántica, que hoy aparta como «no consta» a Huawei, Aru
 
 ## Verificación
 
-- (pendiente)
+- `npm run verificar` en verde (1155). Falta el navegador.
