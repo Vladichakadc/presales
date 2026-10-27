@@ -5,6 +5,8 @@
    recomiende sirve de sujeto: la lupa tiene que pintar bajo la figura la tabla de esa cara, y
    cambiarla al pasar a la otra. La tarjeta es la clavada (`panelFijo`): ahí no va el desplegable,
    porque la compacta tiene que caber entera. */
+const fs = require('fs');
+const XLSX = require('xlsx');
 const { cargarPlaywright, BASE, abrirSesion, asentar, trasNavegar, contador } = require('./ayuda');
 
 const PAGINA = `${BASE}/dimensionador-juniper-srx.html?bw=500`;
@@ -24,7 +26,7 @@ const leerLupa = (page) => page.evaluate(() => {
 (async () => {
   const { chromium } = cargarPlaywright();
   const browser = await chromium.launch();
-  const page = await browser.newPage();
+  const page = await browser.newPage({ acceptDownloads: true });
   const t = contador();
 
   await abrirSesion(page);
@@ -55,6 +57,25 @@ const leerLupa = (page) => page.evaluate(() => {
     await page.keyboard.press('Escape');
     await asentar(page);
   }
+
+  // La figura y su tabla viajan en el Excel del BOM (mejora aprobada el 2026-10-27): la hoja
+  // «Fotos del equipo» incrusta las dos caras y escribe bajo cada una qué es cada número.
+  await page.click('[data-tab=bom]');
+  await asentar(page);
+  const [descarga] = await Promise.all([page.waitForEvent('download', { timeout: 30000 }), page.click('#xlsBtn')]);
+  const buf = fs.readFileSync(await descarga.path());
+  t.ok(buf.includes(Buffer.from('xl/media/image1.png')) && buf.includes(Buffer.from('xl/media/image2.png')),
+    'el Excel incrusta la cara frontal y la trasera');
+  const libro = XLSX.read(buf, { type: 'buffer' });
+  const plano = libro.SheetNames.includes('Fotos del equipo')
+    ? XLSX.utils.sheet_to_json(libro.Sheets['Fotos del equipo'], { header: 1 }).map((r) => r.join(' | ')).join('\n') : '';
+  t.ok(/Modelo: (SRX|SSR)\S+/.test(plano) && /Guía de hardware|Ficha SSR/.test(plano),
+    'la hoja «Fotos del equipo» declara el modelo y el documento de la figura');
+  t.ok(/Qué es cada número de la vista frontal/.test(plano) && /Qué es cada número de la vista trasera/.test(plano),
+    'y bajo cada cara, la tabla de sus números');
+  t.ok(/^\s*1\. .+ — «.+»/m.test(plano), 'cada fila con lo que es y su rótulo literal');
+  t.ok(libro.SheetNames[0] === 'BOM' && libro.SheetNames[1] === 'Supuestos',
+    `la hoja BOM sigue primera y «Supuestos» segunda (${libro.SheetNames.join(', ')})`);
 
   await browser.close();
   process.exit(t.resumen('e2e-leyendas-juniper'));

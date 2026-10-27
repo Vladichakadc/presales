@@ -1,6 +1,6 @@
 # Relevo
 
-Última actualización: 2026-10-27 · sexagesimotercera entrega
+Última actualización: 2026-10-27 · sexagesimocuarta entrega
 
 Informe para continuar el trabajo. Lo pidió el dueño del repositorio el 2026-10-27: «de aquí en
 adelante, un informe de pendientes y mejoras para que la cuenta **servicioiptv2025@gmail.com**
@@ -31,6 +31,8 @@ está en curso no va aquí: lo dice `npm run traspasos` (protocolo en `docs/tras
 
 ## Estado al cerrar esta entrega
 
+- **Sexagesimocuarta entrega**: las figuras de Juniper, con la tabla de sus números, van en la
+  hoja «Fotos del equipo» del Excel del BOM (PR #32), como ya hacían Aruba, Fortinet, Huawei y Cisco.
 - **Sexagesimotercera entrega**: las figuras de Juniper (36) y del Aruba 7010 (2) dicen qué es
   cada número en la lupa, con su tabla literal y traducida (PR #29); la interconexión EdgeHA va
   por el puerto que cubre el agregado del sitio, no por el primer RJ-45 libre (PR #30).
@@ -97,7 +99,7 @@ esta entrega, ninguna rama remota llevaba un traspaso abierto.
    no dice; después medir `effort: 'medium'` frente a `'high'`.
 2. **Llevar el piloto a otra página**, si el de Cisco se usa: declarar sus campos en `PAGINAS` de
    `server/services/aiEscenario.js` y montar el panel con `PLIEGO.montar`.
-3. **La mejora propuesta de esta entrega** (abajo), si el dueño la aprueba.
+3. **Mejoras propuestas**: ninguna abierta al cerrar la sexagesimocuarta entrega (abajo).
 
 ### Esperan un documento oficial (se cierran trayéndolo por Actions)
 
@@ -129,13 +131,8 @@ existen los workflows de transporte. Huawei y HPE niegan además el navegador au
 
 ## Mejoras propuestas sin decidir
 
-- **Las figuras de Juniper, con su leyenda, en el Excel del BOM** (propuesta al cerrar la
-  sexagesimotercera entrega). Aruba, Fortinet, Huawei y Cisco pasan su figura al Excel (`meta.fotos`,
-  hoja «Fotos del equipo»); Juniper no, y es el fabricante con más figuras numeradas (36). Con el
-  dato ya en `juniper-vistas-equipos.json`: pasar `fotos` (con `frontLeyenda`/`rearLeyenda`) desde
-  el dimensionador de Juniper. Evita una propuesta sin la figura ni su tabla; cuesta unas líneas en
-  la página y una comprobación en su e2e; si se hace mal, el Excel de Juniper dejaría de
-  descargarse (le pasó a Cisco con la hoja «Supuestos»), y eso lo vería el e2e. Se decide por el dueño.
+- Ninguna nueva que merezca la pena al cerrar la sexagesimocuarta entrega: las figuras con números
+  (Cisco, Juniper y el Aruba 7010) ya llevan su tabla en la lupa y en el Excel.
 
 ## Decisiones del dueño abiertas
 
