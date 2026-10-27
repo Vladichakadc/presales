@@ -33,7 +33,7 @@ está en curso no va aquí: lo dice `npm run traspasos` (protocolo en `docs/tras
 
 - **Sexagesimotercera entrega**: las figuras de Juniper (36) y del Aruba 7010 (2) dicen qué es
   cada número en la lupa, con su tabla literal y traducida (PR #29); la interconexión EdgeHA va
-  por el puerto que cubre el agregado del sitio (PR #30, si está fusionado: ver `git log`).
+  por el puerto que cubre el agregado del sitio, no por el primer RJ-45 libre (PR #30).
 - **Retoque tras la sexagesimosegunda** (PR #28): el número de la leyenda de Cisco sin
   `aria-label` (prohibido en un `span` sin rol). El PR #23 se cerró, superado por el #24.
 - **Sexagesimosegunda entrega**: las tres mejoras propuestas, hechas (cita mínima del piloto del
@@ -136,14 +136,6 @@ existen los workflows de transporte. Huawei y HPE niegan además el navegador au
   el dimensionador de Juniper. Evita una propuesta sin la figura ni su tabla; cuesta unas líneas en
   la página y una comprobación en su e2e; si se hace mal, el Excel de Juniper dejaría de
   descargarse (le pasó a Cisco con la hoja «Supuestos»), y eso lo vería el e2e. Se decide por el dueño.
-- **Que la auditoría del par EdgeHA elija el puerto de la interconexión también por velocidad**
-  (propuesta al cerrar la sexagesimosegunda entrega). Hoy `asignarPuertosPar` toma el primer tipo
-  libre en los dos chasis, empezando por el RJ-45, y la interconexión va por él aunque su 1 GbE no
-  cubra el agregado del sitio; la entrega solo lo avisa. Con el cambio, si en los dos chasis queda
-  una jaula que cubre el agregado, la interconexión iría por ella (2 ópticas) y el RJ-45 solo cuando
-  basta. Evita un par con la interconexión por debajo de lo que cruza en un fallo; cuesta tocar
-  `aruba-reglas.js` y sus pruebas de puertos; si se hace mal, un chasis que hoy cabe dejaría de
-  caber (la jaula que gasta la interconexión ya no la tiene un enlace). Se decide por el dueño.
 
 ## Decisiones del dueño abiertas
 
