@@ -11,7 +11,9 @@ lleve nada consigo, y para que dos sesiones a la vez no se pisen.
    lleva `docs/traspaso/<tema>.md`, copiado de [`PLANTILLA.md`](PLANTILLA.md). `<tema>` en
    minúsculas y con guiones (`cisco-xgspon`, `fortinet-skus`).
 2. **Al empezar, mirar qué está tomado:** `npm run traspasos`. Lista cada rama remota que lleva un
-   traspaso, con su tema, su estado y los archivos que declara tocar. **No se toma un tema que ya
+   traspaso, con su tema, su estado y los archivos que declara tocar, y aparte **los PR abiertos
+   cuya rama no lleva traspaso**, con los archivos que tocan: un tema en un PR sin fusionar está
+   tomado aunque su traspaso ya se haya borrado. **No se toma un tema que ya
    tiene rama, ni un archivo que otro traspaso declara**: si hace falta, se elige otro tema o se
    espera a que esa rama se fusione.
 3. **Commit y push frecuentes** (cada paso que funcione, como mucho cada media hora de trabajo), y
@@ -41,4 +43,7 @@ lleve nada consigo, y para que dos sesiones a la vez no se pisen.
 
 Trae las ramas (`git fetch --prune`; con `--sin-fetch` no) y, por cada rama remota que contiene un
 `docs/traspaso/<tema>.md`, imprime la rama, su último commit y los campos de cabecera del
-traspaso. Solo lee: no cambia de rama ni escribe nada.
+traspaso. Las ramas `fuente/*` (transporte de documentos, cortadas desde la rama de un tema) y las
+de Dependabot no son temas. Después pide a GitHub (con `gh`) los PR abiertos y enseña los que no
+salieron arriba, con sus archivos (`--sin-prs` lo salta); si `gh` no responde, avisa con el enlace
+a los PR y sigue. Solo lee: no cambia de rama ni escribe nada.
