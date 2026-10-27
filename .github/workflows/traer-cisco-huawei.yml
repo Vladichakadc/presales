@@ -1326,6 +1326,62 @@ jobs:
               { archivo: 'aruba-edgeha.html', tipo: 'html', para: 'ARUBA', debeContener: 'HA Link', urls: [
                 'https://arubanetworking.hpe.com/techdocs/sdwan/docs/orch/configuration/overlays/deploy-edgeha/',
               ] },
+              // Criptografia post-cuantica de los equipos que dicen «no consta» (2026-10-27, tema
+              // pqc-documentos), un documento por pregunta:
+              // · MikroTik: la PPK (RFC 8784/9867) de IPsec en el manual de RouterOS, la version en
+              //   que entra (changelog oficial de la 7.21) y que version corre cada equipo (su ficha
+              //   dice «RouterOS v7» o solo «RouterOS»).
+              { archivo: 'mikrotik-ppk-qkd.html', tipo: 'html', para: 'MIKROTIK', debeContener: 'PPK', urls: [
+                'https://manual.mikrotik.com/docs/virtual-private-networks/ipsec/qkd-integration-in-routeros-ipsec-ppk',
+                'https://help.mikrotik.com/docs/spaces/ROS/pages/341770268/QKD',
+              ] },
+              { archivo: 'mikrotik-ipsec.html', tipo: 'html', para: 'MIKROTIK', exploracion: true, urls: [
+                'https://manual.mikrotik.com/docs/virtual-private-networks/ipsec',
+                'https://help.mikrotik.com/docs/spaces/ROS/pages/11993097/IPsec',
+              ] },
+              { archivo: 'mikrotik-changelog-7.21.txt', tipo: 'texto', para: 'MIKROTIK', debeContener: 'PPK', urls: [
+                'https://download.mikrotik.com/routeros/7.21/CHANGELOG',
+                'https://upgrade.mikrotik.com/routeros/7.21/CHANGELOG',
+              ] },
+              { archivo: 'mikrotik-descargas.html', tipo: 'html', para: 'MIKROTIK', exploracion: true, urls: [
+                'https://mikrotik.com/download',
+              ] },
+              // (La ficha del L009 con wifi se pide con su entrada de siempre, mikrotik-l009-2haxd.html.)
+              { archivo: 'mikrotik-chr-intro.html', tipo: 'html', para: 'MIKROTIK', debeContener: 'Cloud Hosted Router', urls: [
+                'https://manual.mikrotik.com/docs/getting-started/routeros-licensing/chr/',
+              ] },
+              // · Cisco IOS XE 17 (Catalyst 8000, ISR, ASR): el capitulo de PPK de la guia de VPN con
+              //   IPsec; el indice del libro, por si la ruta del capitulo es otra.
+              { archivo: 'cisco-iosxe-ppk.html', tipo: 'html', para: 'CISCO', exploracion: true, urls: [
+                'https://www.cisco.com/c/en/us/td/docs/routers/ios/config/17-x/sec-vpn/b-security-vpn/m-sec-cfg-quantum-encryption-ppk.html',
+              ] },
+              { archivo: 'cisco-iosxe-sec-vpn-libro.html', tipo: 'html', para: 'CISCO', exploracion: true, urls: [
+                'https://www.cisco.com/c/en/us/td/docs/routers/ios/config/17-x/sec-vpn/b-security-vpn.html',
+              ] },
+              // · Aruba EdgeConnect: los algoritmos de cifrado del plano de datos y las notas de la
+              //   ECOS mas reciente que dio la busqueda.
+              { archivo: 'aruba-ec-cifrados.pdf', tipo: 'pdf', para: 'ARUBA', urls: [
+                'https://arubanetworking.hpe.com/techdocs/sdwan-PDFs/docs/ECSecurityAlgorithmsCipherProfiles_latest.pdf',
+              ] },
+              { archivo: 'aruba-ecos-9.7.1.0-rn.pdf', tipo: 'pdf', para: 'ARUBA', urls: [
+                'https://arubanetworking.hpe.com/techdocs/ArubaEdgeConnectEnterprise/GatewaysSoftware/9.7.1.0_109666/ECOS_9.7.1.0_Release_Notes.pdf',
+              ] },
+              // · Nokia: la ficha del 7750 SR-1x (Release 26) y las de los 7250 IXR del catalogo.
+              { archivo: 'nokia-7750sr1x-ds.pdf', tipo: 'pdf', para: 'NOKIA', urls: [
+                'https://www.nokia.com/asset/f/212738/', 'https://www.nokia.com/asset/212738/',
+              ] },
+              { archivo: 'nokia-7250ixr-r-ds.pdf', tipo: 'pdf', para: 'NOKIA', urls: [
+                'https://www.nokia.com/asset/f/206658/', 'https://www.nokia.com/asset/206658/',
+              ] },
+              { archivo: 'nokia-7250ixr-x-ds.pdf', tipo: 'pdf', para: 'NOKIA', urls: [
+                'https://www.nokia.com/asset/f/214173/', 'https://www.nokia.com/asset/214173/',
+              ] },
+              { archivo: 'nokia-7250ixr-6e-ds.pdf', tipo: 'pdf', para: 'NOKIA', urls: [
+                'https://www.nokia.com/asset/f/212673/', 'https://www.nokia.com/asset/212673/',
+              ] },
+              { archivo: 'nokia-asset-215309.pdf', tipo: 'pdf', para: 'NOKIA', urls: [
+                'https://www.nokia.com/asset/f/215309/', 'https://www.nokia.com/asset/215309/',
+              ] },
               { archivo: 'cisco-hig3-img', tipo: 'imagenes', para: 'CISCO', urls: [],
                 descubrirPiezas: { de: ['cisco-isr1100-hig-overview.html', 'cisco-sr8200-hig-overview.html'],
                   base: 'https://www.cisco.com/', dominios: ['cisco.com'], relativas: true,
