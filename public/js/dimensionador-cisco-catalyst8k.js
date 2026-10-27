@@ -757,6 +757,11 @@ function renderBom(){
       resumen:ultimaEval ? `Overlay ${fmt(ultimaEval.demanda.overlayNeed)}${ultimaEval.demanda.diaNeed ? ` + salida local ${fmt(ultimaEval.demanda.diaNeed)}` : ''}${f && f.u != null ? `; utilización del ${Math.round(f.u * 100)} %` : ''}` : null},
     subtitulo:`${m.fam} · Serie ${m.ser} · término ${anios} años`,
     archivo:`BOM_${m.id}`,
+    // Las figuras de la ficha, con la tabla de sus números, en la hoja «Fotos del equipo» del Excel
+    // (mejora aprobada el 2026-10-27; Aruba, Fortinet y Huawei ya las llevaban).
+    ...(VISTAS && VISTAS[m.id] && VISTAS[m.id].front ? {fotos:{modelo:m.id, origen:'Extraídas de los documentos oficiales de Cisco',
+      front:VISTAS[m.id].front, rear:VISTAS[m.id].rear || null, pie:VISTAS[m.id].fuente || null,
+      frontLeyenda:VISTAS[m.id].frontLeyenda || null, rearLeyenda:VISTAS[m.id].rearLeyenda || null}} : {}),
     notas:[
       '',
       'NOTAS DE PREVENTA',

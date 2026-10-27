@@ -831,6 +831,13 @@
     pon(`${fotos.origen || 'Extraídas de los documentos oficiales del fabricante'} — versionadas en la herramienta, la misma fuente que la ficha en pantalla.`);
     r++;
     let incrustadas = 0;
+    // Leyenda de los números de la figura (opt-in `frontLeyenda`/`rearLeyenda`, Cisco desde el
+    // 2026-10-27, mejora aprobada): la figura oficial lleva números y la tabla que los explica
+    // está en su documento; sin ella el número no dice nada. Misma forma que en la ficha:
+    // {tabla, filas: [[n, rótulo literal, traducción]]}; una tabla a medias no se escribe.
+    const leyendaValida = (ley) => !!(ley && Array.isArray(ley.filas) && ley.filas.length
+      && ley.filas.every((f) => Array.isArray(f) && Number.isInteger(f[0]) && f[1] && f[2]));
+    const leyendas = { frontal: fotos.frontLeyenda, trasera: fotos.rearLeyenda };
     for (const [cara, src] of [['frontal', fotos.front], ['trasera', fotos.rear]]) {
       if (!src) continue;
       pon(`Vista ${cara}`, true);
@@ -846,6 +853,12 @@
         // Honestidad antes que silencio: la foto declarada que no se pudo incrustar
         // deja constancia en la hoja, con su causa y dónde verla.
         pon(`La foto ${cara} no se pudo incrustar (${e.message}) — está disponible en la ficha del equipo dentro de la herramienta.`);
+      }
+      const ley = leyendas[cara];
+      if (leyendaValida(ley)) {
+        pon(`Qué es cada número de la vista ${cara}${ley.tabla ? ` (${ley.tabla})` : ''}`, true);
+        for (const [n, literal, es] of ley.filas) pon(`  ${n}. ${es} — «${literal}»`);
+        r++;
       }
     }
     return incrustadas;
@@ -895,7 +908,7 @@
     }
 
     // Fotos oficiales del equipo (plan 20): solo viajan cuando la página las declara en
-    // meta.fotos: Aruba, Fortinet y Huawei.
+    // meta.fotos: Aruba, Fortinet, Huawei y Cisco (esta con la leyenda de los números).
     if (m.fotos && m.fotos.front) {
       const incrustadas = await hojaDeFotos(libro, m.fotos);
       if (incrustadas > 0) {
