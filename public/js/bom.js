@@ -912,7 +912,7 @@
     }
 
     // Fotos oficiales del equipo (plan 20): solo viajan cuando la página las declara en
-    // meta.fotos: Aruba, Fortinet, Huawei y Cisco (esta con la leyenda de los números).
+    // meta.fotos: Aruba, Fortinet, Huawei, Cisco y Juniper (estos dos, y el Aruba 7010, con la leyenda de los números).
     if (m.fotos && m.fotos.front) {
       const incrustadas = await hojaDeFotos(libro, m.fotos);
       if (incrustadas > 0) {

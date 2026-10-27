@@ -659,11 +659,18 @@ function renderBom() {
       nota: 'Se contrata por usuario: confirmar cantidad, SKU y precio con el distribuidor.' });
   }
 
+  const vistaBom = FICHA_CFG.vistas && FICHA_CFG.vistas[m.id];
   const meta = {
     titulo: `Lista de materiales — ${m.id}`,
     supuestos: { vendor: 'juniper', fabricante: 'Juniper', modelo: m.id, serie: m.ser },
     subtitulo: `${m.ser} · término ${term} año(s)`,
     archivo: `BOM_${m.id}`,
+    // Las figuras de la ficha, con la tabla de sus números, en la hoja «Fotos del equipo» del
+    // Excel (mejora aprobada el 2026-10-27; Aruba, Fortinet, Huawei y Cisco ya las llevaban).
+    // Las 36 figuras de Juniper son dibujos numerados de su guía: sin la tabla, el número no dice nada.
+    ...(vistaBom && vistaBom.front ? { fotos: { modelo: m.id, origen: 'Extraídas de los documentos oficiales de Juniper',
+      front: vistaBom.front, rear: vistaBom.rear || null, pie: [vistaBom.tamano, vistaBom.fuente].filter(Boolean).join(' · '),
+      frontLeyenda: vistaBom.frontLeyenda || null, rearLeyenda: vistaBom.rearLeyenda || null } } : {}),
     notas: ['', 'NOTAS DE PREVENTA',
       '  Ninguna linea lleva precio: no hay lista de precios de Juniper en el material',
       '  disponible. Confirmar SKU, nivel de suscripcion y precio con el distribuidor.',

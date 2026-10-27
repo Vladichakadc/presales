@@ -73,3 +73,9 @@ test('la ficha pone el idioma del rótulo literal y el Excel de Aruba lleva la l
   const aruba = fs.readFileSync(path.join(RAIZ, 'public/js/dimensionador-aruba-edgeconnect.js'), 'utf8');
   assert.match(aruba, /frontLeyenda:vBom\.frontLeyenda\|\|null, rearLeyenda:vBom\.rearLeyenda\|\|null/);
 });
+
+test('el Excel de Juniper lleva las figuras con su leyenda (mejora aprobada el 2026-10-27)', () => {
+  const juniper = fs.readFileSync(path.join(RAIZ, 'public/js/dimensionador-juniper-srx.js'), 'utf8');
+  assert.match(juniper, /fotos: \{ modelo: m\.id, origen: 'Extraídas de los documentos oficiales de Juniper'/);
+  assert.match(juniper, /frontLeyenda: vistaBom\.frontLeyenda \|\| null, rearLeyenda: vistaBom\.rearLeyenda \|\| null/);
+});
