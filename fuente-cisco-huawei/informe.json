@@ -1,0 +1,125 @@
+[
+  {
+    "archivo": "aruba-nc-toc.js",
+    "para": "ARUBA",
+    "guardado": true,
+    "exploracion": true,
+    "intentos": [
+      {
+        "url": "https://arubanetworking.hpe.com/techdocs/new-central/Data/Tocs/nc_proto.js",
+        "status": 200,
+        "bytes": 13909,
+        "guardado": true,
+        "verificado": false
+      }
+    ]
+  },
+  {
+    "archivo": "aruba-nc-toc-chunk0.js",
+    "para": "ARUBA",
+    "guardado": true,
+    "exploracion": true,
+    "intentos": [
+      {
+        "url": "https://arubanetworking.hpe.com/techdocs/new-central/Data/Tocs/nc_proto_Chunk0.js",
+        "status": 200,
+        "bytes": 29974,
+        "guardado": true,
+        "verificado": false
+      }
+    ]
+  },
+  {
+    "archivo": "aruba-nc-toc-chunk1.js",
+    "para": "ARUBA",
+    "guardado": true,
+    "exploracion": true,
+    "intentos": [
+      {
+        "url": "https://arubanetworking.hpe.com/techdocs/new-central/Data/Tocs/nc_proto_Chunk1.js",
+        "status": 200,
+        "bytes": 30003,
+        "guardado": true,
+        "verificado": false
+      }
+    ]
+  },
+  {
+    "archivo": "aruba-nc-toc-chunk2.js",
+    "para": "ARUBA",
+    "guardado": true,
+    "exploracion": true,
+    "intentos": [
+      {
+        "url": "https://arubanetworking.hpe.com/techdocs/new-central/Data/Tocs/nc_proto_Chunk2.js",
+        "status": 200,
+        "bytes": 29976,
+        "guardado": true,
+        "verificado": false
+      }
+    ]
+  },
+  {
+    "archivo": "aruba-nc-toc-chunk3.js",
+    "para": "ARUBA",
+    "guardado": true,
+    "exploracion": true,
+    "intentos": [
+      {
+        "url": "https://arubanetworking.hpe.com/techdocs/new-central/Data/Tocs/nc_proto_Chunk3.js",
+        "status": 200,
+        "bytes": 4222,
+        "guardado": true,
+        "verificado": false
+      }
+    ]
+  },
+  {
+    "archivo": "aruba-nc-toc-chunk4.js",
+    "para": "ARUBA",
+    "guardado": false,
+    "exploracion": true,
+    "intentos": [
+      {
+        "url": "https://arubanetworking.hpe.com/techdocs/new-central/Data/Tocs/nc_proto_Chunk4.js",
+        "status": 404
+      }
+    ]
+  },
+  {
+    "archivo": "aruba-nc-toc-chunk5.js",
+    "para": "ARUBA",
+    "guardado": false,
+    "exploracion": true,
+    "intentos": [
+      {
+        "url": "https://arubanetworking.hpe.com/techdocs/new-central/Data/Tocs/nc_proto_Chunk5.js",
+        "status": 404
+      }
+    ]
+  },
+  {
+    "archivo": "aruba-nc-toc-chunk6.js",
+    "para": "ARUBA",
+    "guardado": false,
+    "exploracion": true,
+    "intentos": [
+      {
+        "url": "https://arubanetworking.hpe.com/techdocs/new-central/Data/Tocs/nc_proto_Chunk6.js",
+        "status": 404
+      }
+    ]
+  },
+  {
+    "archivo": "aruba-nc-toc-chunk7.js",
+    "para": "ARUBA",
+    "guardado": false,
+    "exploracion": true,
+    "intentos": [
+      {
+        "url": "https://arubanetworking.hpe.com/techdocs/new-central/Data/Tocs/nc_proto_Chunk7.js",
+        "status": 404
+      }
+    ]
+  }
+]
