@@ -68,11 +68,21 @@ let paso = 'arranque';
   await page.fill('#perfilSedes', '50');
   await page.click('#btnGuardarPerfil');
   await asentar(page);
+  // Un perfil guardado antes de que el perfil registrara el ciclo (sin la clave `ciclo`): al consolidar
+  // en su propia página se pone al día con el catálogo (mejora del 2026-10-28) y avisa como los demás.
+  await page.evaluate(() => {
+    const k = 'presales-perfiles';
+    const l = JSON.parse(globalThis.localStorage.getItem(k) || '[]');
+    l.push({ id: 'pviejo', nombre: 'Perfil viejo e2e', sedes: 3, modelo: 'Catalyst 8300-1N1S-6T', vendor: 'cisco', fecha: '2026-09-01', filas: [] });
+    globalThis.localStorage.setItem(k, JSON.stringify(l));
+  });
   await page.click('#btnConsolidar');
   await asentar(page);
   const modal = ((await page.textContent('#consolidadoTabla')) || '').replace(/\s+/g, ' ');
   t.ok(/Ciclo de vida del despliegue/.test(modal) && /Perfil «Sucursal e2e» \(50 sede\(s\), Catalyst 8300-1N1S-6T\): el equipo tiene fin de venta anunciado \(último pedido el 2027-01-31\)/.test(modal),
     `el consolidado en pantalla avisa del perfil con fin de venta (${modal.slice(0, 160)})`);
+  t.ok(/Perfil «Perfil viejo e2e» \(3 sede\(s\), Catalyst 8300-1N1S-6T\): el equipo tiene fin de venta anunciado/.test(modal) && !/Sin dato de ciclo/.test(modal),
+    'el perfil guardado sin ciclo se pone al día con el catálogo al consolidar, no queda «sin dato»');
   try {
     const [d] = await Promise.all([page.waitForEvent('download', { timeout: 30000 }), page.click('#xlsConsolidadoBtn')]);
     const libro = XLSX.read(fs.readFileSync(await d.path()), { type: 'buffer' });

@@ -1,6 +1,6 @@
 # Relevo
 
-Última actualización: 2026-10-28 · PR #47
+Última actualización: 2026-10-28 · PR #46
 
 Informe para continuar el trabajo. Lo pidió el dueño del repositorio el 2026-10-27: «de aquí en
 adelante, un informe de pendientes y mejoras para que la cuenta **servicioiptv2025@gmail.com**
@@ -33,6 +33,9 @@ está en curso no va aquí: lo dice `npm run traspasos` (protocolo en `docs/tras
 
 ## Estado al cerrar esta entrega
 
+- **2026-10-28 · PR #46**: el ciclo de los perfiles, al día con el catálogo al consolidar (la
+  mejora propuesta): los perfiles del fabricante de la página se recalculan con su catálogo; los de
+  otro fabricante dicen de qué fecha es su dato.
 - **2026-10-28 · PR #47**: las dos fuentes de Aruba que eran un cascarón citan la descarga del
   PDF de psnow (serie 9000, mismo documento; EdgeConnect, Rev. 9 contrastada sin cifras distintas).
   El vigía las lee desde el lunes.
@@ -209,15 +212,15 @@ existen los workflows de transporte. Huawei y HPE niegan además el navegador au
 
 ## Mejoras propuestas sin decidir
 
-- **El ciclo del perfil, al día con el catálogo al consolidar** (propuesta al cerrar el PR #44).
-  Cada perfil guarda una foto del ciclo de su equipo el día que se guarda: si después entra un
-  boletín de fin de venta para ese modelo (el vigía o una sesión lo añaden a `legacyData/`), el
-  consolidado seguiría diciendo lo que valía al guardarlo. Propuesta: al consolidar, recalcular el
-  ciclo de los perfiles del fabricante de la página con su `MODELS` actual (los de otros
-  fabricantes conservan su foto y lo dicen: «ciclo a fecha de <fecha del perfil>»). Evita
-  consolidar un despliegue con un aviso viejo. Cuesta pasar una función de búsqueda de modelo a
-  `BOM.cicloDePerfiles` desde las cinco páginas; si se hace mal, un perfil de otro fabricante
-  podría quedarse sin aviso, y lo vería `bom-perfiles.test.js`. Se decide por el dueño.
+- **Los perfiles de otros fabricantes, también al día** (propuesta al cerrar el PR #46). Un
+  consolidado multi-fabricante (spokes Fortinet y core Cisco, por ejemplo) solo pone al día los
+  perfiles de la página donde se pulsa «Consolidar»; los demás salen «ciclo a fecha de …». Cada
+  fabricante tiene su ruta de catálogo (`/api/dimensionador/<fabricante>`, con `eol` y
+  `eolAnnounced`): al consolidar, pedir la de cada fabricante presente en los perfiles y poner al día
+  todos. Evita que un aviso viejo de otra marca llegue al cliente. Cuesta hacer asíncrono el
+  consolidado en las cinco páginas y leer la forma de cada ruta (no todas devuelven `models` igual);
+  si una ruta falla, ese fabricante se queda con su foto y lo dice. Si se hace mal, el botón
+  «Consolidar» no responde; lo vería `e2e-ciclo-excel.js`. Se decide por el dueño.
 - **El transporte de documentos, con su lista fuera del YAML** (propuesta al cerrar el PR #45).
   `traer-cisco-huawei.yml` lleva dentro un script de Node de 132 KB que bash lee antes que Node:
   en una sola entrega dio tres fallos de ese origen (una comilla doble que lo cortaba, el tope de
@@ -230,7 +233,7 @@ existen los workflows de transporte. Huawei y HPE niegan además el navegador au
   1.700 líneas y adaptar `traer-exploracion`, `traer-pantalla-login` y `workflows-node-e`; si se hace
   mal, el transporte deja de traer documentos, y por eso se prueba con una corrida real de una
   entrada conocida antes de fusionar. Se decide por el dueño.
-- (Hecha en el PR #45: la fuente de la PQC enlazada a `fuentes.js`. Hecha en el PR #44: el ciclo en el consolidado multi-sede. Hecha en el PR #41: el fin de venta en el Excel. Hecha en el PR #40: la foto de producto en el Excel. Hecha en la septuagesimoprimera: el «no la trae» documentado, `pqcNo`. Hecha en la sexagesimoctava: la
+- (Hecha en el PR #46: el ciclo del perfil al día al consolidar. Hecha en el PR #45: la fuente de la PQC enlazada a `fuentes.js`. Hecha en el PR #44: el ciclo en el consolidado multi-sede. Hecha en el PR #41: el fin de venta en el Excel. Hecha en el PR #40: la foto de producto en el Excel. Hecha en la septuagesimoprimera: el «no la trae» documentado, `pqcNo`. Hecha en la sexagesimoctava: la
   versión mínima de la PQC en la hoja «Supuestos».)
 
 ## Decisiones del dueño abiertas

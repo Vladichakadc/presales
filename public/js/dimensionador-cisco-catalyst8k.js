@@ -910,7 +910,8 @@ $('listaPerfiles').addEventListener('click', e => {
   }
 });
 $('btnConsolidar').addEventListener('click', () => {
-  const l = BOM.perfiles();
+  // El ciclo de los perfiles de esta página, al día con su catálogo; los de otros fabricantes, con su foto.
+  const l = BOM.refrescarCiclo(BOM.perfiles(), VENDOR, (id) => MODELS.find((x) => x.id === id));
   const {filas, totalSedes, fabricantes} = BOM.consolidar(l, {agregadas:[], unicas:[]});
   if(!totalSedes) return;
   const multi = fabricantes.length > 1;

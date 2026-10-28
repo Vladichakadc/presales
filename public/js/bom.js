@@ -760,6 +760,24 @@
   // dijera, y es el pedido grande el que más sufre el corte. Cada perfil guarda el `ciclo` de su
   // equipo al crearse (`BOM.cicloDe`); uno guardado antes no lo trae, y eso se dice: «sin dato»,
   // nunca «vigente». Puro: la fecha de hoy entra por parámetro.
+  // El ciclo de cada perfil, al día con el catálogo al consolidar (2026-10-28, mejora propuesta al
+  // cerrar el PR #44). El perfil guarda una foto del ciclo de su equipo el día que se guarda: si
+  // después entra un boletín de fin de venta para ese modelo, el consolidado diría lo de entonces.
+  // La página que consolida conoce su propio catálogo (`buscar`, del id al modelo): sus perfiles se
+  // recalculan con él (`cicloAlDia: true`), también los guardados antes de que el perfil registrara
+  // el ciclo. Los de otro fabricante, cuyo catálogo no está cargado, conservan su foto y lo dicen
+  // (`cicloAlDia: false`, con la fecha del perfil). No toca lo guardado: devuelve copias.
+  function refrescarCiclo(lista, vendor, buscar) {
+    const v = String(vendor || '').toLowerCase();
+    return (lista || []).map((p) => {
+      if (!p) return p;
+      const mio = v && String(p.vendor || '').toLowerCase() === v;
+      const m = mio && typeof buscar === 'function' ? buscar(p.modelo) : null;
+      if (m) return { ...p, ciclo: cicloDe(m), cicloAlDia: true };
+      return { ...p, cicloAlDia: false };
+    });
+  }
+
   function cicloDePerfiles(lista, hoy) {
     const avisos = [];
     const sinDato = [];
@@ -770,8 +788,10 @@
       const a = (p.ciclo && p.ciclo.eolAnnounced) || {};
       const sucesor = a.sucesor ? `sucesor según el boletín: ${a.sucesor}`
         : p.ciclo.sucesor ? `sucesor natural: ${p.ciclo.sucesor} (inferencia por capacidad, sin documento oficial)` : '';
+      // Una foto que no se pudo poner al día (perfil de otro fabricante) dice de cuándo es.
+      const foto = p.cicloAlDia === false ? `; ciclo a fecha de ${p.fecha || 'cuando se guardó el perfil'}, sin contrastar con el catálogo de hoy` : '';
       avisos.push({ perfil: p.nombre, modelo: p.modelo, sedes: p.sedes, vendor: p.vendor,
-        texto: `Perfil «${p.nombre}» (${p.sedes} sede(s), ${p.modelo}): ${c.linea}${sucesor ? `; ${sucesor}` : ''}${a.url ? `; boletín: ${a.url}` : ''}.` });
+        texto: `Perfil «${p.nombre}» (${p.sedes} sede(s), ${p.modelo}): ${c.linea}${sucesor ? `; ${sucesor}` : ''}${a.url ? `; boletín: ${a.url}` : ''}${foto}.` });
     }
     return { avisos, sinDato };
   }
@@ -1435,7 +1455,7 @@
     });
   }
 
-  global.BOM = { renderTabla, exportarExcel, comoTexto, matrizExcel, matrizSupuestos, cicloDe, cicloDelEquipo, cicloDePerfiles, avisoCicloConsolidado, fuentesDelEquipo, money, esc, claveFila,
+  global.BOM = { renderTabla, exportarExcel, comoTexto, matrizExcel, matrizSupuestos, cicloDe, cicloDelEquipo, cicloDePerfiles, avisoCicloConsolidado, refrescarCiclo, fuentesDelEquipo, money, esc, claveFila,
     enviarACotizador, recogerEntrada, montarBotonCotizador, normalizar,
     sincronizar, soltarManual, avisoDesvio, fijarRepintado,
     agregarRef, quitarRef, cantidadRef, refsExtra, fijarVendor,
