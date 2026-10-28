@@ -1,0 +1,132 @@
+[
+  {
+    "archivo": "cisco-asr1000-ds.html",
+    "para": "CISCO",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://www.cisco.com/c/en/us/products/collateral/routers/asr-1000-series-aggregation-services-routers/datasheet-c78-731632.html",
+        "status": 200,
+        "bytes": 445361,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "cisco-asr1006x-producto.html",
+    "para": "CISCO",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://www.cisco.com/site/us/en/products/networking/sdwan-routers/asr-1000-series-aggregation-services-routers/asr-1006-x/index.html",
+        "status": 200,
+        "bytes": 57860,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "cisco-asr1002hx-producto.html",
+    "para": "CISCO",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://www.cisco.com/c/en/us/products/routers/asr-1002-hx-router/index.html",
+        "status": 200,
+        "bytes": 127954,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "cisco-asr-img",
+    "para": "CISCO",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://www.cisco.com/c/dam/en/us/products/collateral/routers/asr-1000-series-aggregation-services-routers/datasheet-c78-731632.docx/_jcr_content/renditions/datasheet-c78-731632_0.png",
+        "status": 200,
+        "bytes": 36791,
+        "guardado": true,
+        "como": "cisco-asr-img/_jcr_content__renditions__datasheet-c78-731632_0.png"
+      },
+      {
+        "url": "https://www.cisco.com/c/dam/en/us/products/collateral/routers/asr-1000-series-aggregation-services-routers/datasheet-c78-731632.docx/_jcr_content/renditions/datasheet-c78-731632_1.png",
+        "status": 200,
+        "bytes": 7927,
+        "guardado": true,
+        "como": "cisco-asr-img/_jcr_content__renditions__datasheet-c78-731632_1.png"
+      },
+      {
+        "url": "https://www.cisco.com/c/dam/en/us/products/collateral/routers/asr-1000-series-aggregation-services-routers/datasheet-c78-731632.docx/_jcr_content/renditions/datasheet-c78-731632_2.png",
+        "status": 200,
+        "bytes": 6564,
+        "guardado": true,
+        "como": "cisco-asr-img/_jcr_content__renditions__datasheet-c78-731632_2.png"
+      },
+      {
+        "url": "https://www.cisco.com/c/dam/en/us/products/collateral/routers/asr-1000-series-aggregation-services-routers/datasheet-c78-731632.docx/_jcr_content/renditions/datasheet-c78-731632_3.png",
+        "status": 200,
+        "bytes": 10906,
+        "guardado": true,
+        "como": "cisco-asr-img/_jcr_content__renditions__datasheet-c78-731632_3.png"
+      },
+      {
+        "url": "https://www.cisco.com/content/dam/cisco-cdc/site/images/legacy/assets/swa/img/600/asr-1006-large.jpg",
+        "status": 200,
+        "bytes": 67376,
+        "guardado": true,
+        "como": "cisco-asr-img/img__600__asr-1006-large.jpg"
+      },
+      {
+        "url": "https://www.cisco.com/content/dam/cisco-cdc/site/images/heroes/products/networking/asr1000-series-hero-desktop-3200x1372.jpg",
+        "status": 200,
+        "bytes": 255006,
+        "guardado": true,
+        "como": "cisco-asr-img/products__networking__asr1000-series-hero-desktop-3200x1372.jpg"
+      },
+      {
+        "url": "https://www.cisco.com/content/dam/cisco-cdc/site/images/photography/product-photography/model-comparison-asr-1001x-758x549.png",
+        "status": 200,
+        "bytes": 59426,
+        "guardado": true,
+        "como": "cisco-asr-img/photography__product-photography__model-comparison-asr-1001x-758x549.png"
+      },
+      {
+        "url": "https://www.cisco.com/content/dam/cisco-cdc/site/images/photography/product-photography/model-comparison-asr-1002hx-758x549.png",
+        "status": 200,
+        "bytes": 146513,
+        "guardado": true,
+        "como": "cisco-asr-img/photography__product-photography__model-comparison-asr-1002hx-758x549.png"
+      },
+      {
+        "url": "https://www.cisco.com/content/dam/cisco-cdc/site/images/photography/product-photography/model-comparison-asr-1006x-758x549.png",
+        "status": 200,
+        "bytes": 408290,
+        "guardado": true,
+        "como": "cisco-asr-img/photography__product-photography__model-comparison-asr-1006x-758x549.png"
+      },
+      {
+        "url": "https://www.cisco.com/content/dam/cisco-cdc/site/images/photography/product-photography/model-comparison-asr-1009x-758x549.png",
+        "status": 200,
+        "bytes": 662917,
+        "guardado": true,
+        "como": "cisco-asr-img/photography__product-photography__model-comparison-asr-1009x-758x549.png"
+      },
+      {
+        "url": "https://www.cisco.com/content/dam/cisco-cdc/site/images/photography/lifestyle-photography/asr-1000-series-spotlight-544x306.jpg",
+        "status": 200,
+        "bytes": 41258,
+        "guardado": true,
+        "como": "cisco-asr-img/photography__lifestyle-photography__asr-1000-series-spotlight-544x306.jpg"
+      }
+    ]
+  }
+]
