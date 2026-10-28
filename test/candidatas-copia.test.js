@@ -12,7 +12,8 @@ const { CASOS, compararConCopia, lineaCopia } = require('../scripts/probar-candi
 
 test('cada `copia` declarada existe y es un PDF', () => {
   const copias = CASOS.flatMap((c) => c.candidatas).filter((c) => c.copia).map((c) => c.copia);
-  assert.ok(copias.length >= 2, 'las descargas de psnow declaran su copia');
+  // Hoy ninguna candidata la declara (las dos de Aruba se resolvieron el 2026-10-28); la regla
+  // vale para la siguiente que lo haga.
   for (const ruta of copias) {
     const abs = path.join(__dirname, '..', ruta);
     assert.ok(fs.existsSync(abs), `no existe ${ruta}`);

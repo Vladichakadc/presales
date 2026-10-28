@@ -518,12 +518,12 @@
       "bytes": 617384,
       "medido": "2026-10-26T12:35:29.169Z"
     },
-    "aruba::https://www.hpe.com/psnow/doc/a00109847enw": {
-      "documento": "Data sheet HPE Networking EdgeConnect (a00109847enw Rev. 8)",
-      "hashVerificado": "6b89e91c7d45af71e243e41ee5e7916a94baefbd76ac5ea9c7b1076f0f037b71",
-      "clase": "texto",
-      "bytes": 121210,
-      "medido": "2026-10-13T19:08:29.846Z"
+    "aruba::https://www.hpe.com/psnow/downloadDoc/a00109847enw.pdf?id=a00109847enw": {
+      "documento": "Data sheet HPE Networking EdgeConnect (a00109847enw Rev. 9)",
+      "hashVerificado": "521ce3a3af2902a540929ef9a8ecac013fbef86d246eb658e220f1b12a15c1e9",
+      "clase": "bytes",
+      "bytes": 1781832,
+      "medido": "2026-10-28T12:21:29.000Z"
     },
     "aruba::https://arubanetworking.hpe.com/techdocs/sdwan-PDFs/docs/eula/EC_LifecyclePolicy_latest.pdf": {
       "documento": "Product Lifecycle Policy de EdgeConnect (HPE Aruba Networking, 12-feb-2026)",
@@ -539,12 +539,12 @@
       "bytes": 115672,
       "medido": "2026-10-26T12:35:29.169Z"
     },
-    "aruba::https://www.arubanetworks.com/assets/ds/DS_9000Series.pdf": {
-      "documento": "Fichas de las series 9000, 9100 y 9200 de gateways (DS_9000Series y QuickSpecs 9100 y 9200)",
-      "hashVerificado": "0ef84c6a54e2014aa02397e9c8e3b2830ea4968fbf1f157964d9aab81eb1c302",
-      "clase": "texto",
-      "bytes": 119250,
-      "medido": "2026-10-13T19:08:29.846Z"
+    "aruba::https://www.hpe.com/psnow/downloadDoc/a00067608enw.pdf?id=a00067608enw": {
+      "documento": "Fichas de las series 9000, 9100 y 9200 de gateways (data sheet de la serie 9000 a00067608enw Rev. 2 y QuickSpecs 9100 y 9200)",
+      "hashVerificado": "98e55d1e7b62747b61952c3651413f5b0cb3ce5147319e3c041894ded29620bd",
+      "clase": "bytes",
+      "bytes": 1081426,
+      "medido": "2026-10-28T12:00:00.000Z"
     },
     "aruba::https://arubanetworking.hpe.com/techdocs/VSG/docs/070-sd-branch-design/Media/PDF/Aruba_VSG_SD-Branch-Design.pdf": {
       "documento": "Validated Solution Guide SD-Branch y data sheet de suscripciones EdgeConnect (HPE, oficiales)",

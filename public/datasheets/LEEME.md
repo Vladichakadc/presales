@@ -19,7 +19,7 @@ desde una máquina con salida a internet.
 
 De los 6 que faltan, **4 nunca fueron PDFs** (`ecOverview`, `gw7000`, `gwSoportados` y
 `orchDocs` son páginas de documentación en vivo, tal como las describe el manifiesto), **1
-URL murió** (`ecSpecSheet`, 404 genuino; **reemplazada el 2026-10-13** por la data sheet de la línea en psnow, `a00109847enw` Rev. 8, que es `edgeconnect-data-sheet.pdf`) y **1 exige cuenta de
+URL murió** (`ecSpecSheet`, 404 genuino; **reemplazada el 2026-10-13** por la data sheet de la línea en psnow, `a00109847enw` Rev. 8, que es `edgeconnect-data-sheet.pdf`; desde el 2026-10-28 la copia es la Rev. 9, con las mismas cifras) y **1 exige cuenta de
 soporte HPE** (`gw9000Spec`: `support.hpe.com/hpesc/public/docDisplay?docId=a00099295en_us`
 se abre en el navegador pero no ofrece descarga sin login).
 
@@ -52,6 +52,9 @@ Las dos tandas que faltaban se hicieron con un Chrome real (2026-09-10, 9 docume
 - **`www.arubanetworks.com/assets/ds/DS_9000Series.pdf` ya no es un PDF**: redirige al
   visor `psnow/doc/a00067608enw` («HPE Aruba Networking 9000 Series Gateway»). Ojo, es un
   documento distinto del `a00067607enw` que ya estaba (`serie-9000-psnow.pdf`).
+  **Desde el 2026-10-28** las dos fuentes citan la descarga directa,
+  `https://www.hpe.com/psnow/downloadDoc/<id>.pdf?id=<id>`, que un ejecutor de Actions recibe como PDF
+  (la página `psnow/doc/<id>` sin navegador solo es el cascarón de la aplicación).
 
 - **Desde Actions, psnow sí entrega el PDF con un `fetch` normal** (2026-10-06): basta pedir
   la página `psnow/doc/<id>` (HTML), leer en ella la URL `downloadDoc/...` que enlaza y
