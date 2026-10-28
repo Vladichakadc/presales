@@ -294,7 +294,7 @@
       modelo: fig.dataset.modelo || '', pie: fig.dataset.pie || '', pieFoto: fig.dataset.pieFoto || '',
       leyendas: { front: leyendaDe(fig.dataset, 'front'), rear: leyendaDe(fig.dataset, 'rear') },
       // Sin pestañas (una sola cara) la lupa abre la que HAY, no `front` a ciegas.
-      cual: tabOn ? tabOn.dataset.vista : (fig.dataset.front ? 'front' : 'rear') };
+      cual: tabOn ? tabOn.dataset.vista : (fig.dataset.front ? 'front' : fig.dataset.rear ? 'rear' : 'foto') };
     lupaOrigen = fig.querySelector('.ficha-vista-zoom');
     pintarLupa();
     const n = nodoLupa();
@@ -721,13 +721,19 @@
       // sola figura del 80F/81F y es la de conectores, así que ese modelo entra con
       // `rear` y sin `front`; exigir `front` lo habría dejado sin figura teniendo una
       // oficial, o habría invitado a servirle la del 80F-DSL, que es otro producto.
-      if (v && (v.front || v.rear)) {
-        const cara0 = v.front ? 'front' : 'rear';
+      if (v && (v.front || v.rear || v.foto)) {
+        // La cara que se abre (opt-in `inicial`, Cisco 2026-10-28): en los Meraki de sobremesa el
+        // documento llama «Front» a la cara de los LED y los puertos están en la «Back», así que la
+        // tarjeta se abre por la de puertos. Sin `inicial` (o si nombra una cara que no hay), la frontal.
+        const cara0 = v.inicial && v[v.inicial] ? v.inicial : (v.front ? 'front' : v.rear ? 'rear' : 'foto');
         // Frontal y trasera siempre que la página lo pida (`rearNota`, Huawei 2026-10-14,
         // petición del dueño): sin foto trasera oficial la pestaña existe y dice por qué,
-        // en vez de desaparecer y dejar creer que el equipo no tiene trasera.
+        // en vez de desaparecer y dejar creer que el equipo no tiene trasera. Lo mismo con la
+        // frontal (`frontNota`, Cisco 2026-10-28: del ISR 1116-4P la guía dibuja solo la cara del logotipo).
         const sinRear = !!(v.front && !v.rear && v.rearNota);
-        const carasTab = [v.front && 'front', (v.rear || sinRear) && 'rear', v.foto && 'foto'].filter(Boolean);
+        const sinFront = !!(!v.front && v.rear && v.frontNota);
+        const notas = { front: sinFront ? v.frontNota : null, rear: sinRear ? v.rearNota : null };
+        const carasTab = [(v.front || sinFront) && 'front', (v.rear || sinRear) && 'rear', v.foto && 'foto'].filter(Boolean);
         const tabs = carasTab.length > 1
           ? `<div class="ficha-vista-tabs" role="tablist" aria-label="Vistas del equipo">`
             + carasTab.map((c) => `<button type="button" class="ficha-vista-tab${c === cara0 ? ' on' : ''}" data-vista="${c}" role="tab" aria-selected="${c === cara0}">${CARAS[c]}</button>`).join('')
@@ -752,10 +758,10 @@
         // así que el desplegable no va ahí: la tabla la pinta la lupa, que es donde se pidió.
         const hayLeyenda = !cfg.panelFijo && ['front', 'rear'].some((c) => v[c] && leyendaValida(v[c + 'Leyenda']));
         vistaHtml = `<figure class="ficha-vista" id="${cid}-vista"${v.front ? ` data-front="${esc(v.front)}" data-front-prev="${esc(prev('front'))}"` : ''}${v.rear ? ` data-rear="${esc(v.rear)}" data-rear-prev="${esc(prev('rear'))}"` : ''}${v.foto ? ` data-foto="${esc(v.foto)}" data-foto-prev="${esc(prev('foto'))}" data-pie-foto="${esc(pieFoto)}"` : ''}${leyAttr('front')}${leyAttr('rear')} data-modelo="${esc(sel.id)}" data-pie="${esc(pie)}">`
-          + `<div class="ficha-vista-img"><img src="${esc(prev(cara0))}" alt="Vista ${cara0 === 'rear' ? 'trasera' : 'frontal'} del ${esc(sel.id)} — pulsa la lupa para ampliar" loading="lazy">`
-          + (sinRear ? `<p class="ficha-vista-sinrear" hidden>${esc(v.rearNota)}</p>` : '')
+          + `<div class="ficha-vista-img"><img src="${esc(prev(cara0))}" alt="${ALT_CARA[cara0]}${esc(sel.id)} — pulsa la lupa para ampliar" loading="lazy">`
+          + ['front', 'rear'].filter((c) => notas[c]).map((c) => `<p class="ficha-vista-sinrear" data-nota="${c}" hidden>${esc(notas[c])}</p>`).join('')
           + `<button type="button" class="ficha-vista-zoom" aria-label="Ampliar la foto del ${esc(sel.id)} a tamaño completo" title="Ampliar a tamaño completo">${SVG_LUPA}</button></div>`
-          + `<div class="ficha-vista-bar">${tabs}<figcaption>${pie}</figcaption></div>`
+          + `<div class="ficha-vista-bar">${tabs}<figcaption>${cara0 === 'foto' && pieFoto ? esc(pieFoto) : pie}</figcaption></div>`
           + (hayLeyenda
             ? `<details class="ficha-vista-leyenda"${ley0 ? '' : ' hidden'}><summary>Qué es cada número (${ley0 ? ley0.filas.length : 0})</summary>${ley0 ? tablaLeyenda(ley0, cara0) : ''}</details>`
             : '')
@@ -879,11 +885,10 @@
         tb.addEventListener('click', () => {
           const cual = tb.dataset.vista;
           const src = vistaNodo.dataset[cual + 'Prev'];
-          const nota = vistaNodo.querySelector('.ficha-vista-sinrear');
           const zoom = vistaNodo.querySelector('.ficha-vista-zoom');
           if (!imgNodo) return;
-          // Sin trasera oficial: la pestaña enseña el motivo en el sitio de la foto.
-          if (nota) nota.hidden = !!src;
+          // Sin esa cara oficial: la pestaña enseña el motivo en el sitio de la foto.
+          vistaNodo.querySelectorAll('.ficha-vista-sinrear').forEach((nota) => { nota.hidden = !!src || nota.dataset.nota !== cual; });
           imgNodo.hidden = !src;
           if (zoom) zoom.hidden = !src;
           if (src) imgNodo.src = src;

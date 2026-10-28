@@ -1531,23 +1531,36 @@ const DOCS = [
       'meraki-mx250-ig.html', 'meraki-mx450-ig.html', 'meraki-c8111-c8121-ig.html', 'meraki-c8355-ig.html'],
       base: 'https://documentation.meraki.com/', dominios: ['meraki.com', 'cisco.com'], relativas: true,
       contiene: ['/@api/deki/files/', '/c/dam/', '/content/dam/'], max: 250 } },
-  // Pendientes que esperan documento oficial (2026-10-28, tema transporte-y-fuentes):
-  // · Fortinet F3: la licencia FortiGuard única en un clúster HA activo-pasivo, por modelo y versión.
+  // Figuras de los ASR 1000 (2026-10-28, encargo del dueño: «incluye las gráficas de los
+  // equipos Cisco»). Los tres ASR del catálogo no tenían ninguna: la ficha c78-731632 dibuja
+  // el 1001-X y el 1002-HX (figuras 2 y 4) y la página de producto del 1006-X lo enseña.
+  // Las URL salen de buscar cada página el 2026-10-28, no de adivinarlas por patrón.
+  { archivo: 'cisco-asr1006x-producto.html', tipo: 'html', para: 'CISCO', debeContener: '1006-X', urls: [
+    'https://www.cisco.com/site/us/en/products/networking/sdwan-routers/asr-1000-series-aggregation-services-routers/asr-1006-x/index.html',
+  ] },
+  { archivo: 'cisco-asr1002hx-producto.html', tipo: 'html', para: 'CISCO', debeContener: '1002-HX', urls: [
+    'https://www.cisco.com/c/en/us/products/routers/asr-1002-hx-router/index.html',
+  ] },
+  { archivo: 'cisco-asr-img', tipo: 'imagenes', para: 'CISCO', urls: [],
+    descubrirPiezas: { de: ['cisco-asr1000-ds.html', 'cisco-asr1006x-producto.html', 'cisco-asr1002hx-producto.html'],
+      base: 'https://www.cisco.com/', dominios: ['cisco.com'], relativas: true,
+      contiene: ['/c/dam/', '/content/dam/'], max: 120 } },
+  // Pendientes que esperan documento oficial (2026-10-28, tema transporte-y-fuentes; corrida
+  // fuente/transporte-1-2026-10-28):
+  // · Fortinet F3: la licencia FortiGuard única en un clúster HA activo-pasivo, por modelo y versión
+  //   (`haLicenciaUnica` en legacyData/fortinet.js la cita).
   { archivo: 'fortinet-ha-licencia-unica-7.6.6.html', tipo: 'html', para: 'FORTINET', debeContener: 'logical-sn', urls: [
     'https://docs.fortinet.com/document/fortigate/7.6.6/administration-guide/246857',
     'https://docs.fortinet.com/document/fortigate/7.6.5/administration-guide/246857',
   ] },
-  // · Huawei: qué trae el paquete N1 Advanced frente al Foundation. La ficha de la solución SD-WAN
-  //   R25C00 (su página de documento y el PDF que enlaza) y la ficha del modelo de negocio N1.
-  { archivo: 'huawei-sdwan-r25c00-documento.html', tipo: 'html', para: 'HUAWEI', debeContener: 'dd12f8cc04ac4d9da4b020382fbe6c2e', urls: [
-    'https://e.huawei.com/en/documents/products/enterprise-network/dd12f8cc04ac4d9da4b020382fbe6c2e',
-  ] },
-  { archivo: 'huawei-sdwan-r25c00-ds.pdf', tipo: 'pdf', para: 'HUAWEI', urls: [],
-    descubrir: { de: 'huawei-sdwan-r25c00-documento.html', material: 'Material/dd12f8cc04ac4d9da4b020382fbe6c2e/' } },
+  // · Huawei: qué trae N1 Advanced frente a Foundation. La ficha del modelo de negocio N1 que se
+  //   alcanza es de V100R019 (Advanced «Not involved» en casi todo): no cierra el pendiente, y se
+  //   deja para que el vigía de una edición nueva no tenga que buscarla otra vez.
   { archivo: 'huawei-n1-modelo-negocio.pdf', tipo: 'pdf', para: 'HUAWEI', urls: [
     'https://carrier.huawei.cn/-/media/cnbgv2/download/products/networks/Huawei-SD-WAN-N1-Business-Mode-datasheet-en.pdf',
   ] },
-  // · Huawei: en qué nubes e hipervisores se despliega el vCPE AR6700V-L (su página de producto).
+  // · Huawei: en qué nubes e hipervisores se despliega el vCPE AR6700V-L (su página de producto da
+  //   la lista de nubes, no las regiones ni los «flavors»).
   { archivo: 'huawei-ar6700v-l-producto.html', tipo: 'html', para: 'HUAWEI', debeContener: 'AWS', urls: [
     'https://e.huawei.com/en/products/routers/netengine-ar6700v-l',
   ] },

@@ -1099,7 +1099,8 @@
     // Fotos oficiales del equipo (plan 20): solo viajan cuando la página las declara en
     // meta.fotos: Aruba, Fortinet, Huawei, Cisco y Juniper (estos dos, y el Aruba 7010, con la leyenda de los números;
     // Cisco y Juniper, además, con la foto de producto donde la ficha la tiene).
-    if (m.fotos && m.fotos.front) {
+    // Basta una cara o la foto (2026-10-28): del ISR 1116-4P Cisco solo dibuja la cara del logotipo.
+    if (m.fotos && (m.fotos.front || m.fotos.rear || m.fotos.foto)) {
       const incrustadas = await hojaDeFotos(libro, m.fotos);
       if (incrustadas > 0) {
         hoja.addRow(['', 'Las fotos oficiales del equipo recomendado viajan en la hoja «Fotos del equipo».']);

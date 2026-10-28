@@ -33,6 +33,8 @@ const SIN_NUMEROS = new Set([
   'cs-mx67-front', 'cs-mx67-rear', 'cs-mx67c-rear', 'cs-mx68-front', 'cs-mx68-rear', 'cs-mx68cw-rear',
   'cs-mx75-front', 'cs-mx75-rear', 'cs-mx85-front', 'cs-mx85-rear', 'cs-mx95-mx105-front', 'cs-mx95-rear',
   'cs-mx105-rear', 'cs-mx250-front', 'cs-mx250-mx450-rear', 'cs-mx450-front',
+  // Las vistas de frente de los ASR (2026-10-28) son fotos de la página de la serie, sin números.
+  'cs-asr1001x-front', 'cs-asr1002hx-front', 'cs-asr1006x-front',
 ]);
 const nombre = (ruta) => path.basename(ruta, '.webp');
 

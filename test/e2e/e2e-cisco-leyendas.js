@@ -67,7 +67,9 @@ const leerLupa = (page) => page.evaluate(() => {
   t.ok(lupaT.abierta && lupaT.visible && lupaT.filas.length === 2 && /trasera/.test(lupaT.titulo),
     `al ampliar, la tabla de los números va bajo la figura (${lupaT.filas.join(' / ')})`);
   t.ok(lupaT.alcanzable, 'y queda a la vista dentro de la caja');
-  await page.keyboard.press('ArrowRight');
+  // Desde el 2026-10-28 el C8130-G2 tiene tres caras (frontal, trasera y la foto de su ficha): desde la
+  // trasera, la flecha izquierda vuelve a la frontal y la derecha va a la foto.
+  await page.keyboard.press('ArrowLeft');
   await asentar(page);
   const lupaF = await leerLupa(page);
   t.ok(lupaF.visible && lupaF.filas.length === 8 && /frontal · tabla 1 de la ficha/.test(lupaF.titulo),

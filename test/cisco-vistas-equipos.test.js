@@ -33,11 +33,11 @@ function lienzoConPerdida(buf) {
 }
 
 // Lo que se declara a propósito sin figura, y por qué (ver `_procedencia`).
-const SIN_FIGURA = new Set([
-  'ISR 1116-4P',  // la guía del ISR 1000 (29-oct-2025) no tiene vista de los C111x-4P
-  'ISR 1161X-8P', // la guía no dibuja ningún C1161
-  'ASR 1001-X', 'ASR 1002-HX', 'ASR 1006-X',                         // fuera de venta
-]);
+// Desde el 2026-10-28 los ISR 1116-4P y 1161X-8P tienen figura (ver «ISR sin figura propia» abajo).
+// Desde el 2026-10-28 los tres ASR también (vista de frente de la página de la serie en cisco.com).
+const SIN_FIGURA = new Set([]);
+// Lo que Cisco solo dibuja por una cara, y lo dice la pestaña de la que falta.
+const SOLO_TRASERA = new Set(['ISR 1116-4P']);
 
 test('cada figura existe, es WebP SIN pérdida y no está reescalada', () => {
   for (const [modelo, v] of entradas) {
@@ -67,7 +67,7 @@ test('cada cara cita su documento, su figura o panel y el rótulo literal', () =
     for (const pie of v.fuente.split(/\. (?=Trasera — )/)) {
       assert.match(pie, /^(Frontal|Trasera) — (ficha|guía|«)/, `${modelo}: el pie no nombra su documento («${pie}»)`);
       assert.match(pie, /«[^»]+».*«[^»]+»/, `${modelo}: el pie no trae documento y rótulo entre comillas («${pie}»)`);
-      assert.match(pie, /figura \d+|Panel|panel|product_image/, `${modelo}: el pie no dice qué figura es («${pie}»)`);
+      assert.match(pie, /figura \d+|Panel|panel|product_image|imagen «/, `${modelo}: el pie no dice qué figura es («${pie}»)`);
     }
   }
 });
@@ -77,6 +77,7 @@ test('cada modelo con figura está en el catálogo y los que no la tienen están
   for (const [modelo] of entradas) assert.ok(ids.has(modelo), `${modelo} tiene figura pero no está en el catálogo`);
   for (const m of MODELS) {
     if (SIN_FIGURA.has(m.id)) { assert.ok(!VISTAS[m.id], `${m.id}: declarado sin figura y la tiene`); continue; }
+    if (SOLO_TRASERA.has(m.id)) { assert.ok(VISTAS[m.id] && VISTAS[m.id].rear && VISTAS[m.id].frontNota, `${m.id}: sin trasera o sin decir por qué no hay frontal`); continue; }
     assert.ok(VISTAS[m.id] && VISTAS[m.id].front, `${m.id}: sin figura frontal y no está declarado como tal`);
   }
 });
@@ -85,13 +86,17 @@ test('frontal y trasera: la que falta, la pestaña la explica', () => {
   for (const [modelo, v] of entradas) {
     if (v.front && !v.rear) assert.ok(v.rearNota && v.rearNota.length > 30, `${modelo}: sin trasera y sin decir por qué`);
     if (v.rear) assert.ok(!v.rearNota, `${modelo}: tiene trasera y además una nota de que no la tiene`);
+    if (!v.front) assert.ok(v.frontNota && v.frontNota.length > 30, `${modelo}: sin frontal y sin decir por qué`);
+    if (v.front) assert.ok(!v.frontNota, `${modelo}: tiene frontal y además una nota de que no la tiene`);
   }
   const g2 = MODELS.filter((m) => /Secure Router|Meraki/.test(m.ser) && VISTAS[m.id]);
   const conDos = g2.filter((m) => VISTAS[m.id].rear).length;
   assert.ok(conDos >= 20, `solo ${conDos} equipos G2/Meraki con las dos caras`);
 });
 
-test('cada figura tiene su vista previa: con pérdida, de 1.200 px como mucho y del mismo dibujo', () => {
+// La previa se sirve a 1.600 px como mucho (2026-10-28, «mejora la calidad de las imágenes»): la tarjeta
+// mide unos 700 px de CSS, y en una pantalla de densidad 2 una previa de 1.200 px se veía borrosa.
+test('cada figura tiene su vista previa: con pérdida, de 1.600 px como mucho y del mismo dibujo', () => {
   for (const [modelo, v] of entradas) {
     for (const cara of ['front', 'rear']) {
       if (!v[cara]) { assert.ok(!v[cara + 'Prev'], `${modelo}: previa de una cara que no tiene`); continue; }
@@ -100,7 +105,8 @@ test('cada figura tiene su vista previa: con pérdida, de 1.200 px como mucho y 
       assert.ok(buf.includes(Buffer.from('VP8 ')), `${modelo}: la previa de ${cara} no es con pérdida`);
       const [w, h] = lienzoConPerdida(buf);
       const [W, H] = lienzo(fs.readFileSync(path.join(RAIZ, 'public', v[cara])));
-      assert.ok(w <= 1200, `${modelo}: previa de ${w} px de ancho`);
+      assert.ok(w <= 1600, `${modelo}: previa de ${w} px de ancho`);
+      assert.ok(w === Math.min(W, 1600), `${modelo}: la previa de ${cara} (${w} px) no está a la resolución que la tarjeta pide (${Math.min(W, 1600)} px)`);
       assert.ok(Math.abs(h - w * H / W) <= 1, `${modelo}: la previa de ${cara} (${w} × ${h}) no tiene las proporciones de su original (${W} × ${H})`);
     }
   }
@@ -114,13 +120,15 @@ test('la foto de producto (tercera pestaña) es opcional, sin pérdida, sin rees
     assert.notStrictEqual(v.foto, v.front, `${modelo}: la foto no puede ser la misma figura que la frontal`);
     const buf = fs.readFileSync(path.join(RAIZ, 'public', v.foto));
     assert.ok(buf.includes(Buffer.from('VP8L')) && !buf.includes(Buffer.from('VP8 ')), `${modelo}: la foto con pérdida`);
-    const m = (v.fotoFuente || '').match(/^Foto de producto de la ficha «[^»]+».*figura \d+ «[^»]+» \((\d+) × (\d+) px(?:, servida a (\d+) × (\d+)|, sin recortar)\)/);
+    // Las fichas de Meraki y las fotos de cabecera de las fichas de Cisco no numeran sus imágenes: el
+    // rótulo literal es su texto alternativo («imagen «…»»).
+    const m = (v.fotoFuente || '').match(/^Foto de producto de la ficha «[^»]+».*(?:figura \d+|imagen(?: de cabecera)?) «[^»]+» \((\d+) × (\d+) px(?:, servida a (\d+) × (\d+)|, sin recortar)\)/);
     assert.ok(m, `${modelo}: el pie de la foto no dice documento, figura, rótulo y tamaño («${v.fotoFuente}»)`);
     const servida = m[3] ? [Number(m[3]), Number(m[4])] : [Number(m[1]), Number(m[2])];
     assert.deepStrictEqual(lienzo(buf), servida, `${modelo}: la foto no mide lo que dice su pie`);
     assert.strictEqual(v.fotoPrev, v.foto.replace(/\.webp$/, '.prev.webp'));
     const prev = fs.readFileSync(path.join(RAIZ, 'public', v.fotoPrev));
-    assert.ok(prev.includes(Buffer.from('VP8 ')) && lienzoConPerdida(prev)[0] <= 1200, `${modelo}: la previa de la foto`);
+    assert.ok(prev.includes(Buffer.from('VP8 ')) && lienzoConPerdida(prev)[0] <= 1600, `${modelo}: la previa de la foto`);
   }
 });
 
@@ -130,4 +138,40 @@ test('no hay figuras huérfanas: todo cs-*.webp lo usa algún modelo', () => {
   const enDisco = fs.readdirSync(path.join(RAIZ, 'public/img/equipos')).filter((f) => f.startsWith('cs-') && f.endsWith('.webp'));
   const huerfanas = enDisco.filter((f) => !usadas.has(f));
   assert.deepStrictEqual(huerfanas, [], `figuras sin modelo: ${huerfanas.join(', ')}`);
+});
+
+test('ISR sin figura propia (2026-10-28): la de la familia que el documento nombra, dicho en el pie', () => {
+  const i1161 = VISTAS['ISR 1161X-8P'];
+  assert.match(i1161.fuente, /figura 29 «Cisco 11x1\(X\)-8P\/ C11x1\(X\)-8PLTEP LED Indicators»/);
+  assert.match(i1161.fuente, /C1121-8PLTEP/, 'el pie tiene que decir que el dibujo lleva el rótulo de otra variante');
+  assert.strictEqual(i1161.frontLeyenda.filas.length, 9);
+  assert.match(i1161.fotoFuente, /figura 3 «C1161X- 8PLTEP».*sin el módulo/);
+  assert.ok(i1161.rearNota, 'el 1161X-8P no tiene trasera publicada');
+  const i1116 = VISTAS['ISR 1116-4P'];
+  assert.strictEqual(i1116.rear, VISTAS['ISR 1111-8P'].rear, 'la cara del logotipo es la de la serie C111x');
+  assert.deepStrictEqual(i1116.rearLeyenda, VISTAS['ISR 1111-8P'].rearLeyenda);
+  assert.ok(!i1116.front && !i1116.foto, 'del C111x-4P Cisco no publica cara de puertos ni foto: no se sirve la de otro');
+});
+
+test('los Meraki de sobremesa se abren por la cara de puertos y llevan su foto de producto (2026-10-28)', () => {
+  for (const m of ['Meraki MX67', 'Meraki MX67C', 'Meraki MX68', 'Meraki MX68CW', 'Meraki MX75']) {
+    assert.strictEqual(VISTAS[m].inicial, 'rear', `${m}: la tarjeta tiene que abrirse por los puertos`);
+    assert.ok(VISTAS[m].rear, `${m}: inicial apunta a una cara que no tiene`);
+  }
+  for (const [m, v] of entradas) if (v.inicial) assert.ok(['front', 'rear', 'foto'].includes(v.inicial) && v[v.inicial], `${m}: inicial «${v.inicial}» sin esa cara`);
+  for (const m of ['Meraki MX75', 'Meraki MX85', 'Meraki MX95', 'Meraki MX105', 'Meraki MX67C', 'Meraki MX68CW', 'Cisco Secure Router C8455-G2-MX']) {
+    assert.ok(VISTAS[m].foto, `${m}: sin la foto de producto de su ficha`);
+  }
+  // La foto de la ficha del MX67/MX68 lleva antenas: no va a los modelos sin radio.
+  assert.ok(!VISTAS['Meraki MX67'].foto && !VISTAS['Meraki MX68'].foto);
+});
+
+test('los ASR (fuera de venta) tienen figura: la vista de frente de la página de la serie y su foto (2026-10-28)', () => {
+  for (const m of ['ASR 1001-X', 'ASR 1002-HX', 'ASR 1006-X']) {
+    const v = VISTAS[m];
+    assert.match(v.fuente, /comparativa de modelos, imagen «Cisco ASR 10\d\d-? ?[A-Z]+ model»/, `${m}: la frontal no cita su imagen`);
+    assert.ok(v.foto && v.rearNota, `${m}: sin foto o sin decir por qué no hay trasera`);
+  }
+  assert.match(VISTAS['ASR 1001-X'].fotoFuente, /figura 2 «Cisco ASR 1001-X Router»/);
+  assert.match(VISTAS['ASR 1002-HX'].fotoFuente, /figura 4 «Cisco ASR 1002-HX Router»/);
 });
