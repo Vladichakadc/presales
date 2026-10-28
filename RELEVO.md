@@ -1,6 +1,6 @@
 # Relevo
 
-Última actualización: 2026-10-28 · PR #41
+Última actualización: 2026-10-28 · PR #43
 
 Informe para continuar el trabajo. Lo pidió el dueño del repositorio el 2026-10-27: «de aquí en
 adelante, un informe de pendientes y mejoras para que la cuenta **servicioiptv2025@gmail.com**
@@ -33,6 +33,8 @@ está en curso no va aquí: lo dice `npm run traspasos` (protocolo en `docs/tras
 
 ## Estado al cerrar esta entrega
 
+- **2026-10-28 · PR #43**: `npm run candidatas` dice si cada PDF servido es el mismo documento que
+  su copia de `public/datasheets/` o una edición distinta (campo `copia` en la candidata).
 - **2026-10-28 · PR #41**: el fin de venta del equipo también en el Excel (la mejora propuesta):
   sección «Ciclo de vida del equipo» en «Supuestos» (estado, último pedido, sucesor, boletín) y
   un aviso en rojo en la hoja BOM. Sin dato de ciclo no sale nada.
