@@ -224,9 +224,9 @@ callaría.
   oficiales, con Dependabot vigilándolas (`test/workflows-acciones.test.js`).
 - **Un `node -e "..."` de un workflow no lleva comillas invertidas ni `$` sin escapar, ni una
   comilla doble que lo corte**: bash los procesa antes que Node (`test/workflows-node-e.test.js`).
-  Un script largo va por la entrada estándar (`node - <<DELIM`, sin comillas en el delimitador:
-  mismas reglas, sin tope de tamaño): el de `traer-cisco-huawei.yml` pasó el tope de 128 KiB de un
-  argumento el 2026-10-28.
+  Un script largo va a un archivo y el workflow solo lo lanza: el del transporte vive en
+  `scripts/transporte/` desde el 2026-10-28 (como `node -e` pasó el tope de 128 KiB de un argumento,
+  y como heredoc bash seguía leyéndolo antes que Node).
 - **`npm run auditar` falla cerrado**: un aviso alto o crítico frena; la salida es una excepción
   declarada con GHSA, motivo y caducidad de 90 días como mucho, nunca apagar el paso.
 - Los jobs de navegador corren en `ubuntu-26.04` con **Playwright 1.61.1**, movidos juntos: la
@@ -236,7 +236,9 @@ callaría.
 **Lo que este entorno no alcanza.** El proxy de egreso deniega `presales.up.railway.app`, los
 dominios de HPE, Huawei, Fortinet, Juniper y otros fabricantes: **un 403 del proxy es política de
 la organización y se reporta, no se rodea**. Los ejecutores de GitHub Actions sí llegan, y los
-documentos se traen con workflows de transporte (`traer-cisco-huawei.yml` —con `solo` y `rama`—,
+documentos se traen con workflows de transporte (`traer-cisco-huawei.yml` —con `solo` y `rama`; su
+lista está en `scripts/transporte/documentos.js` y una entrada nueva va ahí, que `npm run verificar`
+carga con `test/transporte-documentos.test.js`—,
 `traer-fortinet-pendientes.yml`, `candidatas-fuentes.yml`…) a ramas `fuente/*` que se leen y se
 descartan, **una por corrida y nunca con `--force` a un nombre fijo** (pisaba la edición anterior); el workflow no da por guardada una pantalla de inicio de sesión (`test/traer-pantalla-login.test.js`),
 y cada entrada HTML declara `debeContener` o `exploracion: true`: lo explorado sale EXPL, no OK
