@@ -4,8 +4,8 @@
 - **Rama:** claude/elegant-pascal-7ymts7
 - **Cuenta:** vladichakadc, sesión 01TxCQ3W2sHYVmimAdMKht3j
 - **Estado:** en curso
-- **Actualizado:** 2026-10-27 23:05
-- **Archivos que toca:** server/seed/legacyData/cisco.js, server/seed/legacyData/aruba.js, server/seed/legacyData/fortinet.js, server/seed/legacyData/juniper.js, server/seed/legacyData/mikrotik.js, server/seed/legacyData/nokia.js, server/seed/legacyData/fuentes.js, test/pqc.test.js, .github/workflows/traer-cisco-huawei.yml, test/workflows-node-e.test.js
+- **Actualizado:** 2026-10-28 06:55
+- **Archivos que toca:** server/seed/legacyData/cisco.js, server/seed/legacyData/aruba.js, server/seed/legacyData/fortinet.js, server/seed/legacyData/juniper.js, server/seed/legacyData/mikrotik.js, server/seed/legacyData/nokia.js, server/seed/legacyData/fuentes.js, test/pqc.test.js, .github/workflows/traer-cisco-huawei.yml, test/workflows-node-e.test.js, public/js/ficha.js, public/js/bom.js, test/bom-supuestos.test.js, test/e2e/e2e-pqc-supuestos.js
 - **Siguiente paso:** leer lo traído en `fuente/pqc-4-2026-10-28` y cerrar solo lo que los documentos digan; después, el enlace en la ficha y en «Supuestos» cuando se fusione la rama que declara `ficha.js` y `bom.js`
 
 ## Encargo del dueño
