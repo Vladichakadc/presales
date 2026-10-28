@@ -3,10 +3,10 @@
 - **Tema:** figuras que faltan (ISR 1116-4P, ISR 1161X-8P, los tres ASR) y fotos de producto a color para Meraki MX y Secure Router
 - **Rama:** claude/figuras-cisco-isr-mx
 - **Cuenta:** sesión de Claude del 2026-10-28 (cuenta del dueño)
-- **Estado:** en curso
-- **Actualizado:** 2026-10-28 10:00
-- **Archivos que toca:** .github/workflows/traer-cisco-huawei.yml, public/data/cisco-vistas-equipos.json, public/img/equipos/cs-*, public/js/ficha.js, test/cisco-vistas-equipos.test.js, test/cisco-leyendas.test.js
-- **Siguiente paso:** traer con `traer-cisco-huawei.yml` (solo `cisco-asr1000-ds.html,cisco-asr1006x-producto.html,cisco-asr1002hx-producto.html,cisco-asr-img`) a `fuente/cisco-asr-2026-10-28` y extraer las figuras de los ASR
+- **Estado:** listo para fusionar
+- **Actualizado:** 2026-10-28 11:30
+- **Archivos que toca:** .github/workflows/traer-cisco-huawei.yml, public/data/cisco-vistas-equipos.json, public/img/equipos/cs-*, public/js/ficha.js, public/js/bom.js, public/js/dimensionador-cisco-catalyst8k.js, test/cisco-vistas-equipos.test.js, test/cisco-leyendas.test.js, test/e2e/e2e-cisco-leyendas.js, test/e2e/e2e-cisco-isr-mx-vistas.js
+- **Siguiente paso:** abrir el PR, actualizar PENDIENTES.md, RELEVO.md y CLAUDE.md en el commit de cierre y fusionar en main
 
 ## Encargo del dueño
 
