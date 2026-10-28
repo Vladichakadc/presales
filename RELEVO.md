@@ -1,6 +1,6 @@
 # Relevo
 
-Última actualización: 2026-10-28 · PR #40
+Última actualización: 2026-10-28 · PR #42
 
 Informe para continuar el trabajo. Lo pidió el dueño del repositorio el 2026-10-27: «de aquí en
 adelante, un informe de pendientes y mejoras para que la cuenta **servicioiptv2025@gmail.com**
@@ -33,6 +33,10 @@ está en curso no va aquí: lo dice `npm run traspasos` (protocolo en `docs/tras
 
 ## Estado al cerrar esta entrega
 
+- **2026-10-28 · PR #42**: las dos fuentes de Aruba que eran un cascarón ya tienen URL del PDF
+  probada desde Actions (`psnow/downloadDoc/<id>.pdf?id=<id>`): la de la serie 9000 sirve el mismo
+  documento que se leyó; la de EdgeConnect, la Rev. 9, que falta contrastar. `fuentes.js` no se tocó
+  (lo declaraba otra rama).
 - **2026-10-28 · PR #40**: la foto de producto también en el Excel (la mejora propuesta); en rojo,
   y con su texto, lo que está o va a estar fuera de venta en todos los desplegables de equipo
   (`FICHA.opcionCiclo`, una sola regla); y la fila de cada casilla de función marcada, resaltada
@@ -165,9 +169,10 @@ traspaso (el #37, de otra sesión, se fusionó mientras se cerraba esta).
 - **Juniper**: ficha de la serie MX en inglés, cifra de inspección del SSR, foto del SSR120 base,
   FEC del SSR; no hay lista de precios ni SKU de chasis.
 - **Aruba**: EC-XL S3N77A (fuera de venta, sin ópticas de 25G en su matriz), y
-  las dos fuentes que solo devuelven el cascarón de la página (la URL del PDF se copia desde el
-  Chrome del dueño en `hpe.com`; una sesión puede hacerlo con Claude en Chrome si el Chrome del
-  dueño está abierto con la extensión: el 27-oct no lo estaba).
+  las dos fuentes que eran un cascarón: la URL del PDF ya está probada desde Actions
+  (`psnow/downloadDoc/<id>.pdf?id=<id>`, PR #42; no hace falta el Chrome del dueño). Falta
+  cambiarla en `fuentes.js` (serie 9000, mismo documento) y traer y contrastar la Rev. 9 del data
+  sheet de EdgeConnect antes de cambiar la suya.
 - **MikroTik**: si la cifra IPsec es por sentido o la suma (respuesta escrita de soporte), figuras
   traseras que la galería no publica, el CCR2004-16G-2S+PC en la matriz de compatibilidad.
 - **Huawei**: ficha de iMaster NCE-Campus, nubes del vCPE, funciones de N1 Advanced frente a

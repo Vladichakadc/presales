@@ -98,6 +98,14 @@ const CASOS = [
     candidatas: [
       { url: 'https://www.hpe.com/psnow/resources/ebooks/a00109847enw/a00109847enw.pdf',
         porQue: 'ruta del PDF de psnow para ese mismo id, anotada en PENDIENTES (2026-10-15) como la que cierra el cascaron' },
+      // 2026-10-28: la pagina psnow/doc, leida con WebFetch (fuera del proxy), nombra su descarga
+      // en psnow/downloadDoc/<titulo>-<id>.pdf?id=<id>&... ; la forma corta, sin titulo ni
+      // parametros, sirvio el texto de la Rev. 9. Las dos se miden: la corta es la que cabe en
+      // `fuentes.js`, la larga es la que la pagina publica.
+      { url: 'https://www.hpe.com/psnow/downloadDoc/a00109847enw.pdf?id=a00109847enw',
+        porQue: 'descarga de psnow en su forma corta (la que se pondria en fuentes.js)' },
+      { url: 'https://www.hpe.com/psnow/downloadDoc/HPE%20Networking%20EdgeConnect-a00109847enw.pdf?id=a00109847enw&contentDisposition=attachment',
+        porQue: 'descarga de psnow como la nombra la pagina psnow/doc/a00109847enw' },
     ],
     control: { url: 'https://www.hpe.com/us/en/aruba-networking.html',
       porQue: 'pagina del mismo dominio que scripts/descargar-datasheets.js usa como Referer' },
@@ -109,6 +117,12 @@ const CASOS = [
     candidatas: [
       { url: 'https://www.hpe.com/psnow/resources/ebooks/a00067607enw/a00067607enw.pdf',
         porQue: 'la misma serie en psnow (a00067607enw, `gw9000Psnow` en legacyData/aruba.js), por la ruta del PDF' },
+      // 2026-10-28: a00067607enw es la guia de pedido; el DATA SHEET de la serie en psnow es
+      // a00067608enw («HPE Aruba Networking 9000 Series Gateway», Rev. 2: 9004, 9004-LTE, 9012).
+      { url: 'https://www.hpe.com/psnow/downloadDoc/a00067608enw.pdf?id=a00067608enw',
+        porQue: 'data sheet de la serie 9000 en psnow (a00067608enw), descarga en forma corta' },
+      { url: 'https://www.hpe.com/psnow/downloadDoc/HPE%20Aruba%20Networking%209000%20Series%20Gateway-a00067608enw.pdf?id=a00067608enw&contentDisposition=attachment',
+        porQue: 'la misma descarga como la nombra la pagina psnow/doc/a00067608enw' },
     ],
     control: { url: 'https://www.hpe.com/us/en/aruba-networking.html',
       porQue: 'pagina del mismo dominio de la candidata' },
@@ -147,6 +161,8 @@ async function pedir(url) {
       // Que el cuerpo empiece por %PDF es la unica prueba de que lo servido es el documento y
       // no una pagina de error con codigo 200, que es como un chequeo se pone verde en falso.
       esPdf: buf.slice(0, 4).toString('latin1') === '%PDF',
+      // La huella deja comparar lo servido con la copia de public/datasheets/ sin bajarlo aqui.
+      sha256: require('crypto').createHash('sha256').update(buf).digest('hex'),
       urlFinal: r.url !== url ? r.url : null,
     };
   } catch (e) {
@@ -156,7 +172,7 @@ async function pedir(url) {
 
 const linea = (r) => r.estado == null
   ? `sin respuesta (${r.error})`
-  : `${r.estado}${r.ok ? ' OK' : ''} · ${r.bytes} B · ${r.esPdf ? 'PDF real' : (r.tipo.split(';')[0] || 'sin tipo')}`
+  : `${r.estado}${r.ok ? ' OK' : ''} · ${r.bytes} B · ${r.esPdf ? `PDF real · sha256 ${r.sha256.slice(0, 16)}` : (r.tipo.split(';')[0] || 'sin tipo')}`
     + (r.urlFinal ? ` · redirige a ${r.urlFinal}` : '');
 
 (async () => {
