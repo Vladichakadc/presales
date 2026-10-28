@@ -1,0 +1,123 @@
+[
+  {
+    "archivo": "mikrotik-changelog-7.24.txt",
+    "para": "MIKROTIK",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://download.mikrotik.com/routeros/7.24/CHANGELOG",
+        "status": 200,
+        "bytes": 18276,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "mikrotik-changelog-7.24.1.txt",
+    "para": "MIKROTIK",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://download.mikrotik.com/routeros/7.24.1/CHANGELOG",
+        "status": 200,
+        "bytes": 1412,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "mikrotik-changelog-7.24.2.txt",
+    "para": "MIKROTIK",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://download.mikrotik.com/routeros/7.24.2/CHANGELOG",
+        "status": 200,
+        "bytes": 1369,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "mikrotik-changelog-7.24.3.txt",
+    "para": "MIKROTIK",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://download.mikrotik.com/routeros/7.24.3/CHANGELOG",
+        "status": 200,
+        "bytes": 1344,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "mikrotik-changelog-7.25.txt",
+    "para": "MIKROTIK",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://download.mikrotik.com/routeros/7.25/CHANGELOG",
+        "status": 200,
+        "bytes": 18879,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "mikrotik-changelog-7.25.1.txt",
+    "para": "MIKROTIK",
+    "guardado": false,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://download.mikrotik.com/routeros/7.25.1/CHANGELOG",
+        "status": 404
+      },
+      {
+        "url": "https://upgrade.mikrotik.com/routeros/7.25.1/CHANGELOG",
+        "status": 404
+      }
+    ]
+  },
+  {
+    "archivo": "aruba-nc-helpsystem.xml",
+    "para": "ARUBA",
+    "guardado": true,
+    "exploracion": true,
+    "intentos": [
+      {
+        "url": "https://arubanetworking.hpe.com/techdocs/new-central/Data/HelpSystem.xml",
+        "status": 200,
+        "bytes": 1911,
+        "guardado": true,
+        "verificado": false
+      }
+    ]
+  },
+  {
+    "archivo": "aruba-nc-gateways-soportados.html",
+    "para": "ARUBA",
+    "guardado": true,
+    "exploracion": true,
+    "intentos": [
+      {
+        "url": "https://arubanetworking.hpe.com/techdocs/new-central/content/mon-gw/supported-gateways.htm",
+        "status": 200,
+        "bytes": 36532,
+        "guardado": true,
+        "verificado": false
+      }
+    ]
+  }
+]

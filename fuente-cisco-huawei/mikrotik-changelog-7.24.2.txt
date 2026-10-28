@@ -1,0 +1,24 @@
+What's new in 7.24.2 (2026-09-03):
+
+This is an important security update. Most configurations are not at risk, but upgrading is highly recommended. To give time to update your systems, we are not currently publishing detailed information.
+
+*) bgp - fix BGP link-local nexthops unreachable over a VRF and a crash when disabling an unnumbered connection;
+*) btest - improve stability;
+*) certificate - fix changing the built-in trust store setting (introduced in 7.22.2);
+*) console - fix a memory leak in background scripts;
+*) console - improve stability;
+*) container - improve container image extraction;
+*) dhcp - improve stability of DHCP handling;
+*) disk - improve stability of the SMB server;
+*) ethernet - improve stability on hAP be3 Media;
+*) fetch - improve stability of the TFTP client;
+*) ipv6 - add a neighbor discovery ping;
+*) leds - fix LEDs set to interface status staying off when the interface is active;
+*) lte - fix the RG650E-EU modem not bringing link up after a firmware update;
+*) ping - add parameter checks for arp ping;
+*) poe-out - fixed missing PoE-Out interface on hEX PoE lite, RB260GSP, OmniTIK 5 PoE, PowerBox;
+*) ssh - refactor SSH internal processes and improved system stability;
+*) system - improve stability;
+*) webfig - improve stability;
+*) winbox - fix the "addresses" spelling in read-only fields;
+*) www - improve stability;

@@ -1,0 +1,22 @@
+What's new in 7.24.1 (2026-Aug-21 16:06):
+
+*) app - fix entrypoint and cmd for opencloud-extended-collabora app;
+*) bridge - fix missing host "E" flag for CRS8xx series switches;
+*) bridge - fix MLAG for CRS8xx series switches;
+*) bridge - fix stability issue when using VRRP on bridge;
+*) bridge - improve MLAG host aging and deletion logic;
+*) console - fix "find" command argument lookup issue (introduced in v7.24);
+*) container - improve host isolation when container is set to "privileged=yes";
+*) l3hw - fix stability issue on IPv6 offload enable;
+*) l3hw - fix VRF offload on bond interface remove;
+*) leds - fix "interface-status" trigger;
+*) snmp - properly validate password length when applying configuration;
+*) ssh - refactor SSH service internal processes;
+*) switch - fix possible Rx traffic stall on CPU for devices with Marvell Prestera switch chip;
+*) switch - fix stability issue during L2 loop for 98DX224S, 98DX226S, 98DX2528, and 98DX3236 switch chips;
+*) switch - fix stability issue on RB3011 (introduced in v7.22);
+*) system - improve handling of invalid SSL/TLS requests;
+*) wifi - fix stability issue for hAP be lite;
+*) wireguard - fix peer disable/enable state handling, which could leave the tunnel non-functional (introduced in v7.24);
+*) wireguard - fix private key handling, including empty private keys;
+*) www - improve service responsiveness when receiving malformed packets;

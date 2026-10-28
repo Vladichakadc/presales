@@ -1,0 +1,24 @@
+What's new in 7.24.3 (2026-09-14):
+
+*) bgp - improve stability;
+*) bth - allow file sharing over direct LAN connections;
+*) certificate - add "SSL.com Root Certification Authority ECC" to built-in root certificate authorities store;
+*) certificate - allow importing a cross-signed certificate without replacing the existing one;
+*) certificate - refactor certificate internal processes;
+*) certificate - remove "GoDaddy Class 2 CA" from built-in root certificate authorities store;
+*) console - improve stability;
+*) crypto - improve stability (CVE-2026-67278);
+*) ipsec - fix duplicate connections on IKEv2 retransmissions;
+*) ipsec - improve stability;
+*) lte - fix multi-APN data connections not working on R11l-LTE7 and R11e-LTE6 modems;
+*) ospf - improve stability during recalculation;
+*) ppp - improve stability;
+*) ptp - add manual configuration of PTP message intervals and per-port enabling and disabling;
+*) ptp - fix PTP offset instability under heavy background multicast traffic;
+*) ptp - fix PTP timestamps showing the wrong time on CRS510;
+*) sfp - improve QSFP-DD breakout link establishing to NVIDIA DGX Spark and other devices;
+*) system - improve stability;
+*) user - improve failed login delay logic (CVE-2026-16347);
+*) webfig - improve stability;
+*) wifi - update radio regulatory information;
+*) www - improve stability;
