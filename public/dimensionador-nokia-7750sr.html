@@ -67,6 +67,18 @@ code{background:var(--paper);padding:1px 5px;border-radius:2px;white-space:nowra
 .fuentes-list li{margin-bottom:8px}
 .fuentes-list a{color:var(--ink);text-decoration:none;font-weight:600}
 .fuentes-list a:hover{text-decoration:underline;color:var(--red-txt)}
+/* Perfiles multi-sede (2026-10-28, mejora propuesta al cerrar el PR #50): la misma piel que en Cisco,
+   Aruba, Fortinet, Huawei y MikroTik. */
+.perfiles input[type=text]{flex:1;min-width:0;padding:9px 10px;border:1px solid var(--rule);border-radius:2px;background:#fff;color:var(--ink);font-family:'Barlow',sans-serif;font-size:14px}
+.perfiles input[type=number]{width:110px;flex:none}
+.tco-tabla{width:100%;border-collapse:collapse;margin-top:6px}
+.tco-tabla th,.tco-tabla td{font-family:'IBM Plex Mono',monospace;font-size:11.5px;padding:6px 8px;border-bottom:1px solid var(--rule);text-align:right}
+.tco-tabla th:first-child,.tco-tabla td:first-child{text-align:left}
+.acc-caja{background:var(--card);border:1px solid var(--rule);border-radius:6px;padding:20px;max-height:86vh;overflow:auto;width:100%}
+.acc-caja h3{font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:.1em;text-transform:uppercase;margin:0 0 6px}
+#modalConsolidado{position:fixed;inset:0;background:rgba(14,26,43,.45);z-index:60;display:flex;align-items:center;justify-content:center;padding:20px}
+#modalConsolidado[hidden]{display:none}
+.btn:disabled{opacity:.45;cursor:not-allowed}
 </style>
 <script src="/js/fuentes.js" defer></script>
 <link rel="stylesheet" href="/controles.css">
@@ -205,6 +217,21 @@ code{background:var(--paper);padding:1px 5px;border-radius:2px;white-space:nowra
     <div id="bomTabla"></div>
     <textarea id="bomOut" readonly class="hidden" aria-hidden="true"></textarea>
   </section>
+  <section class="panel perfiles">
+    <h2>Perfiles multi-sede</h2>
+    <p class="hint" style="margin:0 0 10px">Guarda el escenario actual como perfil («Sucursal», «Hub regional»…) con su número de sedes idénticas. El <b>BOM global consolidado</b> suma las líneas de todos los perfiles —de cualquier fabricante— y se exporta aparte.</p>
+    <div class="row" style="margin-bottom:10px;flex-wrap:wrap">
+      <input type="text" id="nombrePerfil" placeholder="Nombre del perfil — p. ej. Sucursal" autocomplete="off" aria-label="Nombre del perfil">
+      <input type="number" id="perfilSedes" min="1" step="1" placeholder="Nº sedes" autocomplete="off" aria-label="Número de sedes">
+      <button type="button" class="btn" id="btnGuardarPerfil" style="font-size:11px;padding:6px 12px;white-space:nowrap">Guardar perfil</button>
+    </div>
+    <p class="hint" id="perfilMsg" aria-live="polite"></p>
+    <div id="listaPerfiles"></div>
+    <div style="margin-top:10px">
+      <button type="button" class="btn" id="btnConsolidar" style="font-size:11px;padding:6px 12px" disabled>Consolidar BOM global</button>
+      <p class="hint" style="margin-top:6px">Abre el BOM agregado Σ(BOM del perfil × sedes) en una ventana aparte, con su exportación a Excel.</p>
+    </div>
+  </section>
 </div>
 </div>
 </div>
@@ -243,6 +270,18 @@ code{background:var(--paper);padding:1px 5px;border-radius:2px;white-space:nowra
 </p>
 
 </div><!-- /wrap -->
+<div id="modalConsolidado" role="dialog" aria-modal="true" aria-labelledby="consolidadoTit" hidden>
+<div class="acc-caja" style="max-width:860px">
+<h3 id="consolidadoTit">BOM global consolidado — perfiles multi-sede</h3>
+<p class="hint" id="consolidadoSub"></p>
+<div id="consolidadoTabla"></div>
+<div style="display:flex;gap:8px;justify-content:flex-end;margin-top:12px">
+<button type="button" class="btn" id="xlsConsolidadoBtn" style="font-size:11px;padding:6px 12px">Exportar consolidado a Excel</button>
+<button type="button" class="btn ghost" id="consolidadoCerrar" style="font-size:11px;padding:6px 12px">Cerrar</button>
+</div>
+</div>
+</div>
+
 <script src="/js/ficha.js"></script>
 <script src="/js/bom.js"></script>
 <script src="/js/estado.js"></script>
