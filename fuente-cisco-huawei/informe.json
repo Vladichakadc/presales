@@ -1,0 +1,17 @@
+[
+  {
+    "archivo": "aruba-ec-data-sheet.pdf",
+    "para": "ARUBA",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://www.hpe.com/psnow/downloadDoc/HPE%20Networking%20EdgeConnect-a00109847enw.pdf?id=a00109847enw&isFutureVersion=true&ver=&form=false&preview=false&print=&hf=regular&r=&section=&prelaunchSection=&softrollSection=&deepLink=&utm_source=&utm_medium=&utm_campaign=&utm_content=&utm_term=&originalObjectName=&isLinearized=false&contentDisposition=attachment",
+        "status": 200,
+        "bytes": 1781832,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  }
+]
