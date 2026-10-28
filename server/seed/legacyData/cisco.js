@@ -577,7 +577,8 @@ const RJ45_GUIA = [
 // (tabla 1 de las mismas notas): para ellos, esa es la primera versión.
 const PQC_G2 = {tipo:'mlkem', mecanismo:'ML-KEM (p. ej. mlkem768) en modo híbrido con ECDH P-256 o X25519 y SHA-256',
   donde:'IKEv2 (IPsec) y SSH',
-  fuente:'Release Notes for Cisco 8000 Series Secure Routers, Release 26.1.x (12-oct-2026), «Post Quantum Crypto for IKEv2 and SSH Sessions»'};
+  fuente:'Release Notes for Cisco 8000 Series Secure Routers, Release 26.1.x (12-oct-2026), «Post Quantum Crypto for IKEv2 and SSH Sessions»',
+  urls:['https://www.cisco.com/c/en/us/td/docs/routers/secure-routers/cisco-8000-series-secure-routers-release-26-1-x.html']};
 const PQC_DESDE_26_1_2 = ['C8130H-G2', 'C8151H-C-G2', 'C8221-G2', 'C8221L-G2', 'C8225-G2', 'C8650-G2'];
 // Y la PPK (2026-10-27, tema pqc-documentos). «Configuring Quantum-Safe Encryption Using
 // Postquantum Preshared Keys», de la «Security and VPN Configuration Guide, Cisco IOS XE 17.x»:
@@ -595,9 +596,11 @@ const PQC_IOSXE = [
   {ser:'Catalyst 8000', de:/^Catalyst 8500/, desde:'IOS XE 17.12.1a'},
   {ser:'ISR 1000', de:/^ISR /, desde:'IOS XE 17.12.1a'},
   {ser:'ASR 1000', de:/^ASR 1002-HX$/, desde:'IOS XE 17.11.1a',
-    alcance:'hasta la IOS XE 17.15, la última que soporta según su boletín de fin de venta (5-feb-2025)'},
+    alcance:'hasta la IOS XE 17.15, la última que soporta según su boletín de fin de venta (5-feb-2025)',
+    boletin:'https://www.cisco.com/c/en/us/products/collateral/routers/asr-1000-series-aggregation-services-routers/asr1002-hx-asso-part-eol.html'},
   {ser:'ASR 1000', de:/^ASR 1006-X$/, desde:'IOS XE 17.11.1a',
-    alcance:'hasta la IOS XE 17.18, la última que soporta según su boletín de fin de venta (29-ene-2026)'},
+    alcance:'hasta la IOS XE 17.18, la última que soporta según su boletín de fin de venta (29-ene-2026)',
+    boletin:'https://www.cisco.com/c/en/us/products/collateral/routers/asr-1000-series-aggregation-services-routers/asr1006-x-chassis-eol.html'},
 ];
 // Un «no» documentado (`pqcNo`, 2026-10-28): el boletín del ASR1001-X dice que su última versión es
 // la 17.9, anterior a la 17.11.1a que trae la PPK. No es un hueco («no consta»): es un no con su
@@ -605,12 +608,14 @@ const PQC_IOSXE = [
 const PQC_NO = {
   'ASR 1001-X': {motivo:'su última versión de IOS XE es la 17.9 («The last supported IOS XE release […] is IOS XE 17.9»), anterior a la 17.11.1a que trae la PPK',
     corto:'última versión IOS XE 17.9; la PPK llega en la 17.11.1a',
-    fuente:'Boletín de fin de venta de los Cisco ASR1001-X y ASR1002-X'},
+    fuente:'Boletín de fin de venta de los Cisco ASR1001-X y ASR1002-X',
+    urls:['https://www.cisco.com/c/en/us/products/collateral/routers/asr-1000-series-aggregation-services-routers/asr1001-x-1002-x-eol.html']},
 };
 const PQC_PPK = {tipo:'ppk',
   mecanismo:'Claves precompartidas post-cuánticas (PPK, RFC 8784) mezcladas en IKEv2 e IPsec: manuales o importadas de una fuente externa con Cisco SKIP',
   donde:'IKEv2 e IPsec (FlexVPN y DMVPN; no GETVPN)',
-  fuente:'«Configuring Quantum-Safe Encryption Using Postquantum Preshared Keys», Security and VPN Configuration Guide, Cisco IOS XE 17.x'};
+  fuente:'«Configuring Quantum-Safe Encryption Using Postquantum Preshared Keys», Security and VPN Configuration Guide, Cisco IOS XE 17.x',
+  urls:['https://www.cisco.com/c/en/us/td/docs/routers/ios/config/17-x/sec-vpn/b-security-vpn/m-sec-cfg-quantum-encryption-ppk.html']};
 for (const m of MODELS) {
   m.eolAnnounced = EOL_ANNOUNCED[m.id] || null;
   if (PSU_SEGUNDA[m.id]) m.psu2 = PSU_SEGUNDA[m.id];
@@ -624,7 +629,8 @@ for (const m of MODELS) {
     m.pqc = {...PQC_G2, desde: tarde ? 'IOS XE 26.1.2 (primera versión de este modelo; la función llega en la 26.1.1)' : 'IOS XE 26.1.1'};
   }
   const ppk = PQC_IOSXE.find((x) => x.ser === m.ser && x.de.test(m.id));
-  if (ppk) m.pqc = {...PQC_PPK, desde: ppk.desde, ...(ppk.alcance ? {alcance: ppk.alcance} : {})};
+  if (ppk) m.pqc = {...PQC_PPK, desde: ppk.desde, ...(ppk.alcance ? {alcance: ppk.alcance} : {}),
+    ...(ppk.boletin ? {urls: [...PQC_PPK.urls, ppk.boletin]} : {})};
   if (PQC_NO[m.id]) m.pqcNo = PQC_NO[m.id];
   if (COMBINACIONES[m.id]) m.combinaciones = COMBINACIONES[m.id];
   if (DSL[m.id]) m.dsl = DSL[m.id];

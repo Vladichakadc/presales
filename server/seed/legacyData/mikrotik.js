@@ -318,7 +318,8 @@ for (const m of MODELS) {
       : manual ? 'su manual de usuario dice «The device supports RouterOS v7 and above»; la PPK es de RouterOS, no de un modelo'
       : 'su ficha dice «RouterOS v7»; la PPK es de RouterOS, no de un modelo',
     fuente:'«QKD Integration in RouterOS IPsec (PPK)» del manual de RouterOS y el changelog oficial de RouterOS 7.21'
-      + (manual ? `; manual de usuario del ${m.codigo}` : '')};
+      + (manual ? `; manual de usuario del ${m.codigo}` : ''),
+    urls:['https://manual.mikrotik.com/docs/virtual-private-networks/ipsec/qkd-integration-in-routeros-ipsec-ppk']};
 }
 
 module.exports = {
