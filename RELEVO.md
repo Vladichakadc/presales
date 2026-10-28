@@ -1,6 +1,6 @@
 # Relevo
 
-Última actualización: 2026-10-28 · PR #48
+Última actualización: 2026-10-28 · PR #49
 
 Informe para continuar el trabajo. Lo pidió el dueño del repositorio el 2026-10-27: «de aquí en
 adelante, un informe de pendientes y mejoras para que la cuenta **servicioiptv2025@gmail.com**
@@ -33,6 +33,9 @@ está en curso no va aquí: lo dice `npm run traspasos` (protocolo en `docs/tras
 
 ## Estado al cerrar esta entrega
 
+- **2026-10-28 · PR #49**: PQC con documento en 12 gateways AOS-8 de Aruba (9004, 9012, 9240 y la
+  línea 7000/7200), y Juniper MX y SSR100 citan su ficha inglesa (psnow). Lo buscado sin documento
+  nuevo está en *Cerrado recientemente* de `PENDIENTES.md`.
 - **2026-10-28 · PR #48**: una prueba frena una copia de `public/datasheets/` que ya no es el
   documento cuya huella verifica el vigía (`test/huella-copia-lock.test.js`).
 - **2026-10-28 · PR #46**: el ciclo de los perfiles, al día con el catálogo al consolidar (la
@@ -181,10 +184,10 @@ traspaso (el #37, de otra sesión, se fusionó mientras se cerraba esta).
 
 ### Esperan un documento oficial (se cierran trayéndolo por Actions)
 
-- **Criptografía post-cuántica sin documento**: Huawei (pide la cuenta); los gateways AOS de
-  Aruba (AOS-10.8.0.0 trae el comando `ppk-mandatory` de IKEv2 sin decir en qué equipo: lo cierra
-  la referencia de CLI de AOS-10 que lo nombre en el gateway, que corre AOS-10 según «Supported
-  Gateway Platforms»); los Meraki MX y G2-MX (el roadmap quantum-safe de Cisco de ago-2026 solo cita
+- **Criptografía post-cuántica sin documento**: Huawei (pide la cuenta); de los gateways AOS de
+  Aruba, el 9004-LTE, el 9106 y el 9114 (los demás la traen con AOS-8 desde el PR #49; con AOS-10
+  no consta en ninguno: lo cierra la referencia de CLI de AOS-10 que nombre `ppk-mandatory` en el
+  gateway); los Meraki MX y G2-MX (el roadmap quantum-safe de Cisco de ago-2026 solo cita
   el TLS del Dashboard); el SRX4100 y los SRX de sucursal (fuera del Feature Explorer; la PQC de Junos
   25.4R1 es la firma de imágenes); y los Nokia 7250 IXR (sus fichas Release 26 no llaman
   quantum-safe a su MACsec) y 7220 IXR (la ficha R26 de los IXR-D no nombra MACsec). Dicen «no
@@ -195,7 +198,7 @@ traspaso (el #37, de otra sesión, se fusionó mientras se cerraba esta).
   Access por usuario (CCW), velocidad mínima de los mGig de los C8111/C8121-G2-MX, 10GBASE-T en
   SFP+ fuera de la serie 8300 y de las 8100 VAI/VAP, módulos del ASR (fuera de venta), breakout
   4x10G (pide su cable u óptica en el catálogo).
-- **Juniper**: ficha de la serie MX en inglés, cifra de inspección del SSR, foto del SSR120 base,
+- **Juniper**: cifra de inspección del SSR (tampoco en la ficha inglesa), foto del SSR120 base,
   FEC del SSR; no hay lista de precios ni SKU de chasis.
 - **Aruba**: EC-XL S3N77A (fuera de venta, sin ópticas de 25G en su matriz). Las dos fuentes que
   eran un cascarón quedaron cerradas en el PR #47.
