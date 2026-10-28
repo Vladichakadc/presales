@@ -1,6 +1,6 @@
 # Relevo
 
-Última actualización: 2026-10-28 · PR #45
+Última actualización: 2026-10-28 · PR #47
 
 Informe para continuar el trabajo. Lo pidió el dueño del repositorio el 2026-10-27: «de aquí en
 adelante, un informe de pendientes y mejoras para que la cuenta **servicioiptv2025@gmail.com**
@@ -33,6 +33,9 @@ está en curso no va aquí: lo dice `npm run traspasos` (protocolo en `docs/tras
 
 ## Estado al cerrar esta entrega
 
+- **2026-10-28 · PR #47**: las dos fuentes de Aruba que eran un cascarón citan la descarga del
+  PDF de psnow (serie 9000, mismo documento; EdgeConnect, Rev. 9 contrastada sin cifras distintas).
+  El vigía las lee desde el lunes.
 - **2026-10-28 · PR #45**: la fuente de la PQC, enlazada a `fuentes.js` (la mejora propuesta):
   cada `pqc`/`pqcNo` cita su documento por la URL de su entrada (`urls`), la prueba exige que esa
   entrada exista, respalde el campo y declare al equipo, y la ficha y la hoja «Supuestos» lo
@@ -189,11 +192,8 @@ traspaso (el #37, de otra sesión, se fusionó mientras se cerraba esta).
   4x10G (pide su cable u óptica en el catálogo).
 - **Juniper**: ficha de la serie MX en inglés, cifra de inspección del SSR, foto del SSR120 base,
   FEC del SSR; no hay lista de precios ni SKU de chasis.
-- **Aruba**: EC-XL S3N77A (fuera de venta, sin ópticas de 25G en su matriz), y
-  las dos fuentes que eran un cascarón: la URL del PDF ya está probada desde Actions
-  (`psnow/downloadDoc/<id>.pdf?id=<id>`, PR #42; no hace falta el Chrome del dueño). Falta
-  cambiarla en `fuentes.js` (serie 9000, mismo documento) y traer y contrastar la Rev. 9 del data
-  sheet de EdgeConnect antes de cambiar la suya.
+- **Aruba**: EC-XL S3N77A (fuera de venta, sin ópticas de 25G en su matriz). Las dos fuentes que
+  eran un cascarón quedaron cerradas en el PR #47.
 - **MikroTik**: si la cifra IPsec es por sentido o la suma (respuesta escrita de soporte), figuras
   traseras que la galería no publica, el CCR2004-16G-2S+PC en la matriz de compatibilidad.
 - **Huawei**: ficha de iMaster NCE-Campus, nubes del vCPE, funciones de N1 Advanced frente a
