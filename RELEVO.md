@@ -1,6 +1,6 @@
 # Relevo
 
-Última actualización: 2026-10-27 · septuagésima entrega
+Última actualización: 2026-10-28 · septuagesimoprimera entrega
 
 Informe para continuar el trabajo. Lo pidió el dueño del repositorio el 2026-10-27: «de aquí en
 adelante, un informe de pendientes y mejoras para que la cuenta **servicioiptv2025@gmail.com**
@@ -31,6 +31,16 @@ está en curso no va aquí: lo dice `npm run traspasos` (protocolo en `docs/tras
 
 ## Estado al cerrar esta entrega
 
+- **Septuagesimoprimera entrega**: la mejora propuesta, hecha: **un «no la trae» de PQC con su documento**.
+  Un equipo puede declarar `pqcNo: {motivo, corto, fuente}` (solo con fuente, nunca junto a `pqc`):
+  la ficha dice «no la trae» con el motivo, el Comparador «No — …», «Exigir PQC» lo aparta con ese
+  motivo en vez de «no consta», y la hoja «Supuestos» cita la fuente. Hoy solo el ASR 1001-X: su
+  boletín de fin de venta lo deja en IOS XE 17.9 y la PPK llega en la 17.11.1a. Un `pqcNo` sin fuente
+  se lee como «no consta» (lo exige la prueba). Los tres boletines de los ASR, que iban en una sola
+  fuente con la URL del 1006-X, son ahora tres: el vigía vigila los tres. De lo pendiente: las
+  ranuras de expansión del 9114 y el 9240 de Aruba no tienen módulo que modelar (sus QuickSpecs las
+  dan «Reserved for Future Use», y el catálogo lo dice así), y se cerró la sección del piloto de IA,
+  retirado en el PR #34.
 - **Septuagésima entrega**: `test/contraste-cobertura.test.js` frena un
   `cobertura.lock.json` que cita un módulo ya borrado de `public/js/` (al borrar o renombrar uno,
   quita su fila del lock en el mismo PR o vuelve a medir con `npm run contraste -- --todos`).
@@ -96,7 +106,8 @@ está en curso no va aquí: lo dice `npm run traspasos` (protocolo en `docs/tras
 ## En curso
 
 Lo dice `npm run traspasos`, no este archivo (una tabla común chocaría en cada fusión). Al cerrar
-esta entrega, ninguna rama remota llevaba un traspaso abierto.
+esta entrega, ninguna rama de otra sesión llevaba un traspaso abierto ni había PR abiertos sin
+traspaso (el #37, de otra sesión, se fusionó mientras se cerraba esta).
 
 ## Pendientes, por prioridad
 
@@ -125,7 +136,7 @@ esta entrega, ninguna rama remota llevaba un traspaso abierto.
 
 ### Se pueden hacer desde una sesión, sin acceso especial
 
-1. **Mejoras propuestas**: ninguna abierta al cerrar la sexagesimocuarta entrega (abajo).
+1. **Mejoras propuestas**: las de abajo, cuando el dueño las apruebe (no se hacen solas).
 
 ### Esperan un documento oficial (se cierran trayéndolo por Actions)
 
@@ -134,14 +145,15 @@ esta entrega, ninguna rama remota llevaba un traspaso abierto.
   /system resource o superior»), los G2-MX (MX OS), el SRX4100 y los SRX de sucursal, y los Nokia
   7250 IXR (sus fichas Release 26 no llaman quantum-safe a su MACsec) y 7220 IXR. Dicen «no consta»
   y el requisito los aparta con ese motivo. El ASR 1001-X no es un hueco: su boletín lo deja en la
-  17.9, anterior a la PPK.
+  17.9, anterior a la PPK, y la ficha dice «no la trae» (`pqcNo`). Si un documento oficial dice que
+  otro equipo no la trae, entra igual: `pqcNo` con su fuente en `fuentes.js` (`campos: ['pqcNo']`).
 - **Cisco**: ficha del Secure Firewall dedicado (y decidir si entra al portal), precio de Secure
   Access por usuario (CCW), velocidad mínima de los mGig de los C8111/C8121-G2-MX, 10GBASE-T en
   SFP+ fuera de la serie 8300 y de las 8100 VAI/VAP, módulos del ASR (fuera de venta), breakout
   4x10G (pide su cable u óptica en el catálogo).
 - **Juniper**: ficha de la serie MX en inglés, cifra de inspección del SSR, foto del SSR120 base,
   FEC del SSR; no hay lista de precios ni SKU de chasis.
-- **Aruba**: ranuras de expansión del 9114 y el 9240 (QuickSpecs con SKU y precio), EC-XL S3N77A, y
+- **Aruba**: EC-XL S3N77A (fuera de venta, sin ópticas de 25G en su matriz), y
   las dos fuentes que solo devuelven el cascarón de la página (la URL del PDF se copia desde el
   Chrome del dueño en `hpe.com`; una sesión puede hacerlo con Claude en Chrome si el Chrome del
   dueño está abierto con la extensión: el 27-oct no lo estaba).
@@ -168,17 +180,21 @@ existen los workflows de transporte. Huawei y HPE niegan además el navegador au
   pierda la imagen que reconoce. Cuesta una imagen más por hoja (peso del archivo) y tocar
   `bom.js`, compartido, y los `meta.fotos` de Cisco y Juniper. Si se hace mal, el Excel no se
   descarga (le pasó a Cisco); lo vería `e2e-cisco-excel-figuras`. Se decide por el dueño.
-- **Decir «no la trae, y por qué» cuando un documento lo prueba** (propuesta al cerrar la
-  sexagesimoctava entrega). Hoy el ASR 1001-X sale con «no consta en ningún documento oficial», pero
-  su boletín de fin de venta dice que su última versión es la IOS XE 17.9, y la PPK llega en la
-  17.11.1a: eso no es un hueco, es un «no» documentado. Un campo opcional `pqcNo: {motivo, fuente}`
-  (solo con documento) que `pqc.js` y la ficha pinten como «no la trae: su última versión es la 17.9
-  (boletín…)». Evita que el preventa pierda tiempo preguntando al fabricante algo que ya está
-  escrito, y distingue el «no consta» real del «no». Cuesta el campo en `cisco.js`, una rama en
-  `PQC.motivo` y en `seccionPqc`, y sus pruebas; si se hace mal, un «no» sin documento se colaría
-  donde hoy dice «no consta», que es justo lo que la regla de datos prohíbe: la prueba tiene que
-  exigir la fuente. Se decide por el dueño.
-- (Hecha en la sexagesimoctava: la versión mínima de la PQC en la hoja «Supuestos».)
+- **La fuente de la PQC, enlazada a `fuentes.js` y no escrita a mano** (propuesta al cerrar la
+  septuagesimoprimera entrega). Hoy `pqc.fuente` y `pqcNo.fuente` son un texto libre en cada
+  `legacyData/` («Boletín de fin de venta de los Cisco ASR1001-X y ASR1002-X»), y nada comprueba
+  que ese documento esté en `fuentes.js` ni que el vigía lo mire: en esta entrega salió que dos de
+  los tres boletines de los ASR que respaldan la PQC no los vigilaba nadie. La propuesta: que cada
+  `pqc`/`pqcNo` cite su fuente por la URL de su entrada en `fuentes.js`, que la prueba exija que
+  esa entrada exista, declare al equipo en `modelos` y lleve `pqc` o `pqcNo` en `campos`, y que la
+  ficha pinte el documento con su enlace. Evita que una cifra de seguridad cite un documento que ya
+  no se vigila (o que cambió sin que nadie lo contraste). Cuesta tocar las fuentes de la PQC de
+  seis `legacyData/` (145 equipos, 14 fuentes distintas), `seccionPqc` y el texto de
+  la hoja «Supuestos» (`bom.js`, compartido), y la batería `e2e-pqc-supuestos.js`. Si se hace mal,
+  la ficha pierde el nombre del documento o el Excel no se descarga; lo verían `pqc.test.js` y esa
+  batería. Se decide por el dueño.
+- (Hecha en la septuagesimoprimera: el «no la trae» documentado, `pqcNo`. Hecha en la sexagesimoctava: la
+  versión mínima de la PQC en la hoja «Supuestos».)
 
 ## Decisiones del dueño abiertas
 

@@ -356,8 +356,8 @@ Módulos compartidos:
   RouterOS 7.21 (donde su ficha o su manual dice «RouterOS v7», y CHR)— y `macsec` —MACsec/ANYsec
   simétrico, Nokia 7750 y SR-1x—, cada uno dicho como lo que es; la PPK de un sistema operativo no
   se extiende a un modelo sin documento de que corre esa versión (el boletín de fin de venta da la
-  última de cada ASR: el 1001-X se queda en la 17.9); sin documento,
-  «no consta»; el Comparador del portal lo da en una línea), licenciamiento, software,
+  última de cada ASR: el 1001-X se queda en la 17.9, y lo dice como «no la trae», `pqcNo`); sin
+  documento, «no consta»; el Comparador del portal lo da en una línea), licenciamiento, software,
   soporte, referencias de pedido (bajo demanda por modelo) y figuras con su página y rótulo literal
   (frontal, trasera y, opt-in `foto` + `fotoFuente`, una tercera pestaña con la foto de producto a
   color y su propio pie; Juniper y, desde el 2026-10-27, los Cisco cuya frontal es el dibujo
@@ -396,7 +396,10 @@ Módulos compartidos:
   dimensionadores y para el motor de Fortinet en el servidor: `''` no se exige, `'clave'` basta un
   mecanismo quantum-safe documentado (PPK, MACsec/ANYsec o ML-KEM), `'mlkem'` exige ML-KEM. Sin
   `pqc` documentado el equipo se aparta con «no consta en ningún documento oficial», nunca «no la
-  tiene»; con ML-KEM exigido, una PPK o un MACsec no bastan y se dice qué trae. Cada página lo
+  tiene»; con ML-KEM exigido, una PPK o un MACsec no bastan y se dice qué trae. **Un «no» solo con
+  documento** (2026-10-28): `pqcNo: {motivo, corto, fuente}` (hoy el ASR 1001-X, que su boletín deja
+  en la 17.9) aparta con «no la trae — <motivo>» y la ficha y el Comparador lo dicen; nunca junto a
+  `pqc`, y sin `fuente` se lee como «no consta». Cada página lo
   ofrece en `#reqPqc` (mismas opciones, `test/pqc-requisito.test.js`) y carga `pqc.js` antes que su
   motor.
 

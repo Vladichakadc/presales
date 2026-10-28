@@ -4,7 +4,8 @@ Registro vivo de lo que falta. **Al empezar una tarea se buscan aquí los puntos
 tocan, y al terminarla se actualiza**, y su contenido se resume al usuario al cerrar cada entrega — esa es la instrucción
 permanente que lo justifica (ver `CLAUDE.md`, sección *Instrucciones permanentes del dueño*).
 
-Última revisión: 2026-10-27, septuagésima entrega (**La cobertura del contraste no cita módulos borrados.** Encargo del dueño: «hazlo», sobre la mejora propuesta al retirar el piloto del pliego. Ver *Cerrado recientemente*.)
+Última revisión: 2026-10-28, septuagesimoprimera entrega (**Un «no la trae» de PQC con su documento, y la ranura reservada de los gateways 9114 y 9240.** Encargo del dueño: «ejecuta los pendientes que puedas y la mejora propuesta». La mejora: `pqcNo`, el «no» documentado, en el ASR 1001-X (su boletín de fin de venta lo deja en IOS XE 17.9, antes de la PPK); de lo pendiente, la ranura de expansión del 9114/9240 (sus QuickSpecs la dan «Reserved for Future Use») y el piloto de IA retirado. Ver *Cerrado recientemente*.)
+Revisión anterior: 2026-10-27, septuagésima entrega (**La cobertura del contraste no cita módulos borrados.** Encargo del dueño: «hazlo», sobre la mejora propuesta al retirar el piloto del pliego. Ver *Cerrado recientemente*.)
 Revisión anterior: 2026-10-27, sexagesimonovena entrega (**La frontal numerada de la guía, con su tabla, en los Catalyst 8500 y el ISR 1111X-8P.** Encargo del dueño: «realiza una búsqueda avanzada de los gráficos de los equipos Cisco, incluye la tabla en los equipos que faltan y mejora las gráficas que consideres necesario». Cinco frontales eran la foto de la ficha, sin números: ahora son el dibujo numerado de su guía con su tabla, y la foto sigue en la pestaña «Foto». PR #35. Ver *Cerrado recientemente*.)
 Revisión anterior: 2026-10-27, sexagesimoctava entrega (**La versión mínima de la PQC en la hoja «Supuestos», y seis equipos más con PQC documentada.** Encargo del dueño: «ejecuta pendientes que puedas solucionar y mejora propuesta». La mejora, hecha; de lo pendiente, los ASR 1002-HX y 1006-X (boletines de fin de venta) y cuatro MikroTik (sus manuales). Ver *Cerrado recientemente* y *Abierto: criptografía post-cuántica sin documento*.)
 Revisión anterior: 2026-10-27, sexagesimoséptima entrega (**Retirado el piloto de IA «del pliego al escenario».** Encargo del dueño: «elimina del dimensionador de Cisco «Del pliego al escenario», la IA piloto, porque gasta tokens y no nos sirve». Ver *Cerrado recientemente*.)
@@ -1996,8 +1997,11 @@ Lo que la auditoría de puertos del panel 2 todavía no cuenta, declarado para n
   interconexión, del mismo tipo en los dos y nunca el MGMT. Cuatro enlaces de 10G no caben en un
   EC-10106, pero en el par sí. Lo que queda: la velocidad de esa interconexión sigue siendo la regla
   declarada de la casa (≥ agregado del sitio); la página no la fija.
-- **Las ranuras de expansión del 9114 y el 9240** no se modelan: un enlace que solo cabría con un
-  módulo sale «no cabe». Haría falta la lista de módulos de su QuickSpecs con SKU y precio.
+- ~~**Las ranuras de expansión del 9114 y el 9240** no se modelan~~ **Cerrado el 2026-10-28**: no
+  hay módulo que modelar. Sus QuickSpecs dan «Expansion Slot (Reserved for Future Use)», sin lista de
+  módulos; el catálogo decía «1 slot de expansión» y ahora dice «1 ranura de expansión reservada
+  para uso futuro», y un enlace que no cabe en los puertos fijos sigue saliendo «no cabe», que es lo
+  correcto. Si HPE publica un módulo, entra con su QuickSpecs y su SKU.
 - **EC-XL**: se cuenta como 6x SFP+ (la variante del SKU base S0B67A); la S3N77A de 6x SFP28 existe
   pero está fuera de venta igual que la base y su matriz no trae ópticas de 25G.
 
@@ -2140,7 +2144,8 @@ equipo la traiga. Lo que queda, y por qué:
 - **Cisco: los G2-MX** (MX OS). ~~ASR 1002-HX y ASR 1006-X~~ **cerrados el 2026-10-27** por sus
   boletines de fin de venta (última versión 17.15 y 17.18: la PPK, desde la 17.11.1a); el **ASR
   1001-X no es un hueco**: su boletín dice «The last supported IOS XE release […] is IOS XE 17.9»,
-  anterior a la PPK. Antes: ~~Catalyst 8000 e ISR 1000~~ **cerrado el 2026-10-27**: el
+  anterior a la PPK, y desde el 2026-10-28 la ficha y el Comparador lo dicen («no la trae», con
+  ese motivo y su fuente: `pqcNo`). Antes: ~~Catalyst 8000 e ISR 1000~~ **cerrado el 2026-10-27**: el
   capítulo «Configuring Quantum-Safe Encryption Using Postquantum Preshared Keys» de la guía de IOS XE
   17 da PPK (RFC 8784, manual o con Cisco SKIP) desde la 17.11.1a, y desde la 17.12.1a en el ISR 1000
   y el Catalyst 8500. Nombra también la serie ASR 1000, pero los del catálogo están fuera de venta y
@@ -2198,28 +2203,21 @@ documento que se miró; si Cisco publica una edición nueva, `traer-cisco-huawei
   publica. El BOM ya lleva la referencia oficial de **suscripción** (LIC-MX-*/LIC-CSR-* por clase,
   -E o -A) y dice que, en co-terminación, la de cada modelo se confirma en CCW.
 
-## Abierto: piloto de IA «del pliego al escenario» (2026-10-27)
+## ~~Abierto~~ Cerrado: piloto de IA «del pliego al escenario» (2026-10-27)
 
-Hecho en el dimensionador Cisco con texto pegado (ver *Cerrado recientemente*). Lo que queda:
-- **No se ha llamado nunca a la API de verdad**: este entorno no tiene `ANTHROPIC_API_KEY` y las
-  pruebas usan respuestas grabadas. Lo primero en producción: pegar un pliego real (o uno
-  sintético con cifras conocidas) y comprobar que las citas casan y que no propone lo que el texto
-  no dice. Si funciona, medir `effort: 'medium'` frente a `'high'` con los mismos pliegos.
-- **PDF**: el servidor no extrae texto de PDF, así que con un PDF la cita no se podría comprobar por
-  programa. Si se hace, la cita va marcada «sin verificar por programa» (decisión del dueño).
-- **Las otras seis páginas**: cada una es declarar sus campos en `PAGINAS` de
-  `server/services/aiEscenario.js`, añadir el panel y llamar a `PLIEGO.montar`. Primero que el
-  piloto se use.
-- **Enlaces WAN** (`enlacesData`, JSON) y la topología no se proponen: son estructuras, no un
-  control; el pliego los describe a menudo, y meterlos pide un esquema propio.
+Retirado entero el 2026-10-27 por decisión del dueño («gasta tokens y no nos sirve»; sexagesimoséptima
+entrega, PR #34): sin panel, sin ruta ni servicio, sin pruebas. Lo que esta sección dejaba abierto
+(la primera llamada real a la API, el PDF, las otras seis páginas, los enlaces WAN) ya no aplica.
+Cerrado el 2026-10-28 en la septuagesimoprimera entrega. Si vuelve, el punto de partida es
+`docs/ia-en-el-dimensionador-2026-10-27.md`.
 
 ## Decisiones que necesitan al dueño del producto
 
 - ~~**IA en los dimensionadores (2026-10-27).**~~ **Decidido y hecho el 2026-10-27** (quincuagesimoctava
   entrega, «ejecuta las mejoras propuestas»), por las dos opciones recomendadas: (1) el pliego se
   manda a la API de Anthropic, con un aviso en la pantalla antes de enviar y sin guardarlo; (2) el
-  piloto «del pliego al escenario» va en el dimensionador Cisco, con texto pegado. Lo que queda, en
-  *Abierto: piloto de IA «del pliego al escenario»*.
+  piloto «del pliego al escenario» va en el dimensionador Cisco, con texto pegado. **Retirado el
+  2026-10-27** por decisión del dueño (PR #34); ver *Cerrado: piloto de IA «del pliego al escenario»*.
 - ~~**Variantes que el catálogo no trae (2026-10-27).**~~ **Decidido el 2026-10-27 por la opción
   recomendada** (mismo encargo): las 30 variantes del ISR 1000, los MX67W/MX68W y los
   C8111-C/C8121-W/C8121-CW-G2-MX se quedan fuera hasta que un proyecto las pida (entrar una cuesta
@@ -2401,6 +2399,7 @@ que ya se comprobó y lo que cuesta cada opción.
 
 ## Cerrado recientemente
 
+- **2026-10-28 · Un «no la trae» de PQC con su documento, y la ranura reservada de los gateways 9114 y 9240 (septuagesimoprimera entrega).** Encargo del dueño: «ejecuta los pendientes que puedas y la mejora propuesta». **La mejora** (propuesta en la sexagesimoctava): la ficha decía «no consta» del ASR 1001-X aunque su boletín de fin de venta dice que su última IOS XE es la 17.9, anterior a la 17.11.1a que trae la PPK. Ahora un equipo puede declarar `pqcNo: {motivo, corto, fuente}` (`legacyData/cisco.js`, `PQC_NO`), solo con fuente y nunca junto a `pqc`: la ficha dice «no la trae» con el motivo y la fuente, el Comparador «No — última versión IOS XE 17.9; la PPK llega en la 17.11.1a», «Exigir PQC» lo aparta con «no la trae — …» en vez de «no consta», y la hoja «Supuestos» cita esa fuente. Un `pqcNo` sin fuente se lee como «no consta» (`test/pqc.test.js`, `pqc-requisito.test.js`, `bom-supuestos.test.js`); la fuente que lo respalda declara `campos: ['pqc', 'pqcNo']`. Las siete páginas pasan `pqcNo` a `meta.supuestos`. **De lo pendiente**: (1) las ranuras de expansión del 9114 y el 9240 no tienen módulo que modelar: sus QuickSpecs las dan «Reserved for Future Use», y el catálogo (`aruba.js`, `indexPR.js`) lo dice así en vez de «1 slot de expansión»; (2) la sección del piloto de IA, retirado en el PR #34, se cierra; (3) los tres boletines de fin de venta de los ASR iban en una sola fuente con la URL del ASR1006-X, y el vigía no miraba los del 1001-X/1002-X y el 1002-HX, que respaldan el `pqcNo` y la PPK: son ahora tres entradas de `fuentes.js`, cada una con su URL, su fecha («Updated» de cada página) y su modelo. Verificado: `verificar` (1169 pruebas), `auditar`, servidor en producción, `pantallas` 17/17, `contraste --todos` 10/10 (cobertura en commit aparte), `e2e` y `puerta`.
 - **2026-10-27 · La cobertura del contraste no cita módulos borrados (septuagésima entrega).** La mejora propuesta al cerrar la sexagesimoséptima, aprobada por el dueño («hazlo»). Al retirar el piloto, `scripts/contrastes/cobertura.lock.json` siguió listando `pliego.js` hasta que otra sesión volvió a medir (`203d5e8`), y `npm run catalogo` pinta ese lock como un hecho. `test/contraste-cobertura.test.js` frena ahora un lock que cita un módulo que ya no está en `public/js/`, con el arreglo en el mensaje (quitar su fila o `npm run contraste -- --todos`). Lo nuevo sin medir no frena: lo mide la siguiente corrida de `pantallas`. Comprobada en rojo con una fila de `pliego.js` inyectada.
 - **2026-10-27 · La frontal numerada de la guía, con su tabla, en los Catalyst 8500 y el ISR 1111X-8P (sexagesimonovena entrega, PR #35).** Encargo del dueño: «realiza una búsqueda avanzada de los gráficos de los equipos Cisco, incluye la tabla en los equipos que faltan y mejora las gráficas que consideres necesario; utiliza las skills instaladas» (`feature-planning` para el plan, y el banco de Chromium para conducir la lupa). **Inventario**: 33 caras sin tabla, 6 traseras que faltan, 5 equipos sin figura y ~20 figuras de menos de 950 px. **Lo que entra**: la frontal del Catalyst 8500-12X4QC, 8500-12X y 8500-20X6C (figuras 1, 4 y 7 de la guía del Catalyst 8500, edición HTML), del 8500L-8S4X (figura 4 y tabla 3 «I/O Side» de su guía) y del ISR 1111X-8P (el dibujo de la familia C111x-8P, como su trasera: la tabla de modelos de la guía le da los mismos puertos) era la foto de la ficha, sin números; ahora es el dibujo numerado, sin pérdida y con su tabla número a número, y la foto pasa a una tercera pestaña «Foto» con su propio pie (`foto`, `fotoFuente`, opt-in de `ficha.js` que ya usaba Juniper). Del 20X6C el dibujo es la mitad de puertos; la de fuentes la guía la dibuja sin números y se ve en la foto. **Lo buscado que no cambia nada**: ninguna figura de Meraki lleva números (su tabla de LED no remite a números dibujados); las nueve guías en PDF traen los mismos ráster que su edición HTML, así que no hay versión mayor de las figuras de baja resolución; y la búsqueda web no dio documento nuevo para las traseras que faltan (C8130H-G2, C8151H-C-G2, C8211-G2, serie 8400, 8500-20X6C) ni para el ISR 1116-4P y el 1161X-8P. Pruebas: `cisco-vistas-equipos` vigila la foto (sin pérdida, pie con documento, figura, rótulo y tamaño, previa, sin huérfanas) y `cisco-leyendas` fija el cambio.
 - **2026-10-27 · La versión mínima de la PQC en la hoja «Supuestos», y seis equipos más con PQC documentada (sexagesimoctava entrega).** Encargo del dueño: «ejecuta pendientes que puedas solucionar y mejora propuesta». **La mejora**: con «Exigir PQC», `matrizSupuestos` (`bom.js`) escribe la sección «Criptografía post-cuántica exigida»: el requisito, si el equipo del BOM lo cumple (con el motivo de `pqc.js` si no, el mismo que lo aparta en el dimensionador), el mecanismo, **la versión mínima de software** («la fuente no da la versión» si falta), dónde se aplica, el alcance y la fuente; sin el requisito, la sección no sale. El nivel lo lee `entornoSupuestos` de `#reqPqc` y las siete páginas pasan `pqc: m.pqc`. Pruebas en `bom-supuestos.test.js` y batería `e2e-pqc-supuestos.js` (el Excel real del ISR dice «IOS XE 17.12.1a o superior»). **Lo pendiente**: traídos a `fuente/pqc-3-2026-10-27` los boletines de fin de venta de los tres ASR y la ficha de los 7250 IXR-e: el ASR 1002-HX (última versión 17.15) y el ASR 1006-X (17.18) llevan la PPK desde la 17.11.1a, con ese tope como alcance; el ASR 1001-X se queda en la 17.9, sin PPK. Los manuales de usuario ya traídos (`fuente/pendientes-2026-10-13`) dicen «RouterOS v7 and above» en el hEX lite, el hEX, el hEX PoE y el hEX S: PPK desde RouterOS 7.21. Los 7250 IXR-e/e2 no llaman quantum-safe a su MACsec: siguen en «no consta». Nada nuevo de Aruba AOS (ningún documento lo nombra).
