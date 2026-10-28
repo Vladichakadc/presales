@@ -1,6 +1,6 @@
 # Relevo
 
-Última actualización: 2026-10-28 · PR #52
+Última actualización: 2026-10-28 · PR #50
 
 Informe para continuar el trabajo. Lo pidió el dueño del repositorio el 2026-10-27: «de aquí en
 adelante, un informe de pendientes y mejoras para que la cuenta **servicioiptv2025@gmail.com**
@@ -33,6 +33,9 @@ está en curso no va aquí: lo dice `npm run traspasos` (protocolo en `docs/tras
 
 ## Estado al cerrar esta entrega
 
+- **2026-10-28 · PR #50**: al consolidar, los perfiles de otros fabricantes también se ponen al día
+  con su catálogo, pedido al servidor (la mejora propuesta); si una ruta falla, el perfil conserva su
+  dato y el aviso dice por qué.
 - **2026-10-28 · PR #52**: el dimensionador Cisco ya enseña figura de todos sus equipos. El ISR
   1161X-8P (cara de puertos de la familia 11x1(X)-8P, con su tabla de 9 números, y foto), el ISR
   1116-4P (cara del logotipo de la serie C111x; la pestaña «Frontal» dice que Cisco no publica la de
@@ -239,15 +242,15 @@ existen los workflows de transporte. Huawei y HPE niegan además el navegador au
   de transporte y mirar cada foto (el rótulo y el nombre del archivo tienen que nombrar el modelo);
   si se hace mal, un modelo enseñaría la foto de un hermano, que es justo lo que las pruebas frenan.
   Se decide por el dueño.
-- **Los perfiles de otros fabricantes, también al día** (propuesta al cerrar el PR #46). Un
-  consolidado multi-fabricante (spokes Fortinet y core Cisco, por ejemplo) solo pone al día los
-  perfiles de la página donde se pulsa «Consolidar»; los demás salen «ciclo a fecha de …». Cada
-  fabricante tiene su ruta de catálogo (`/api/dimensionador/<fabricante>`, con `eol` y
-  `eolAnnounced`): al consolidar, pedir la de cada fabricante presente en los perfiles y poner al día
-  todos. Evita que un aviso viejo de otra marca llegue al cliente. Cuesta hacer asíncrono el
-  consolidado en las cinco páginas y leer la forma de cada ruta (no todas devuelven `models` igual);
-  si una ruta falla, ese fabricante se queda con su foto y lo dice. Si se hace mal, el botón
-  «Consolidar» no responde; lo vería `e2e-ciclo-excel.js`. Se decide por el dueño.
+- **Perfiles multi-sede también en Juniper y Nokia 7750** (propuesta al cerrar el PR #50). Solo
+  cinco dimensionadores guardan perfiles (Aruba, Cisco, Fortinet, Huawei y MikroTik): un despliegue
+  con un core Juniper SRX o un PE Nokia 7750 no entra en el BOM consolidado, y con él se pierden su
+  cantidad por sedes y el aviso de ciclo de vida (los SRX sí tienen boletines de fin de venta).
+  Añadir a esas dos páginas el bloque de perfiles (guardar, cargar, borrar, consolidar) con
+  `BOM.guardarPerfil`, `refrescarCiclo` y `refrescarCicloTodos`, como las otras cinco. Evita armar a
+  mano el BOM de un despliegue mixto. Cuesta el marcado del bloque en dos HTML, su script y capturar
+  sus campos para «Cargar»; si se hace mal, «Cargar» deja la pantalla en un escenario a medias, y lo
+  verían `bom-perfiles.test.js` y una batería e2e nueva. Se decide por el dueño.
 - **El transporte de documentos, con su lista fuera del YAML** (propuesta al cerrar el PR #45).
   `traer-cisco-huawei.yml` lleva dentro un script de Node de 132 KB que bash lee antes que Node:
   en una sola entrega dio tres fallos de ese origen (una comilla doble que lo cortaba, el tope de
@@ -260,7 +263,7 @@ existen los workflows de transporte. Huawei y HPE niegan además el navegador au
   1.700 líneas y adaptar `traer-exploracion`, `traer-pantalla-login` y `workflows-node-e`; si se hace
   mal, el transporte deja de traer documentos, y por eso se prueba con una corrida real de una
   entrada conocida antes de fusionar. Se decide por el dueño.
-- (Hecha en el PR #46: el ciclo del perfil al día al consolidar. Hecha en el PR #45: la fuente de la PQC enlazada a `fuentes.js`. Hecha en el PR #44: el ciclo en el consolidado multi-sede. Hecha en el PR #41: el fin de venta en el Excel. Hecha en el PR #40: la foto de producto en el Excel. Hecha en la septuagesimoprimera: el «no la trae» documentado, `pqcNo`. Hecha en la sexagesimoctava: la
+- (Hecha en el PR #50: los perfiles de otros fabricantes al día al consolidar. Hecha en el PR #46: el ciclo del perfil al día al consolidar. Hecha en el PR #45: la fuente de la PQC enlazada a `fuentes.js`. Hecha en el PR #44: el ciclo en el consolidado multi-sede. Hecha en el PR #41: el fin de venta en el Excel. Hecha en el PR #40: la foto de producto en el Excel. Hecha en la septuagesimoprimera: el «no la trae» documentado, `pqcNo`. Hecha en la sexagesimoctava: la
   versión mínima de la PQC en la hoja «Supuestos».)
 
 ## Decisiones del dueño abiertas
