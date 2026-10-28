@@ -401,7 +401,7 @@ jobs:
               { archivo: 'fortinet-rn-7.6.0.pdf', tipo: 'pdf', para: 'FORTINET', urls: [
                 'https://fortinetweb.s3.amazonaws.com/docs.fortinet.com/v2/attachments/51fcbb4f-33ff-11ef-bfe5-fa163e15d75b/fortios-v7.6.0-release-notes.pdf',
               ] },
-              { archivo: 'fortinet-mvt-7.6.7.json', tipo: 'html', para: 'FORTINET', debeContener: '"rows"', urls: [
+              { archivo: 'fortinet-mvt-7.6.7.json', tipo: 'html', para: 'FORTINET', debeContener: '\"rows\"', urls: [
                 'https://docs.fortinet.com/api/tools/max-values?family=fortigate&version=7.6.7&models=30G%2C31G%2C50G%2C51G%2C70G%2C71G%2C90G%2C91G%2C120G%2C121G%2C200G%2C201G%2C400G%2C401G%2C700G%2C701G%2C900G%2C901G%2C3000G%2C3001G%2C3500G%2C3501G%2C3800G%2C3801G%2C40F%2C60F%2C61F%2C70F%2C71F%2C80F%2C81F%2C100F%2C200F%2C400F%2C401F%2C600F%2C1000F%2C1001F%2C1800F%2C1801F%2C2600F%2C2601F%2C3000F%2C3001F%2C3200F%2C3201F%2C3500F%2C3501F%2C3700F%2C3701F%2C4200F%2C4201F%2C4400F%2C4401F%2C4800F%2C4801F',
               ] },
               // 2026-10-13 (segundo enlace WAN y opticas por equipo): la matriz OFICIAL de que
@@ -563,7 +563,7 @@ jobs:
               { archivo: 'juniper-mx480-producto.html', tipo: 'html', para: 'JUNIPER', exploracion: true, urls: [
                 'https://www.juniper.net/mx/es/products/routers/mx-series/mx480-universal-routing-platform.html',
               ] },
-              // 2026-10-19: el `cap` de los Session Smart Router no tiene fuente declarada. URL
+              // 2026-10-19: el \`cap\` de los Session Smart Router no tiene fuente declarada. URL
               // buscadas; si la pagina es un visor de HPE, el PDF de psnow se lee de ella.
               { archivo: 'juniper-ssr100-ds.pdf', tipo: 'pdf', para: 'JUNIPER', urls: [
                 'https://www.juniper.net/content/dam/www/assets/datasheets/us/en/routers/ssr100-line-of-routers-datasheet.pdf',
@@ -1040,7 +1040,7 @@ jobs:
                 'https://www.cisco.com/c/en/us/support/routers/catalyst-8500-series-edge-platforms/series.html',
               ] },
               // La lista de avisos (19-oct-2026) trae el boletin del 20X6C y marca los otros dos como
-              // actualizados: los tres se vuelven a traer con `solo`.
+              // actualizados: los tres se vuelven a traer con \`solo\`.
               { archivo: 'cisco-eol-c8500-20x6c.html', tipo: 'html', para: 'CISCO', debeContener: 'C8500-20X6C', urls: [
                 'https://www.cisco.com/c/en/us/products/collateral/networking/sdwan-routers/catalyst-8000-edge-platforms/catalyst-c8500-20x6c-eol.html',
               ] },
@@ -1121,7 +1121,7 @@ jobs:
                 'https://documentation.meraki.com/Platform_Management/Product_Information/Overviews_and_Datasheets/Small-Form_Factor_Pluggable_(SFP)_and_Stacking_Accessories',
               ] },
               // Opticas por distancia (2026-10-21, mejora aprobada): el alcance de cada optica del
-              // catalogo, por tipo de fibra, sale de la ficha de su familia, no del texto `d`.
+              // catalogo, por tipo de fibra, sale de la ficha de su familia, no del texto \`d\`.
               { archivo: 'cisco-opt-1g.html', tipo: 'html', para: 'CISCO', debeContener: 'GLC-LH-SMD', urls: [
                 'https://www.cisco.com/c/en/us/products/collateral/interfaces-modules/gigabit-ethernet-gbic-sfp-modules/datasheet-c78-366584.html',
               ] },
@@ -1403,59 +1403,59 @@ jobs:
               // · MikroTik: el changelog de cada version posterior a la 7.21 (la que trae la PPK). Si
               //   uno nombra el RB1100AHx4, el hEX PoE lite o el PowerBox Pro, ese equipo corre esa
               //   version. Las versiones que no existan fallan sin cortar la corrida.
-              { archivo: 'mikrotik-changelog-7.21.1.txt', tipo: 'texto', para: 'MIKROTIK', debeContener: "What's new", urls: [
+              { archivo: 'mikrotik-changelog-7.21.1.txt', tipo: 'texto', para: 'MIKROTIK', debeContener: 'new in 7.', urls: [
                 'https://download.mikrotik.com/routeros/7.21.1/CHANGELOG',
                 'https://upgrade.mikrotik.com/routeros/7.21.1/CHANGELOG',
               ] },
-              { archivo: 'mikrotik-changelog-7.21.2.txt', tipo: 'texto', para: 'MIKROTIK', debeContener: "What's new", urls: [
+              { archivo: 'mikrotik-changelog-7.21.2.txt', tipo: 'texto', para: 'MIKROTIK', debeContener: 'new in 7.', urls: [
                 'https://download.mikrotik.com/routeros/7.21.2/CHANGELOG',
                 'https://upgrade.mikrotik.com/routeros/7.21.2/CHANGELOG',
               ] },
-              { archivo: 'mikrotik-changelog-7.21.3.txt', tipo: 'texto', para: 'MIKROTIK', debeContener: "What's new", urls: [
+              { archivo: 'mikrotik-changelog-7.21.3.txt', tipo: 'texto', para: 'MIKROTIK', debeContener: 'new in 7.', urls: [
                 'https://download.mikrotik.com/routeros/7.21.3/CHANGELOG',
                 'https://upgrade.mikrotik.com/routeros/7.21.3/CHANGELOG',
               ] },
-              { archivo: 'mikrotik-changelog-7.21.4.txt', tipo: 'texto', para: 'MIKROTIK', debeContener: "What's new", urls: [
+              { archivo: 'mikrotik-changelog-7.21.4.txt', tipo: 'texto', para: 'MIKROTIK', debeContener: 'new in 7.', urls: [
                 'https://download.mikrotik.com/routeros/7.21.4/CHANGELOG',
                 'https://upgrade.mikrotik.com/routeros/7.21.4/CHANGELOG',
               ] },
-              { archivo: 'mikrotik-changelog-7.21.5.txt', tipo: 'texto', para: 'MIKROTIK', debeContener: "What's new", urls: [
+              { archivo: 'mikrotik-changelog-7.21.5.txt', tipo: 'texto', para: 'MIKROTIK', debeContener: 'new in 7.', urls: [
                 'https://download.mikrotik.com/routeros/7.21.5/CHANGELOG',
                 'https://upgrade.mikrotik.com/routeros/7.21.5/CHANGELOG',
               ] },
-              { archivo: 'mikrotik-changelog-7.21.6.txt', tipo: 'texto', para: 'MIKROTIK', debeContener: "What's new", urls: [
+              { archivo: 'mikrotik-changelog-7.21.6.txt', tipo: 'texto', para: 'MIKROTIK', debeContener: 'new in 7.', urls: [
                 'https://download.mikrotik.com/routeros/7.21.6/CHANGELOG',
                 'https://upgrade.mikrotik.com/routeros/7.21.6/CHANGELOG',
               ] },
-              { archivo: 'mikrotik-changelog-7.22.txt', tipo: 'texto', para: 'MIKROTIK', debeContener: "What's new", urls: [
+              { archivo: 'mikrotik-changelog-7.22.txt', tipo: 'texto', para: 'MIKROTIK', debeContener: 'new in 7.', urls: [
                 'https://download.mikrotik.com/routeros/7.22/CHANGELOG',
                 'https://upgrade.mikrotik.com/routeros/7.22/CHANGELOG',
               ] },
-              { archivo: 'mikrotik-changelog-7.22.1.txt', tipo: 'texto', para: 'MIKROTIK', debeContener: "What's new", urls: [
+              { archivo: 'mikrotik-changelog-7.22.1.txt', tipo: 'texto', para: 'MIKROTIK', debeContener: 'new in 7.', urls: [
                 'https://download.mikrotik.com/routeros/7.22.1/CHANGELOG',
                 'https://upgrade.mikrotik.com/routeros/7.22.1/CHANGELOG',
               ] },
-              { archivo: 'mikrotik-changelog-7.22.2.txt', tipo: 'texto', para: 'MIKROTIK', debeContener: "What's new", urls: [
+              { archivo: 'mikrotik-changelog-7.22.2.txt', tipo: 'texto', para: 'MIKROTIK', debeContener: 'new in 7.', urls: [
                 'https://download.mikrotik.com/routeros/7.22.2/CHANGELOG',
                 'https://upgrade.mikrotik.com/routeros/7.22.2/CHANGELOG',
               ] },
-              { archivo: 'mikrotik-changelog-7.22.3.txt', tipo: 'texto', para: 'MIKROTIK', debeContener: "What's new", urls: [
+              { archivo: 'mikrotik-changelog-7.22.3.txt', tipo: 'texto', para: 'MIKROTIK', debeContener: 'new in 7.', urls: [
                 'https://download.mikrotik.com/routeros/7.22.3/CHANGELOG',
                 'https://upgrade.mikrotik.com/routeros/7.22.3/CHANGELOG',
               ] },
-              { archivo: 'mikrotik-changelog-7.22.4.txt', tipo: 'texto', para: 'MIKROTIK', debeContener: "What's new", urls: [
+              { archivo: 'mikrotik-changelog-7.22.4.txt', tipo: 'texto', para: 'MIKROTIK', debeContener: 'new in 7.', urls: [
                 'https://download.mikrotik.com/routeros/7.22.4/CHANGELOG',
                 'https://upgrade.mikrotik.com/routeros/7.22.4/CHANGELOG',
               ] },
-              { archivo: 'mikrotik-changelog-7.23.txt', tipo: 'texto', para: 'MIKROTIK', debeContener: "What's new", urls: [
+              { archivo: 'mikrotik-changelog-7.23.txt', tipo: 'texto', para: 'MIKROTIK', debeContener: 'new in 7.', urls: [
                 'https://download.mikrotik.com/routeros/7.23/CHANGELOG',
                 'https://upgrade.mikrotik.com/routeros/7.23/CHANGELOG',
               ] },
-              { archivo: 'mikrotik-changelog-7.23.1.txt', tipo: 'texto', para: 'MIKROTIK', debeContener: "What's new", urls: [
+              { archivo: 'mikrotik-changelog-7.23.1.txt', tipo: 'texto', para: 'MIKROTIK', debeContener: 'new in 7.', urls: [
                 'https://download.mikrotik.com/routeros/7.23.1/CHANGELOG',
                 'https://upgrade.mikrotik.com/routeros/7.23.1/CHANGELOG',
               ] },
-              { archivo: 'mikrotik-changelog-7.23.2.txt', tipo: 'texto', para: 'MIKROTIK', debeContener: "What's new", urls: [
+              { archivo: 'mikrotik-changelog-7.23.2.txt', tipo: 'texto', para: 'MIKROTIK', debeContener: 'new in 7.', urls: [
                 'https://download.mikrotik.com/routeros/7.23.2/CHANGELOG',
                 'https://upgrade.mikrotik.com/routeros/7.23.2/CHANGELOG',
               ] },
@@ -1502,7 +1502,7 @@ jobs:
                   base: 'https://www.cisco.com/', dominios: ['cisco.com'], relativas: true,
                   contiene: ['/c/dam/', '/content/dam/'], max: 200 } },
               // Las figuras de las fichas y de las guias de Meraki: las paginas de Cisco las enlazan
-              // con ruta relativa a la raiz («/c/dam/...»), por eso `relativas`. Que modelo y que
+              // con ruta relativa a la raiz («/c/dam/...»), por eso \`relativas\`. Que modelo y que
               // cara es cada una se decide MIRANDOLA y leyendo su pie, no por el orden en la pagina.
               { archivo: 'cisco-img', tipo: 'imagenes', para: 'CISCO', urls: [],
                 descubrirPiezas: { de: ['cisco-sr8100-ds.html', 'cisco-sr8200-ds.html', 'cisco-sr8300-ds.html',
