@@ -1501,6 +1501,41 @@ jobs:
               { archivo: 'aruba-aos10-novedades-10.6.0.0.html', tipo: 'html', para: 'ARUBA', exploracion: true, urls: [
                 'https://arubanetworking.hpe.com/techdocs/new-central/content/aos10x/whats-new-aos10.6.0.0.htm',
               ] },
+              // Segunda vuelta (2026-10-28): la version estable de RouterOS es ya la 7.25 (su
+              // NEWESTa7.stable), y el hEX PoE lite no salio en los changelogs hasta la 7.23.2.
+              { archivo: 'mikrotik-changelog-7.24.txt', tipo: 'texto', para: 'MIKROTIK', debeContener: 'new in 7.', urls: [
+                'https://download.mikrotik.com/routeros/7.24/CHANGELOG',
+                'https://upgrade.mikrotik.com/routeros/7.24/CHANGELOG',
+              ] },
+              { archivo: 'mikrotik-changelog-7.24.1.txt', tipo: 'texto', para: 'MIKROTIK', debeContener: 'new in 7.', urls: [
+                'https://download.mikrotik.com/routeros/7.24.1/CHANGELOG',
+                'https://upgrade.mikrotik.com/routeros/7.24.1/CHANGELOG',
+              ] },
+              { archivo: 'mikrotik-changelog-7.24.2.txt', tipo: 'texto', para: 'MIKROTIK', debeContener: 'new in 7.', urls: [
+                'https://download.mikrotik.com/routeros/7.24.2/CHANGELOG',
+                'https://upgrade.mikrotik.com/routeros/7.24.2/CHANGELOG',
+              ] },
+              { archivo: 'mikrotik-changelog-7.24.3.txt', tipo: 'texto', para: 'MIKROTIK', debeContener: 'new in 7.', urls: [
+                'https://download.mikrotik.com/routeros/7.24.3/CHANGELOG',
+                'https://upgrade.mikrotik.com/routeros/7.24.3/CHANGELOG',
+              ] },
+              { archivo: 'mikrotik-changelog-7.25.txt', tipo: 'texto', para: 'MIKROTIK', debeContener: 'new in 7.', urls: [
+                'https://download.mikrotik.com/routeros/7.25/CHANGELOG',
+                'https://upgrade.mikrotik.com/routeros/7.25/CHANGELOG',
+              ] },
+              { archivo: 'mikrotik-changelog-7.25.1.txt', tipo: 'texto', para: 'MIKROTIK', debeContener: 'new in 7.', urls: [
+                'https://download.mikrotik.com/routeros/7.25.1/CHANGELOG',
+                'https://upgrade.mikrotik.com/routeros/7.25.1/CHANGELOG',
+              ] },
+              // · AOS-10.8.0.0 trae el comando ppk-mandatory (PPK en IKEv2), pero su pagina no dice en que
+              //   equipo. El sitio es MadCap Flare: HelpSystem.xml dice donde esta su indice de temas, y
+              //   de ahi se busca la pagina del comando sin adivinar rutas; y que gateway corre cada AOS.
+              { archivo: 'aruba-nc-helpsystem.xml', tipo: 'html', para: 'ARUBA', exploracion: true, urls: [
+                'https://arubanetworking.hpe.com/techdocs/new-central/Data/HelpSystem.xml',
+              ] },
+              { archivo: 'aruba-nc-gateways-soportados.html', tipo: 'html', para: 'ARUBA', exploracion: true, urls: [
+                'https://arubanetworking.hpe.com/techdocs/new-central/content/mon-gw/supported-gateways.htm',
+              ] },
               { archivo: 'cisco-hig3-img', tipo: 'imagenes', para: 'CISCO', urls: [],
                 descubrirPiezas: { de: ['cisco-isr1100-hig-overview.html', 'cisco-sr8200-hig-overview.html'],
                   base: 'https://www.cisco.com/', dominios: ['cisco.com'], relativas: true,
