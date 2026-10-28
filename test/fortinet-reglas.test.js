@@ -433,9 +433,34 @@ test('AT-17 · en HA cada nodo lleva su licencia, y la excepcion se declara sin 
   for (const f of r.filas.filter((x) => x.cat !== 'Servicios opcionales')) {
     assert.strictEqual(f.qty, 2, `${f.desc} tiene que ir por dos`);
   }
+  // El 90G no está en las series de la licencia única (guía de FortiOS 7.6.6): se dice cuáles son.
   const ha = r.avisos.find((a) => a.codigo === 'ha-licencia-por-nodo');
   assert.ok(ha);
-  assert.match(ha.mensaje, /este catálogo no trae esa elegibilidad/);
+  assert.match(ha.mensaje, /solo a las series 40F, 60F, 70F, 80F y 100F y sus variantes: este modelo no está entre ellas/);
+});
+
+// F3 (2026-10-28): la licencia FortiGuard única en activo-pasivo, por modelo, de la guía de FortiOS
+// 7.6.6. Se dice con su SKU de HA de la lista firmada y su heartbeat; el BOM no la aplica solo.
+test('F3 · licencia FortiGuard única en A-P: la serie, el SKU de HA y el heartbeat, sin tocar el BOM', () => {
+  const ap = comercial({ modelo: porId('FortiGate 61F'), qty: 2, haModo: 'ha-ap' });
+  const unica = ap.avisos.find((a) => a.codigo === 'ha-licencia-unica');
+  assert.ok(unica, 'un 61F en activo-pasivo tiene que decir la licencia única');
+  assert.match(unica.mensaje, /serie 60F/);
+  assert.match(unica.mensaje, /FG-61F-HA, en la lista firmada/);
+  assert.match(unica.mensaje, /Heartbeat de la serie: port5/);
+  for (const f of ap.filas.filter((x) => x.cat !== 'Servicios opcionales')) assert.strictEqual(f.qty, 2, f.desc);
+  // El 70F está en la guía, pero la lista firmada no trae su SKU de HA: se dice.
+  const sinSku = comercial({ modelo: porId('FortiGate 70F'), qty: 2, haModo: 'ha-ap' }).avisos.find((a) => a.codigo === 'ha-licencia-unica');
+  assert.match(sinSku.mensaje, /que la lista firmada no trae para este modelo: consultar/);
+  // En activo-activo no aplica, aunque el modelo sea de la serie.
+  const aa = comercial({ modelo: porId('FortiGate 61F'), qty: 2, haModo: 'ha-aa' }).avisos;
+  assert.ok(!aa.some((a) => a.codigo === 'ha-licencia-unica'));
+  assert.match(aa.find((a) => a.codigo === 'ha-licencia-por-nodo').mensaje, /solo vale en activo-pasivo de dos unidades/);
+  // Cada modelo marcado cita la guía, y los ocho son los de las cinco series.
+  const marcados = MODELS.filter((m) => m.haLicenciaUnica);
+  assert.deepStrictEqual(marcados.map((m) => m.id).sort(), ['FortiGate 100F', 'FortiGate 40F', 'FortiGate 60F', 'FortiGate 61F',
+    'FortiGate 70F', 'FortiGate 71F', 'FortiGate 80F', 'FortiGate 81F']);
+  for (const m of marcados) assert.match(m.haLicenciaUnica.urls[0], /administration-guide\/246857$/);
 });
 
 /* ══ AT-19 · una interface fisica no obliga a subir de familia ═════════════════════════ */

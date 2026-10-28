@@ -1,6 +1,6 @@
 # Relevo
 
-Última actualización: 2026-10-28 · PR #51
+Última actualización: 2026-10-28 · PR #56
 
 Informe para continuar el trabajo. Lo pidió el dueño del repositorio el 2026-10-27: «de aquí en
 adelante, un informe de pendientes y mejoras para que la cuenta **servicioiptv2025@gmail.com**
@@ -33,6 +33,19 @@ está en curso no va aquí: lo dice `npm run traspasos` (protocolo en `docs/tras
 
 ## Estado al cerrar esta entrega
 
+- **2026-10-28 · PR #56**: **Fortinet F3, cerrado con documento oficial.** La guía de FortiOS 7.6.6
+  («Single FortiGuard license for FortiGate A-P HA cluster») da la licencia FortiGuard única en
+  activo-pasivo a las series 40F, 60F, 70F, 80F y 100F: los 8 FortiGate del catálogo llevan
+  `haLicenciaUnica` (serie, heartbeat, SKU de HA de la lista firmada, fuente), el motor lo avisa y
+  la página lo dice en la cantidad, el resumen, la ficha y el BOM (`licenciaHa()`), donde antes
+  decía «la licencia no se comparte en HA». El BOM sigue cotizando una suscripción por nodo. De los
+  pendientes de fuentes, revisados en internet: **N1 Advanced frente a Foundation**, que ya estaba
+  cerrado, contrastado con una copia que tiene la huella del vigía; **las regiones y «flavors» del
+  vCPE AR6700V-L**, localizados en las guías de despliegue por nube («Supported Flavors»), que solo
+  sirven un cascarón de JavaScript; el **CCR2004-16G-2S+PC**, sin fuente (su manual no lo dice).
+  **Criterio que conviene conservar**: un aviso `info` del motor de Fortinet no llega a la página
+  (la página filtra `nivel !== 'info'`); si un dato tiene que verse, la página lo pinta ella, como
+  `licenciaHa()`. La mejora del transporte la entregó el PR #54.
 - **2026-10-28 · PR #51**: el desplegable de la ficha de Fortinet lleva también los fuera de venta
   que cumplen, como el de Cisco; y en los siete dimensionadores van al final en su propio grupo
   rojo con nombre, con contador, nota y, si se elige uno, pastilla y barra rojas. No se
@@ -236,11 +249,14 @@ traspaso (el #37, de otra sesión, se fusionó mientras se cerraba esta).
 - **Aruba**: EC-XL S3N77A (fuera de venta, sin ópticas de 25G en su matriz). Las dos fuentes que
   eran un cascarón quedaron cerradas en el PR #47.
 - **MikroTik**: si la cifra IPsec es por sentido o la suma (respuesta escrita de soporte), figuras
-  traseras que la galería no publica, el CCR2004-16G-2S+PC en la matriz de compatibilidad.
-- **Huawei**: ficha de iMaster NCE-Campus, nubes del vCPE, funciones de N1 Advanced frente a
-  Foundation.
-- **Fortinet**: F3 (FortiGuard en HA activo-pasivo), el resto de F4, F5 (derates), 17 renovaciones
-  sin precio en la lista firmada, co-term y heartbeat de HA.
+  traseras que la galería no publica, el CCR2004-16G-2S+PC en la matriz de compatibilidad (su manual
+  no dice qué módulos admite: lo cierra una respuesta escrita de soporte).
+- **Huawei**: ficha de iMaster NCE-Campus; **regiones y «flavors» del vCPE AR6700V-L**: están en la
+  sección «Supported Flavors» de sus guías de despliegue por nube (Azure EDOC1100591294, GCP
+  EDOC1100592600, Huawei Cloud EDOC1100368764; URL en el pendiente 10 de Huawei), que a Actions solo
+  le sirven un cascarón: lo cierra una persona que las abra en el navegador.
+- **Fortinet**: el resto de F4, F5 (derates), 17 renovaciones sin precio en la lista firmada y
+  co-term. F3 cerrado (PR #56); el heartbeat, dicho para las series con licencia única.
 
 ### Bloqueado por acceso (se reporta, no se rodea)
 
@@ -250,6 +266,16 @@ existen los workflows de transporte. Huawei y HPE niegan además el navegador au
 
 ## Mejoras propuestas sin decidir
 
+- **La licencia FortiGuard única, como alternativa elegible en el BOM** (propuesta al cerrar el PR
+  #56). Con un clúster activo-pasivo de una serie de la guía, el BOM cotiza dos suscripciones; la
+  guía permite una, con dos unidades del SKU de HA (`FG-61F-HA`, por ejemplo, en la lista firmada a
+  US$1.309, lo mismo que la unidad normal). Una casilla «Licencia única del par» en el paso de alta
+  disponibilidad cambiaría las líneas: dos SKU de HA en vez de dos de hardware y un bundle en vez de
+  dos, con el ahorro dicho en pantalla. Evita que una propuesta en activo-pasivo salga con una
+  suscripción de más, que es la diferencia que más pesa en un clúster pequeño. Cuesta una casilla, su
+  rama en `lineasComerciales` (que ya conoce `haLicenciaUnica` y el SKU de HA) y sus pruebas; si se
+  hace mal, cotiza una sola suscripción en activo-activo o en un modelo sin SKU de HA (70F, 100F),
+  y eso lo frenaría el motor (la regla ya distingue los tres casos). Se decide por el dueño.
 - **Del override por ciclo de vida a la operación que lo admite, en un clic** (propuesta al cerrar
   el PR #51). En Fortinet, elegir un fuera de venta en compra nueva bloquea la cotización y la caja
   solo ofrece «Volver al recomendado»; quien lo eligió casi siempre está renovando o ampliando un

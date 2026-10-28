@@ -422,7 +422,8 @@
   // explicacion, no un supuesto que alguien tenga que confirmar. Los de este conjunto no
   // cambian el estado de la cotizacion; el resto (exclusiones, coberturas tomadas de un
   // informe) si la dejan en WARNING, que es exportable pero con la advertencia estampada.
-  const AVISOS_INFO = new Set(['soporte-incluido', 'converter-incluido', 'elite-upgrade', 'ha-licencia-por-nodo', 'bdl',
+  const AVISOS_INFO = new Set(['soporte-incluido', 'converter-incluido', 'elite-upgrade', 'ha-licencia-por-nodo',
+    'ha-licencia-unica', 'bdl',
     'sandbox-incluido']);
 
   function lineasComerciales(e) {
@@ -820,14 +821,24 @@
 
     // ── HA ────────────────────────────────────────────────────────────────────────────
     // AT-17. La regla general es una licencia por nodo. La excepcion de FortiGuard unico en
-    // activo-pasivo depende del modelo y de la version de FortiOS, y este catalogo no trae
-    // la elegibilidad: se DECLARA en vez de ofrecerse sin evidencia.
-    if (qty > 1) {
+    // activo-pasivo la da, por modelo, la guia de FortiOS 7.6.6 (`m.haLicenciaUnica`, F3 cerrado
+    // el 2026-10-28): se DICE con su SKU de HA y su heartbeat, pero el BOM sigue con una
+    // licencia por nodo, porque pasar al SKU de HA es una decision comercial que pide ese SKU.
+    const unica = m.haLicenciaUnica || null;
+    if (qty > 1 && unica && e.haModo === 'ha-ap') {
+      avisar({ codigo: 'ha-licencia-unica',
+        mensaje: `Clúster activo-pasivo de ${m.id}: según la guía de FortiOS 7.6.6, la serie ${unica.serie} puede `
+          + `compartir una sola suscripción FortiGuard entre los dos nodos. Se piden dos unidades del SKU de HA `
+          + `(${unica.skuHa ? unica.skuHa + ', en la lista firmada' : 'que la lista firmada no trae para este modelo: consultar'}) `
+          + `y un solo ${unica.servicios}, registrado al número de serie virtual del par (logical-sn). `
+          + `Este BOM sigue cotizando una suscripción por nodo: cambiarla es pedir ese SKU. Heartbeat de la serie: ${unica.heartbeat}.` });
+    } else if (qty > 1) {
       avisar({ codigo: 'ha-licencia-por-nodo',
-        mensaje: `Clúster de ${qty} unidades: cada nodo lleva su propia suscripción FortiGuard y su propio `
-          + 'FortiCare. La excepción de FortiGuard único en activo-pasivo existe, pero depende del modelo y '
-          + 'de la versión de FortiOS y este catálogo no trae esa elegibilidad: confirmarla con Fortinet '
-          + 'antes de quitar una licencia.' });
+        mensaje: `Clúster de ${qty} unidades: cada nodo lleva su propia suscripción FortiGuard y su propio FortiCare. `
+          + (unica
+            ? 'La licencia FortiGuard única de su serie solo vale en activo-pasivo de dos unidades (guía de FortiOS 7.6.6).'
+            : 'La licencia FortiGuard única en activo-pasivo la guía de FortiOS 7.6.6 la da solo a las series 40F, 60F, '
+              + '70F, 80F y 100F y sus variantes: este modelo no está entre ellas.') });
     }
 
     if (fueraDeLista.length) {

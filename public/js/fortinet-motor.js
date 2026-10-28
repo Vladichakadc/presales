@@ -752,7 +752,7 @@
     const com = R.lineasComerciales({
       modelo: m, bundles: cat.bundles || {}, care: cat.care || {},
       bundle: c.bundle, care_elegido: c.soporte, careKey,
-      qty: nodos, anios: c.anios, terminos: cat.terminos,
+      qty: nodos, haModo: s.disponibilidad.modo, anios: c.anios, terminos: cat.terminos,
       converter: c.converter,
       serviciosSdwan: conSdwan(s) ? (cat.serviciosSdwan || []).filter((sv) => c.sdwan.includes(sv.id)) : [],
       endpointsEms: c.emsActivo ? c.emsEndpoints : 0, emsDespliegue: c.emsDespliegue, ems: cat.ems,

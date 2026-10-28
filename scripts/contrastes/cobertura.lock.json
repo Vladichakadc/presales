@@ -1,6 +1,6 @@
 {
  "medidoEn": {
-  "commit": "8fa6408",
+  "commit": "801f76c",
   "fecha": "2026-10-28"
  },
  "umbralRozado": 25,
@@ -111,6 +111,13 @@
    "pct": 64
   },
   {
+   "modulo": "bom.js",
+   "estado": "ejercitado",
+   "total": 100,
+   "usadas": 65,
+   "pct": 65
+  },
+  {
    "modulo": "cotizador.js",
    "estado": "ejercitado",
    "total": 55,
@@ -118,18 +125,18 @@
    "pct": 65
   },
   {
-   "modulo": "bom.js",
-   "estado": "ejercitado",
-   "total": 91,
-   "usadas": 60,
-   "pct": 66
-  },
-  {
    "modulo": "dimensionador-aruba-edgeconnect.js",
    "estado": "ejercitado",
    "total": 393,
    "usadas": 267,
    "pct": 68
+  },
+  {
+   "modulo": "dimensionador-nokia-7750sr.js",
+   "estado": "ejercitado",
+   "total": 64,
+   "usadas": 44,
+   "pct": 69
   },
   {
    "modulo": "calculadora.js",
@@ -153,17 +160,17 @@
    "pct": 72
   },
   {
-   "modulo": "ficha.js",
+   "modulo": "dimensionador-fortinet-fortigate.js",
    "estado": "ejercitado",
-   "total": 92,
-   "usadas": 71,
-   "pct": 77
+   "total": 292,
+   "usadas": 231,
+   "pct": 79
   },
   {
-   "modulo": "dimensionador-nokia-7750sr.js",
+   "modulo": "ficha.js",
    "estado": "ejercitado",
-   "total": 53,
-   "usadas": 42,
+   "total": 101,
+   "usadas": 80,
    "pct": 79
   },
   {
@@ -178,13 +185,6 @@
    "estado": "ejercitado",
    "total": 172,
    "usadas": 137,
-   "pct": 80
-  },
-  {
-   "modulo": "dimensionador-fortinet-fortigate.js",
-   "estado": "ejercitado",
-   "total": 283,
-   "usadas": 225,
    "pct": 80
   },
   {
@@ -223,17 +223,17 @@
    "pct": 82
   },
   {
-   "modulo": "dimensionador-huawei-netengine.js",
-   "estado": "ejercitado",
-   "total": 161,
-   "usadas": 139,
-   "pct": 86
-  },
-  {
    "modulo": "aruba-reglas.js",
    "estado": "ejercitado",
    "total": 38,
    "usadas": 33,
+   "pct": 87
+  },
+  {
+   "modulo": "dimensionador-huawei-netengine.js",
+   "estado": "ejercitado",
+   "total": 163,
+   "usadas": 141,
    "pct": 87
   },
   {
