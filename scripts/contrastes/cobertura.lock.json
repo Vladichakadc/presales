@@ -1,6 +1,6 @@
 {
  "medidoEn": {
-  "commit": "3d0c428",
+  "commit": "8fa6408",
   "fecha": "2026-10-28"
  },
  "umbralRozado": 25,
@@ -120,8 +120,8 @@
   {
    "modulo": "bom.js",
    "estado": "ejercitado",
-   "total": 87,
-   "usadas": 57,
+   "total": 91,
+   "usadas": 60,
    "pct": 66
   },
   {
@@ -183,8 +183,8 @@
   {
    "modulo": "dimensionador-fortinet-fortigate.js",
    "estado": "ejercitado",
-   "total": 284,
-   "usadas": 226,
+   "total": 283,
+   "usadas": 225,
    "pct": 80
   },
   {
