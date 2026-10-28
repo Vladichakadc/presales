@@ -909,7 +909,7 @@ $('listaPerfiles').addEventListener('click', e => {
     pintarPerfiles();
   }
 });
-$('btnConsolidar').addEventListener('click', () => {
+$('btnConsolidar').addEventListener('click', async () => {
   // El ciclo de los perfiles de esta página, al día con su catálogo; los de otros fabricantes, con su foto.
   const l = BOM.refrescarCiclo(BOM.perfiles(), VENDOR, (id) => MODELS.find((x) => x.id === id));
   const {filas, totalSedes, fabricantes} = BOM.consolidar(l, {agregadas:[], unicas:[]});
@@ -926,10 +926,12 @@ $('btnConsolidar').addEventListener('click', () => {
       '  Precios de lista solo donde los trajo el export de CCW; el resto, consultar.'],
   };
   if(multi) meta.notas.push(`  MULTI-FABRICANTE: ${fabricantes.join(', ')}.`);
+  // Y los perfiles de los demás fabricantes, al día con su propio catálogo (pedido al servidor).
+  meta.perfiles = await BOM.refrescarCicloTodos(meta.perfiles);
   const d = dtoActual();
   if(d > 0){ meta.dto = d; meta.dtoEtq = dtoEtiqueta(); }
   $('consolidadoSub').textContent = `${meta.subtitulo} — ${totalSedes} sedes en total`;
-  $('consolidadoTabla').innerHTML = BOM.avisoCicloConsolidado(l) + (multi ? `<p class="bom-aviso">Consolidado <b>multi-fabricante</b> (${esc(fabricantes.join(', '))}).</p>` : '')
+  $('consolidadoTabla').innerHTML = BOM.avisoCicloConsolidado(meta.perfiles) + (multi ? `<p class="bom-aviso">Consolidado <b>multi-fabricante</b> (${esc(fabricantes.join(', '))}).</p>` : '')
     + BOM.renderTabla(filas, {dto:d, sinRefs:true});
   $('modalConsolidado').hidden = false;
   $('xlsConsolidadoBtn').onclick = () => BOM.exportarExcel(filas, meta);

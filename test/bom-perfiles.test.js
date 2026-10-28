@@ -202,3 +202,48 @@ test('las cinco páginas con perfiles ponen el ciclo al día antes de consolidar
     assert.match(js, /const l ?= ?BOM\.refrescarCiclo\(BOM\.perfiles\(\), VENDOR, \(id\) ?=> ?MODELS\.find\(\(x\) ?=> ?x\.id ?=== ?id\)\);/, `${p}: consolida con la foto vieja del ciclo`);
   }
 });
+
+// LOS PERFILES DE OTROS FABRICANTES, TAMBIÉN AL DÍA (2026-10-28, mejora propuesta al cerrar el PR
+// #46): al consolidar se pide el catálogo de cada fabricante presente; si falla, o ya no trae el
+// modelo, el perfil conserva su foto y el aviso dice por qué.
+test('al consolidar, los perfiles de otros fabricantes se ponen al día con su catálogo, o dicen por qué no', async () => {
+  const g = cargar('public/js/bom.js');
+  const B = g.BOM;
+  const HOY = Date.parse('2026-10-28');
+  const pedidos = [];
+  const catalogos = {
+    fortinet: [{ id: 'FG-60E', eol: true }, { id: 'FG-70G' }],
+  };
+  const pedir = async (v) => { pedidos.push(v); if (!catalogos[v]) throw new Error('HTTP 503'); return catalogos[v]; };
+  const base = [
+    { ...perfil('Core', 'cisco', 1, []), modelo: 'C8500', ciclo: null, cicloAlDia: true },
+    { ...perfil('Spoke viejo', 'fortinet', 40, []), modelo: 'FG-60E', ciclo: null, fecha: '2026-09-01', cicloAlDia: false },
+    { ...perfil('Spoke nuevo', 'fortinet', 10, []), modelo: 'FG-70G', ciclo: null, cicloAlDia: false },
+    { ...perfil('Retirado', 'fortinet', 2, []), modelo: 'FG-30E', ciclo: null, fecha: '2026-08-01', cicloAlDia: false },
+    { ...perfil('Tienda', 'aruba', 5, []), modelo: 'EC-10104', fecha: '2026-10-01', cicloAlDia: false,
+      ciclo: B.cicloDe({ eolAnnounced: { lastOrder: '2027-06-30' } }) },
+  ];
+  const al = await B.refrescarCicloTodos(base, pedir);
+  assert.strictEqual(JSON.stringify(pedidos.sort()), '["aruba","fortinet"]', 'solo se piden los fabricantes que faltan, una vez cada uno');
+  assert.strictEqual(al[0], base[0], 'lo que ya está al día no se toca');
+  assert.strictEqual(al[1].cicloAlDia, true);
+  assert.strictEqual(al[2].ciclo, null, 'un equipo vigente sin dato de ciclo queda sin aviso');
+  assert.match(al[3].cicloError, /el catálogo de fortinet ya no trae el FG-30E/);
+  assert.match(al[4].cicloError, /no se pudo leer el catálogo de aruba \(HTTP 503\)/);
+  const { avisos } = B.cicloDePerfiles(al, HOY);
+  const t = avisos.map((x) => x.texto).join('\n');
+  assert.match(t, /Perfil «Spoke viejo» \(40 sede\(s\), FG-60E\): el equipo está fuera de venta\./, 'la foto vieja se corrige con el catálogo de Fortinet');
+  assert.match(t, /Perfil «Tienda» .*ciclo a fecha de 2026-10-01, sin contrastar con el catálogo de hoy \(no se pudo leer el catálogo de aruba \(HTTP 503\)\)\./);
+});
+
+test('las cinco páginas piden al consolidar el catálogo de los demás fabricantes', () => {
+  const fs = require('fs');
+  const path = require('path');
+  for (const p of ['aruba-edgeconnect', 'cisco-catalyst8k', 'fortinet-fortigate', 'huawei-netengine', 'mikrotik-routeros']) {
+    const js = fs.readFileSync(path.join(__dirname, '..', 'public', 'js', `dimensionador-${p}.js`), 'utf8');
+    assert.match(js, /meta\.perfiles ?= ?await BOM\.refrescarCicloTodos\(meta\.perfiles\);/, `${p}: no pone al día los perfiles de otros fabricantes`);
+    assert.match(js, /BOM\.avisoCicloConsolidado\(meta\.perfiles\)/, `${p}: el aviso en pantalla no usa la lista puesta al día`);
+  }
+  const bom = fs.readFileSync(path.join(__dirname, '..', 'public', 'js', 'bom.js'), 'utf8');
+  assert.match(bom, /if \(!VENDOR_VALIDO\.test\(v\)\) throw new Error\('fabricante no válido'\);/, 'el fabricante del almacenamiento local se valida antes de la URL');
+});

@@ -74,6 +74,9 @@ let paso = 'arranque';
     const k = 'presales-perfiles';
     const l = JSON.parse(globalThis.localStorage.getItem(k) || '[]');
     l.push({ id: 'pviejo', nombre: 'Perfil viejo e2e', sedes: 3, modelo: 'Catalyst 8300-1N1S-6T', vendor: 'cisco', fecha: '2026-09-01', filas: [] });
+    // De otro fabricante, sin ciclo guardado: al consolidar se pide el catálogo de Fortinet (mejora
+    // del 2026-10-28) y el FortiGate 70F, fuera de venta, avisa como tal.
+    l.push({ id: 'pforti', nombre: 'Spoke Fortinet e2e', sedes: 4, modelo: 'FortiGate 70F', vendor: 'fortinet', fecha: '2026-09-01', filas: [] });
     globalThis.localStorage.setItem(k, JSON.stringify(l));
   });
   await page.click('#btnConsolidar');
@@ -83,6 +86,8 @@ let paso = 'arranque';
     `el consolidado en pantalla avisa del perfil con fin de venta (${modal.slice(0, 160)})`);
   t.ok(/Perfil «Perfil viejo e2e» \(3 sede\(s\), Catalyst 8300-1N1S-6T\): el equipo tiene fin de venta anunciado/.test(modal) && !/Sin dato de ciclo/.test(modal),
     'el perfil guardado sin ciclo se pone al día con el catálogo al consolidar, no queda «sin dato»');
+  t.ok(/Perfil «Spoke Fortinet e2e» \(4 sede\(s\), FortiGate 70F\): el equipo está fuera de venta\./.test(modal),
+    'el perfil de otro fabricante se pone al día con el catálogo de su fabricante, pedido al servidor');
   try {
     const [d] = await Promise.all([page.waitForEvent('download', { timeout: 30000 }), page.click('#xlsConsolidadoBtn')]);
     const libro = XLSX.read(fs.readFileSync(await d.path()), { type: 'buffer' });

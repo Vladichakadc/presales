@@ -1004,8 +1004,10 @@ function consolidarPerfiles(){
   return {filas, meta, totalSedes, fabricantes, vpnc};
 }
 
-$('btnConsolidar').addEventListener('click',()=>{
+$('btnConsolidar').addEventListener('click',async()=>{
   const {filas, meta, totalSedes, fabricantes, vpnc}=consolidarPerfiles();
+  // Y los perfiles de los demás fabricantes, al día con su propio catálogo (pedido al servidor).
+  meta.perfiles=await BOM.refrescarCicloTodos(meta.perfiles);
   if(!totalSedes) return;
   // SI HAY MAS DE UNA MARCA, SE DICE EN PANTALLA Y NO SOLO EN EL EXCEL. Las dos reglas de
   // agregacion de arriba (pool de Boost, Orchestrator unico) son el modelo comercial de Aruba;
