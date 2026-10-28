@@ -795,8 +795,10 @@
         if (p.donde) aoa.push(['Dónde se aplica', p.donde]);
         if (p.alcance) aoa.push(['Alcance', p.alcance]);
         aoa.push(['Fuente', p.fuente || 'sin fuente declarada']);
+        if (Array.isArray(p.urls) && p.urls.length) aoa.push(['Documento oficial', p.urls.join(' · ')]);
       } else if (s.pqcNo && s.pqcNo.fuente) {
         aoa.push(['Fuente', s.pqcNo.fuente]);
+        if (Array.isArray(s.pqcNo.urls) && s.pqcNo.urls.length) aoa.push(['Documento oficial', s.pqcNo.urls.join(' · ')]);
       } else {
         aoa.push(['', 'Ningún documento oficial del catálogo dice que este equipo la traiga; eso no prueba que no la tenga. Confirmarlo con el fabricante antes de comprometerlo.']);
       }
