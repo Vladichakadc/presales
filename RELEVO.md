@@ -1,6 +1,6 @@
 # Relevo
 
-Última actualización: 2026-10-28 · PR #46
+Última actualización: 2026-10-28 · PR #48
 
 Informe para continuar el trabajo. Lo pidió el dueño del repositorio el 2026-10-27: «de aquí en
 adelante, un informe de pendientes y mejoras para que la cuenta **servicioiptv2025@gmail.com**
@@ -33,6 +33,8 @@ está en curso no va aquí: lo dice `npm run traspasos` (protocolo en `docs/tras
 
 ## Estado al cerrar esta entrega
 
+- **2026-10-28 · PR #48**: una prueba frena una copia de `public/datasheets/` que ya no es el
+  documento cuya huella verifica el vigía (`test/huella-copia-lock.test.js`).
 - **2026-10-28 · PR #46**: el ciclo de los perfiles, al día con el catálogo al consolidar (la
   mejora propuesta): los perfiles del fabricante de la página se recalculan con su catálogo; los de
   otro fabricante dicen de qué fecha es su dato.
