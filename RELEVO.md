@@ -1,6 +1,6 @@
 # Relevo
 
-Última actualización: 2026-10-28 · PR #55
+Última actualización: 2026-10-28 · PR #51
 
 Informe para continuar el trabajo. Lo pidió el dueño del repositorio el 2026-10-27: «de aquí en
 adelante, un informe de pendientes y mejoras para que la cuenta **servicioiptv2025@gmail.com**
@@ -33,6 +33,10 @@ está en curso no va aquí: lo dice `npm run traspasos` (protocolo en `docs/tras
 
 ## Estado al cerrar esta entrega
 
+- **2026-10-28 · PR #51**: el desplegable de la ficha de Fortinet lleva también los fuera de venta
+  que cumplen, como el de Cisco; y en los siete dimensionadores van al final en su propio grupo
+  rojo con nombre, con contador, nota y, si se elige uno, pastilla y barra rojas. No se
+  recomiendan, y elegir uno en compra nueva bloquea la cotización.
 - **2026-10-28 · PR #55**: los perfiles multi-sede también en Juniper y Nokia 7750 (la mejora
   propuesta al cerrar el PR #50, aprobada por el dueño). Siete páginas guardan perfiles; la 7220 IXR
   y Starlink no, a propósito. **Criterio que conviene conservar**: la clave `vendor` de un perfil es
@@ -246,6 +250,16 @@ existen los workflows de transporte. Huawei y HPE niegan además el navegador au
 
 ## Mejoras propuestas sin decidir
 
+- **Del override por ciclo de vida a la operación que lo admite, en un clic** (propuesta al cerrar
+  el PR #51). En Fortinet, elegir un fuera de venta en compra nueva bloquea la cotización y la caja
+  solo ofrece «Volver al recomendado»; quien lo eligió casi siempre está renovando o ampliando un
+  parque instalado, y tiene que encontrar «Motivo de compra» y la justificación por su cuenta. Cuando
+  el único bloqueo es `CICLO_VIDA`, la caja ofrecería además «Es una ampliación/renovación»: fija el
+  motivo y lleva el foco a «Justificación del equipo fuera de venta», que el motor sigue exigiendo.
+  Evita el callejón sin salida sin abrir la puerta: la cotización no sale sin justificación. Cuesta un
+  botón con `data-corregir` en la caja y su acción en la delegación de clics existente; si se hace
+  mal, el botón cambia el motivo sin pedir la justificación, y la prueba del motor (T21) lo frenaría.
+  Se decide por el dueño.
 - **El panel de perfiles, un solo módulo** (propuesta al cerrar el PR #55). Las siete páginas con
   perfiles llevan cada una su copia del mismo bloque (unas 80 líneas: capturar y aplicar campos, la
   lista, guardar, cargar, consolidar y la ventana), y ya han divergido en lo pequeño (Escape y

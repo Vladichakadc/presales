@@ -17,7 +17,11 @@
    nunca va solo: la opción dice además «fuera de venta» o «fin de venta el <fecha>», porque los
    desplegables nativos de macOS y del móvil no pintan el color de cada opción. */
 option.opt-ciclo { color: var(--ciclo-rojo); }
-option.opt-ciclo-fuera { font-weight: 600; }
+/* Fuera de venta: además del rojo, fondo rosado en la lista abierta (Chrome y Edge en Windows y
+   Linux lo pintan) y su propio grupo con nombre en el desplegable de la ficha (ficha.js), que es
+   lo que se ve también en los desplegables nativos. */
+option.opt-ciclo-fuera { font-weight: 600; background-color: var(--ciclo-rojo-fondo); }
+optgroup.optg-fuera { color: var(--ciclo-rojo); font-weight: 700; font-style: normal; background-color: var(--ciclo-rojo-fondo); }
 
 /* El desplegable cerrado también avisa cuando lo elegido es uno de ellos: `:has` sigue a la
    opción marcada, también cuando la página cambia el valor por programa. */
@@ -26,9 +30,18 @@ select:has(option.opt-ciclo:checked) {
   border-color: var(--ciclo-rojo);
   background-color: var(--ciclo-rojo-fondo);
 }
-select:has(option.opt-ciclo-fuera:checked) { font-weight: 600; }
+/* Con un fuera de venta elegido, el desplegable cerrado lleva además una barra roja a la izquierda
+   y el borde más grueso: tiene que verse de un vistazo que la ficha y el BOM hablan de un equipo
+   que ya no se vende. */
+select:has(option.opt-ciclo-fuera:checked) {
+  font-weight: 600;
+  border-width: 2px;
+  box-shadow: inset 4px 0 0 var(--ciclo-rojo);
+}
 /* Las opciones de la lista abierta recuperan su color: si no, heredarían el rojo del cerrado. */
 select:has(option.opt-ciclo:checked) option:not(.opt-ciclo) { color: var(--ink, #0E1A2B); font-weight: 400; background: var(--card, #FFF); }
+/* Y el grupo de los fuera de venta conserva su rótulo rojo aunque el cerrado esté teñido. */
+select:has(option.opt-ciclo:checked) optgroup:not(.optg-fuera) { color: var(--ink, #0E1A2B); }
 
 /* 2 · Las funciones activadas: «resalta cuando se activa una funcionalidad activando el check para
    que los usuarios diferencien cuando se activa o se desactiva». La fila entera de la casilla
