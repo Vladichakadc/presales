@@ -34,6 +34,10 @@ completo está allí.
   resumen de todo lo pendiente en `main` al cerrar. Lo que está en curso no se apunta en el
   relevo (una tabla común chocaría en cada fusión): lo dice `npm run traspasos`.
   `test/relevo.test.js` frena un relevo sin sus secciones o más viejo que `PENDIENTES.md`.
+  **Una entrega se nombra por fecha y número de PR** (`Última revisión: AAAA-MM-DD · PR #N` en
+  `PENDIENTES.md`, `Última actualización: AAAA-MM-DD · PR #N` en `RELEVO.md`, el mismo PR en los
+  dos), nunca por ordinal: dos sesiones en paralelo tomaban el mismo número. Por eso el PR se abre
+  antes del commit de cierre, que ya lleva su número. Las revisiones viejas con ordinal no se tocan.
 - **Las decisiones del dueño no se toman por silencio.** Cuando el dueño pide «ejecuta los
   pendientes», la opción recomendada de una decisión pendiente se ejecuta y se anota; si no, se
   pregunta.

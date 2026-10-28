@@ -28,3 +28,26 @@ test('el relevo no es más viejo que la última revisión de PENDIENTES.md', () 
   assert.ok(pendientes, 'PENDIENTES.md sin «Última revisión: AAAA-MM-DD»');
   assert.ok(relevo >= pendientes, `el relevo (${relevo}) se quedó atrás de PENDIENTES.md (${pendientes})`);
 });
+
+// Las entregas se nombran por fecha y número de PR (mejora aprobada el 2026-10-27). Con ordinales
+// («sexagesimonovena», «septuagésima»), dos sesiones en paralelo tomaban el mismo número tres
+// veces el mismo día y la que fusionaba segunda tenía que renumerar cada mención al rebasar. El
+// número de PR lo da GitHub y no se repite. Las revisiones anteriores con ordinal son historia y
+// no se reescriben: la regla mira solo la cabecera vigente de los dos archivos.
+const CABECERA_PENDIENTES = /^Última revisión: (\d{4}-\d{2}-\d{2}) · PR #(\d+)\b/m;
+const CABECERA_RELEVO = /^Última actualización: (\d{4}-\d{2}-\d{2}) · PR #(\d+)\s*$/m;
+
+test('la entrega vigente se nombra por fecha y PR, igual en PENDIENTES.md y en RELEVO.md', () => {
+  const p = leer('PENDIENTES.md').match(CABECERA_PENDIENTES);
+  const r = leer('RELEVO.md').match(CABECERA_RELEVO);
+  assert.ok(p, 'PENDIENTES.md: la cabecera va como «Última revisión: AAAA-MM-DD · PR #N (**título** …)», sin ordinal');
+  assert.ok(r, 'RELEVO.md: la cabecera va como «Última actualización: AAAA-MM-DD · PR #N», sin ordinal');
+  assert.strictEqual(r[2], p[2], `RELEVO.md cita el PR #${r[2]} y PENDIENTES.md el #${p[2]}: se reescriben en el mismo commit`);
+});
+
+test('la cabecera vigente no vuelve al ordinal', () => {
+  const ordinal = /\b(primera|segunda|tercera|cuarta|quinta|sexta|s[eé]ptima|octava|novena|d[eé]cima|vig[eé]sim|trig[eé]sim|cuadrag[eé]sim|quincuag[eé]sim|sexag[eé]sim|septuag[eé]sim|octog[eé]sim|nonag[eé]sim|cent[eé]sim)\w* entrega/i;
+  const lineaVigente = (texto, re) => (texto.split('\n').find((l) => re.test(l)) || '');
+  assert.doesNotMatch(lineaVigente(leer('PENDIENTES.md'), /^Última revisión:/), ordinal);
+  assert.doesNotMatch(lineaVigente(leer('RELEVO.md'), /^Última actualización:/), ordinal);
+});

@@ -21,7 +21,8 @@ lleve nada consigo, y para que dos sesiones a la vez no se pisen.
 4. **Retomar un tema** es: `git fetch`, cambiar a su rama, leer su traspaso entero y seguir por su
    «Siguiente paso». No se rehace lo que el traspaso da por hecho sin comprobar primero que falla.
 5. **Al terminar**, lo de siempre (`CLAUDE.md` → *Desplegar*): `npm run verificar`, `npm run
-   auditar`, rebase sobre `main` y fusionar. En el commit que fusiona, lo cerrado pasa a
+   auditar`, abrir el PR (su número nombra la entrega), rebase sobre `main` y fusionar. En el
+   commit de cierre, que cita ese `PR #N`, lo cerrado pasa a
    `PENDIENTES.md` (*Cerrado recientemente*), lo que queda abierto a su sección, y **el archivo de
    traspaso se borra**: en `main` no vive ninguno salvo este README y la plantilla.
 
