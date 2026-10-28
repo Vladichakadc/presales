@@ -1,6 +1,6 @@
 # Relevo
 
-Última actualización: 2026-10-28 · PR #53
+Última actualización: 2026-10-28 · PR #51
 
 Informe para continuar el trabajo. Lo pidió el dueño del repositorio el 2026-10-27: «de aquí en
 adelante, un informe de pendientes y mejoras para que la cuenta **servicioiptv2025@gmail.com**
@@ -33,6 +33,10 @@ está en curso no va aquí: lo dice `npm run traspasos` (protocolo en `docs/tras
 
 ## Estado al cerrar esta entrega
 
+- **2026-10-28 · PR #51**: el desplegable de la ficha de Fortinet lleva también los fuera de venta
+  que cumplen, como el de Cisco; y en los siete dimensionadores van al final en su propio grupo
+  rojo con nombre, con contador, nota y, si se elige uno, pastilla y barra rojas. No se
+  recomiendan, y elegir uno en compra nueva bloquea la cotización.
 - **2026-10-28 · PR #53**: «Exigir PQC» respeta el sistema operativo del escenario: con AOS 10, los
   gateways de Aruba (PPK documentada solo con AOS 8) se apartan con «con AOS 10 no consta».
 - **2026-10-28 · PR #54**: las dos mejoras pendientes que se podían ejecutar. Foto propia del MX67,
@@ -240,6 +244,16 @@ existen los workflows de transporte. Huawei y HPE niegan además el navegador au
 
 ## Mejoras propuestas sin decidir
 
+- **Del override por ciclo de vida a la operación que lo admite, en un clic** (propuesta al cerrar
+  el PR #51). En Fortinet, elegir un fuera de venta en compra nueva bloquea la cotización y la caja
+  solo ofrece «Volver al recomendado»; quien lo eligió casi siempre está renovando o ampliando un
+  parque instalado, y tiene que encontrar «Motivo de compra» y la justificación por su cuenta. Cuando
+  el único bloqueo es `CICLO_VIDA`, la caja ofrecería además «Es una ampliación/renovación»: fija el
+  motivo y lleva el foco a «Justificación del equipo fuera de venta», que el motor sigue exigiendo.
+  Evita el callejón sin salida sin abrir la puerta: la cotización no sale sin justificación. Cuesta un
+  botón con `data-corregir` en la caja y su acción en la delegación de clics existente; si se hace
+  mal, el botón cambia el motivo sin pedir la justificación, y la prueba del motor (T21) lo frenaría.
+  Se decide por el dueño.
 - **Perfiles multi-sede también en Juniper y Nokia 7750** (propuesta al cerrar el PR #50). Solo
   cinco dimensionadores guardan perfiles (Aruba, Cisco, Fortinet, Huawei y MikroTik): un despliegue
   con un core Juniper SRX o un PE Nokia 7750 no entra en el BOM consolidado, y con él se pierden su

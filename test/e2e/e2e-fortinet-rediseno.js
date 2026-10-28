@@ -264,12 +264,42 @@ const CU01 = new URLSearchParams({
     'T20: un chasis no exporta BOM sin su configurador');
 
   /* ── T21 · FUERA DE VENTA POR TIPO DE COMPRA ─────────────────────────────────────── */
+  // Desde el 2026-10-28 (petición del dueño: «incluye en el combo […] los equipos que están fuera
+  // de venta así como en el dimensionador de Cisco») el desplegable de la ficha trae, en compra
+  // nueva, los fuera de venta que cumplen: detrás de los vigentes, marcados y nunca recomendados.
   await abrir(CU01);
-  let ops = await page.$eval('#verdict-sel', (s) => [...s.options].map((o) => o.value));
-  t.ok(!ops.includes('FortiGate 600F') && !ops.includes('FortiGate 70F'), 'T21: en compra nueva ningún fuera de venta es candidato');
+  let det = await page.$eval('#verdict-sel', (s) => [...s.options].map((o) => ({ v: o.value, c: o.dataset.ciclo || '', t: o.textContent })));
+  const fueraNueva = det.filter((o) => o.c === 'fuera');
+  const primerFuera = det.findIndex((o) => o.c === 'fuera');
+  t.ok(fueraNueva.length > 0 && fueraNueva.every((o) => /fuera de venta/.test(o.t)) && det.slice(primerFuera).every((o) => o.c === 'fuera'),
+    `T21: en compra nueva los fuera de venta que cumplen salen al final del desplegable, marcados (${fueraNueva.map((o) => o.v).join(', ')})`);
+  t.ok(!/fuera de venta/.test((det.find((o) => /recomendado/.test(o.t)) || {}).t || ''), 'T21: y ninguno sale recomendado');
+  // Resaltados (2026-10-28, «resalta el combo de los equipos que están fuera de venta»): su grupo
+  // con nombre, el contador y la nota bajo el desplegable.
+  const grupo = await page.$eval('#verdict-sel', (s) => {
+    const g = s.querySelector('optgroup.optg-fuera');
+    return g ? { label: g.label, n: g.querySelectorAll('option[data-ciclo="fuera"]').length,
+      sueltos: s.querySelectorAll(':scope > option[data-ciclo="fuera"]').length } : null;
+  });
+  t.ok(grupo && /^Fuera de venta \(\d+\)/.test(grupo.label) && grupo.n === fueraNueva.length && grupo.sueltos === 0,
+    `T21: los fuera de venta van en su grupo con nombre (${grupo ? grupo.label : 'sin grupo'})`);
+  t.ok(/fuera de venta/.test(await texto('#verdict .ficha-cuenta')) && /fuera de venta/.test(await texto('#verdict .ficha-sel-fuera')),
+    'T21: el contador y la nota bajo el desplegable dicen que están');
+  if (fueraNueva.length) {
+    const recAntes = (await estado()).reco;
+    await page.selectOption('#verdict-sel', fueraNueva[0].v);
+    await asentar(page);
+    t.ok(/Bloqueada/i.test((await estado()).gate) && !(await page.$eval('#overrideAviso', (x) => x.hidden)),
+      `T21: elegir ${fueraNueva[0].v} en compra nueva bloquea la cotización y lo dice`);
+    t.ok(await page.$eval('#verdict .ficha-sel-pill', (x) => !!x.offsetParent).catch(() => false)
+      && await page.$eval('#verdict-sel', (x) => getComputedStyle(x).boxShadow !== 'none'),
+      'T21: elegido, el desplegable lleva la pastilla «Fuera de venta» y la barra roja');
+    await abrir(CU01);
+    t.ok((await estado()).reco === recAntes, 'T21: al reabrir el escenario, vuelve el recomendado vigente');
+  }
   await page.selectOption('#motivoCompra', 'ampliacion');
   await asentar(page);
-  ops = await page.$eval('#verdict-sel', (s) => [...s.options].map((o) => o.value));
+  const ops = await page.$eval('#verdict-sel', (s) => [...s.options].map((o) => o.value));
   t.ok(ops.includes('FortiGate 600F'), 'T21: en ampliación el parque instalado vuelve a ser elegible');
   await page.selectOption('#verdict-sel', 'FortiGate 600F');
   await asentar(page);

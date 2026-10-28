@@ -380,6 +380,11 @@ Módulos compartidos:
   **El ciclo de vida en los desplegables** (`opcionCiclo`, 2026-10-28): fuera de venta y fin de venta
   anunciado salen en rojo fijo y con su texto en el desplegable de la ficha y en el selector de
   modelo de cada página; una sola regla, nunca una marca escrita a mano (`test/ciclo-y-casillas.test.js`).
+  El desplegable de la ficha lleva los fuera de venta que cumplen, detrás de los vigentes (Cisco y,
+  desde el 2026-10-28, Fortinet: los que el motor solo aparta por `CICLO_VIDA`; elegir uno es un
+  override que bloquea la cotización, `test/fortinet-combo-fuera-venta.test.js`).
+  Van en su propio grupo al final (`optgroup.optg-fuera`, «Fuera de venta (N) · solo parque instalado»), con el
+  contador y una nota que lo dicen; elegido uno, pastilla y barra roja (`test/ficha-combo-fuera.test.js`).
   `escalon` (los siete lo declaran): junto al recomendado, el N+1 (menor métrica estrictamente mayor
   en la cifra del desplegable, nunca fuera de venta; `comparable` lo limita a la misma familia o base
   de medida) y el diferencial de precio solo con precio en los dos; no toca la selección. En la

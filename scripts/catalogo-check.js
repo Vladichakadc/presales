@@ -228,9 +228,12 @@ const TARDIOS = {
   'verdict-sel': {
     modulo: 'public/js/ficha.js',
     // El ancla lleva `${cid}` a proposito: es el TEXTO FUENTE de la plantilla de ficha.js,
-    // no una interpolacion que se olvido de escribir con backticks.
+    // no una interpolacion que se olvido de escribir con backticks. Termina en la comilla de
+    // cierre, como la de `selDescuento`: el desplegable lleva detrás atributos que dependen del
+    // caso (`aria-describedby` con fuera de venta, 2026-10-28), y la comilla ya basta para que
+    // `${cid}-selector` no la cumpla.
     // eslint-disable-next-line no-template-curly-in-string
-    ancla: '<select id="${cid}-sel">',
+    ancla: '<select id="${cid}-sel"',
     porque: 'lo pinta ficha.js despues del primer render (el desplegable de equipo)',
   },
 };
