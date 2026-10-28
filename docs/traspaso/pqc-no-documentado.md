@@ -4,9 +4,9 @@
 - **Rama:** claude/elegant-pascal-7ymts7
 - **Cuenta:** vladichakadc, sesión 01TxCQ3W2sHYVmimAdMKht3j
 - **Estado:** en curso
-- **Actualizado:** 2026-10-27 21:30
+- **Actualizado:** 2026-10-27 21:50
 - **Archivos que toca:** public/js/pqc.js, public/js/ficha.js, public/js/comparador.js, public/js/bom.js, public/js/dimensionador-aruba-edgeconnect.js, public/js/dimensionador-cisco-catalyst8k.js, public/js/dimensionador-fortinet-fortigate.js, public/js/dimensionador-huawei-netengine.js, public/js/dimensionador-juniper-srx.js, public/js/dimensionador-mikrotik-routeros.js, public/js/dimensionador-nokia-7750sr.js, server/seed/legacyData/cisco.js, server/seed/legacyData/aruba.js, server/seed/legacyData/indexPR.js, server/seed/legacyData/fuentes.js, test/pqc.test.js, test/pqc-requisito.test.js, test/bom-supuestos.test.js
-- **Siguiente paso:** pruebas de `pqcNo` (pqc, requisito, comparador, Supuestos) y de la ranura reservada de Aruba; después verificar, navegador, cierre y fusión
+- **Siguiente paso:** navegador (ficha del ASR 1001-X, pantallas, contraste, e2e, puerta); después cierre y fusión
 
 ## Encargo del dueño
 
@@ -34,4 +34,4 @@ y por qué» cuando un documento lo prueba (el ASR 1001-X, cuyo boletín lo deja
 
 ## Verificación
 
-- (pendiente)
+- `npm run verificar` (1166) y `npm run auditar` en verde. Falta el navegador.

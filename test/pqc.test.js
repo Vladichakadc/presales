@@ -99,6 +99,33 @@ test('solo lleva `pqc` el equipo que su documento nombra', () => {
   }
 });
 
+// Un «no la trae» con su documento (`pqcNo`, 2026-10-28): solo con motivo y fuente, nunca junto a un
+// `pqc`, con una fuente de fuentes.js que lo declara con ese campo, y la ficha y el Comparador lo dicen.
+test('`pqcNo`: un «no» con documento, con su fuente declarada, que la ficha y el Comparador dicen como tal', () => {
+  const conNo = Object.entries(CATALOGOS).flatMap(([v, L]) => L.filter((m) => m.pqcNo).map((m) => [v, m]));
+  assert.deepStrictEqual(conNo.map(([, m]) => m.id), ['ASR 1001-X']);
+  for (const [v, m] of conNo) {
+    assert.ok(!m.pqc, `${m.id}: un «no» y un «sí» a la vez`);
+    for (const k of ['motivo', 'corto', 'fuente']) assert.ok(m.pqcNo[k], `${m.id}: falta ${k}`);
+    const declaran = (FUENTES[v] || []).filter((f) => (f.campos || []).includes('pqcNo'))
+      .flatMap((f) => resolverModelos(v, f).ids || []);
+    assert.ok(declaran.includes(m.id), `${m.id}: ninguna fuente declara su pqcNo`);
+  }
+  const asr = CATALOGOS.cisco.find((m) => m.id === 'ASR 1001-X');
+  const sec = FICHA.seccionPqc(asr);
+  assert.match(valor(sec, 'Soporte'), /no la trae/);
+  assert.match(valor(sec, 'Motivo'), /IOS XE 17\.9/);
+  assert.match(sec.nota, /Un documento oficial dice que este equipo no la trae\. Fuente: Boletín de fin de venta/);
+  assert.doesNotMatch(sec.nota, /eso no prueba/);
+  const { COMPARADOR } = cargar('public/js/comparador.js');
+  const fila = COMPARADOR.SECCIONES.flatMap((s) => s.filas).find((f) => f.k === 'pqc');
+  const celda = COMPARADOR.celda(fila, { grupo: 'x', raw: asr });
+  assert.strictEqual(celda.estado, 'dato');
+  assert.match(celda.txt, /^No — última versión IOS XE 17\.9/);
+  // Sin fuente, la ficha no lo da por bueno.
+  assert.match(valor(FICHA.seccionPqc({ id: 'x', pqcNo: { motivo: 'm' } }), 'Soporte'), /no consta/);
+});
+
 test('cada equipo con `pqc` tiene una fuente que lo declara con ese campo', () => {
   for (const [v, L] of Object.entries(CATALOGOS)) {
     const declarados = new Set((FUENTES[v] || []).filter((f) => (f.campos || []).includes('pqc'))
