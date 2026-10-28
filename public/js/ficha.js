@@ -78,7 +78,11 @@
 .ficha-vacio{font-size:13.5px;color:var(--steel);margin:0}
 .ficha-rec{background:var(--red-txt,var(--red));color:#fff;border-radius:2px;padding:1px 6px;font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.08em;text-transform:uppercase;margin-left:7px;vertical-align:2px}
 .ficha-ref{border:1px solid var(--rule);color:var(--steel);border-radius:2px;padding:1px 6px;font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.08em;text-transform:uppercase;margin-left:7px;vertical-align:2px}
-.ficha-ref.fuera{background:var(--steel);color:var(--paper);border-color:var(--steel)}
+.ficha-ref.fuera{background:var(--ciclo-rojo,#B42318);color:#fff;border-color:var(--ciclo-rojo,#B42318)}
+.ficha-cuenta-fuera{color:var(--ciclo-rojo,#B42318);font-weight:600}
+.ficha-sel-pill{flex:none;background:var(--ciclo-rojo,#B42318);color:#fff;border-radius:2px;padding:3px 8px;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.08em;text-transform:uppercase;font-weight:600}
+.ficha-sel-fuera{font-size:12px;color:var(--ciclo-rojo,#B42318);background:var(--ciclo-rojo-fondo,#FEF3F2);border-left:3px solid var(--ciclo-rojo,#B42318);padding:6px 9px;margin:-4px 0 12px;line-height:1.45}
+.ficha-aviso.fuera{color:var(--ink);border-left-color:var(--ciclo-rojo,#B42318);background:var(--ciclo-rojo-fondo,#FEF3F2);padding-right:9px}
 .ficha-aviso{font-size:12.5px;color:var(--steel);border-left:2px solid var(--steel);padding:5px 0 5px 9px;margin:9px 0 0;line-height:1.45}
 .ficha-refs{margin-top:18px}
 .ficha-refs h3{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--steel);font-weight:600;margin:0 0 8px}
@@ -383,6 +387,9 @@
     if (!c) return { attr: '', sufijo: '', ciclo: null };
     return { attr: ` class="opt-ciclo opt-ciclo-${c.ciclo}" data-ciclo="${c.ciclo}"`, sufijo: `  ·  ${c.t}`, ciclo: c.ciclo };
   }
+  // Fuera de venta a efectos del desplegable: la misma regla que el rojo (`cicloOpcion`).
+  const esFuera = (m) => !!(cicloOpcion(m) && cicloOpcion(m).ciclo === 'fuera');
+  const etiquetaGrupoFuera = (n) => `Fuera de venta (${n}) · solo parque instalado, no se recomiendan`;
   function avisoDe(m) {
     const mk = marca(m);
     if (!mk) return '';
@@ -651,7 +658,7 @@
     const sel = lista.find((m) => m.id === cfg.seleccionado) || lista[0];
     cfg.seleccionado = sel.id;
 
-    const opciones = lista.map((m, i) => {
+    const opcion = (m, i) => {
       const txt = cfg.etiqueta ? cfg.etiqueta(m, i) : m.id;
       const mk = marca(m);
       const oc = opcionCiclo(m);
@@ -659,8 +666,21 @@
       const txtMarca = oc.ciclo ? oc.sufijo : (mk ? '  ·  ' + mk.t : '');
       return `<option value="${esc(m.id)}"${oc.attr}${m.id === sel.id ? ' selected' : ''}>`
         + `${esc(txt)}${esc(txtMarca)}${m.id === recomendado ? '  ·  recomendado' : ''}</option>`;
-    }).join('');
+    };
+    // Los fuera de venta van aparte, en un grupo con nombre al final de la lista (petición del
+    // dueño, 2026-10-28: «resalta el combo de los equipos que están fuera de venta»). El nombre del
+    // grupo es lo que más se ve: lo pintan también los desplegables nativos de macOS y del móvil,
+    // que ignoran el color de cada opción. El índice de `etiqueta` es el de `lista`, como antes.
+    const conIndice = lista.map((m, i) => [m, i]);
+    const vigentesSel = conIndice.filter(([m]) => !esFuera(m));
+    const fueraSel = conIndice.filter(([m]) => esFuera(m));
+    const opciones = vigentesSel.map(([m, i]) => opcion(m, i)).join('')
+      + (fueraSel.length
+        ? `<optgroup class="optg-fuera" label="${esc(etiquetaGrupoFuera(fueraSel.length))}">`
+          + fueraSel.map(([m, i]) => opcion(m, i)).join('') + '</optgroup>'
+        : '');
     const mkSel = marca(sel);
+    const selFuera = esFuera(sel);
 
     const medidores = (cfg.medidores ? cfg.medidores(sel) : []).map(medidorHtml).join('');
     const secciones = (cfg.secciones ? cfg.secciones(sel) : []).map(seccionHtml).join('');
@@ -790,13 +810,19 @@
 
     cont.innerHTML = vistaHtml
       + `<p class="tag">Equipos que cumplen`
-      + `<span class="ficha-cuenta"> · ${candidatos.length}</span></p>`
+      + `<span class="ficha-cuenta"> · ${candidatos.length}`
+      + `${fueraSel.length ? ` <span class="ficha-cuenta-fuera">(${fueraSel.length} fuera de venta)</span>` : ''}</span></p>`
       + listaCands
       + (cfg.selector === false ? '' :
         `<div class="ficha-sel"><label for="${cid}-sel">Equipo</label>`
-        + `<select id="${cid}-sel">${opciones}</select>`
+        + `<select id="${cid}-sel"${fueraSel.length ? ` aria-describedby="${cid}-sel-fuera"` : ''}>${opciones}</select>`
+        + (selFuera ? '<span class="ficha-sel-pill">Fuera de venta</span>' : '')
         + (desviado ? btnVolver : '')
-        + '</div>')
+        + '</div>'
+        + (fueraSel.length
+          ? `<p class="ficha-sel-fuera" id="${cid}-sel-fuera">La lista incluye <b>${fueraSel.length} equipo(s) fuera de venta</b> que cumplen, `
+            + 'al final y en rojo: sirven como referencia para ampliar o renovar un parque instalado y nunca se recomiendan.</p>'
+          : ''))
       + (desviado ? `<p class="ficha-desvio">Estás viendo un equipo <b>elegido a mano</b>. `
         + `El dimensionamiento propone el <b>${esc(recomendado)}</b>; toda la ficha, el `
         + `resumen y el BOM siguen al que tienes elegido. `
@@ -810,7 +836,7 @@
       // que la pagina informe `cicloVida`, incluido el tercer estado: un hueco se lee como
       // «vigente» y eso es justo lo que este pendiente existe para evitar.
       + (cicloVidaVendor || cfg.cicloVida ? `<p class="ficha-ciclo-caja">${cicloHtml(sel, cfg.cicloVida)}</p>` : '')
-      + (mkSel ? `<p class="ficha-aviso">${avisoDe(sel)}</p>` : '')
+      + (mkSel ? `<p class="ficha-aviso${selFuera ? ' fuera' : ''}">${avisoDe(sel)}</p>` : '')
       + medidores
       // N+1 solo junto al recomendado: con otro elegido a mano, la comparacion ya la hizo quien eligio.
       // En la tarjeta clavada (`panelFijo` + detalle) va dentro del detalle: la compacta tiene que

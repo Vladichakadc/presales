@@ -107,7 +107,9 @@ module.exports = {
     const sel = await p.$('#verdict-sel');
     return {
       recomendado: sel ? await sel.evaluate((e) => e.value) : '(sin candidato)',
-      nCandidatos: sel ? await sel.evaluate((e) => e.options.length) : 0,
+      // Desde el 2026-10-28 el desplegable de la ficha trae tambien, al final, los fuera de venta que
+      // cumplen (PR #51); la cifra medida es la de antes: los que cumplen y se pueden vender.
+      nCandidatos: sel ? await sel.evaluate((e) => [...e.options].filter((o) => o.dataset.ciclo !== 'fuera').length) : 0,
     };
   },
 

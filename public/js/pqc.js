@@ -14,7 +14,12 @@
    y su fuente los pone `legacyData/` (ver `seccionPqc` en ficha.js). La unica excepcion
    (2026-10-28) es un NO documentado, `pqcNo: {motivo, fuente}`: un documento oficial dice que
    el equipo no la puede traer (el ASR1001-X se queda en una version anterior a la que la trae),
-   y entonces se dice «no la trae» con ese motivo. Sin fuente no hay `pqcNo`. */
+   y entonces se dice «no la trae» con ese motivo. Sin fuente no hay `pqcNo`.
+   SISTEMA OPERATIVO (2026-10-28, mejora aprobada): un `pqc` puede valer solo con un sistema
+   operativo (`so`, con su `soNombre`): la PPK de los gateways de Aruba esta documentada con AOS-8
+   y no con AOS-10. Si la pagina pasa el del escenario (`ctx.so`) y no es ese, no se da por
+   cumplido: «con AOS 10 no consta en ningun documento oficial». Sin `ctx`, o sin `so` en el
+   equipo, la regla es la de siempre. */
 (function (root, factory) {
   const api = factory();
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
@@ -31,10 +36,13 @@
   function nivel(v) { return Object.prototype.hasOwnProperty.call(NIVELES, v) && v ? v : ''; }
 
   // null si cumple; si no, el motivo para apartarlo, dicho como lo que es.
-  function motivo(m, n) {
+  function motivo(m, n, ctx) {
     const k = nivel(n);
     if (!k) return null;
     const p = m && m.pqc;
+    if (p && p.so && ctx && ctx.so && ctx.so !== p.so) {
+      return `criptografía post-cuántica: su documento la da con ${p.soNombre || p.so}; con ${ctx.soNombre || ctx.so} no consta en ningún documento oficial que la traiga`;
+    }
     if (!p) {
       const no = m && m.pqcNo;
       if (no && no.motivo && no.fuente) return `criptografía post-cuántica: no la trae — ${no.motivo}`;

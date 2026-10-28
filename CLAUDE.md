@@ -380,6 +380,11 @@ Módulos compartidos:
   **El ciclo de vida en los desplegables** (`opcionCiclo`, 2026-10-28): fuera de venta y fin de venta
   anunciado salen en rojo fijo y con su texto en el desplegable de la ficha y en el selector de
   modelo de cada página; una sola regla, nunca una marca escrita a mano (`test/ciclo-y-casillas.test.js`).
+  El desplegable de la ficha lleva los fuera de venta que cumplen, detrás de los vigentes (Cisco y,
+  desde el 2026-10-28, Fortinet: los que el motor solo aparta por `CICLO_VIDA`; elegir uno es un
+  override que bloquea la cotización, `test/fortinet-combo-fuera-venta.test.js`).
+  Van en su propio grupo al final (`optgroup.optg-fuera`, «Fuera de venta (N) · solo parque instalado»), con el
+  contador y una nota que lo dicen; elegido uno, pastilla y barra roja (`test/ficha-combo-fuera.test.js`).
   `escalon` (los siete lo declaran): junto al recomendado, el N+1 (menor métrica estrictamente mayor
   en la cifra del desplegable, nunca fuera de venta; `comparable` lo limita a la misma familia o base
   de medida) y el diferencial de precio solo con precio en los dos; no toca la selección. En la
@@ -387,7 +392,9 @@ Módulos compartidos:
 - `bom.js` — tabla del BOM, totales con las líneas sin precio contadas («sin cotizar») y Excel.
   `BOM.sincronizar()` repinta siempre (también sin candidato). Referencias añadidas a mano en una
   sola clave para los siete, `fabricante|sku`. Simulador de precio neto, TCO sobre las filas (qué
-  es OPEX lo declara la página), perfiles multi-sede de todos los fabricantes en una clave, y el
+  es OPEX lo declara la página), perfiles multi-sede de todos los fabricantes en una clave (siete
+  páginas; no la 7220 IXR ni Starlink; el `vendor` del perfil es la clave de la ruta de catálogo de su
+  página —`nokia-sr` en el 7750— y `NOMBRE_FABRICANTE` la traduce al enseñarla), y el
   traspaso al cotizador: el equipo viaja como nombre (su precio lo pone `CATALOG`) y el resto del
   BOM como referencias; falla cerrado si la fila del equipo no casa. El Excel (ExcelJS) lleva
   «BOM» en el índice 0 y detrás **«Supuestos»** (`matrizSupuestos`: fecha, enlace, plataforma,
@@ -432,7 +439,10 @@ Módulos compartidos:
   tiene»; con ML-KEM exigido, una PPK o un MACsec no bastan y se dice qué trae. **Un «no» solo con
   documento** (2026-10-28): `pqcNo: {motivo, corto, fuente}` (hoy el ASR 1001-X, que su boletín deja
   en la 17.9) aparta con «no la trae — <motivo>» y la ficha y el Comparador lo dicen; nunca junto a
-  `pqc`, y sin `fuente` se lee como «no consta». Cada página lo
+  `pqc`, y sin `fuente` se lee como «no consta». **Un `pqc` de un solo sistema operativo** (2026-10-28):
+  `so`/`soNombre` (los gateways de Aruba, PPK solo con AOS-8); la página pasa el del escenario
+  (`PQC.motivo(m, nivel, {so})`, también la hoja «Supuestos» por `meta.supuestos.so`) y, si no es
+  ese, aparta con «con AOS 10 no consta»; sin `so` o sin contexto, la regla de siempre. Cada página lo
   ofrece en `#reqPqc` (mismas opciones, `test/pqc-requisito.test.js`) y carga `pqc.js` antes que su
   motor.
 

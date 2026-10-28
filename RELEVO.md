@@ -1,6 +1,6 @@
 # Relevo
 
-Última actualización: 2026-10-28 · PR #54
+Última actualización: 2026-10-28 · PR #51
 
 Informe para continuar el trabajo. Lo pidió el dueño del repositorio el 2026-10-27: «de aquí en
 adelante, un informe de pendientes y mejoras para que la cuenta **servicioiptv2025@gmail.com**
@@ -33,6 +33,18 @@ está en curso no va aquí: lo dice `npm run traspasos` (protocolo en `docs/tras
 
 ## Estado al cerrar esta entrega
 
+- **2026-10-28 · PR #51**: el desplegable de la ficha de Fortinet lleva también los fuera de venta
+  que cumplen, como el de Cisco; y en los siete dimensionadores van al final en su propio grupo
+  rojo con nombre, con contador, nota y, si se elige uno, pastilla y barra rojas. No se
+  recomiendan, y elegir uno en compra nueva bloquea la cotización.
+- **2026-10-28 · PR #55**: los perfiles multi-sede también en Juniper y Nokia 7750 (la mejora
+  propuesta al cerrar el PR #50, aprobada por el dueño). Siete páginas guardan perfiles; la 7220 IXR
+  y Starlink no, a propósito. **Criterio que conviene conservar**: la clave `vendor` de un perfil es
+  la de la ruta `/api/dimensionador/<clave>` de su página (`nokia-sr`, no `nokia`), porque con ella
+  el consolidado pide el catálogo para poner al día el ciclo de vida; lo que se enseña lo traduce
+  `NOMBRE_FABRICANTE` en `bom.js`.
+- **2026-10-28 · PR #53**: «Exigir PQC» respeta el sistema operativo del escenario: con AOS 10, los
+  gateways de Aruba (PPK documentada solo con AOS 8) se apartan con «con AOS 10 no consta».
 - **2026-10-28 · PR #54**: las dos mejoras pendientes que se podían ejecutar. Foto propia del MX67,
   el MX68 (sin radio) y el C8355-G2-MX desde su página de producto; el resto de la gama sin foto
   sigue con su dibujo de línea oficial (las páginas de Catalyst 8300 e ISR solo traen fotos de la
@@ -238,15 +250,26 @@ existen los workflows de transporte. Huawei y HPE niegan además el navegador au
 
 ## Mejoras propuestas sin decidir
 
-- **Perfiles multi-sede también en Juniper y Nokia 7750** (propuesta al cerrar el PR #50). Solo
-  cinco dimensionadores guardan perfiles (Aruba, Cisco, Fortinet, Huawei y MikroTik): un despliegue
-  con un core Juniper SRX o un PE Nokia 7750 no entra en el BOM consolidado, y con él se pierden su
-  cantidad por sedes y el aviso de ciclo de vida (los SRX sí tienen boletines de fin de venta).
-  Añadir a esas dos páginas el bloque de perfiles (guardar, cargar, borrar, consolidar) con
-  `BOM.guardarPerfil`, `refrescarCiclo` y `refrescarCicloTodos`, como las otras cinco. Evita armar a
-  mano el BOM de un despliegue mixto. Cuesta el marcado del bloque en dos HTML, su script y capturar
-  sus campos para «Cargar»; si se hace mal, «Cargar» deja la pantalla en un escenario a medias, y lo
-  verían `bom-perfiles.test.js` y una batería e2e nueva. Se decide por el dueño.
+- **Del override por ciclo de vida a la operación que lo admite, en un clic** (propuesta al cerrar
+  el PR #51). En Fortinet, elegir un fuera de venta en compra nueva bloquea la cotización y la caja
+  solo ofrece «Volver al recomendado»; quien lo eligió casi siempre está renovando o ampliando un
+  parque instalado, y tiene que encontrar «Motivo de compra» y la justificación por su cuenta. Cuando
+  el único bloqueo es `CICLO_VIDA`, la caja ofrecería además «Es una ampliación/renovación»: fija el
+  motivo y lleva el foco a «Justificación del equipo fuera de venta», que el motor sigue exigiendo.
+  Evita el callejón sin salida sin abrir la puerta: la cotización no sale sin justificación. Cuesta un
+  botón con `data-corregir` en la caja y su acción en la delegación de clics existente; si se hace
+  mal, el botón cambia el motivo sin pedir la justificación, y la prueba del motor (T21) lo frenaría.
+  Se decide por el dueño.
+- **El panel de perfiles, un solo módulo** (propuesta al cerrar el PR #55). Las siete páginas con
+  perfiles llevan cada una su copia del mismo bloque (unas 80 líneas: capturar y aplicar campos, la
+  lista, guardar, cargar, consolidar y la ventana), y ya han divergido en lo pequeño (Escape y
+  `role="dialog"` solo en las dos últimas; el mensaje al cargar, igual). Propuesta:
+  `BOM.montarPerfiles({ vendor, campos, segs, buscar, filas, render, notas })` en `bom.js` y el
+  marcado generado por él, como `BOM.montarBotonCotizador`. Evita que la próxima mejora del
+  consolidado haya que escribirla siete veces (pasó con el ciclo de vida en los PR #44, #46 y #50).
+  Cuesta tocar las siete páginas y sus pruebas, que hoy buscan el patrón en cada una; si se hace
+  mal, «Guardar» o «Cargar» dejan de funcionar en alguna, y lo verían `bom-perfiles.test.js`,
+  `e2e-ciclo-excel.js` y `e2e-perfiles-juniper-nokia.js`. Se decide por el dueño.
 - **El transporte, probado sin red** (propuesta al cerrar el PR #54). Ahora que `traer.js` es un
   archivo, su lógica se puede ejercitar en `npm run verificar` con un `fetch` de mentira: la firma de
   cada tipo (PDF, imagen, HTML con `debeContener`), la pantalla de inicio de sesión, el tope de
@@ -257,7 +280,7 @@ existen los workflows de transporte. Huawei y HPE niegan además el navegador au
   función principal de `traer.js` con `fetch` y el directorio inyectables, y una prueba con unas diez
   respuestas fabricadas; si se hace mal, el workflow deja de correr el script al cargarlo: se prueba
   con una corrida real antes de fusionar, como en el PR #54. Se decide por el dueño.
-- (Hecha en el PR #54: la foto desde la página de cada modelo, hasta donde Cisco la publica, y el transporte fuera del YAML. Hecha en el PR #50: los perfiles de otros fabricantes al día al consolidar. Hecha en el PR #46: el ciclo del perfil al día al consolidar. Hecha en el PR #45: la fuente de la PQC enlazada a `fuentes.js`. Hecha en el PR #44: el ciclo en el consolidado multi-sede. Hecha en el PR #41: el fin de venta en el Excel. Hecha en el PR #40: la foto de producto en el Excel. Hecha en la septuagesimoprimera: el «no la trae» documentado, `pqcNo`. Hecha en la sexagesimoctava: la
+- (Hecha en el PR #55: los perfiles multi-sede en Juniper y Nokia 7750. Hecha en el PR #54: la foto desde la página de cada modelo, hasta donde Cisco la publica, y el transporte fuera del YAML. Hecha en el PR #50: los perfiles de otros fabricantes al día al consolidar. Hecha en el PR #46: el ciclo del perfil al día al consolidar. Hecha en el PR #45: la fuente de la PQC enlazada a `fuentes.js`. Hecha en el PR #44: el ciclo en el consolidado multi-sede. Hecha en el PR #41: el fin de venta en el Excel. Hecha en el PR #40: la foto de producto en el Excel. Hecha en la septuagesimoprimera: el «no la trae» documentado, `pqcNo`. Hecha en la sexagesimoctava: la
   versión mínima de la PQC en la hoja «Supuestos».)
 
 ## Decisiones del dueño abiertas

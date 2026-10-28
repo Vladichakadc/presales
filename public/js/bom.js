@@ -277,6 +277,7 @@
      Y SE AGRUPA POR FABRICANTE ADEMAS DE POR SKU: con una sola lista compartida, dos marcas
      podrian traer el mismo codigo y agrupar solo por cat+desc+sku las fundiria en un renglon.
      Es la misma razon por la que la clave de una referencia es `fabricante|sku`. */
+  const NOMBRE_FABRICANTE = { 'nokia-sr': 'nokia' };
   function consolidar(lista, opciones) {
     const o = opciones || {};
     const agregadas = (o.agregadas || []).map((c) => String(c));
@@ -289,7 +290,9 @@
       const sedes = Math.max(0, parseInt(p.sedes, 10) || 0);
       totalSedes += sedes;
       const v = String(p.vendor || '').toLowerCase();
-      if (v) fabricantes.add(v);
+      // La lista que se enseña nombra al fabricante, no al dimensionador: `nokia-sr` (la clave de los
+      // perfiles del 7750, que es la de su ruta de catálogo) se dice «nokia» (2026-10-28).
+      if (v) fabricantes.add(NOMBRE_FABRICANTE[v] || v);
       for (const f of (p.filas || [])) {
         if (agregadas.includes(f.cat)) {
           const k = `${v}|${f.cat}`;
@@ -882,7 +885,9 @@
       aoa.push([]);
       aoa.push(['CRIPTOGRAFÍA POST-CUÁNTICA EXIGIDA']);
       aoa.push(['Requisito del escenario', e.pqc.etiqueta || exigida]);
-      const motivo = P && P.motivo ? P.motivo({ pqc: p, pqcNo: s.pqcNo || null }, exigida) : null;
+      // Con el SO del escenario (`s.so`, solo donde la página lo declara: los gateways de Aruba):
+      // una PQC documentada para otro sistema operativo no se da por cumplida en la hoja.
+      const motivo = P && P.motivo ? P.motivo({ pqc: p, pqcNo: s.pqcNo || null }, exigida, s.so || null) : null;
       aoa.push(['¿El equipo del BOM lo cumple?', motivo ? `No: ${motivo.replace(/^criptografía post-cuántica: /, '')}` : (p ? 'Sí' : 'No consta')]);
       if (p) {
         const tipo = (P && P.TIPO && P.TIPO[p.tipo]) || p.tipo;

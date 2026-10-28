@@ -943,24 +943,47 @@ function pintarEjes(r) {
 }
 
 /* ── FICHA DEL EQUIPO VALIDADO (ficha.js) ─────────────────────────────────────────────── */
+// Los fuera de venta que cumplen el escenario y solo se apartan por su ciclo de vida (compra
+// nueva): van al desplegable de la ficha, detrás de los vigentes y en rojo, como en Cisco (petición
+// del dueño, 2026-10-28). Nunca salen recomendados; elegir uno es el override de siempre, que
+// bloquea la cotización y pide declarar ampliación, renovación o co-term con su justificación.
+function fueraDeVentaQueCumplen(r) {
+  return r.candidatos
+    .filter((c) => !c.elegible && c.eol && c.eval.estado === 'ok' && c.bloqueos.length
+      && c.bloqueos.every((b) => b.codigo === 'CICLO_VIDA'))
+    .sort((a, b) => a.soporta - b.soporta);
+}
+// Fortinet llama fuera de venta también al equipo sin SKU de hardware en la lista firmada; la
+// ficha solo mira `eol`, así que se le pasa marcado para que lo pinte en rojo y lo diga.
+const comoFicha = (m) => (m.eol || m.hwSku ? m : { ...m, eol: true });
+
 function pintarFicha(r) {
+  const fuera = fueraDeVentaQueCumplen(r);
   if (!r.seleccion) {
     const why = porQueSinCandidato(r);
+    const nota = fuera.length && !r.faltan.length && !r.errores.length
+      ? `<p class="warn" style="margin:0 0 8px">Cumplen ${fuera.map((c) => esc(c.id)).join(', ')}, pero están fuera de venta: solo sirven como referencia de parque instalado (motivo de compra distinto de «compra nueva»).</p>`
+      : '';
     FICHA.render({ vendor: VENDOR, contenedor: 'verdict', candidatos: [], recomendado: null,
       vacioTitulo: r.faltan.length || r.errores.length ? 'Faltan datos para recomendar un equipo' : 'Ningún modelo vigente cumple todas las restricciones',
-      vacioDetalle: `<ul style="margin:0;padding-left:18px;font-size:13.5px">${why}</ul>` });
+      vacioDetalle: `${nota}<ul style="margin:0;padding-left:18px;font-size:13.5px">${why}</ul>` });
     $('verdict').style.borderLeftColor = r.faltan.length || r.errores.length ? 'var(--steel)' : 'var(--amber)';
     return;
   }
   $('verdict').style.borderLeftColor = 'var(--red)';
-  // `seleccionado` SIEMPRE es el modelo validado por el motor: ficha.js presenta, no decide.
+  // `seleccionado` es el modelo validado por el motor: ficha.js presenta, no decide. La única
+  // excepción es un fuera de venta elegido a mano: la ficha lo enseña (con su aviso en rojo) para
+  // que el desplegable no salte solo al recomendado, y la caja del override dice que la lista de
+  // materiales sigue con el validado y que la cotización queda bloqueada.
+  const manualFuera = r.override && !r.override.elegible && fuera.some((c) => c.id === r.override.modelo)
+    ? r.override.modelo : null;
   const porId = Object.fromEntries(r.candidatos.map((c) => [c.id, c]));
   FICHA.render({
     vendor: VENDOR,
     contenedor: 'verdict',
-    candidatos: r.elegibles.map((c) => c.modelo),
+    candidatos: [...r.elegibles, ...fuera].map((c) => comoFicha(c.modelo)),
     recomendado: r.recomendacion ? r.recomendacion.id : r.seleccion.id,
-    seleccionado: r.seleccion.id,
+    seleccionado: manualFuera || r.seleccion.id,
     vistas: VISTAS,
     refsEn: 'fortiRefs',
     refsTitulo: null,

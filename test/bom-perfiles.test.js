@@ -149,10 +149,15 @@ test('el consolidado avisa del fin de venta de cada perfil y dice cuáles no tra
   assert.strictEqual(B.avisoCicloConsolidado([{ ...perfil('Hub', 'cisco', 2, []), ciclo: null }]), '', 'sin nada que decir, nada');
 });
 
-test('las cinco páginas con perfiles guardan el ciclo y lo llevan al consolidado', () => {
+// Las siete páginas que guardan perfiles. Juniper y Nokia 7750 desde el 2026-10-28 (mejora propuesta
+// al cerrar el PR #50): antes un core SRX o un PE 7750 no entraba en el BOM consolidado.
+const PAGINAS_CON_PERFILES = ['aruba-edgeconnect', 'cisco-catalyst8k', 'fortinet-fortigate', 'huawei-netengine', 'mikrotik-routeros',
+  'juniper-srx', 'nokia-7750sr'];
+
+test('las páginas con perfiles guardan el ciclo y lo llevan al consolidado', () => {
   const fs = require('fs');
   const path = require('path');
-  for (const p of ['aruba-edgeconnect', 'cisco-catalyst8k', 'fortinet-fortigate', 'huawei-netengine', 'mikrotik-routeros']) {
+  for (const p of PAGINAS_CON_PERFILES) {
     const js = fs.readFileSync(path.join(__dirname, '..', 'public', 'js', `dimensionador-${p}.js`), 'utf8');
     assert.match(js, /BOM\.guardarPerfil\(\{[^}]*ciclo: ?BOM\.cicloDe\(/, `${p}: el perfil no guarda el ciclo de su equipo`);
     assert.match(js, /sinRefs: ?true,\s*perfiles: ?l,/, `${p}: el consolidado no pasa los perfiles al Excel`);
@@ -194,12 +199,13 @@ test('al consolidar, el ciclo de los perfiles propios se pone al día y el de lo
   assert.strictEqual(B.cicloDePerfiles(B.refrescarCiclo(lista, 'aruba', () => null), HOY).sinDato.length, 1);
 });
 
-test('las cinco páginas con perfiles ponen el ciclo al día antes de consolidar', () => {
+test('las páginas con perfiles ponen el ciclo al día antes de consolidar', () => {
   const fs = require('fs');
   const path = require('path');
-  for (const p of ['aruba-edgeconnect', 'cisco-catalyst8k', 'fortinet-fortigate', 'huawei-netengine', 'mikrotik-routeros']) {
+  for (const p of PAGINAS_CON_PERFILES) {
     const js = fs.readFileSync(path.join(__dirname, '..', 'public', 'js', `dimensionador-${p}.js`), 'utf8');
-    assert.match(js, /const l ?= ?BOM\.refrescarCiclo\(BOM\.perfiles\(\), VENDOR, \(id\) ?=> ?MODELS\.find\(\(x\) ?=> ?x\.id ?=== ?id\)\);/, `${p}: consolida con la foto vieja del ciclo`);
+    // Juniper busca en sus dos catálogos (SRX y SSR) y Nokia en el suyo: los dos con `modeloPorId`.
+    assert.match(js, /const l ?= ?BOM\.refrescarCiclo\(BOM\.perfiles\(\), VENDOR, \(id\) ?=> ?(MODELS\.find\(\(x\) ?=> ?x\.id ?=== ?id\)|modeloPorId\(id\))\);/, `${p}: consolida con la foto vieja del ciclo`);
   }
 });
 
@@ -236,14 +242,36 @@ test('al consolidar, los perfiles de otros fabricantes se ponen al día con su c
   assert.match(t, /Perfil «Tienda» .*ciclo a fecha de 2026-10-01, sin contrastar con el catálogo de hoy \(no se pudo leer el catálogo de aruba \(HTTP 503\)\)\./);
 });
 
-test('las cinco páginas piden al consolidar el catálogo de los demás fabricantes', () => {
+test('las páginas con perfiles piden al consolidar el catálogo de los demás fabricantes', () => {
   const fs = require('fs');
   const path = require('path');
-  for (const p of ['aruba-edgeconnect', 'cisco-catalyst8k', 'fortinet-fortigate', 'huawei-netengine', 'mikrotik-routeros']) {
+  for (const p of PAGINAS_CON_PERFILES) {
     const js = fs.readFileSync(path.join(__dirname, '..', 'public', 'js', `dimensionador-${p}.js`), 'utf8');
     assert.match(js, /meta\.perfiles ?= ?await BOM\.refrescarCicloTodos\(meta\.perfiles\);/, `${p}: no pone al día los perfiles de otros fabricantes`);
     assert.match(js, /BOM\.avisoCicloConsolidado\(meta\.perfiles\)/, `${p}: el aviso en pantalla no usa la lista puesta al día`);
   }
   const bom = fs.readFileSync(path.join(__dirname, '..', 'public', 'js', 'bom.js'), 'utf8');
   assert.match(bom, /if \(!VENDOR_VALIDO\.test\(v\)\) throw new Error\('fabricante no válido'\);/, 'el fabricante del almacenamiento local se valida antes de la URL');
+});
+
+// NOKIA 7750 GUARDA SUS PERFILES COMO `nokia-sr` (2026-10-28). Al consolidar, el ciclo de un perfil de otra
+// página se pone al día pidiendo `/api/dimensionador/<fabricante del perfil>`. La de `nokia` es el catálogo
+// de la 7220 IXR, donde los 7750 y 7250 no están: con esa clave, cada perfil del 7750 diría «el catálogo
+// ya no trae el modelo».
+test('Nokia 7750 guarda sus perfiles con la clave de su propia ruta de catálogo', () => {
+  const fs = require('fs');
+  const path = require('path');
+  const js = fs.readFileSync(path.join(__dirname, '..', 'public', 'js', 'dimensionador-nokia-7750sr.js'), 'utf8');
+  assert.match(js, /const VENDOR = 'nokia-sr';/);
+  assert.match(js, /fetch\('\/api\/dimensionador\/nokia-sr'\)/, 'la página dejó de pedir su catálogo a esa ruta');
+  const rutas = fs.readFileSync(path.join(__dirname, '..', 'server', 'routes', 'dimensionador.js'), 'utf8');
+  assert.match(rutas, /'nokia-sr': toDimensionadorNokiaRouter/);
+  // Los manejadores se montan detrás de la guarda de la página: el motor se carga sin ella en las pruebas.
+  assert.match(js, /render\(\);\n {4}montarPerfiles\(\);\n {2}\}/);
+});
+
+test('el consolidado nombra al fabricante, no la clave del dimensionador', () => {
+  const g = cargar('public/js/bom.js');
+  const r = g.BOM.consolidar([perfil('PE', 'nokia-sr', 1, []), perfil('Core', 'juniper', 2, [])], {});
+  assert.strictEqual(JSON.stringify(r.fabricantes), '["nokia","juniper"]');
 });
