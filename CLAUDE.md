@@ -222,8 +222,11 @@ callaría.
   cae al arrancar). `test/scripts-instalacion.test.js` se pone en rojo cuando Dependabot la sube.
 - **Las acciones de GitHub, fijadas por commit** (`actions/<acción>@<sha> # vX.Y.Z`), solo
   oficiales, con Dependabot vigilándolas (`test/workflows-acciones.test.js`).
-- **Un `node -e "..."` de un workflow no lleva comillas invertidas ni `$` sin escapar**: bash los
-  procesa antes que Node (`test/workflows-node-e.test.js`).
+- **Un `node -e "..."` de un workflow no lleva comillas invertidas ni `$` sin escapar, ni una
+  comilla doble que lo corte**: bash los procesa antes que Node (`test/workflows-node-e.test.js`).
+  Un script largo va por la entrada estándar (`node - <<DELIM`, sin comillas en el delimitador:
+  mismas reglas, sin tope de tamaño): el de `traer-cisco-huawei.yml` pasó el tope de 128 KiB de un
+  argumento el 2026-10-28.
 - **`npm run auditar` falla cerrado**: un aviso alto o crítico frena; la salida es una excepción
   declarada con GHSA, motivo y caducidad de 90 días como mucho, nunca apagar el paso.
 - Los jobs de navegador corren en `ubuntu-26.04` con **Playwright 1.61.1**, movidos juntos: la
@@ -356,12 +359,16 @@ Módulos compartidos:
   alternativas, no acumulables; un chasis modular no publica densidad), **criptografía
   post-cuántica** (`seccionPqc`, de `m.pqc` con su fuente: `mlkem` —algoritmo ML-KEM, G2 con IOS XE
   26.1 y FortiGate con FortiOS 7.6.1—, `ppk` —clave precompartida de RFC 8784: SRX de gama alta,
-  Catalyst 8000, ISR 1000 y ASR 1002-HX/1006-X con IOS XE 17.11/17.12, EdgeConnect y MikroTik con
-  RouterOS 7.21 (donde su ficha o su manual dice «RouterOS v7», y CHR)— y `macsec` —MACsec/ANYsec
+  Catalyst 8000, ISR 1000 y ASR 1002-HX/1006-X con IOS XE 17.11/17.12, EdgeConnect y los 20 MikroTik
+  con RouterOS 7.21 (donde su ficha o su manual dice «RouterOS v7», donde el changelog oficial de una
+  versión posterior nombra el equipo, y CHR)— y `macsec` —MACsec/ANYsec
   simétrico, Nokia 7750 y SR-1x—, cada uno dicho como lo que es; la PPK de un sistema operativo no
   se extiende a un modelo sin documento de que corre esa versión (el boletín de fin de venta da la
   última de cada ASR: el 1001-X se queda en la 17.9, y lo dice como «no la trae», `pqcNo`); sin
-  documento, «no consta»; el Comparador del portal lo da en una línea), licenciamiento, software,
+  documento, «no consta»; **cada `pqc`/`pqcNo` cita su documento por la URL de su entrada en
+  `fuentes.js` (`urls`)**, la prueba exige que esa entrada respalde el campo y declare al equipo, y
+  la ficha («Documento oficial», solo `https`) y «Supuestos» la enlazan; el Comparador del portal lo
+  da en una línea), licenciamiento, software,
   soporte, referencias de pedido (bajo demanda por modelo) y figuras con su página y rótulo literal
   (frontal, trasera y, opt-in `foto` + `fotoFuente`, una tercera pestaña con la foto de producto a
   color y su propio pie; Juniper y, desde el 2026-10-27, los Cisco cuya frontal es el dibujo
