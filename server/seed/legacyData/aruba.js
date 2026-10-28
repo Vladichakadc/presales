@@ -1528,6 +1528,7 @@ for (const m of MODELS) {
   if (!PQC_GW_AOS8.includes(m.id)) continue;
   m.pqc = {tipo:'ppk',
     mecanismo:'Clave precompartida post-cuántica (PPK) en IKEv2',
+    so:'aos8', soNombre:'AOS 8',
     donde:'VPN IPsec sitio a sitio con IKEv2, con AOS-8 (solo sitio a sitio, según la guía)', desde:'AOS-8.10.0.0',
     alcance:'solo con AOS-8; en AOS-10 no consta. Exigirla al otro extremo (ppk-mandatory) desde AOS-8.12.0.5',
     fuente:'HPE Aruba Networking, guía de usuario de AOS-8 («Configuring a VPN with Postquantum Preshared Keys») y notas de versión de AOS-8.12.0.5 («Mobility Controller Platforms»)',

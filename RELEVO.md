@@ -1,6 +1,6 @@
 # Relevo
 
-Última actualización: 2026-10-28 · PR #54
+Última actualización: 2026-10-28 · PR #53
 
 Informe para continuar el trabajo. Lo pidió el dueño del repositorio el 2026-10-27: «de aquí en
 adelante, un informe de pendientes y mejoras para que la cuenta **servicioiptv2025@gmail.com**
@@ -33,6 +33,8 @@ está en curso no va aquí: lo dice `npm run traspasos` (protocolo en `docs/tras
 
 ## Estado al cerrar esta entrega
 
+- **2026-10-28 · PR #53**: «Exigir PQC» respeta el sistema operativo del escenario: con AOS 10, los
+  gateways de Aruba (PPK documentada solo con AOS 8) se apartan con «con AOS 10 no consta».
 - **2026-10-28 · PR #54**: las dos mejoras pendientes que se podían ejecutar. Foto propia del MX67,
   el MX68 (sin radio) y el C8355-G2-MX desde su página de producto; el resto de la gama sin foto
   sigue con su dibujo de línea oficial (las páginas de Catalyst 8300 e ISR solo traen fotos de la

@@ -432,7 +432,10 @@ Módulos compartidos:
   tiene»; con ML-KEM exigido, una PPK o un MACsec no bastan y se dice qué trae. **Un «no» solo con
   documento** (2026-10-28): `pqcNo: {motivo, corto, fuente}` (hoy el ASR 1001-X, que su boletín deja
   en la 17.9) aparta con «no la trae — <motivo>» y la ficha y el Comparador lo dicen; nunca junto a
-  `pqc`, y sin `fuente` se lee como «no consta». Cada página lo
+  `pqc`, y sin `fuente` se lee como «no consta». **Un `pqc` de un solo sistema operativo** (2026-10-28):
+  `so`/`soNombre` (los gateways de Aruba, PPK solo con AOS-8); la página pasa el del escenario
+  (`PQC.motivo(m, nivel, {so})`, también la hoja «Supuestos» por `meta.supuestos.so`) y, si no es
+  ese, aparta con «con AOS 10 no consta»; sin `so` o sin contexto, la regla de siempre. Cada página lo
   ofrece en `#reqPqc` (mismas opciones, `test/pqc-requisito.test.js`) y carga `pqc.js` antes que su
   motor.
 
