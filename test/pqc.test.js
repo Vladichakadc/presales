@@ -165,6 +165,20 @@ test('cada `pqc` y `pqcNo` cita por URL una entrada de fuentes.js que lo respald
   assert.match(hx.pqc.urls[1], /asr1002-hx-asso-part-eol\.html$/);
 });
 
+test('la ficha enlaza el documento de la PQC (y del «no»), y solo si es https', () => {
+  const enlace = (sec) => (sec.filas.find((f) => /^Documentos? oficial/.test(f[0])) || [])[1] || '';
+  const srx = FICHA.seccionPqc(CATALOGOS.juniper.find((m) => m.id === 'SRX4700'));
+  assert.match(enlace(srx), /^<a href="https:\/\/apps\.juniper\.net\/feature-explorer\/feature\/7502" target="_blank" rel="noopener">abrir el documento<\/a>$/);
+  const hx = FICHA.seccionPqc(CATALOGOS.cisco.find((m) => m.id === 'ASR 1002-HX'));
+  assert.match(enlace(hx), /documento 1 de 2.*documento 2 de 2/);
+  const no = FICHA.seccionPqc(CATALOGOS.cisco.find((m) => m.id === 'ASR 1001-X'));
+  assert.match(enlace(no), /asr1001-x-1002-x-eol\.html/);
+  // Un esquema que no es https no se enlaza (ni javascript:, ni http).
+  const raro = FICHA.seccionPqc({ id: 'x', pqc: { tipo: 'ppk', mecanismo: 'm', donde: 'd', fuente: 'f',
+    urls: ['javascript:alert(1)', 'http://ejemplo.com/x'] } });
+  assert.strictEqual(enlace(raro), '');
+});
+
 test('las siete páginas de un equipo pintan la sección', () => {
   const paginas = ['aruba-edgeconnect', 'cisco-catalyst8k', 'fortinet-fortigate', 'huawei-netengine',
     'juniper-srx', 'mikrotik-routeros', 'nokia-7750sr'];

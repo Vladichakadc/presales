@@ -82,7 +82,7 @@ test('un resumen que llega como texto se escribe como una fila y no tumba la hoj
 // el equipo la cumple DESDE una versión de software, y la propuesta tiene que decirlo.
 test('con «Exigir PQC», la hoja dice el mecanismo, la versión mínima y la fuente; sin exigirla, nada', () => {
   const ISR = { tipo: 'ppk', mecanismo: 'Claves precompartidas post-cuánticas (PPK, RFC 8784)', donde: 'IKEv2 e IPsec',
-    desde: 'IOS XE 17.12.1a', fuente: 'Guía de IOS XE 17' };
+    desde: 'IOS XE 17.12.1a', fuente: 'Guía de IOS XE 17', urls: ['https://www.cisco.com/guia-ppk.html'] };
   const meta = { titulo: 'BOM', supuestos: { fabricante: 'Cisco', modelo: 'ISR 1111-8P', pqc: ISR } };
   const clave = { fecha: 'f', url: 'u', pqc: { nivel: 'clave', etiqueta: 'Mecanismo quantum-safe documentado (PPK, MACsec/ANYsec o ML-KEM)' } };
   const t = texto(BOM.matrizSupuestos(meta, clave).aoa);
@@ -92,6 +92,7 @@ test('con «Exigir PQC», la hoja dice el mecanismo, la versión mínima y la fu
   assert.match(t, /Mecanismo documentado \| PPK \(RFC 8784\): Claves precompartidas/);
   assert.match(t, /Versión mínima de software \| IOS XE 17\.12\.1a o superior/);
   assert.match(t, /Fuente \| Guía de IOS XE 17/);
+  assert.match(t, /Documento oficial \| https:\/\/www\.cisco\.com\/guia-ppk\.html/);
   // Sin exigirla, la sección no sale (los parámetros ya dicen que no se exige).
   assert.doesNotMatch(texto(BOM.matrizSupuestos(meta, { fecha: 'f', url: 'u' }).aoa), /POST-CUÁNTICA/);
 });
@@ -108,11 +109,13 @@ test('PQC exigida: sin versión lo dice, un equipo elegido a mano que no cumple 
 });
 
 test('PQC exigida con un «no» documentado: la hoja dice el motivo y la fuente, no «no consta»', () => {
-  const no = { motivo: 'su última versión de IOS XE es la 17.9, anterior a la 17.11.1a', corto: 'x', fuente: 'Boletín del ASR1001-X' };
+  const no = { motivo: 'su última versión de IOS XE es la 17.9, anterior a la 17.11.1a', corto: 'x', fuente: 'Boletín del ASR1001-X',
+    urls: ['https://www.cisco.com/asr1001-x-eol.html'] };
   const t = texto(BOM.matrizSupuestos({ titulo: 'BOM', supuestos: { modelo: 'ASR 1001-X', pqc: null, pqcNo: no } },
     { fecha: 'f', url: 'u', pqc: { nivel: 'clave', etiqueta: 'x' } }).aoa);
   assert.match(t, /¿El equipo del BOM lo cumple\? \| No: no la trae — su última versión de IOS XE es la 17\.9/);
   assert.match(t, /Fuente \| Boletín del ASR1001-X/);
+  assert.match(t, /Documento oficial \| https:\/\/www\.cisco\.com\/asr1001-x-eol\.html/);
   assert.doesNotMatch(t, /eso no prueba que no la tenga/);
 });
 

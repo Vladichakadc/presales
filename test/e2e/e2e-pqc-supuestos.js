@@ -45,6 +45,8 @@ async function supuestos(page, t, url, nombre) {
   t.ok(/Mecanismo documentado \| PPK \(RFC 8784\)/.test(con), 'el mecanismo es la PPK, dicho como lo que es');
   t.ok(/Versión mínima de software \| IOS XE 17\.12\.1a o superior/.test(con), 'con la versión mínima de software del ISR 1000');
   t.ok(/Fuente \| «Configuring Quantum-Safe Encryption Using Postquantum Preshared Keys»/.test(con), 'y su fuente');
+  t.ok(/Documento oficial \| https:\/\/www\.cisco\.com\/c\/en\/us\/td\/docs\/routers\/ios\/config\/17-x\/sec-vpn\/b-security-vpn\/m-sec-cfg-quantum-encryption-ppk\.html/.test(con),
+    'y el enlace al documento, el de su entrada en fuentes.js');
 
   const sin = await supuestos(page, t, PAGINA, 'sin PQC exigida');
   t.ok(sin.length > 0 && !/POST-CUÁNTICA EXIGIDA/.test(sin), 'sin el requisito, la sección no sale');
