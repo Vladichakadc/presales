@@ -1,0 +1,103 @@
+[
+  {
+    "archivo": "mikrotik-compatibilidad-vigente.html",
+    "para": "MIKROTIK",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://manual.mikrotik.com/docs/wired-connections/mikrotik-wired-interface-compatibility",
+        "status": 200,
+        "bytes": 400972,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "mikrotik-changelog-7.23.txt",
+    "para": "MIKROTIK",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://download.mikrotik.com/routeros/7.23/CHANGELOG",
+        "status": 200,
+        "bytes": 20205,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "fortinet-ha-licencia-unica-7.6.6.html",
+    "para": "FORTINET",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://docs.fortinet.com/document/fortigate/7.6.6/administration-guide/246857",
+        "status": 200,
+        "bytes": 805644,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "huawei-sdwan-r25c00-documento.html",
+    "para": "HUAWEI",
+    "guardado": false,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://e.huawei.com/en/documents/products/enterprise-network/dd12f8cc04ac4d9da4b020382fbe6c2e",
+        "status": 200,
+        "bytes": 255111,
+        "nota": "no contiene el texto esperado"
+      }
+    ]
+  },
+  {
+    "archivo": "huawei-sdwan-r25c00-ds.pdf",
+    "para": "HUAWEI",
+    "guardado": false,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "huawei-sdwan-r25c00-documento.html",
+        "error": "la pagina donde descubrir la URL no se guardo"
+      }
+    ]
+  },
+  {
+    "archivo": "huawei-n1-modelo-negocio.pdf",
+    "para": "HUAWEI",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://carrier.huawei.cn/-/media/cnbgv2/download/products/networks/Huawei-SD-WAN-N1-Business-Mode-datasheet-en.pdf",
+        "status": 200,
+        "bytes": 195638,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "huawei-ar6700v-l-producto.html",
+    "para": "HUAWEI",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://e.huawei.com/en/products/routers/netengine-ar6700v-l",
+        "status": 200,
+        "bytes": 347656,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  }
+]
