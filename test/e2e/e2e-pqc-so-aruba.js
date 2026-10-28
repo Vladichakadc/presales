@@ -14,6 +14,9 @@ const { cargarPlaywright, abrirDimensionador, asentar, contador } = require('./a
   const t = contador();
   await abrirDimensionador(page);
 
+  // Sin enlaces WAN la página no dimensiona: uno de 100 Mbps, como las demás baterías de Aruba.
+  await page.locator('.wan-fila').first().locator('input[data-campo=down]').fill('100');
+  await asentar(page);
   await page.click('#famSeg button[data-v="sucursal"]');
   await asentar(page);
   await page.selectOption('#reqPqc', 'clave');
