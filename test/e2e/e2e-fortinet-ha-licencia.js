@@ -6,6 +6,7 @@
    y la página seguía diciendo «la licencia no se comparte en HA». Esta batería conduce el clúster
    con un 61F y comprueba que la cantidad, la ficha y el BOM dicen lo mismo que la guía, que el
    activo-activo vuelve a una por nodo con su motivo, y que el BOM sigue cotizando por nodo. */
+/* global document */
 
 const { cargarPlaywright, abrirSesion, asentar, contador } = require('./ayuda');
 
