@@ -991,6 +991,12 @@
   function seccionPqc(m) {
     const titulo = 'Criptografía post-cuántica (PQC)';
     const p = m && m.pqc;
+    // Un «no» con su documento (`pqcNo`, 2026-10-28) no es un «no consta»: se dice con su fuente.
+    const no = m && !p && m.pqcNo;
+    if (no && no.motivo && no.fuente) {
+      return { titulo, filas: [['Soporte', '<span class="warn">no la trae</span>'], ['Motivo', esc(no.motivo)]],
+        nota: 'Un documento oficial dice que este equipo no la trae. Fuente: ' + esc(no.fuente) + '.' };
+    }
     if (!p || !PQC_TIPO[p.tipo]) {
       return { titulo, filas: [['Soporte', '<span class="warn">no consta</span>']],
         nota: 'Ningún documento oficial del catálogo dice que este equipo la traiga; eso no prueba que no la tenga. Confirmarlo con el fabricante antes de comprometerlo en la propuesta.' };

@@ -51,19 +51,27 @@ test('las siete páginas: mismo desplegable, pqc.js antes que quien lo usa y el 
   }
 });
 
-test('Cisco: la G2 cumple ML-KEM; un Catalyst 8000 trae PPK; un ASR se aparta como «no consta»', () => {
+test('Cisco: la G2 cumple ML-KEM; un Catalyst 8000 trae PPK; el ASR 1001-X «no la trae», con su motivo', () => {
   const M = require('../public/js/cisco-motor.js');
   const { MODELS } = require('../server/seed/legacyData/cisco.js');
   const g2 = MODELS.find((m) => m.id === 'Cisco Secure Router C8231-G2');
   const c8k = MODELS.find((m) => m.ser === 'Catalyst 8000');
-  const asr = MODELS.find((m) => m.ser === 'ASR 1000');
+  const asr = MODELS.find((m) => m.id === 'ASR 1001-X');
   assert.deepStrictEqual(M.requisitos(g2, { pqc: 'mlkem' }).motivos, []);
   // Desde el 2026-10-27 (guía de IOS XE 17): la PPK basta para «clave», no para ML-KEM.
   assert.deepStrictEqual(M.requisitos(c8k, { pqc: 'clave' }).motivos, []);
   assert.deepStrictEqual(M.requisitos(c8k, { pqc: 'mlkem' }).motivos,
     ['criptografía post-cuántica: su documento da PPK (RFC 8784), no un algoritmo ML-KEM']);
+  // Su boletín lo deja en la 17.9 (2026-10-28): un «no» con documento, no un «no consta».
   assert.deepStrictEqual(M.requisitos(asr, { pqc: 'clave' }).motivos,
-    ['criptografía post-cuántica: no consta en ningún documento oficial que la traiga']);
+    ['criptografía post-cuántica: no la trae — su última versión de IOS XE es la 17.9 («The last supported IOS XE release […] is IOS XE 17.9»), anterior a la 17.11.1a que trae la PPK']);
+});
+
+test('un «no» sin fuente no cuenta: sigue siendo «no consta»', () => {
+  const PQC = require('../public/js/pqc.js');
+  assert.match(PQC.motivo({ pqcNo: { motivo: 'dicho de oídas' } }, 'clave'), /no consta en ningún documento oficial/);
+  assert.match(PQC.motivo({ pqcNo: { motivo: 'm', fuente: 'Boletín' } }, 'clave'), /no la trae — m$/);
+  assert.strictEqual(PQC.motivo({ pqcNo: { motivo: 'm', fuente: 'Boletín' } }, ''), null, 'sin exigirla no aparta');
 });
 
 test('Juniper: con PPK basta, los seis SRX pasan; con ML-KEM se apartan diciendo qué traen', () => {

@@ -107,11 +107,20 @@ test('PQC exigida: sin versión lo dice, un equipo elegido a mano que no cumple 
   assert.match(sin, /eso no prueba que no la tenga/);
 });
 
+test('PQC exigida con un «no» documentado: la hoja dice el motivo y la fuente, no «no consta»', () => {
+  const no = { motivo: 'su última versión de IOS XE es la 17.9, anterior a la 17.11.1a', corto: 'x', fuente: 'Boletín del ASR1001-X' };
+  const t = texto(BOM.matrizSupuestos({ titulo: 'BOM', supuestos: { modelo: 'ASR 1001-X', pqc: null, pqcNo: no } },
+    { fecha: 'f', url: 'u', pqc: { nivel: 'clave', etiqueta: 'x' } }).aoa);
+  assert.match(t, /¿El equipo del BOM lo cumple\? \| No: no la trae — su última versión de IOS XE es la 17\.9/);
+  assert.match(t, /Fuente \| Boletín del ASR1001-X/);
+  assert.doesNotMatch(t, /eso no prueba que no la tenga/);
+});
+
 test('las siete páginas pasan el `pqc` del equipo a la hoja', () => {
   const fs = require('fs');
   const path = require('path');
   for (const p of ['aruba-edgeconnect', 'cisco-catalyst8k', 'fortinet-fortigate', 'huawei-netengine', 'juniper-srx', 'mikrotik-routeros', 'nokia-7750sr']) {
     const js = fs.readFileSync(path.join(__dirname, '..', 'public', 'js', `dimensionador-${p}.js`), 'utf8');
-    assert.match(js, /pqc: ?m\.pqc \|\| null/, `${p} no pasa la PQC a «Supuestos»`);
+    assert.match(js, /pqc: ?m\.pqc \|\| null, pqcNo: ?m\.pqcNo \|\| null/, `${p} no pasa la PQC (y su «no») a «Supuestos»`);
   }
 });

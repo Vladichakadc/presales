@@ -599,6 +599,14 @@ const PQC_IOSXE = [
   {ser:'ASR 1000', de:/^ASR 1006-X$/, desde:'IOS XE 17.11.1a',
     alcance:'hasta la IOS XE 17.18, la última que soporta según su boletín de fin de venta (29-ene-2026)'},
 ];
+// Un «no» documentado (`pqcNo`, 2026-10-28): el boletín del ASR1001-X dice que su última versión es
+// la 17.9, anterior a la 17.11.1a que trae la PPK. No es un hueco («no consta»): es un no con su
+// documento, y la ficha, el requisito y la hoja «Supuestos» lo dicen así. Solo con fuente.
+const PQC_NO = {
+  'ASR 1001-X': {motivo:'su última versión de IOS XE es la 17.9 («The last supported IOS XE release […] is IOS XE 17.9»), anterior a la 17.11.1a que trae la PPK',
+    corto:'última versión IOS XE 17.9; la PPK llega en la 17.11.1a',
+    fuente:'Boletín de fin de venta de los Cisco ASR1001-X y ASR1002-X'},
+};
 const PQC_PPK = {tipo:'ppk',
   mecanismo:'Claves precompartidas post-cuánticas (PPK, RFC 8784) mezcladas en IKEv2 e IPsec: manuales o importadas de una fuente externa con Cisco SKIP',
   donde:'IKEv2 e IPsec (FlexVPN y DMVPN; no GETVPN)',
@@ -617,6 +625,7 @@ for (const m of MODELS) {
   }
   const ppk = PQC_IOSXE.find((x) => x.ser === m.ser && x.de.test(m.id));
   if (ppk) m.pqc = {...PQC_PPK, desde: ppk.desde, ...(ppk.alcance ? {alcance: ppk.alcance} : {})};
+  if (PQC_NO[m.id]) m.pqcNo = PQC_NO[m.id];
   if (COMBINACIONES[m.id]) m.combinaciones = COMBINACIONES[m.id];
   if (DSL[m.id]) m.dsl = DSL[m.id];
   if (APPQOE[m.id]) m.appqoe = APPQOE[m.id];

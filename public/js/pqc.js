@@ -11,7 +11,10 @@
      'mlkem'  hace falta un algoritmo post-cuantico ML-KEM (FIPS 203).
    Un equipo sin `pqc` sale con «no consta en ningun documento oficial», nunca «no la tiene»:
    que el catalogo no traiga el documento no prueba que el equipo no la tenga. El dato `pqc`
-   y su fuente los pone `legacyData/` (ver `seccionPqc` en ficha.js). */
+   y su fuente los pone `legacyData/` (ver `seccionPqc` en ficha.js). La unica excepcion
+   (2026-10-28) es un NO documentado, `pqcNo: {motivo, fuente}`: un documento oficial dice que
+   el equipo no la puede traer (el ASR1001-X se queda en una version anterior a la que la trae),
+   y entonces se dice «no la trae» con ese motivo. Sin fuente no hay `pqcNo`. */
 (function (root, factory) {
   const api = factory();
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
@@ -32,7 +35,11 @@
     const k = nivel(n);
     if (!k) return null;
     const p = m && m.pqc;
-    if (!p) return 'criptografía post-cuántica: no consta en ningún documento oficial que la traiga';
+    if (!p) {
+      const no = m && m.pqcNo;
+      if (no && no.motivo && no.fuente) return `criptografía post-cuántica: no la trae — ${no.motivo}`;
+      return 'criptografía post-cuántica: no consta en ningún documento oficial que la traiga';
+    }
     if (k === 'mlkem' && p.tipo !== 'mlkem') {
       return `criptografía post-cuántica: su documento da ${TIPO[p.tipo] || p.tipo}, no un algoritmo ML-KEM`;
     }
