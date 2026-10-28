@@ -387,7 +387,10 @@ Módulos compartidos:
   y la fuente, del `pqc` que cada página pasa en `meta.supuestos`. **El ciclo de vida del equipo** (2026-10-28):
   con `eol`, `eolAnnounced` o `legacy`, «Supuestos» trae su sección (último pedido, sucesor del boletín o
   inferido —dicho como tal—, boletín) y la hoja BOM un aviso en rojo; sin dato no se dice nada
-  (`BOM.cicloDe`, `cicloDelEquipo`; `ciclo` en `meta.supuestos` de las siete páginas). La hoja «Fotos del equipo» (`meta.fotos`: Aruba, Fortinet, Huawei,
+  (`BOM.cicloDe`, `cicloDelEquipo`; `ciclo` en `meta.supuestos` de las siete páginas). El consolidado
+  multi-sede, que no lleva «Supuestos», lo dice perfil a perfil en pantalla y en su hoja BOM: cada
+  perfil guarda su `ciclo` al crearse, y uno guardado antes dice «sin dato de ciclo»
+  (`cicloDePerfiles`, `avisoCicloConsolidado`; `perfiles` en el `meta` del consolidado). La hoja «Fotos del equipo» (`meta.fotos`: Aruba, Fortinet, Huawei,
   Cisco y Juniper) escribe bajo cada figura su leyenda opt-in (`frontLeyenda`/`rearLeyenda`), como la ficha. Detrás, la foto de
   producto con su pie (`foto`/`fotoFuente`, Cisco y Juniper).
   Llevan leyenda las figuras con números: las de Cisco, las 36 de Juniper y el Aruba 7010 (decidido
