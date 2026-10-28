@@ -113,52 +113,10 @@ const CASOS = [
     control: { url: 'https://arubanetworking.hpe.com/techdocs/sdwan-PDFs/hardware/reference/EdgeConnect-Hardware-Reference_latest.pdf',
       porQue: 'ARCHIVO del mismo dominio que `npm run datasheets` ya descarga (Hardware Reference)' },
   },
-  // DOS FUENTES DE ARUBA QUE ERAN UN CASCARON (sondeo del 2026-10-15, corrida 38774517394): la
-  // pagina `psnow/doc/<id>` es una aplicacion de JavaScript y el vigia comparaba su cascaron.
-  // La candidata es la ruta del PDF que psnow sirve tras la aplicacion, la que anoto ese
-  // pendiente; el control es una pagina del mismo dominio que el script de datasheets ya usa
-  // como Referer. Si el control tampoco responde, el dominio no atiende a un ejecutor sin
-  // navegador (como mide `public/datasheets/LEEME.md`) y la via es el Chrome del dueño.
-  {
-    fabricante: 'aruba',
-    bloqueada: 'https://www.hpe.com/psnow/doc/a00109847enw',
-    respalda: 'IDS/IPS de los ocho EdgeConnect fisicos (data sheet a00109847enw Rev. 8)',
-    candidatas: [
-      { url: 'https://www.hpe.com/psnow/resources/ebooks/a00109847enw/a00109847enw.pdf',
-        porQue: 'ruta del PDF de psnow para ese mismo id, anotada en PENDIENTES (2026-10-15) como la que cierra el cascaron' },
-      // 2026-10-28: la pagina psnow/doc, leida con WebFetch (fuera del proxy), nombra su descarga
-      // en psnow/downloadDoc/<titulo>-<id>.pdf?id=<id>&... ; la forma corta, sin titulo ni
-      // parametros, sirvio el texto de la Rev. 9. Las dos se miden: la corta es la que cabe en
-      // `fuentes.js`, la larga es la que la pagina publica.
-      { url: 'https://www.hpe.com/psnow/downloadDoc/a00109847enw.pdf?id=a00109847enw',
-        porQue: 'descarga de psnow en su forma corta (la que se pondria en fuentes.js)',
-        copia: 'public/datasheets/edgeconnect-data-sheet.pdf' },
-      { url: 'https://www.hpe.com/psnow/downloadDoc/HPE%20Networking%20EdgeConnect-a00109847enw.pdf?id=a00109847enw&contentDisposition=attachment',
-        porQue: 'descarga de psnow como la nombra la pagina psnow/doc/a00109847enw',
-        copia: 'public/datasheets/edgeconnect-data-sheet.pdf' },
-    ],
-    control: { url: 'https://www.hpe.com/us/en/aruba-networking.html',
-      porQue: 'pagina del mismo dominio que scripts/descargar-datasheets.js usa como Referer' },
-  },
-  {
-    fabricante: 'aruba',
-    bloqueada: 'https://www.arubanetworks.com/assets/ds/DS_9000Series.pdf',
-    respalda: 'firewall, clientes, APs, sesiones y tuneles de los gateways 9004/9012 (DS_9000Series)',
-    candidatas: [
-      { url: 'https://www.hpe.com/psnow/resources/ebooks/a00067607enw/a00067607enw.pdf',
-        porQue: 'la misma serie en psnow (a00067607enw, `gw9000Psnow` en legacyData/aruba.js), por la ruta del PDF' },
-      // 2026-10-28: a00067607enw es la guia de pedido; el DATA SHEET de la serie en psnow es
-      // a00067608enw («HPE Aruba Networking 9000 Series Gateway», Rev. 2: 9004, 9004-LTE, 9012).
-      { url: 'https://www.hpe.com/psnow/downloadDoc/a00067608enw.pdf?id=a00067608enw',
-        porQue: 'data sheet de la serie 9000 en psnow (a00067608enw), descarga en forma corta',
-        copia: 'public/datasheets/serie-9000-branch-gateways.pdf' },
-      { url: 'https://www.hpe.com/psnow/downloadDoc/HPE%20Aruba%20Networking%209000%20Series%20Gateway-a00067608enw.pdf?id=a00067608enw&contentDisposition=attachment',
-        porQue: 'la misma descarga como la nombra la pagina psnow/doc/a00067608enw',
-        copia: 'public/datasheets/serie-9000-branch-gateways.pdf' },
-    ],
-    control: { url: 'https://www.hpe.com/us/en/aruba-networking.html',
-      porQue: 'pagina del mismo dominio de la candidata' },
-  },
+  // DOS FUENTES DE ARUBA QUE ERAN UN CASCARON (psnow/doc/a00109847enw y DS_9000Series.pdf):
+  // RESUELTAS el 2026-10-28. La descarga psnow/downloadDoc/<id>.pdf?id=<id> respondio al ejecutor
+  // con el PDF (corridas 40678755770 y 40683073603: la serie 9000 identica a su copia, EdgeConnect
+  // la Rev. 9) y `fuentes.js` ya la cita. Se quitan de aqui para no medir URL que nadie vigila.
 ];
 
 // UNA LISTA QUE NO CASA CON NADA SE PUDRE EN SILENCIO. Es el modo de fallo de

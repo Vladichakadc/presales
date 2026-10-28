@@ -219,14 +219,14 @@ test('EC-XS: rango de su spec sheet y del QuickSpecs, y DTD acotado por su capac
   assert.strictEqual(xs.idsMbps, 300);
   assert.deepStrictEqual(xs.idsPnExcluidos, ['200889', '200900']);
   assert.match(xs.spec.idsips, /^Sí — hasta 300 Mbps en línea/);
-  // Los demás EdgeConnect traen la de la data sheet de la línea (a00109847enw Rev. 8, jul-2026,
+  // Los demás EdgeConnect traen la de la data sheet de la línea (a00109847enw; la Rev. 9 de oct-2026 trae las mismas cifras que la Rev. 8,
   // en public/datasheets/edgeconnect-data-sheet.pdf), modo en línea; el que no figure en ella
   // (EC-V, EC-XL sin -H…) se queda sin cifra: no se rellena.
   const DATASHEET = { 'EC-10104': 300, 'EC-10106': 750, 'EC-10108': 1000, 'EC-S': 1000,
     'EC-M': 2500, 'EC-L': 4000, 'EC-XL': 4000, 'EC-10150': 5000 };
   for (const m of aruba.MODELS.filter((x) => x.fam === 'ec' && x.id !== 'EC-XS')) {
     assert.strictEqual(m.idsMbps, DATASHEET[m.id] ?? null, m.id + ': la cifra en línea de su data sheet, o ninguna');
-    if (DATASHEET[m.id]) assert.match(m.spec.idsips, /en línea .* modo performant \(data sheet a00109847enw Rev\. 8/);
+    if (DATASHEET[m.id]) assert.match(m.spec.idsips, /en línea .* modo performant \(data sheet a00109847enw Rev\. 9/);
   }
 });
 

@@ -78,14 +78,15 @@ const DATASHEETS = {
   // modelo consultadas el 2026-09-13 — de ahí congelar una copia como las demás.
   ecLifecycle: {n:'EdgeConnect — Product Lifecycle Policy (PDF)', url:'https://arubanetworking.hpe.com/techdocs/sdwan-PDFs/docs/eula/EC_LifecyclePolicy_latest.pdf', file:'edgeconnect-lifecycle-policy.pdf'},
   // La «EdgeConnect US Spec Sheet» de arubanetworks.com dio 404 (2026-09-11); su sucesora es la
-  // data sheet de la línea en psnow (Rev. 8, jul-2026), traída el 2026-10-13.
-  ecSpecSheet: {n:'EdgeConnect — data sheet (HPE, a00109847enw Rev. 8)', url:'https://www.hpe.com/psnow/doc/a00109847enw', file:'edgeconnect-data-sheet.pdf'},
+  // data sheet de la línea en psnow (Rev. 8, jul-2026, traída el 2026-10-13; desde el 2026-10-28,
+  // la Rev. 9, con las mismas cifras, por la descarga del PDF y no por la página psnow/doc).
+  ecSpecSheet: {n:'EdgeConnect — data sheet (HPE, a00109847enw Rev. 9)', url:'https://www.hpe.com/psnow/downloadDoc/a00109847enw.pdf?id=a00109847enw', file:'edgeconnect-data-sheet.pdf'},
   ecOverview:  {n:'EdgeConnect SD-WAN — página de producto',    url:'https://www.hpe.com/us/en/aruba-edgeconnect-sd-wan.html', file:'edgeconnect-overview.pdf'},
   ecXsSpec:    {n:'EdgeConnect EC-XS — spec sheet',            url:'https://www.hpe.com/psnow/doc/a00110177enw', file:'edgeconnect-xs-spec-sheet.pdf'},
   ecXlSpec:    {n:'EdgeConnect EC-XL — spec sheet',            url:'https://www.arubanetworks.com/resource/edgeconnect-xl-spec-sheet/', file:'edgeconnect-xl-spec-sheet.pdf'},
   gw9004:      {n:'Gateway 9004 — Branch Gateway, data sheet', url:'https://www.hpe.com/psnow/doc/a00091602enw', file:'gateway-9004.pdf'},
   ecvAzure:    {n:'EdgeConnect Virtual (EC-V) en Azure — guía de despliegue (PDF)', url:'https://arubanetworking.hpe.com/techdocs/sdwan-PDFs/deployments/dg_ECV-Azure_latest.pdf', file:'edgeconnect-ecv-azure.pdf'},
-  gw9000:      {n:'Serie 9000 — Branch Gateways, data sheet (PDF)', url:'https://www.arubanetworks.com/assets/ds/DS_9000Series.pdf', file:'serie-9000-branch-gateways.pdf'},
+  gw9000:      {n:'Serie 9000 — Branch Gateways, data sheet (PDF)', url:'https://www.hpe.com/psnow/downloadDoc/a00067608enw.pdf?id=a00067608enw', file:'serie-9000-branch-gateways.pdf'},
   gw9000Psnow: {n:'Serie 9000 — Branch Gateways (HPE PSNow)',    url:'https://www.hpe.com/psnow/doc/a00067607enw', file:'serie-9000-psnow.pdf'},
   gw9000Spec:  {n:'Serie 9000 — especificaciones (soporte HPE)', url:'https://support.hpe.com/hpesc/public/docDisplay?docId=a00099295en_us&docLocale=en_US', file:'serie-9000-especificaciones.pdf'},
   gw9100:      {n:'Serie 9100 — Hybrid Gateways, QuickSpecs', url:'https://www.hpe.com/us/en/collaterals/collateral.a50006999enw.html', file:'serie-9100-hybrid-quickspecs.pdf'},
@@ -163,7 +164,7 @@ const MODELS = [
   // · EdgeConnect: QuickSpecs HPE a50004289enw (tabla "Comparison" p.30 + fichas por
   //   modelo) y EdgeConnect Hardware Reference (tablas de alimentación/físico pp.20-26,
   //   ambiental p.33, ruido p.35) — copias locales en public/datasheets/.
-  // · Serie 9000: DS_9000Series (serie-9000-branch-gateways.pdf pp.5-7).
+  // · Serie 9000: data sheet a00067608enw Rev. 2, antes DS_9000Series (serie-9000-branch-gateways.pdf pp.5-7).
   // · Serie 9100: QuickSpecs a50006999enw (serie-9100-hybrid-quickspecs.pdf pp.14-16).
   // · Serie 9200: QuickSpecs serie 9200 (serie-9200-campus-gateways.pdf pp.9-11).
   // · Series 7000/7200: DS_7000Series y DS_7200Series oficiales de Aruba (doble ancla:
@@ -252,7 +253,7 @@ const MODELS = [
                          {sku:'S3N74A',d:'EC-S-P · 4x SFP+ · 10x RJ45 · PSU DC · 2x SSD · NAL'},
                          {sku:'JM538A',d:'EC-S-P · PSU AC · canal no-NAL'},
                          {sku:'JM769A',d:'EC-S-P-DC · PSU DC · canal no-NAL'}],
-   ds:'https://www.hpe.com/psnow/doc/a00109847enw', dsFile:'edgeconnect-data-sheet.pdf'},
+   ds:'https://www.hpe.com/psnow/downloadDoc/a00109847enw.pdf?id=a00109847enw', dsFile:'edgeconnect-data-sheet.pdf'},
 
   {id:'EC-M', redund:true, psu:{tipo:'1+1 redundante, sustituible e intercambiable en caliente', volts:'100-240 V AC, 50-60 Hz', texto:'Requerimiento de alimentación 126 W — HPE publica el requerimiento, no un consumo típico.'}, fam:'ec', rol:'sdwan', serie:'EdgeConnect', seg:'Hub / Sucursal grande',
    wanMin:50, wanMax:5000, boostMax:5000,
@@ -263,7 +264,7 @@ const MODELS = [
      ruido:'44,3 dBA', peso:'8,21 kg (18,1 lb)'},
    hwSku:'JZ872A', skus:[{sku:'JZ872A',d:'EC-M-H · 8x RJ45 10/100/1000 · 4x SFP+ 1/10G'},
                          {sku:null,d:'EC-M-P-FIPS (validado FIPS 140)'}],
-   ds:'https://www.hpe.com/psnow/doc/a00109847enw', dsFile:'edgeconnect-data-sheet.pdf'},
+   ds:'https://www.hpe.com/psnow/downloadDoc/a00109847enw.pdf?id=a00109847enw', dsFile:'edgeconnect-data-sheet.pdf'},
 
   {id:'EC-L', redund:true, psu:{tipo:'1+1 redundante, sustituible e intercambiable en caliente', volts:'100-240 V AC, 50-60 Hz', texto:'Requerimiento de alimentación 401 W — HPE publica el requerimiento, no un consumo típico.'}, fam:'ec', rol:'sdwan', serie:'EdgeConnect', seg:'Datacenter / Hub grande',
    wanMin:2000, wanMax:10000, boostMax:10000,
@@ -273,7 +274,7 @@ const MODELS = [
      mtbf:'> 10 años', watts:'404 W (EC-L-H, QuickSpecs) · 440 W (EC-L-P, Hardware Reference)', btu:'1.379 BTU/h',
      peso:'14,5 kg (32 lb)'},
    hwSku:'JZ878A', skus:[{sku:'JZ878A',d:'EC-L-H · 6x SFP+ 1/10G'}],
-   ds:'https://www.hpe.com/psnow/doc/a00109847enw', dsFile:'edgeconnect-data-sheet.pdf'},
+   ds:'https://www.hpe.com/psnow/downloadDoc/a00109847enw.pdf?id=a00109847enw', dsFile:'edgeconnect-data-sheet.pdf'},
 
   // FIN DE VENTA CONFIRMADO Y MARCADO (2026-09-13, decisión del dueño): ver EOL_ANNOUNCED
   // al final de MODELS. La pista fue la fila de S0B67A sin sufijo de país con PLC "ES" en
@@ -367,7 +368,7 @@ const MODELS = [
      fwSessSdwan:'64.000 sesiones activas de firewall en modo SD-WAN (doc oficial HPE a00099294en_us) — en conflicto con las 128.000 del datasheet AOS 10, ver PENDIENTES',
      aps8:'32 en AOS 8; la ficha de la serie publica 64 desde AOS 8.12 (nota 1, p. 5) y el catálogo usa 32, que vale para cualquier versión',
      ruido:'29,1 – 63,5 dBA', watts:'160 W máx. (incluye 120 W de presupuesto PoE)', dims:'4,37 × 39,5 × 26 cm', peso:'3,42 kg'},
-   ds:'https://www.arubanetworks.com/assets/ds/DS_9000Series.pdf', dsFile:'serie-9000-branch-gateways.pdf'},
+   ds:'https://www.hpe.com/psnow/downloadDoc/a00067608enw.pdf?id=a00067608enw', dsFile:'serie-9000-branch-gateways.pdf'},
 
   // ─── Serie 9100 · Hybrid Gateways ──────────────────────────────────────────
   // Familia que la revision anterior habia ELIMINADO por error, dando por inexistente lo
@@ -741,7 +742,8 @@ const GATEWAY_VSG = {
   '7240XM':       {vpncTuneles:6144},
 };
 // IDS/IPS DE EDGECONNECT (2026-10-13). FUENTE: data sheet «HPE Networking EdgeConnect»
-// (a00109847enw, Rev. 8, 7-jul-2026, traída de psnow por traer-cisco-huawei.yml, corrida
+// (a00109847enw; la Rev. 9 del 19-oct-2026, contrastada el 2026-10-28 contra la Rev. 8 sin
+// ninguna cifra distinta. La Rev. 8, 7-jul-2026, traída de psnow por traer-cisco-huawei.yml, corrida
 // 38423580897; copia en public/datasheets/edgeconnect-data-sheet.pdf), tablas 1 y 2: «IDS/IPS
 // capacity (Inline mode) up to» y «(Performant mode) up to». Mismo criterio que el EC-XS:
 // `idsMbps` es la de modo en línea, la que bloquea con DTD. Antes estos ocho no traían cifra y
@@ -757,7 +759,7 @@ for (const m of MODELS) {
   const d = EC_IDS_DATASHEET[m.id];
   if (!d || m.fam !== 'ec' || m.idsMbps != null) continue;
   m.idsMbps = d[0];
-  m.spec = Object.assign({}, m.spec, { idsips: `Sí — hasta ${gbps(d[0])} en línea y ${gbps(d[1])} en modo performant (data sheet a00109847enw Rev. 8, jul-2026)` });
+  m.spec = Object.assign({}, m.spec, { idsips: `Sí — hasta ${gbps(d[0])} en línea y ${gbps(d[1])} en modo performant (data sheet a00109847enw Rev. 9, oct-2026)` });
 }
 for (const m of MODELS) {
   const v = GATEWAY_VSG[m.id];

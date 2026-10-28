@@ -4,7 +4,8 @@ Registro vivo de lo que falta. **Al empezar una tarea se buscan aquí los puntos
 tocan, y al terminarla se actualiza**, y su contenido se resume al usuario al cerrar cada entrega — esa es la instrucción
 permanente que lo justifica (ver `CLAUDE.md`, sección *Instrucciones permanentes del dueño*).
 
-Última revisión: 2026-10-28 · PR #45 (**La fuente de la PQC enlazada a `fuentes.js`, los 20 MikroTik con documento y el transporte sin tope de tamaño.** Encargo del dueño: «ejecutas y buscar para solucionar pendientes de fuentes siempre oficiales, no especules ni asumas; así mismo, ejecutar las mejoras propuestas». Ver *Cerrado recientemente* y *Abierto: criptografía post-cuántica sin documento*.)
+Última revisión: 2026-10-28 · PR #47 (**Las dos fuentes de Aruba que eran un cascarón citan la descarga del PDF; la Rev. 9 de EdgeConnect, contrastada.** Encargo del dueño: «ejecuta los pendientes». Ver *Cerrado recientemente*.)
+Revisión anterior: 2026-10-28 · PR #45 (**La fuente de la PQC enlazada a `fuentes.js`, los 20 MikroTik con documento y el transporte sin tope de tamaño.** Encargo del dueño: «ejecutas y buscar para solucionar pendientes de fuentes siempre oficiales, no especules ni asumas; así mismo, ejecutar las mejoras propuestas». Ver *Cerrado recientemente* y *Abierto: criptografía post-cuántica sin documento*.)
 Revisión anterior: 2026-10-28 · PR #44 (**El fin de venta también en el consolidado multi-sede.** Encargo del dueño: «ejecuta pendientes y mejora propuesta». Ver *Cerrado recientemente*.)
 Revisión anterior: 2026-10-28 · PR #43 (**`npm run candidatas` compara cada PDF servido con su copia de `public/datasheets/`.** Encargo del dueño: «ejecuta la mejora propuesta». Ver *Cerrado recientemente*.)
 Revisión anterior: 2026-10-28 · PR #41 (**El fin de venta del equipo también en el Excel del BOM.** Encargo del dueño: «ejecuta los pendientes que puedas cerrar y la mejora propuesta; si encuentras alguna mejora por el camino, avanza con la ejecución». Ver *Cerrado recientemente*.)
@@ -2012,7 +2013,7 @@ Lo que la auditoría de puertos del panel 2 todavía no cuenta, declarado para n
 - **EC-XL**: se cuenta como 6x SFP+ (la variante del SKU base S0B67A); la S3N77A de 6x SFP28 existe
   pero está fuera de venta igual que la base y su matriz no trae ópticas de 25G.
 
-## Abierto: dos fuentes de Aruba eran un cascarón y el vigía las daba por leídas (2026-10-15)
+## ~~Abierto: dos fuentes de Aruba eran un cascarón y el vigía las daba por leídas (2026-10-15)~~ Cerrado el 2026-10-28 (PR #47)
 
 El sondeo del 2026-10-15 (corrida 38774517394), con la regla nueva de `TEXTO_MINIMO`, encontró
 que dos fuentes de Aruba **no se han leído nunca**: su URL devuelve el cascarón de una aplicación
@@ -2040,17 +2041,16 @@ navegador real.
 
 **Medido el 2026-10-28 desde Actions** (corrida 40678755770, PR #42): la descarga
 `https://www.hpe.com/psnow/downloadDoc/<id>.pdf?id=<id>` **sí responde al ejecutor con el PDF**
-(la página `psnow/doc/<id>` la nombra; no hace falta el Chrome del dueño). **Lo que queda**, en
-`fuentes.js` (y los enlaces de `aruba.js`), cuando lo suelte la rama que hoy lo declara:
-1. **Serie 9000**: cambiar `DS_9000Series.pdf` por
-   `https://www.hpe.com/psnow/downloadDoc/a00067608enw.pdf?id=a00067608enw` (data sheet Rev. 2,
-   idéntico byte a byte a la copia que se leyó: sha256 `98e55d1e…`). Las cifras no cambian.
-2. **EdgeConnect**: la misma ruta con `a00109847enw` sirve la **Rev. 9** (sha256 `521ce3a3…`).
-   Traerla a una rama `fuente/*` (`traer-cisco-huawei.yml`, entrada de tipo PDF con esa URL),
-   contrastar las tablas 1 y 2 contra la Rev. 8 (`EC_IDS_DATASHEET` en `aruba.js`, rangos WAN,
-   conexiones, Boost) y solo entonces cambiar la URL, la revisión y la copia de
-   `public/datasheets/`. Una lectura con WebFetch (que no es fuente) daba para el EC-10104 las
-   mismas 300/400 Mbps.
+(la página `psnow/doc/<id>` la nombra; no hace falta el Chrome del dueño).
+
+**Cerrado el 2026-10-28 (PR #47).** Las dos fuentes citan la descarga en `fuentes.js` y en los
+enlaces de `aruba.js`, con su huella en `fuentes.lock.json`. **Serie 9000**: el data sheet
+a00067608enw Rev. 2, idéntico byte a byte a la copia (sha256 `98e55d1e…`); las cifras no cambian.
+**EdgeConnect**: la Rev. 9 (19-oct-2026), traída a `fuente/aruba-ec-rev9-2026-10-28` (corrida
+40687131972) y contrastada contra la Rev. 8: las tablas 1 y 2 traen las mismas cifras (rango WAN,
+256.000 y 2.000.000 conexiones, optimización WAN recomendada, IDS/IPS en línea y en modo
+performant, interfaces); solo cambia el texto comercial. La copia de `public/datasheets/` pasa a la
+Rev. 9 y la ficha dice «Rev. 9, oct-2026».
 
 ~~**La VSG de SD-Branch tiene una edición nueva sin leer** (2026-10-19).~~ **Cerrado el 2026-10-26**: la
 edición del 15-oct-2026 se trajo por Actions y se contrastó entera contra la del 04-sep. Las reglas de
@@ -2437,6 +2437,7 @@ que ya se comprobó y lo que cuesta cada opción.
 
 ## Cerrado recientemente
 
+- **2026-10-28 · Las dos fuentes de Aruba que eran un cascarón citan la descarga del PDF (PR #47).** Encargo del dueño: «ejecuta los pendientes». Era lo único de la lista que se podía cerrar desde una sesión (lo demás espera a un documento, a una cuenta o al dueño); se esperó a que la rama que tenía `fuentes.js` y `aruba.js` se fusionara (PR #45). Serie 9000: `psnow/downloadDoc/a00067608enw.pdf?id=a00067608enw`, idéntico a su copia. EdgeConnect: `psnow/downloadDoc/a00109847enw.pdf?id=a00109847enw`, la Rev. 9 (19-oct-2026), traída por `traer-cisco-huawei.yml` (corrida 40687131972) y contrastada contra la Rev. 8 tabla a tabla: ninguna cifra distinta; la copia de `public/datasheets/` pasa a la Rev. 9 y la ficha cita «Rev. 9, oct-2026». `fuentes.lock.json` lleva la huella de los dos PDF (clase bytes), así que el vigía los lee desde el lunes en vez de un cascarón. Los dos casos salen de `probar-candidatas.js`.
 - **2026-10-28 · La fuente de la PQC enlazada a `fuentes.js`, los 20 MikroTik con documento y el transporte sin tope de tamaño (PR #45).** Encargo del dueño: «ejecutas y buscar para solucionar pendientes de fuentes siempre oficiales, no especules ni asumas; así mismo, ejecutar las mejoras propuestas». **La mejora** (propuesta en la septuagesimoprimera): cada `pqc` y `pqcNo` de los seis catálogos lleva `urls`, y `test/pqc.test.js` exige que cada una sea una entrada de `fuentes.js` que respalde ese campo y declare al equipo (más de 145 citas; el ASR 1002-HX y el 1006-X citan la guía de la PPK y su boletín). La ficha pinta «Documento oficial» con su enlace (solo `https`) y la hoja «Supuestos» escribe la URL (`e2e-pqc-supuestos.js` lo lee en el Excel). La otra mejora de entonces, la foto en el Excel, la hizo otra sesión (PR #40). **De lo pendiente**, solo con documento oficial traído por Actions (`fuente/pqc-4`, `pqc-5` y `pqc-6-2026-10-28`): los tres MikroTik que faltaban, con el changelog oficial que los nombra (RB1100AHx4 en la 7.23, PowerBox Pro en la 7.21.3, hEX PoE lite en la 7.24.2; tres entradas nuevas en `fuentes.js`); siguen en «no consta», con lo leído, los SRX de sucursal y el SRX4100, los 7220 IXR-D, los Meraki y los gateways AOS (ver *Abierto: criptografía post-cuántica sin documento*). **El transporte**: una comilla doble (`debeContener: "What's new"`) cortaba el `node -e "..."` de `traer-cisco-huawei.yml` (corrida 40622507025), y el script, de 125.535 bytes en `main` (el 96 % del tope de 128 KiB de un argumento en Linux), lo pasó con las entradas nuevas (corrida 40683042861, «Argument list too long»). Ahora va por la entrada estándar (`node - <<NODE_JS`), comprobado con bash y `node --check` que Node recibe el mismo programa; `test/workflows-node-e.test.js` vigila la comilla doble y los heredocs, y sacó dos fallos que ya estaban: `'"rows"'` llegaba como `rows` y ocho comillas invertidas de comentarios se ejecutaban como órdenes. Verificado: `verificar` (1185 pruebas), `auditar`, servidor en producción, `pantallas` 17/17, `contraste --todos` 10/10 (cobertura aparte), `e2e` entera, `puerta`, y la ficha del RB1100AHx4, el hEX PoE lite, la PowerBox Pro y el SRX4700 conducida en Chromium con sus enlaces.
 - **2026-10-28 · PR #44 · El fin de venta también en el consolidado multi-sede.** Encargo del dueño: «ejecuta pendientes y mejora propuesta». **La mejora propuesta** (la del PR #41): el BOM de varias sedes no lleva hoja «Supuestos», así que no decía que un perfil usa un equipo con fin de venta. Ahora cada perfil guarda el ciclo de su equipo al crearse (`ciclo: BOM.cicloDe(...)`, en las cinco páginas con perfiles: Aruba, Cisco, Fortinet, Huawei y MikroTik); el consolidado en pantalla lo avisa en rojo perfil a perfil, con fecha, sucesor y boletín, y su Excel lo escribe en la hoja BOM («Ciclo de vida de los equipos del despliegue»). Un perfil guardado antes no trae el dato: se dice «sin dato de ciclo» y se pide guardarlo de nuevo, nunca «vigente». `BOM.cicloDePerfiles` y `BOM.avisoCicloConsolidado`. Pruebas: dos en `bom-perfiles.test.js` y el consolidado en `e2e-ciclo-excel.js`. **Los pendientes**: ninguno nuevo cerrable desde una sesión; siguen los del dueño y los que esperan documento (ver `RELEVO.md`).
 - **2026-10-28 · `npm run candidatas` compara cada PDF servido con su copia (PR #43).** Mejora propuesta al cerrar el PR #42, aprobada por el dueño («ejecuta la mejora propuesta»). Una candidata puede declarar `copia` (la copia de `public/datasheets/` de la que salieron las cifras) y el script dice, por la huella sha256, «MISMO DOCUMENTO: basta cambiar la URL» o «EDICION DISTINTA: contrastar las cifras antes de cambiar la URL»; también en `--json`. Las cuatro descargas de psnow la declaran. Corrida 40683073603: la serie 9000 sale mismo documento y EdgeConnect edición distinta (Rev. 9), como se había comparado a mano. `test/candidatas-copia.test.js` prueba los cuatro estados sin red y frena una `copia` que no existe o no es un PDF.
