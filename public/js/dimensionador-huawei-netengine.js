@@ -800,7 +800,7 @@ function supuestosHuawei(m){
     if(ev.pick && ev.pick.m.id !== m.id) resumen.push(['Equipo del BOM', `${m.id}: elegido a mano, distinto del recomendado`]);
     if(ev.unidades > 1) resumen.push(['Alta disponibilidad', `1+1: ${ev.unidades} equipos por sitio`]);
   } else resumen.push(['Dimensionamiento', 'sin caudal: el BOM no sale de un escenario calculado']);
-  return {vendor:VENDOR, fabricante:'Huawei', plataforma:P ? P.n : null, modelo:m.id, serie:m.ser, pqc:m.pqc || null, resumen};
+  return {vendor:VENDOR, fabricante:'Huawei', plataforma:P ? P.n : null, modelo:m.id, serie:m.ser, pqc:m.pqc || null, pqcNo:m.pqcNo || null, resumen};
 }
 
 $('xlsBtn').addEventListener('click', async () => {

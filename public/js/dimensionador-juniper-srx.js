@@ -662,7 +662,7 @@ function renderBom() {
   const vistaBom = FICHA_CFG.vistas && FICHA_CFG.vistas[m.id];
   const meta = {
     titulo: `Lista de materiales — ${m.id}`,
-    supuestos: { vendor: 'juniper', fabricante: 'Juniper', modelo: m.id, serie: m.ser, pqc: m.pqc || null },
+    supuestos: { vendor: 'juniper', fabricante: 'Juniper', modelo: m.id, serie: m.ser, pqc: m.pqc || null, pqcNo: m.pqcNo || null },
     subtitulo: `${m.ser} · término ${term} año(s)`,
     archivo: `BOM_${m.id}`,
     // Las figuras de la ficha, con la tabla de sus números, en la hoja «Fotos del equipo» del

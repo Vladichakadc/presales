@@ -161,6 +161,8 @@
       // línea. Lo que no es un algoritmo post-cuántico lo dice; sin documento, «sin dato».
       { k: 'pqc', n: 'Criptografía post-cuántica', v: (d) => {
         const p = d.pqc;
+        // Un «no» con su documento (`pqcNo`) es un dato, no un hueco.
+        if (!p && d.pqcNo && d.pqcNo.fuente) return `No — ${d.pqcNo.corto || d.pqcNo.motivo}`;
         if (!p || !PQC_CORTO[p.tipo]) return null;
         return PQC_CORTO[p.tipo] + (p.desde ? ` — desde ${p.desde.split(' (')[0]}` : '');
       } },

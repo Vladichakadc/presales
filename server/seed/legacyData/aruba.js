@@ -398,12 +398,12 @@ const MODELS = [
    fw:20000, clients:10000, aps:4000, fwSess:2000000, ipsecSess:32000, greTuns:null, boostMax:null,
    porSo:{aos8:null},
    porSoMotivo:{aos8:'no corre AOS 8: la matriz de sistema operativo lo lista solo en AOS 10 (10.5.0.1+)'},
-   ifaces:'4x SFP+ 10GbE + 4x combo SFP/RJ45 1GbE + 1 slot de expansión',
+   ifaces:'4x SFP+ 10GbE + 4x combo SFP/RJ45 1GbE + 1 ranura de expansión reservada para uso futuro',
    spec:{cluster:'Hasta 6 gateways por cluster (AOS 10)', tuneles:'40.000 túneles totales (AOS 10)',
      encTput:'GRE / AES-CBC-128/256 / AES-GCM-128/256: 20 Gbps (a velocidad de línea)',
      mtbf:'280.165 h', watts:'185 W', btu:'631 BTU/h', ruido:'69 dBA', peso:'6,2 kg',
-     extra:'1U rack · 1 slot de expansión'},
-   hwSku:'R9M45A', skus:[{sku:'R9M45A',d:'9114 · 4x SFP+ · 4x combo · 1 slot de expansión'}],
+     extra:'1U rack · 1 ranura de expansión reservada para uso futuro'},
+   hwSku:'R9M45A', skus:[{sku:'R9M45A',d:'9114 · 4x SFP+ · 4x combo · 1 ranura de expansión reservada para uso futuro'}],
    ds:'https://www.hpe.com/us/en/collaterals/collateral.a50006999enw.html', dsFile:'serie-9100-hybrid-quickspecs.pdf'},
 
   // ─── Serie 9200 · Campus Gateways ──────────────────────────────────────────
@@ -442,8 +442,8 @@ const MODELS = [
        {code:'gold',   n:'+ licencia Gold (perp.)',   fw:40000, aps:2000, clients:32000, sku:'R8R14AAE', elp:null},
      ]},
    },
-   ifaces:'4x SFP28 + 1 slot de expansión · 1U rack', hwSku:'R7H95A',
-   skus:[{sku:'R7H95A',d:'9240 (US) · 4x SFP28 · 1 slot de expansión'}],
+   ifaces:'4x SFP28 + 1 ranura de expansión reservada para uso futuro · 1U rack', hwSku:'R7H95A',
+   skus:[{sku:'R7H95A',d:'9240 (US) · 4x SFP28 · 1 ranura de expansión reservada para uso futuro'}],
    spec:{encTput:'AES-CCM: 20 / 28 / 30 Gbps según licencia Base / Silver / Gold',
      ospf:'57.000 rutas', mtbf:'185.301 h', watts:'190 W máx. · PSU 550 W (ranuras 1+1)',
      btu:'648 BTU/h', ruido:'65,2 dBA', peso:'8,2 kg (18,08 lb)',
@@ -670,7 +670,8 @@ for (const m of MODELS) {
 // para que el dimensionador asigne cada enlace WAN a un puerto real (ArubaReglas.asignarPuertos).
 // No añade ninguna cifra: test/aruba-puertos.test.js exige que cada número salga del `ifaces`
 // del propio modelo. Fuera, a propósito: los puertos de gestión (EC-XS, EC-10150) y las
-// ranuras de expansión (9114, 9240), cuyo módulo no se cotiza aquí.
+// ranuras de expansión (9114, 9240), que sus QuickSpecs dan como «Expansion Slot (Reserved for
+// Future Use)»: no hay módulo que pedir, así que un enlace que no cabe en los puertos fijos no cabe.
 //   rj45 cobre 10/100/1000 · combo RJ-45 o SFP de 1G · sfp jaula de 1G · sfpPlus 1/10G ·
 //   sfp28 1/10/25G · celular módem integrado.
 // Todos los RJ-45 del catálogo son de 1 GbE: ninguno trae 2,5/10GBASE-T (el Hardware Reference

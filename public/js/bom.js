@@ -745,7 +745,7 @@
       aoa.push([]);
       aoa.push(['CRIPTOGRAFÍA POST-CUÁNTICA EXIGIDA']);
       aoa.push(['Requisito del escenario', e.pqc.etiqueta || exigida]);
-      const motivo = P && P.motivo ? P.motivo({ pqc: p }, exigida) : null;
+      const motivo = P && P.motivo ? P.motivo({ pqc: p, pqcNo: s.pqcNo || null }, exigida) : null;
       aoa.push(['¿El equipo del BOM lo cumple?', motivo ? `No: ${motivo.replace(/^criptografía post-cuántica: /, '')}` : (p ? 'Sí' : 'No consta')]);
       if (p) {
         const tipo = (P && P.TIPO && P.TIPO[p.tipo]) || p.tipo;
@@ -754,6 +754,8 @@
         if (p.donde) aoa.push(['Dónde se aplica', p.donde]);
         if (p.alcance) aoa.push(['Alcance', p.alcance]);
         aoa.push(['Fuente', p.fuente || 'sin fuente declarada']);
+      } else if (s.pqcNo && s.pqcNo.fuente) {
+        aoa.push(['Fuente', s.pqcNo.fuente]);
       } else {
         aoa.push(['', 'Ningún documento oficial del catálogo dice que este equipo la traiga; eso no prueba que no la tenga. Confirmarlo con el fabricante antes de comprometerlo.']);
       }
