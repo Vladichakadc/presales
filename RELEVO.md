@@ -1,6 +1,6 @@
 # Relevo
 
-Última actualización: 2026-10-27 · sexagesimonovena entrega
+Última actualización: 2026-10-27 · septuagésima entrega
 
 Informe para continuar el trabajo. Lo pidió el dueño del repositorio el 2026-10-27: «de aquí en
 adelante, un informe de pendientes y mejoras para que la cuenta **servicioiptv2025@gmail.com**
@@ -31,6 +31,9 @@ está en curso no va aquí: lo dice `npm run traspasos` (protocolo en `docs/tras
 
 ## Estado al cerrar esta entrega
 
+- **Septuagésima entrega**: `test/contraste-cobertura.test.js` frena un
+  `cobertura.lock.json` que cita un módulo ya borrado de `public/js/` (al borrar o renombrar uno,
+  quita su fila del lock en el mismo PR o vuelve a medir con `npm run contraste -- --todos`).
 - **Sexagesimonovena entrega** (PR #35): las figuras de Cisco sin tabla, buscadas en sus
   documentos. La frontal del Catalyst 8500-12X4QC, 8500-12X, 8500-20X6C, 8500L-8S4X y del ISR
   1111X-8P era la foto de la ficha, sin números: ahora es el dibujo numerado de su guía, con su
