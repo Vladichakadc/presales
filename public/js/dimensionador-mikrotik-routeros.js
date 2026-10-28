@@ -770,7 +770,8 @@ $('listaPerfiles').addEventListener('click',e=>{
   }
 });
 function consolidarPerfiles(){
-  const l=BOM.perfiles();
+  // El ciclo de los perfiles de MikroTik, al día con su catálogo; los de otros fabricantes, con su foto.
+  const l=BOM.refrescarCiclo(BOM.perfiles(), VENDOR, (id)=>MODELS.find((x)=>x.id===id));
   const {filas, totalSedes, fabricantes}=BOM.consolidar(l,{agregadas:[], unicas:[]});
   const multi=fabricantes.length>1;
   const meta={

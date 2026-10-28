@@ -957,7 +957,8 @@ function sugerirVpnc(perfiles){
 function consolidarPerfiles(){
   // TODOS los perfiles, no solo los de Aruba: una cotizacion de 50 sedes puede llevar dos
   // marcas dentro, y ese es justamente el caso que esta pantalla existe para armar.
-  const l=BOM.perfiles();
+  // El ciclo de los perfiles de Aruba, al día con su catálogo; los de otros fabricantes, con su foto.
+  const l=BOM.refrescarCiclo(BOM.perfiles(), VENDOR, (id)=>MODELS.find((x)=>x.id===id));
   // Las dos excepciones son el modelo COMERCIAL de Aruba, no una regla universal, asi que se
   // declaran aqui y no dentro de bom.js. Un fabricante que no declare nada multiplica todo por
   // sedes, que es lo correcto por defecto.

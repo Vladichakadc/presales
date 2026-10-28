@@ -161,3 +161,44 @@ test('las cinco páginas con perfiles guardan el ciclo y lo llevan al consolidad
   const bom = fs.readFileSync(path.join(__dirname, '..', 'public', 'js', 'bom.js'), 'utf8');
   assert.match(bom, /if \(m\.sinRefs && Array\.isArray\(m\.perfiles\)\)/, 'el Excel del consolidado no escribe el ciclo');
 });
+
+// EL CICLO AL DÍA AL CONSOLIDAR (2026-10-28, mejora propuesta al cerrar el PR #44). La foto que
+// guarda el perfil se recalcula con el catálogo de la página que consolida; la de otro fabricante
+// se conserva y dice de cuándo es.
+test('al consolidar, el ciclo de los perfiles propios se pone al día y el de los ajenos dice su fecha', () => {
+  const g = cargar('public/js/bom.js');
+  const B = g.BOM;
+  const HOY = Date.parse('2026-10-28');
+  const CATALOGO = { 'Catalyst 8300-1N1S-6T': { id: 'Catalyst 8300-1N1S-6T', eolAnnounced: { lastOrder: '2027-01-31', sucesor: 'Cisco Secure Router C8375-E-G2' } } };
+  const buscar = (id) => CATALOGO[id] || null;
+  const lista = [
+    // Guardado antes de que entrara el boletín: su foto dice «sin ciclo».
+    { ...perfil('Sucursal', 'cisco', 50, []), modelo: 'Catalyst 8300-1N1S-6T', ciclo: null, fecha: '2026-09-01' },
+    // Guardado antes de que los perfiles registraran el ciclo: tampoco trae la clave.
+    { ...perfil('Oficina', 'cisco', 5, []), modelo: 'Catalyst 8300-1N1S-6T', fecha: '2026-08-01' },
+    // De otro fabricante: su catálogo no está cargado aquí.
+    { ...perfil('Tienda', 'aruba', 10, []), modelo: 'EC-10104', fecha: '2026-10-01',
+      ciclo: B.cicloDe({ eolAnnounced: { lastOrder: '2027-06-30' } }) },
+  ];
+  const al = B.refrescarCiclo(lista, 'cisco', buscar);
+  assert.strictEqual(al[0].cicloAlDia, true);
+  assert.strictEqual(al[2].cicloAlDia, false);
+  assert.strictEqual(lista[0].ciclo, null, 'no toca lo guardado: devuelve copias');
+  const { avisos, sinDato } = B.cicloDePerfiles(al, HOY);
+  assert.strictEqual(avisos.length, 3, 'los dos de Cisco, puestos al día, y el de Aruba con su foto');
+  assert.match(avisos[0].texto, /Perfil «Sucursal» .*fin de venta anunciado \(último pedido el 2027-01-31\); sucesor según el boletín: Cisco Secure Router C8375-E-G2\.$/);
+  assert.match(avisos[1].texto, /^Perfil «Oficina»/, 'el perfil viejo de la página ya no queda «sin dato»');
+  assert.match(avisos[2].texto, /; ciclo a fecha de 2026-10-01, sin contrastar con el catálogo de hoy\.$/);
+  assert.strictEqual(sinDato.length, 0);
+  // Sin catálogo con que contrastar (otra página), el perfil viejo sigue diciendo «sin dato».
+  assert.strictEqual(B.cicloDePerfiles(B.refrescarCiclo(lista, 'aruba', () => null), HOY).sinDato.length, 1);
+});
+
+test('las cinco páginas con perfiles ponen el ciclo al día antes de consolidar', () => {
+  const fs = require('fs');
+  const path = require('path');
+  for (const p of ['aruba-edgeconnect', 'cisco-catalyst8k', 'fortinet-fortigate', 'huawei-netengine', 'mikrotik-routeros']) {
+    const js = fs.readFileSync(path.join(__dirname, '..', 'public', 'js', `dimensionador-${p}.js`), 'utf8');
+    assert.match(js, /const l ?= ?BOM\.refrescarCiclo\(BOM\.perfiles\(\), VENDOR, \(id\) ?=> ?MODELS\.find\(\(x\) ?=> ?x\.id ?=== ?id\)\);/, `${p}: consolida con la foto vieja del ciclo`);
+  }
+});
