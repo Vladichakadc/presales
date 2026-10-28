@@ -4,9 +4,9 @@
 - **Rama:** claude/fotos-modelo-cisco
 - **Cuenta:** sesión de Claude del 2026-10-28 (cuenta del dueño)
 - **Estado:** en curso
-- **Actualizado:** 2026-10-28 12:15
-- **Archivos que toca:** .github/workflows/traer-cisco-huawei.yml, public/data/cisco-vistas-equipos.json, public/img/equipos/cs-*, test/cisco-vistas-equipos.test.js
-- **Siguiente paso:** sacar la lista y el script del transporte del YAML (`scripts/transporte/`), la otra mejora aprobada
+- **Actualizado:** 2026-10-28 12:40
+- **Archivos que toca:** .github/workflows/traer-cisco-huawei.yml, scripts/transporte/, public/data/cisco-vistas-equipos.json, public/img/equipos/cs-*, test/cisco-vistas-equipos.test.js, test/transporte-documentos.test.js, test/traer-exploracion.test.js, test/traer-pantalla-login.test.js, test/workflows-node-e.test.js
+- **Siguiente paso:** comparar la corrida de prueba del transporte movido (`fuente/transporte-prueba-2026-10-28`) con `fuente/cisco-asr-2026-10-28`; si casa, cerrar y fusionar
 
 ## Encargo del dueño
 

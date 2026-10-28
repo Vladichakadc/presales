@@ -102,17 +102,16 @@ test('ningún `node -e "..."` de un workflow deja a bash ejecutar o expandir alg
 });
 
 test('ningún `node - <<DELIM` sin comillas deja a bash ejecutar o expandir algo sin escapar', () => {
-  let vistos = 0;
+  // Desde el 2026-10-28 ningún workflow lleva un script así: el transporte de documentos, el único que lo
+  // usaba, está en scripts/transporte/ (bash solo lanza Node). La guarda queda para el que vuelva.
   for (const f of fs.readdirSync(DIR).filter((x) => /\.ya?ml$/.test(x))) {
     for (const run of bloquesRun(fs.readFileSync(path.join(DIR, f), 'utf8'))) {
       for (const cuerpo of scriptsHeredoc(run)) {
-        vistos++;
         const malos = peligrosos(cuerpo);
         assert.deepStrictEqual(malos, [], `${f}: comilla invertida o $ sin escapar dentro de node - <<...: ${malos.join(' | ')}`);
       }
     }
   }
-  assert.ok(vistos >= 1, 'el transporte de documentos va por la entrada estándar y la extracción no lo ve');
   const [cuerpo] = scriptsHeredoc('node - <<JS\n  // `x` y $HOME\n  const ok = 1;\nJS\n');
   assert.strictEqual(peligrosos(cuerpo).length, 3);
 });
