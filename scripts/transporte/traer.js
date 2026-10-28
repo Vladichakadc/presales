@@ -1,13 +1,16 @@
 'use strict';
-// EL TRANSPORTE DE DOCUMENTOS (2026-10-28). Lo ejecuta `traer-cisco-huawei.yml` con
-// `node scripts/transporte/traer.js` desde la raíz del repositorio y `SOLO` en el entorno (los
-// archivos de `documentos.js` que se piden, separados por comas; vacío, todos). Baja cada
-// documento a `fuente-cisco-huawei/` y deja allí `informe.json`; el paso siguiente del workflow
-// lo empuja a la rama de transporte. Hasta hoy era un `node -e` dentro del YAML: este programa es
-// el mismo que bash le entregaba a Node, partido en la lista y la lógica.
+// TRANSPORTE DE DOCUMENTOS OFICIALES (`traer-cisco-huawei.yml`; sacado del YAML el 2026-10-28).
+//
+// Baja a `fuente-cisco-huawei/` los documentos de `./documentos.js` y escribe `informe.json`; el
+// workflow lo publica en una rama `fuente/*` propia de la corrida. NO EXTRAE NADA: la lectura es
+// humana y el dato entra por los importadores con doble anclaje. LA FIRMA DEL CONTENIDO MANDA SOBRE
+// EL CÓDIGO HTTP: un 200 con la pantalla de inicio de sesión o con un cascarón no es el documento.
+//
+// Uso (desde la raíz del repositorio, con salida a internet): `SOLO=a.html,b.pdf node
+// scripts/transporte/traer.js`. Sin `SOLO`, todo. Desde los entornos de Claude Code el proxy de
+// egreso corta a los fabricantes: se corre desde Actions.
 const fs = require('fs');
-const { DOCS } = require('./documentos');
-
+const DOCS = require('./documentos');
 // Una pagina HTML se valida por un texto que solo puede estar en el documento correcto
 // (debeContener). La que se pide para ver que hay —un indice del archivo, una pagina de
 // control— se declara exploracion, y el informe la dice EXPL, no OK: el 2026-10-07 cinco

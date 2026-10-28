@@ -1,9 +1,7 @@
 name: traer-cisco-huawei
 
 # Baja a una rama de transporte los documentos oficiales que hacen falta para dos cosas que
-# este repositorio NO puede resolver leyendo un resumen de buscador. LA LISTA Y EL SCRIPT VIVEN EN
-# scripts/transporte/ (documentos.js y traer.js) desde el 2026-10-28; aqui queda el porque de los
-# primeros documentos:
+# este repositorio NO puede resolver leyendo un resumen de buscador:
 #
 #   CISCO · las 14 cifras en que el cotizador y el dimensionador no coinciden (`npm run
 #           catalogo`, seccion «COTIZADOR FRENTE A DIMENSIONADOR»). Hasta resolverlas con la
@@ -79,10 +77,10 @@ jobs:
       - name: Descargar los documentos
         env:
           SOLO: ${{ inputs.solo }}
-        # La lista de documentos y el script viven en scripts/transporte/ (2026-10-28): dentro del
-        # YAML, bash los leia antes que Node y dieron tres fallos en una entrega (una comilla doble
-        # que cortaba el script, el tope de 128 KiB de un argumento y comillas invertidas que se
-        # ejecutaban). Una entrada nueva va a scripts/transporte/documentos.js.
+        # La lista de documentos y el script viven en scripts/transporte/ desde el 2026-10-28: antes iban
+        # escritos aqui, bash los leia antes que Node y en una sola entrega dieron tres fallos de ese
+        # origen (una comilla doble que cortaba el script, el tope de 128 KiB de un argumento y comillas
+        # invertidas ejecutadas). Ahora bash solo lanza Node, y `npm run verificar` carga la lista.
         run: node scripts/transporte/traer.js
 
       - name: Publicar en la rama de transporte

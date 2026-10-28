@@ -778,6 +778,43 @@
     });
   }
 
+  // Los perfiles de OTROS fabricantes, también al día (2026-10-28, mejora propuesta al cerrar el PR
+  // #46). `refrescarCiclo` solo conoce el catálogo de la página que consolida; un consolidado
+  // multi-fabricante (spokes Fortinet y core Cisco) dejaba a los demás con su foto. Aquí se pide la
+  // ruta de catálogo de cada fabricante presente (`/api/dimensionador/<fabricante>`, que todas
+  // sirven con `models` y su `eol`/`eolAnnounced`/`legacy`) y se ponen al día los perfiles que aún
+  // no lo están. Si una ruta falla, o el modelo ya no está en el catálogo, el perfil conserva su
+  // foto y el aviso dice por qué (`cicloError`). `pedir` se inyecta en las pruebas.
+  const VENDOR_VALIDO = /^[a-z][a-z-]{1,20}$/;
+  async function pedirCatalogo(v) {
+    // El fabricante sale del almacenamiento local: se valida antes de componer la URL.
+    if (!VENDOR_VALIDO.test(v)) throw new Error('fabricante no válido');
+    const r = await global.fetch(`/api/dimensionador/${encodeURIComponent(v)}`, { credentials: 'same-origin' });
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    const d = await r.json();
+    if (!d || !Array.isArray(d.models)) throw new Error('respuesta sin modelos');
+    return d.models;
+  }
+  async function refrescarCicloTodos(lista, pedir) {
+    const pide = typeof pedir === 'function' ? pedir : pedirCatalogo;
+    const faltan = [...new Set((lista || []).filter((p) => p && p.cicloAlDia !== true)
+      .map((p) => String(p.vendor || '').toLowerCase()).filter(Boolean))];
+    const catalogos = {};
+    await Promise.all(faltan.map(async (v) => {
+      try { catalogos[v] = { models: await pide(v) }; } catch (e) { catalogos[v] = { error: e && e.message ? e.message : 'error' }; }
+    }));
+    return (lista || []).map((p) => {
+      if (!p || p.cicloAlDia === true) return p;
+      const v = String(p.vendor || '').toLowerCase();
+      const cat = catalogos[v];
+      if (!cat) return { ...p, cicloAlDia: false };
+      if (cat.error) return { ...p, cicloAlDia: false, cicloError: `no se pudo leer el catálogo de ${v} (${cat.error})` };
+      const m = cat.models.find((x) => x && x.id === p.modelo);
+      if (!m) return { ...p, cicloAlDia: false, cicloError: `el catálogo de ${v} ya no trae el ${p.modelo}` };
+      return { ...p, ciclo: cicloDe(m), cicloAlDia: true, cicloError: undefined };
+    });
+  }
+
   function cicloDePerfiles(lista, hoy) {
     const avisos = [];
     const sinDato = [];
@@ -789,7 +826,7 @@
       const sucesor = a.sucesor ? `sucesor según el boletín: ${a.sucesor}`
         : p.ciclo.sucesor ? `sucesor natural: ${p.ciclo.sucesor} (inferencia por capacidad, sin documento oficial)` : '';
       // Una foto que no se pudo poner al día (perfil de otro fabricante) dice de cuándo es.
-      const foto = p.cicloAlDia === false ? `; ciclo a fecha de ${p.fecha || 'cuando se guardó el perfil'}, sin contrastar con el catálogo de hoy` : '';
+      const foto = p.cicloAlDia === false ? `; ciclo a fecha de ${p.fecha || 'cuando se guardó el perfil'}, sin contrastar con el catálogo de hoy${p.cicloError ? ` (${p.cicloError})` : ''}` : '';
       avisos.push({ perfil: p.nombre, modelo: p.modelo, sedes: p.sedes, vendor: p.vendor,
         texto: `Perfil «${p.nombre}» (${p.sedes} sede(s), ${p.modelo}): ${c.linea}${sucesor ? `; ${sucesor}` : ''}${a.url ? `; boletín: ${a.url}` : ''}${foto}.` });
     }
@@ -1456,7 +1493,7 @@
     });
   }
 
-  global.BOM = { renderTabla, exportarExcel, comoTexto, matrizExcel, matrizSupuestos, cicloDe, cicloDelEquipo, cicloDePerfiles, avisoCicloConsolidado, refrescarCiclo, fuentesDelEquipo, money, esc, claveFila,
+  global.BOM = { renderTabla, exportarExcel, comoTexto, matrizExcel, matrizSupuestos, cicloDe, cicloDelEquipo, cicloDePerfiles, avisoCicloConsolidado, refrescarCiclo, refrescarCicloTodos, fuentesDelEquipo, money, esc, claveFila,
     enviarACotizador, recogerEntrada, montarBotonCotizador, normalizar,
     sincronizar, soltarManual, avisoDesvio, fijarRepintado,
     agregarRef, quitarRef, cantidadRef, refsExtra, fijarVendor,

@@ -1,6 +1,6 @@
 # Relevo
 
-Última actualización: 2026-10-28 · PR #52
+Última actualización: 2026-10-28 · PR #54
 
 Informe para continuar el trabajo. Lo pidió el dueño del repositorio el 2026-10-27: «de aquí en
 adelante, un informe de pendientes y mejoras para que la cuenta **servicioiptv2025@gmail.com**
@@ -33,6 +33,16 @@ está en curso no va aquí: lo dice `npm run traspasos` (protocolo en `docs/tras
 
 ## Estado al cerrar esta entrega
 
+- **2026-10-28 · PR #54**: las dos mejoras pendientes que se podían ejecutar. Foto propia del MX67,
+  el MX68 (sin radio) y el C8355-G2-MX desde su página de producto; el resto de la gama sin foto
+  sigue con su dibujo de línea oficial (las páginas de Catalyst 8300 e ISR solo traen fotos de la
+  familia, sin modelo). Y **el transporte de documentos fuera del YAML**: una entrada nueva se
+  añade en `scripts/transporte/documentos.js`, nunca en `traer-cisco-huawei.yml`, y `npm run
+  verificar` la carga (`test/transporte-documentos.test.js`: nombres únicos, tipos y fabricantes
+  conocidos, https, y que lo que descubre en otra página la lea después de bajarla).
+- **2026-10-28 · PR #50**: al consolidar, los perfiles de otros fabricantes también se ponen al día
+  con su catálogo, pedido al servidor (la mejora propuesta); si una ruta falla, el perfil conserva su
+  dato y el aviso dice por qué.
 - **2026-10-28 · PR #52**: el dimensionador Cisco ya enseña figura de todos sus equipos. El ISR
   1161X-8P (cara de puertos de la familia 11x1(X)-8P, con su tabla de 9 números, y foto), el ISR
   1116-4P (cara del logotipo de la serie C111x; la pestaña «Frontal» dice que Cisco no publica la de
@@ -228,39 +238,26 @@ existen los workflows de transporte. Huawei y HPE niegan además el navegador au
 
 ## Mejoras propuestas sin decidir
 
-- **La foto a color de cada Secure Router, Catalyst 8000 e ISR, desde su página de modelo**
-  (propuesta al cerrar el PR #52). La página de la serie ASR en cisco.com traía una vista de frente
-  a color de cada modelo («model-comparison», 758 × 549) y la del 1006-X su foto: las páginas de
-  serie y de modelo de los Secure Router (`/site/us/en/products/networking/sdwan-routers/8000-secure-routers/…`),
-  de los Catalyst 8200/8300 y de los ISR 1000 suelen traer la misma comparativa. Buscar cada URL
-  (no adivinarla), traerlas con `traer-cisco-huawei.yml` y dar la foto a los 15 Secure Router y
-  los 6 Catalyst 8200/8300 que no la tienen, y a los MX67/MX68 sin radio si Meraki publica la suya.
-  Evita que el cliente vea solo un dibujo de línea en la mitad de la gama. Cuesta una o dos vueltas
-  de transporte y mirar cada foto (el rótulo y el nombre del archivo tienen que nombrar el modelo);
-  si se hace mal, un modelo enseñaría la foto de un hermano, que es justo lo que las pruebas frenan.
-  Se decide por el dueño.
-- **Los perfiles de otros fabricantes, también al día** (propuesta al cerrar el PR #46). Un
-  consolidado multi-fabricante (spokes Fortinet y core Cisco, por ejemplo) solo pone al día los
-  perfiles de la página donde se pulsa «Consolidar»; los demás salen «ciclo a fecha de …». Cada
-  fabricante tiene su ruta de catálogo (`/api/dimensionador/<fabricante>`, con `eol` y
-  `eolAnnounced`): al consolidar, pedir la de cada fabricante presente en los perfiles y poner al día
-  todos. Evita que un aviso viejo de otra marca llegue al cliente. Cuesta hacer asíncrono el
-  consolidado en las cinco páginas y leer la forma de cada ruta (no todas devuelven `models` igual);
-  si una ruta falla, ese fabricante se queda con su foto y lo dice. Si se hace mal, el botón
-  «Consolidar» no responde; lo vería `e2e-ciclo-excel.js`. Se decide por el dueño.
-- **El transporte de documentos, con su lista fuera del YAML** (propuesta al cerrar el PR #45).
-  `traer-cisco-huawei.yml` lleva dentro un script de Node de 132 KB que bash lee antes que Node:
-  en una sola entrega dio tres fallos de ese origen (una comilla doble que lo cortaba, el tope de
-  tamaño de un argumento y comillas invertidas que bash ejecutaba sin que nadie lo viera), y las
-  pruebas lo leen con expresiones regulares sobre el YAML. Propuesta: la lista de documentos
-  (`DOCS`) a un módulo `scripts/transporte/documentos.js` y el script a `scripts/transporte/traer.js`,
-  que el workflow ejecuta con `node scripts/transporte/traer.js`; bash deja de tocarlo y las pruebas
-  hacen `require()` de la lista. Evita la clase entera de fallos de comillas y tamaño, y que una
-  entrada mal escrita se descubra en Actions en vez de en `npm run verificar`. Cuesta mover unas
-  1.700 líneas y adaptar `traer-exploracion`, `traer-pantalla-login` y `workflows-node-e`; si se hace
-  mal, el transporte deja de traer documentos, y por eso se prueba con una corrida real de una
-  entrada conocida antes de fusionar. Se decide por el dueño.
-- (Hecha en el PR #46: el ciclo del perfil al día al consolidar. Hecha en el PR #45: la fuente de la PQC enlazada a `fuentes.js`. Hecha en el PR #44: el ciclo en el consolidado multi-sede. Hecha en el PR #41: el fin de venta en el Excel. Hecha en el PR #40: la foto de producto en el Excel. Hecha en la septuagesimoprimera: el «no la trae» documentado, `pqcNo`. Hecha en la sexagesimoctava: la
+- **Perfiles multi-sede también en Juniper y Nokia 7750** (propuesta al cerrar el PR #50). Solo
+  cinco dimensionadores guardan perfiles (Aruba, Cisco, Fortinet, Huawei y MikroTik): un despliegue
+  con un core Juniper SRX o un PE Nokia 7750 no entra en el BOM consolidado, y con él se pierden su
+  cantidad por sedes y el aviso de ciclo de vida (los SRX sí tienen boletines de fin de venta).
+  Añadir a esas dos páginas el bloque de perfiles (guardar, cargar, borrar, consolidar) con
+  `BOM.guardarPerfil`, `refrescarCiclo` y `refrescarCicloTodos`, como las otras cinco. Evita armar a
+  mano el BOM de un despliegue mixto. Cuesta el marcado del bloque en dos HTML, su script y capturar
+  sus campos para «Cargar»; si se hace mal, «Cargar» deja la pantalla en un escenario a medias, y lo
+  verían `bom-perfiles.test.js` y una batería e2e nueva. Se decide por el dueño.
+- **El transporte, probado sin red** (propuesta al cerrar el PR #54). Ahora que `traer.js` es un
+  archivo, su lógica se puede ejercitar en `npm run verificar` con un `fetch` de mentira: la firma de
+  cada tipo (PDF, imagen, HTML con `debeContener`), la pantalla de inicio de sesión, el tope de
+  piezas, los dominios permitidos en `descubrirPiezas` y que una entrada que depende de otra no pida
+  nada si la otra no se guardó. Hoy eso solo se comprueba leyendo el texto del script con expresiones
+  regulares, o en una corrida de Actions. Evita que un cambio en el transporte se descubra cuando ya
+  no trae un documento (o, peor, cuando guarda una página que no es el documento). Cuesta exportar la
+  función principal de `traer.js` con `fetch` y el directorio inyectables, y una prueba con unas diez
+  respuestas fabricadas; si se hace mal, el workflow deja de correr el script al cargarlo: se prueba
+  con una corrida real antes de fusionar, como en el PR #54. Se decide por el dueño.
+- (Hecha en el PR #54: la foto desde la página de cada modelo, hasta donde Cisco la publica, y el transporte fuera del YAML. Hecha en el PR #50: los perfiles de otros fabricantes al día al consolidar. Hecha en el PR #46: el ciclo del perfil al día al consolidar. Hecha en el PR #45: la fuente de la PQC enlazada a `fuentes.js`. Hecha en el PR #44: el ciclo en el consolidado multi-sede. Hecha en el PR #41: el fin de venta en el Excel. Hecha en el PR #40: la foto de producto en el Excel. Hecha en la septuagesimoprimera: el «no la trae» documentado, `pqcNo`. Hecha en la sexagesimoctava: la
   versión mínima de la PQC en la hoja «Supuestos».)
 
 ## Decisiones del dueño abiertas

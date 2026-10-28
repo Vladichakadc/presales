@@ -4,14 +4,15 @@
 // La corrida 37613969445 de `traer-cisco-huawei.yml` dio por «guardadas» cinco paginas de
 // Info-Finder que eran los 3417 B del inicio de sesion de Huawei (IDaaS): las entradas de
 // exploracion no exigen un texto, y el informe decia OK. El workflow ahora reconoce esa pantalla
-// y la reporta como tal. Esta prueba lee la expresion del propio transporte (desde el 2026-10-28 en
-// `scripts/transporte/traer.js`, antes dentro de un `node -e` del workflow) y la pasa por la pantalla de Huawei y por paginas buenas, para que una edicion que
+// y la reporta como tal. Esta prueba lee la expresion del propio workflow (vive dentro de un
+// `node -e`) y la pasa por la pantalla de Huawei y por paginas buenas, para que una edicion que
 // la rompa o la vuelva demasiado ancha salga aqui y no en la siguiente corrida.
 const test = require('node:test');
 const assert = require('node:assert');
 const fs = require('node:fs');
 const path = require('node:path');
 
+// El script vive en scripts/transporte/traer.js desde el 2026-10-28 (antes, dentro del YAML).
 const src = fs.readFileSync(path.join(__dirname, '..', 'scripts', 'transporte', 'traer.js'), 'utf8');
 
 function detector() {

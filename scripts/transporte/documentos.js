@@ -1,17 +1,20 @@
 'use strict';
-// LOS DOCUMENTOS QUE TRAE EL TRANSPORTE (`traer-cisco-huawei.yml`), FUERA DEL YAML (2026-10-28).
+// DOCUMENTOS QUE TRAE EL TRANSPORTE `traer-cisco-huawei.yml` (lista sacada del YAML el 2026-10-28).
 //
-// Vivían dentro de un `node -e "..."` de 132 KB que bash leía antes que Node, y en una sola entrega
-// dieron tres fallos de ese origen: una comilla doble que cortaba el script (corrida 40622507025),
-// el tope de 128 KiB de un argumento en Linux (corrida 40683042861) y comillas invertidas de
-// comentarios que bash ejecutaba como órdenes. Aquí bash no toca nada, y `npm run verificar`
-// comprueba la lista entera (`test/transporte-documentos.test.js`) antes de que llegue a Actions.
+// Hasta el 2026-10-28 esta lista vivía dentro de un script de Node escrito en el propio workflow, y
+// bash lo leía antes que Node: en una sola entrega dio tres fallos de ese origen (una comilla doble
+// que cortaba el script, el tope de 128 KiB de un argumento y comillas invertidas que bash
+// ejecutaba). Aquí es un módulo normal: bash no lo toca y `npm run verificar` lo carga
+// (`test/transporte-documentos.test.js`), así que una entrada mal escrita se ve antes de Actions.
 //
-// Cada entrada: `archivo` (su nombre en la rama de transporte), `tipo` (html, pdf, texto o
-// imagenes), `para` (el fabricante), `urls` (en orden; vale la primera que responde con el
-// documento) y, en una HTML, `debeContener` (un texto que solo puede estar en el documento
-// correcto) o `exploracion: true` (se pide para ver qué hay, y el informe la dice EXPL, no OK).
-const DOCS = [
+// Cada entrada: `archivo` (nombre en la rama `fuente/*`), `tipo` (`html`, `pdf`, `imagenes`,
+// `paginas` o `scripts`), `para` (fabricante), `urls` (oficiales, BUSCADAS, nunca adivinadas por
+// patrón) y, en un HTML, `debeContener` (un texto que solo puede estar en el documento correcto) o
+// `exploracion: true` (se pide para ver qué hay: el informe la dice EXPL, no OK). `descubrir`,
+// `descubrirEnlace` y `descubrirPiezas` sacan las URL de una página ya guardada en la misma corrida,
+// que por eso va antes en la lista. La lectura sigue siendo humana: nada de aquí escribe en
+// `server/seed/legacyData/`.
+module.exports = [
   { archivo: 'cisco-isr1000-ds.html', tipo: 'html', para: 'CISCO', debeContener: 'C1111-8P', urls: [
     'https://www.cisco.com/c/en/us/products/collateral/routers/1000-series-integrated-services-routers-isr/datasheet-c78-739512.html',
   ] },
@@ -394,6 +397,11 @@ const DOCS = [
   // enlaza ahora, sin exigir el identificador viejo.
   { archivo: 'huawei-a816e-documento-hoy.html', tipo: 'html', para: 'HUAWEI', exploracion: true, urls: [
     'https://e.huawei.com/en/documents/products/enterprise-network/56584a8272b44e61be416b1afc0eb241',
+  ] },
+  // Con nombre propio desde el 2026-10-28: llevaba el de la entrada verificada (`huawei-a800-producto.html`,
+  // con `debeContener: 'A821'`) y en una corrida completa la pisaba con la version explorada.
+  { archivo: 'huawei-a800-producto-explorado.html', tipo: 'html', para: 'HUAWEI', exploracion: true, urls: [
+    'https://e.huawei.com/en/products/routers/netengine-a800',
   ] },
   // La pagina de documentos vieja ya sirve un 404 de Huawei con estado 200 (corrida
   // 38423580897); la de producto enlaza esta otra pagina de documentos de la familia.
@@ -1545,25 +1553,91 @@ const DOCS = [
     descubrirPiezas: { de: ['cisco-asr1000-ds.html', 'cisco-asr1006x-producto.html', 'cisco-asr1002hx-producto.html'],
       base: 'https://www.cisco.com/', dominios: ['cisco.com'], relativas: true,
       contiene: ['/c/dam/', '/content/dam/'], max: 120 } },
-  // Pendientes que esperan documento oficial (2026-10-28, tema transporte-y-fuentes; corrida
-  // fuente/transporte-1-2026-10-28):
+  // Fotos a color por modelo (2026-10-28, mejora propuesta al cerrar el PR #52 y aprobada por el
+  // dueño: «ejecuta los pendientes y las mejoras propuestas»). La página de la serie ASR traía una
+  // vista de frente de cada modelo («model-comparison»): estas son las páginas de familia, de serie
+  // y de modelo de los Secure Router, los Meraki MX, los Catalyst 8300 y los ISR 1000. Las URL salen
+  // de buscar cada página el 2026-10-28; qué modelo dibuja cada imagen se decide MIRANDOLA y por su
+  // texto alternativo, no por el orden.
+  { archivo: 'cisco-sr-familia.html', tipo: 'html', para: 'CISCO', debeContener: 'Secure Router', urls: [
+    'https://www.cisco.com/site/us/en/products/networking/sdwan-routers/8000-secure-routers/index.html',
+  ] },
+  { archivo: 'cisco-sr8100-producto.html', tipo: 'html', para: 'CISCO', debeContener: '8100', urls: [
+    'https://www.cisco.com/c/en/us/products/routers/8100-series-secure-routers/index.html',
+  ] },
+  { archivo: 'cisco-sr8200-producto.html', tipo: 'html', para: 'CISCO', debeContener: '8200', urls: [
+    'https://www.cisco.com/c/en/us/products/routers/8200-series-secure-routers/index.html',
+  ] },
+  { archivo: 'cisco-sr8300-producto.html', tipo: 'html', para: 'CISCO', debeContener: '8300', urls: [
+    'https://www.cisco.com/c/en/us/products/routers/8300-series-secure-routers/index.html',
+  ] },
+  { archivo: 'cisco-sr8400-producto.html', tipo: 'html', para: 'CISCO', debeContener: '8400', urls: [
+    'https://www.cisco.com/c/en/us/products/routers/8400-series-secure-routers/index.html',
+  ] },
+  { archivo: 'cisco-c8300-soporte-serie.html', tipo: 'html', para: 'CISCO', debeContener: '8300', urls: [
+    'https://www.cisco.com/c/en/us/support/routers/catalyst-8300-series-edge-platforms/series.html',
+  ] },
+  { archivo: 'cisco-isr1000-recursos.html', tipo: 'html', para: 'CISCO', exploracion: true, urls: [
+    'https://cisco.com/site/us/en/products/networking/sdwan-routers/1000-series-integrated-services-routers-isr/resources.html',
+  ] },
+  { archivo: 'meraki-mx-familia.html', tipo: 'html', para: 'CISCO', debeContener: 'MX', urls: [
+    'https://www.cisco.com/site/us/en/products/networking/sdwan-routers/meraki-security-appliances/index.html',
+  ] },
+  { archivo: 'meraki-mx68-producto.html', tipo: 'html', para: 'CISCO', debeContener: 'MX68', urls: [
+    'https://www.cisco.com/site/us/en/products/networking/sdwan-routers/meraki-security-appliances/mx68.html',
+  ] },
+  { archivo: 'meraki-mx67-producto.html', tipo: 'html', para: 'CISCO', debeContener: 'MX67', urls: [
+    'https://www.cisco.com/site/uk/en/products/networking/sdwan-routers/meraki-security-appliances/mx67.html',
+    'https://www.cisco.com/site/in/en/products/networking/sdwan-routers/meraki-security-appliances/mx67.html',
+  ] },
+  { archivo: 'meraki-c8355-g2-mx-producto.html', tipo: 'html', para: 'CISCO', debeContener: '8355', urls: [
+    'https://www.cisco.com/site/us/en/products/networking/sdwan-routers/meraki-security-appliances/mx8355g2.html',
+  ] },
+  { archivo: 'cisco-fotos-img', tipo: 'imagenes', para: 'CISCO', urls: [],
+    descubrirPiezas: { de: ['cisco-sr-familia.html', 'cisco-sr8100-producto.html', 'cisco-sr8200-producto.html',
+      'cisco-sr8300-producto.html', 'cisco-sr8400-producto.html', 'cisco-c8300-soporte-serie.html',
+      'cisco-isr1000-recursos.html', 'meraki-mx-familia.html', 'meraki-mx68-producto.html',
+      'meraki-mx67-producto.html', 'meraki-c8355-g2-mx-producto.html'],
+      base: 'https://www.cisco.com/', dominios: ['cisco.com'], relativas: true,
+      contiene: ['/c/dam/', '/content/dam/'], max: 250 } },
+  // Pendientes que esperan documento oficial (2026-10-28, tema transporte-y-fuentes):
   // · Fortinet F3: la licencia FortiGuard única en un clúster HA activo-pasivo, por modelo y versión
-  //   (`haLicenciaUnica` en legacyData/fortinet.js la cita).
+  //   (`haLicenciaUnica` en legacyData/fortinet.js la cita; corrida fuente/transporte-1-2026-10-28).
   { archivo: 'fortinet-ha-licencia-unica-7.6.6.html', tipo: 'html', para: 'FORTINET', debeContener: 'logical-sn', urls: [
     'https://docs.fortinet.com/document/fortigate/7.6.6/administration-guide/246857',
     'https://docs.fortinet.com/document/fortigate/7.6.5/administration-guide/246857',
   ] },
-  // · Huawei: qué trae N1 Advanced frente a Foundation. La ficha del modelo de negocio N1 que se
-  //   alcanza es de V100R019 (Advanced «Not involved» en casi todo): no cierra el pendiente, y se
-  //   deja para que el vigía de una edición nueva no tenga que buscarla otra vez.
-  { archivo: 'huawei-n1-modelo-negocio.pdf', tipo: 'pdf', para: 'HUAWEI', urls: [
-    'https://carrier.huawei.cn/-/media/cnbgv2/download/products/networks/Huawei-SD-WAN-N1-Business-Mode-datasheet-en.pdf',
+  // · Huawei, N1 Advanced frente a Foundation: la ficha de la solución SD-WAN R25C00 se leyó el
+  //   2026-10-14 en el navegador del dueño, sin copia. Se trae para contrastar su tabla «Software
+  //   Package Functions» y anotar su huella.
+  { archivo: 'huawei-sdwan-solucion-r25c00.pdf', tipo: 'pdf', para: 'HUAWEI', urls: [
+    'https://e-file.huawei.com/marketingcloud/pep/asset/20000001/Material/c39e035b25f14a1897536864b6b928b3/M3T1A590N1185280594916528416/Huawei%20SD-WAN%20Solution%20Datasheet_R25C00.pdf',
   ] },
-  // · Huawei: en qué nubes e hipervisores se despliega el vCPE AR6700V-L (su página de producto da
-  //   la lista de nubes, no las regiones ni los «flavors»).
+  // · Huawei, nubes y «flavors» del vCPE AR6700V-L: su página de producto (las nubes) y las guías de
+  //   despliegue por nube, que remiten a una sección «Supported Flavors» (URL buscadas el 2026-10-28;
+  //   se piden en exploración porque el portal de soporte puede servir solo el cascarón).
   { archivo: 'huawei-ar6700v-l-producto.html', tipo: 'html', para: 'HUAWEI', debeContener: 'AWS', urls: [
     'https://e.huawei.com/en/products/routers/netengine-ar6700v-l',
   ] },
+  { archivo: 'huawei-ar6700v-l-azure-r25c00.html', tipo: 'html', para: 'HUAWEI', exploracion: true, urls: [
+    'https://support.huawei.cn/enterprise/en/doc/EDOC1100591294/eac8359b/preparing-for-deployment',
+  ] },
+  { archivo: 'huawei-ar6700v-l-azure-r25c10.html', tipo: 'html', para: 'HUAWEI', exploracion: true, urls: [
+    'https://support.huawei.cn/enterprise/en/doc/EDOC1100592603',
+  ] },
+  { archivo: 'huawei-ar6700v-l-gcp-r25c10.html', tipo: 'html', para: 'HUAWEI', exploracion: true, urls: [
+    'https://support.huawei.cn/enterprise/en/doc/EDOC1100592600',
+  ] },
+  { archivo: 'huawei-ar6700v-l-huaweicloud-r23c10.html', tipo: 'html', para: 'HUAWEI', exploracion: true, urls: [
+    'https://support.huawei.com/enterprise/en/doc/EDOC1100368764',
+  ] },
+  { archivo: 'huawei-ar6700v-soporte.html', tipo: 'html', para: 'HUAWEI', exploracion: true, urls: [
+    'https://support.huawei.cn/enterprise/en/routers/ar6700v-pid-255317763',
+  ] },
+  // · MikroTik, el CCR2004-16G-2S+PC fuera de la matriz de compatibilidad: su manual de usuario, por
+  //   si dice qué módulos admiten sus jaulas SFP+.
+  { archivo: 'mikrotik-ccr2004-16g-2s-pc-manual.html', tipo: 'html', para: 'MIKROTIK', debeContener: 'CCR2004-16G-2S+PC', urls: [
+    'https://help.mikrotik.com/docs/spaces/UM/pages/93552657/CCR2004-16G-2S+PC',
+    'https://manual.mikrotik.com/hardware/ccr2004-16g-2s-plus-pc',
+  ] },
 ];
-
-module.exports = { DOCS };
