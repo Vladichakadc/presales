@@ -892,7 +892,7 @@ $('btnGuardarPerfil').addEventListener('click', () => {
   const sedes = Math.max(0, parseInt($('perfilSedes').value, 10) || 0);
   if(!nombre || !sedes){ $('perfilMsg').textContent = 'Pon un nombre y el número de sedes idénticas.'; $('nombrePerfil').focus(); return; }
   if(!bomFilas.length || !hayCandidato){ $('perfilMsg').textContent = 'No hay un equipo dimensionado que guardar: ajusta el escenario primero.'; return; }
-  BOM.guardarPerfil({nombre, sedes, modelo:$('pickModel').value, vendor:VENDOR, fecha:new Date().toISOString().slice(0, 10),
+  BOM.guardarPerfil({nombre, sedes, modelo:$('pickModel').value, vendor:VENDOR, ciclo:BOM.cicloDe(MODELS.find(x => x.id === $('pickModel').value)), fecha:new Date().toISOString().slice(0, 10),
     version:1, campos:capturarCampos(), filas:JSON.parse(JSON.stringify(bomFilas))});
   $('nombrePerfil').value = ''; $('perfilSedes').value = '';
   $('perfilMsg').textContent = `Perfil «${nombre}» guardado con ${sedes} sede(s).`;
@@ -919,6 +919,7 @@ $('btnConsolidar').addEventListener('click', () => {
     subtitulo:l.map(x => `${x.nombre} ×${x.sedes} (${x.modelo})`).join(' · '),
     archivo:multi ? 'BOM_global_multifabricante' : 'BOM_global_cisco',
     sinRefs:true,
+    perfiles:l,
     notas:['REGLAS DE CONSOLIDACION (Cisco):',
       '  Equipo, modulos, licencias y soporte: cantidad del perfil x sedes del perfil.',
       '  Precios de lista solo donde los trajo el export de CCW; el resto, consultar.'],
@@ -927,7 +928,7 @@ $('btnConsolidar').addEventListener('click', () => {
   const d = dtoActual();
   if(d > 0){ meta.dto = d; meta.dtoEtq = dtoEtiqueta(); }
   $('consolidadoSub').textContent = `${meta.subtitulo} — ${totalSedes} sedes en total`;
-  $('consolidadoTabla').innerHTML = (multi ? `<p class="bom-aviso">Consolidado <b>multi-fabricante</b> (${esc(fabricantes.join(', '))}).</p>` : '')
+  $('consolidadoTabla').innerHTML = BOM.avisoCicloConsolidado(l) + (multi ? `<p class="bom-aviso">Consolidado <b>multi-fabricante</b> (${esc(fabricantes.join(', '))}).</p>` : '')
     + BOM.renderTabla(filas, {dto:d, sinRefs:true});
   $('modalConsolidado').hidden = false;
   $('xlsConsolidadoBtn').onclick = () => BOM.exportarExcel(filas, meta);
