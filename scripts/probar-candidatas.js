@@ -161,6 +161,8 @@ async function pedir(url) {
       // Que el cuerpo empiece por %PDF es la unica prueba de que lo servido es el documento y
       // no una pagina de error con codigo 200, que es como un chequeo se pone verde en falso.
       esPdf: buf.slice(0, 4).toString('latin1') === '%PDF',
+      // La huella deja comparar lo servido con la copia de public/datasheets/ sin bajarlo aqui.
+      sha256: require('crypto').createHash('sha256').update(buf).digest('hex'),
       urlFinal: r.url !== url ? r.url : null,
     };
   } catch (e) {
@@ -170,7 +172,7 @@ async function pedir(url) {
 
 const linea = (r) => r.estado == null
   ? `sin respuesta (${r.error})`
-  : `${r.estado}${r.ok ? ' OK' : ''} · ${r.bytes} B · ${r.esPdf ? 'PDF real' : (r.tipo.split(';')[0] || 'sin tipo')}`
+  : `${r.estado}${r.ok ? ' OK' : ''} · ${r.bytes} B · ${r.esPdf ? `PDF real · sha256 ${r.sha256.slice(0, 16)}` : (r.tipo.split(';')[0] || 'sin tipo')}`
     + (r.urlFinal ? ` · redirige a ${r.urlFinal}` : '');
 
 (async () => {
