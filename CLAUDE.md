@@ -401,7 +401,9 @@ Módulos compartidos:
   perfil guarda su `ciclo` al crearse, y uno guardado antes dice «sin dato de ciclo»
   (`cicloDePerfiles`, `avisoCicloConsolidado`; `perfiles` en el `meta` del consolidado). Al consolidar,
   `refrescarCiclo` pone al día con el catálogo de la página los perfiles de su fabricante (también los
-  guardados sin ciclo); los de otro fabricante conservan su foto y lo dicen («ciclo a fecha de …»). La hoja «Fotos del equipo» (`meta.fotos`: Aruba, Fortinet, Huawei,
+  guardados sin ciclo), y `refrescarCicloTodos` pide al servidor el catálogo de cada otro fabricante
+  presente (`/api/dimensionador/<fabricante>`); si la ruta falla o el modelo ya no está, el perfil
+  conserva su foto y lo dice («ciclo a fecha de …», con el motivo). La hoja «Fotos del equipo» (`meta.fotos`: Aruba, Fortinet, Huawei,
   Cisco y Juniper) escribe bajo cada figura su leyenda opt-in (`frontLeyenda`/`rearLeyenda`), como la ficha. Detrás, la foto de
   producto con su pie (`foto`/`fotoFuente`, Cisco y Juniper).
   Llevan leyenda las figuras con números: las de Cisco, las 36 de Juniper y el Aruba 7010 (decidido

@@ -912,8 +912,10 @@ function consolidarPerfiles(){
   if(d > 0){ meta.dto = d; meta.dtoEtq = dtoEtiqueta(); }
   return {filas, meta, totalSedes, fabricantes};
 }
-$('btnConsolidar').addEventListener('click', () => {
+$('btnConsolidar').addEventListener('click', async () => {
   const {filas, meta, totalSedes, fabricantes} = consolidarPerfiles();
+  // Y los perfiles de los demás fabricantes, al día con su propio catálogo (pedido al servidor).
+  meta.perfiles = await BOM.refrescarCicloTodos(meta.perfiles);
   if(!totalSedes) return;
   $('consolidadoSub').textContent = `${meta.subtitulo} — ${totalSedes} sedes en total`;
   $('consolidadoTabla').innerHTML = BOM.avisoCicloConsolidado(meta.perfiles) + (fabricantes.length > 1 ? `<p class="bom-aviso">Consolidado <b>multi-fabricante</b> (${esc(fabricantes.join(', '))}).</p>` : '')
