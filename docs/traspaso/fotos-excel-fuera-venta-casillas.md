@@ -4,7 +4,7 @@
 - **Rama:** claude/fotos-excel-fuera-venta-casillas
 - **Cuenta:** servicioiptv2025, sesión 01V8T7S6ACDK2CAYKoqhKyry
 - **Estado:** en curso
-- **Actualizado:** 2026-10-27 22:25
+- **Actualizado:** 2026-10-27 22:50
 - **Archivos que toca:** public/js/bom.js, public/js/ficha.js, public/js/dimensionador-*.js (selectores de equipo y meta.fotos), public/dimensionador-*.html (enlace a la hoja común), public/controles.css, test/vistas-leyendas.test.js, test/e2e/e2e-leyendas-juniper.js, test nuevos de ciclo y casillas
 - **Siguiente paso:** esperar CI del PR (la batería nueva e2e-ciclo-y-casillas conduce Cisco, Fortinet y Nokia 7220); en verde, PENDIENTES, RELEVO, CLAUDE.md y fusionar
 
@@ -22,7 +22,7 @@
 
 ## Falta
 
-- CI; PENDIENTES, RELEVO y CLAUDE.md al fusionar.
+- CI (la primera corrida falló en la batería nueva: esperaba opciones visibles de un combo que vive en la pestaña BOM, oculta al cargar; corregido); PENDIENTES, RELEVO y CLAUDE.md al fusionar.
 
 ## Decisiones y hallazgos
 

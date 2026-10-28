@@ -46,8 +46,13 @@ async function probarCasilla(t, page, id, pagina) {
   await abrirSesion(page);
 
   // --- Cisco: el selector de modelo del BOM lista el catálogo entero, con los ASR fuera de venta.
-  await trasNavegar(page, () => page.goto(`${BASE}/dimensionador-cisco-catalyst8k.html`, { waitUntil: 'domcontentloaded' }), { selector: '#pickModel option' });
+  // El selector de modelo vive en la pestaña BOM, oculta al cargar: se espera a la ficha y a que el
+  // combo esté poblado, y se cambia de pestaña antes de elegir.
+  await trasNavegar(page, () => page.goto(`${BASE}/dimensionador-cisco-catalyst8k.html`, { waitUntil: 'domcontentloaded' }), { selector: '#verdict-sel' });
+  await page.waitForFunction(() => globalThis.document.querySelectorAll('#pickModel option').length > 1, null, { timeout: 20000 });
   await asentar(page);
+  // La casilla primero, en la pestaña de dimensionamiento que está a la vista.
+  await probarCasilla(t, page, 'chkFec', 'Cisco');
   const ops = await page.$$eval('#pickModel option', (os) => os.map((o) => ({
     v: o.value, t: o.textContent, c: o.dataset.ciclo || '', color: globalThis.getComputedStyle(o).color,
   })));
@@ -60,6 +65,8 @@ async function probarCasilla(t, page, id, pagina) {
     `los de fin de venta anunciado, también en rojo y con su fecha (${anunciados.length})`);
   t.ok(vigentes.length > 0 && vigentes.every((o) => o.color !== ROJO), 'los vigentes no van en rojo');
 
+  await page.click('[data-tab=bom]');
+  await asentar(page);
   const cerrado = () => page.$eval('#pickModel', (s) => globalThis.getComputedStyle(s).color);
   if (vigentes.length) {
     await page.selectOption('#pickModel', vigentes[0].v);
@@ -75,8 +82,6 @@ async function probarCasilla(t, page, id, pagina) {
   // La misma regla en el desplegable de la ficha (FICHA.opcionCiclo): sus opciones con ciclo, en rojo.
   const ficha = await page.$$eval('#verdict-sel option', (os) => os.filter((o) => o.dataset.ciclo).map((o) => globalThis.getComputedStyle(o).color));
   t.ok(ficha.every((c) => c === ROJO), `el desplegable de la ficha usa la misma regla (${ficha.length} con ciclo)`);
-
-  await probarCasilla(t, page, 'chkFec', 'Cisco');
 
   // --- Fortinet: una función que fija el piso de capa.
   await trasNavegar(page, () => page.goto(`${BASE}/dimensionador-fortinet-fortigate.html`, { waitUntil: 'domcontentloaded' }), { selector: '#chkAv' });
