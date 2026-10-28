@@ -4,7 +4,8 @@ Registro vivo de lo que falta. **Al empezar una tarea se buscan aquí los puntos
 tocan, y al terminarla se actualiza**, y su contenido se resume al usuario al cerrar cada entrega — esa es la instrucción
 permanente que lo justifica (ver `CLAUDE.md`, sección *Instrucciones permanentes del dueño*).
 
-Última revisión: 2026-10-28 · PR #51 (**Fuera de venta en el desplegable: también en Fortinet, y resaltados en los siete dimensionadores.** Encargos del dueño: «incluye en el combo del dimensionador de Fortinet los equipos que están fuera de venta así como en el dimensionador de Cisco» y «resalta el combo de los equipos que están fuera de venta». Ver *Cerrado recientemente*.)
+Última revisión: 2026-10-28 · PR #56 (**Fortinet F3 con documento oficial y los pendientes de fuentes revisados en internet.** Encargos del dueño: «ejecuta estos pendientes (esperan documento oficial…) y la mejora propuesta» y «revisa y cierra estos temas, busca por internet». La mejora del transporte la entregó el PR #54. Ver *Cerrado recientemente*.)
+Revisión anterior: 2026-10-28 · PR #51 (**Fuera de venta en el desplegable: también en Fortinet, y resaltados en los siete dimensionadores.** Encargos del dueño: «incluye en el combo del dimensionador de Fortinet los equipos que están fuera de venta así como en el dimensionador de Cisco» y «resalta el combo de los equipos que están fuera de venta». Ver *Cerrado recientemente*.)
 Revisión anterior: 2026-10-28 · PR #55 (**Perfiles multi-sede también en Juniper y Nokia 7750.** Encargo del dueño: «sí, hazlo», sobre la mejora propuesta al cerrar el PR #50. Ver *Cerrado recientemente*.)
 Revisión anterior: 2026-10-28 · PR #53 (**«Exigir PQC» respeta el sistema operativo: la PPK de los gateways Aruba, solo con AOS 8.** Encargo del dueño: «ejecuta la mejora propuesta». Ver *Cerrado recientemente*.)
 Revisión anterior: 2026-10-28 · PR #54 (**Foto propia del MX67, el MX68 y el C8355-G2-MX, y el transporte de documentos fuera del YAML.** Encargo del dueño: «ejecuta los pendientes y las mejoras propuestas y súbelo a producción». Ver *Cerrado recientemente*.)
@@ -681,7 +682,8 @@ underlay.
   (`BOM.perfiles`) y consolida el BOM global como Huawei, conducido en Chromium (12 sedes de hEX
   refresh: 12 × 59,95 = 719,40 USD).
 - **Enlaces WAN, lo que queda (2026-10-13)**: el CCR2004-16G-2S+PC no figura en la matriz oficial
-  de compatibilidad (**tampoco en la 7.26, comprobado el 2026-10-14**) y sus enlaces de fibra salen
+  de compatibilidad (**tampoco en la 7.26, comprobado el 2026-10-14**, ni en la de hoy, 2026-10-28; su
+  manual de usuario, actualizado el 25-08-2022, no dice qué módulos admite) y sus enlaces de fibra salen
   con el módulo «a consultar»; los HS-31DLC20D y
   HS-85DLC05D (1G/2,5G) tampoco figuran y no se recomiendan solos aunque estén en el listado. El
   respaldo cifrado sigue a «Sentidos simultáneos» (desde el 2026-10-14, bajada + subida o el
@@ -755,6 +757,15 @@ sesión de Huawei abierta, o la app de GitHub para lanzar Actions). En orden de 
    Info-Finder («Software Specifications > Resource Pool Management > Virtualization deployment
    environment > Public cloud environment»), pero para la cuenta «Common Registered User» ese árbol
    no aparece (125 nodos genéricos, medido el 2026-10-15). Bloqueado por permisos de cuenta.
+   **2026-10-28 (PR #56): hay otra vía.** Las guías de despliegue del AR6700V-L por nube tienen una
+   sección «Supported Flavors»: Azure V600R025C00
+   (`support.huawei.cn/enterprise/en/doc/EDOC1100591294/eac8359b/preparing-for-deployment`), Azure
+   V600R025C10 (EDOC1100592603), GCP V600R025C10 (EDOC1100592600) y Huawei Cloud V600R023C10
+   (EDOC1100368764, en support.huawei.com). Al ejecutor de Actions solo le llega el cascarón de
+   3.800 bytes de su aplicación de JavaScript, y Huawei niega el navegador automatizado: **lo cierra
+   una persona con navegador**, abriendo la guía de su nube en «Supported Flavors» y anotando
+   instancia, vCPU y memoria por tamaño. El buscador indexa su texto, así que no parecen pedir
+   cuenta (no se pudo comprobar). La página de producto solo da la lista de nubes.
 
 
 - **Tope de túneles (IPsec y SD-WAN EVPN), sesiones y rutas por modelo AR.** Ninguna ficha AR lo
@@ -764,7 +775,9 @@ sesión de Huawei abierta, o la app de GitHub para lanzar Actions). En orden de 
   Mac encendido y Chrome con la extensión, leer la especificación de cada serie y anotar
   `capSdwan.tuneles` (y `sesiones`) en `legacyData/huawei.js`; el filtro del hub ya lo aplica solo
   (`m.tuneles`/`capSdwan`, a unificar entonces).
-- **Qué funciones exige el paquete N1 Advanced frente al Foundation.** El BOM deja elegir uno sin
+- ~~**Qué funciones exige el paquete N1 Advanced frente al Foundation.**~~ **Cerrado el 2026-10-14**
+  (ver el punto 3 de arriba) y **contrastado con copia el 2026-10-28 (PR #56)**: los mismos bytes
+  que el vigía verifica, tabla de las pp. 13-14. Texto anterior: el BOM deja elegir uno sin
   decirlo. La tabla está en la ficha de la solución SD-WAN R25C00 (e-file.huawei.com); hay que
   traerla por `traer-cisco-huawei.yml` y leerla con pdfplumber. No se transcribió de un resumen.
   Desde aquí no se pudo despachar el workflow: el `GH_TOKEN` del entorno no es válido.
@@ -1389,6 +1402,8 @@ riesgos R1–R11 en `docs/auditoria-fortinet-2026-09-23/LEEME.md`.
   filas por SKU exacto.
 - **Co-term sin prorrateo; heartbeat de HA sin modelar; ópticas de Fortinet fuera del
   catálogo.** Se declaran en la entrega (CU-03, CU-09 y CU-10 parciales) y no se inventan.
+  **2026-10-28 (PR #56)**: el heartbeat de las series con licencia única (40F, 60F, 70F, 80F,
+  100F) sale ya de la guía de FortiOS 7.6.6 y el aviso lo dice; no se reserva puerto ni cable.
 - ~~**El caso `calculadora-ssl` se quedó sin sujeto.**~~ **Cerrado el 2026-09-24**: el caso
   intercepta `/api/catalog` en su navegador y añade un FortiGate sintético sin `ssl` a la
   respuesta; comprueba el cableado real de la pantalla con un sujeto que no depende del catálogo
@@ -1461,9 +1476,11 @@ etapa 6, y *Cerrado recientemente*. Lo que sigue abierto, con su motivo:
   probó `traer-fortinet-pendientes.yml` dan 404 (el `sd-wan-ordering-guide.pdf` de
   `fuente/fortinet-product-matrix` es el de **Aruba**). Se cierra con una persona que abra esa
   guía en un navegador, o con el PDF que entregue el distribuidor.
-- **F3 · Elegibilidad de FortiGuard único en HA activo-pasivo**, por modelo y versión de
-  FortiOS. La regla general —una licencia por nodo— está aplicada; la excepción se declara sin
-  ofrecerse, porque este catálogo no trae de qué modelos y qué versiones se puede afirmar.
+- ~~**F3 · Elegibilidad de FortiGuard único en HA activo-pasivo**~~ **Cerrado el 2026-10-28 (PR #56)**:
+  la guía de FortiOS 7.6.6 da los modelos (`haLicenciaUnica` en 8 FortiGate), y la página lo dice.
+  **Queda**: ofrecerla en el BOM (dos SKU de HA y una suscripción en vez de dos) es una decisión
+  comercial que no se tomó; el 70F y el 100F no tienen SKU de HA en la lista firmada. Era: la regla
+  general —una licencia por nodo— estaba aplicada y la excepción se declaraba sin ofrecerse.
 - **F4-resto · cerrado en parte el 2026-10-13**: los **vecinos BGP** por modelo entran desde la
   *Maximum Values Table* de FortiOS 7.6.7 (`router.bgp:neighbor`, eje duro de configuración;
   ver *Cerrado recientemente*). **Sigue abierto, sin fuente**: rutas aprendidas (la tabla solo
@@ -2155,6 +2172,9 @@ enlace XGS-PON, el túnel de Secure Access por sentido, el mGig del MX95/MX105 y
 
 La ficha (y el Comparador) dicen «no consta» donde ningún documento oficial traído dice que el
 equipo la traiga. Lo que queda, y por qué:
+**Revisado otra vez el 2026-10-28 (PR #56)**, por encargo del dueño: ninguna de las búsquedas dio
+un documento oficial nuevo para Huawei, los gateways AOS que faltan, los G2-MX, los SRX de sucursal
+y el SRX4100 ni los Nokia 7250/7220. Siguen como abajo.
 - **Huawei (AR, NetEngine)**: ninguna ficha ni nota oficial que nombre ML-KEM, PPK o
   «quantum-safe»; support.huawei.com pide sesión (ver la cuenta de Huawei en *Decisiones*). Huawei
   anunció en marzo de 2026 una tarjeta QKD para la serie NetEngine 8000E (no está en el catálogo, y
@@ -2452,6 +2472,7 @@ que ya se comprobó y lo que cuesta cada opción.
 
 ## Cerrado recientemente
 
+- **2026-10-28 · PR #56 · Fortinet F3 con documento oficial, y los pendientes de fuentes revisados en internet.** Encargos del dueño: «ejecuta estos pendientes —esperan documento oficial: la PQC de Huawei, los gateways AOS, los Meraki, los SRX de sucursal y el SRX4100, los Nokia 7250/7220 IXR, y los de Cisco, Juniper, Aruba, MikroTik, Huawei y Fortinet de RELEVO.md— y la mejora propuesta», y después «revisa y cierra estos temas, busca por internet» (los tres documentos leídos sin cerrar nada). **F3 cerrado**: «Single FortiGuard license for FortiGate A-P HA cluster» (FortiOS 7.6.6 Administration Guide, traída por Actions, rama `fuente/transporte-1-2026-10-28`) da la licencia FortiGuard única en activo-pasivo a las series 40F, 60F, 70F, 80F y 100F y sus variantes, con dos unidades del SKU de HA y un solo Enterprise Protection, UTP o ATP registrado al número de serie virtual del par, y el heartbeat de cada serie. Los 8 FortiGate del catálogo llevan `haLicenciaUnica` (serie, heartbeat, SKU de HA de la lista firmada —70F y 100F no lo tienen: «consultar»—, fuente); el motor avisa (`ha-licencia-unica`, o por qué no en activo-activo o en un modelo que la guía no nombra), y la página lo dice en la cantidad, el resumen, la ficha y el aviso del BOM (`licenciaHa()`), donde antes decía «la licencia no se comparte en HA». **El BOM sigue cotizando una suscripción por nodo**: pasar al SKU de HA es una decisión comercial. **N1 Advanced frente a Foundation**: estaba cerrado desde el 2026-10-14 y RELEVO lo seguía dando por abierto; la ficha de la solución SD-WAN R25C00 traída (`fuente/transporte-2-2026-10-28`) son los mismos 1.105.535 bytes con la huella que el vigía tenía verificada, y su tabla (pp. 13-14) casa con `N1_SOLO_ADVANCED`; `fuentes.js` lo dice, con la fecha del PDF. **Leído sin cerrar**: la ficha N1 Business Mode que se alcanza es de V100R019; la página del AR6700V-L da las nubes, no las regiones ni los «flavors» (localizados en las guías de despliegue por nube, que solo sirven un cascarón de JavaScript: ver el pendiente 10 de Huawei); el manual del CCR2004-16G-2S+PC no dice qué módulos admite y la matriz de hoy no lo lista. Los demás de la lista (PQC de Huawei, Meraki y SRX de sucursal/4100, gateways AOS 9004-LTE/9106/9114, Nokia 7250/7220) siguen sin documento oficial que lo diga. **Transporte**: la misma mejora la entregó el PR #54 (otra sesión, con una corrida real); esta rama tomó su versión y solo añade sus entradas. Pruebas: `test/fortinet-ha-licencia.test.js` (también que el campo llega por la API; probada saboteando el texto viejo), la batería `e2e-fortinet-ha-licencia` y la de reglas F3 en `fortinet-reglas.test.js`.
 - **2026-10-28 · PR #51 · Fuera de venta en el desplegable: también en Fortinet, y resaltados.** Encargos del dueño: «incluye en el combo del dimensionador de Fortinet los equipos que están fuera de venta así como en el dimensionador de Cisco» y «resalta el combo de los equipos que están fuera de venta». **Fortinet**: el selector de modelo del BOM ya los traía; el desplegable de la ficha no, porque en compra nueva el motor aparta al fuera de venta (`CICLO_VIDA`) y la ficha solo recibía los elegibles. Ahora recibe además, detrás de los vigentes, los que cumplen el escenario y solo se apartan por el ciclo (`fueraDeVentaQueCumplen`); el equipo sin SKU de hardware llega como fuera de venta (`comoFicha`). Nunca se recomiendan, y elegir uno es el override de siempre: la ficha lo enseña, la caja dice que el BOM sigue con el validado y la cotización queda bloqueada. Sin vigente que cumpla, la ficha vacía nombra los fuera de venta que sí cumplen. El motor no cambia. **Resaltado**, en `ficha.js` para los siete dimensionadores: los fuera de venta van al final en un grupo con nombre («Fuera de venta (N) · solo parque instalado, no se recomiendan», que también pintan los desplegables nativos de macOS y del móvil), con fondo rosado en la lista abierta; el contador dice «(N fuera de venta)» y una nota roja bajo el desplegable (enlazada con `aria-describedby`) explica para qué están; con uno elegido, pastilla «Fuera de venta», barra y borde rojos, y su marca y su aviso en rojo. El ancla de `verdict-sel` en `catalogo-check.js` termina en la comilla de cierre, como la de `selDescuento` (sabotaje comprobado: renombrar el control la hace caducar). La comprobación T21 de `e2e-fortinet-rediseno.js` decía lo contrario («en compra nueva ningún fuera de venta es candidato») y se reescribió con la regla nueva. Los tres casos de contraste de Fortinet (`fortinet`, `fortinet-limites`, `fortinet-ssl`) cuentan `nCandidatos` sin los fuera de venta del final, que es lo que medían: sus líneas base no se tocan. Pruebas: `test/fortinet-combo-fuera-venta.test.js` (las funciones de la página contra el motor real), `test/ficha-combo-fuera.test.js` y T21 en Chromium.
 - **2026-10-28 · Perfiles multi-sede también en Juniper y Nokia 7750 (PR #55).** Encargo del dueño: «sí, hazlo», sobre la mejora propuesta al cerrar el PR #50. Solo cinco dimensionadores guardaban perfiles: un despliegue con un core Juniper SRX o un PE Nokia 7750 no entraba en el BOM consolidado, y con él se perdían su cantidad por sedes y el aviso de ciclo de vida. Las dos páginas llevan ya el panel (guardar, cargar, borrar, consolidar) con la clave compartida `BOM.perfiles`. Juniper busca el modelo del perfil en sus dos catálogos (SRX y SSR) y captura las dos plataformas; Nokia guarda sus perfiles con la clave **`nokia-sr`**, la de su ruta de catálogo: al consolidar desde otra página, `refrescarCicloTodos` pide `/api/dimensionador/nokia-sr`, y con `nokia` habría pedido el de la 7220 IXR, donde esos modelos no están. `BOM.consolidar` enseña esa clave como «nokia» (`NOMBRE_FABRICANTE`). Los manejadores de Nokia se montan detrás de su guarda `suPagina()`, porque las pruebas cargan el motor sin la página. Pruebas: `bom-perfiles` (las siete páginas en las comprobaciones de ciclo, la clave de Nokia, el nombre en el consolidado) y la batería `e2e-perfiles-juniper-nokia.js`: un SRX1500 elegido a mano (último pedido vencido el 2026-04-15) avisa de que está fuera de venta en el consolidado hecho desde Nokia, con el catálogo de Juniper pedido al servidor; «Cargar» repone la plataforma y el caudal; el Excel lleva las líneas de los dos. **Lo que no tiene perfiles**, a propósito: la 7220 IXR (diseña un fabric, no elige un equipo) y Starlink.
 - **2026-10-28 · «Exigir PQC» respeta el sistema operativo (PR #53).** Mejora propuesta al cerrar el PR #49, aprobada por el dueño. La PPK de los gateways de Aruba está documentada con AOS-8, pero el requisito no miraba el selector de sistema operativo: con AOS 10, un 9004 lo pasaba. Ahora un `pqc` puede declarar `so`/`soNombre` (los 12 gateways: `aos8`), `PQC.motivo(m, nivel, ctx)` aparta con «su documento la da con AOS 8; con AOS 10 (Central) no consta» cuando el SO del escenario es otro, y la hoja «Supuestos» del Excel dice lo mismo (`meta.supuestos.so`). Sin `so` o sin contexto, la regla de siempre: los EdgeConnect y las otras seis páginas no cambian. Pruebas en `test/pqc-so.test.js` y batería `e2e-pqc-so-aruba.js` (en AOS 10 la página aparta los gateways con ese motivo; en AOS 8 recomienda uno).

@@ -490,6 +490,10 @@ Módulos compartidos:
   rutas aprendidas. El BOM sale solo del modelo validado; la puerta READY/WARNING/DRAFT/BLOCKED bloquea
   Excel, copiar y enviar con un P0, un SKU sin casar o la lista vencida, y el override exige motivo.
   Un SKU nunca se busca con el marcador `-DD`. Figuras desde la página «Hardware» de cada ficha.
+  **HA y FortiGuard** (F3, 2026-10-28): una suscripción por nodo, salvo en activo-pasivo de las
+  series que la guía de FortiOS 7.6.6 nombra (`haLicenciaUnica`: 40F, 60F, 70F, 80F, 100F y
+  variantes, con su SKU de HA y su heartbeat), que admiten una sola; el BOM sigue por nodo y la
+  página lo dice con `licenciaHa()`, porque los avisos `info` del motor no llegan a la página.
 - **Aruba** (`dimensionador-aruba-edgeconnect.js`, `aruba-reglas.js`, `motor-ingenieria.js`). El
   caudal es el **Multi-Underlay Builder** (filas `{tipo, medio, down, up, rol}`; un respaldo ocupa
   puerto pero no suma); `migrarEstadoV1()` traduce los enlaces viejos. **Cada enlace va a un puerto
