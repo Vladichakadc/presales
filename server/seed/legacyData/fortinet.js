@@ -1235,5 +1235,33 @@ const CARE={
   fcelite:{n:'FortiCare Elite',      sla:'FortiCare Premium + atención de tickets con prioridad Elite'},
 };
 
+// ── LICENCIA FORTIGUARD ÚNICA EN HA ACTIVO-PASIVO (2026-10-28, pendiente F3) ──
+// Guía de administración de FortiOS 7.6.6, «Single FortiGuard license for FortiGate A-P HA
+// cluster»: «FortiGate A-P HA cluster supports sharing a single FortiGuard service license for both
+// cluster units for the following models: 40F and variants, 60F and variants, 70F and variants, 80F
+// and variants, 100F and variants». Con dos unidades del SKU de HA («such as 2 x FG-40F-HA») se pide
+// un solo Enterprise Protection, UTP o ATP, registrado al número de serie virtual del par
+// (`logical-sn`); «A la carte SKUs are not supported». La misma página da la interfaz de heartbeat
+// de cada serie («connect the HA interfaces back to back»). No dice desde qué versión de FortiOS:
+// consta en la 7.6.6, y solo en activo-pasivo de dos unidades. Las variantes del catálogo (61F, 71F
+// y 81F, el mismo equipo con almacenamiento) las vende la lista firmada con su propio SKU de HA
+// (FG-61F-HA, FG-71F-HA, FG-81F-HA); del 70F y el 100F la lista no trae SKU de HA, y se dice.
+const HA_LICENCIA_UNICA = {
+  'FortiGate 40F': {serie:'40F', heartbeat:'port3'},
+  'FortiGate 60F': {serie:'60F', heartbeat:'port5'}, 'FortiGate 61F': {serie:'60F', heartbeat:'port5'},
+  'FortiGate 70F': {serie:'70F', heartbeat:'port4 y/o port5'}, 'FortiGate 71F': {serie:'70F', heartbeat:'port4 y/o port5'},
+  'FortiGate 80F': {serie:'80F', heartbeat:'port5 y/o port6'}, 'FortiGate 81F': {serie:'80F', heartbeat:'port5 y/o port6'},
+  'FortiGate 100F': {serie:'100F', heartbeat:'ha1 y/o ha2'},
+};
+for (const m of MODELS) {
+  const h = HA_LICENCIA_UNICA[m.id];
+  if (!h) continue;
+  const hw = (SKUS_POR_MODELO[m.id] || []).find((x) => x.t === 'HW' && x.sku === `FG-${m.id.split(' ').pop()}-HA`);
+  m.haLicenciaUnica = {serie:h.serie, heartbeat:h.heartbeat, skuHa: hw ? hw.sku : null,
+    servicios:'Enterprise Protection, UTP o ATP (no los servicios a la carta)',
+    fuente:'FortiOS 7.6.6 Administration Guide, «Single FortiGuard license for FortiGate A-P HA cluster»',
+    urls:['https://docs.fortinet.com/document/fortigate/7.6.6/administration-guide/246857']};
+}
+
 module.exports = { MODELS, BUNDLES, CARE, LICENSES, HW_SKU, FUNCIONES, SERVICIOS_SDWAN, SDWAN_SERVICIO, EMS_LICENCIAS, SASE_USUARIOS, TERMINOS, MATRIX_LIMITES,
   FICHAS_LIMITES, MATRIX_PLATAFORMA, FICHAS_PLATAFORMA, PUERTOS, FORTIOS, REANCLAJE, MVT_LIMITES };
