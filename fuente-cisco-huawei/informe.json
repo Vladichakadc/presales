@@ -1,0 +1,137 @@
+[
+  {
+    "archivo": "mikrotik-compatibilidad-vigente.html",
+    "para": "MIKROTIK",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://manual.mikrotik.com/docs/wired-connections/mikrotik-wired-interface-compatibility",
+        "status": 200,
+        "bytes": 400972,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "huawei-sdwan-solucion-r25c00.pdf",
+    "para": "HUAWEI",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://e-file.huawei.com/marketingcloud/pep/asset/20000001/Material/c39e035b25f14a1897536864b6b928b3/M3T1A590N1185280594916528416/Huawei%20SD-WAN%20Solution%20Datasheet_R25C00.pdf",
+        "status": 200,
+        "bytes": 1105535,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "huawei-ar6700v-l-producto.html",
+    "para": "HUAWEI",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://e.huawei.com/en/products/routers/netengine-ar6700v-l",
+        "status": 200,
+        "bytes": 347656,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "huawei-ar6700v-l-azure-r25c00.html",
+    "para": "HUAWEI",
+    "guardado": true,
+    "exploracion": true,
+    "intentos": [
+      {
+        "url": "https://support.huawei.cn/enterprise/en/doc/EDOC1100591294/eac8359b/preparing-for-deployment",
+        "status": 200,
+        "bytes": 3800,
+        "guardado": true,
+        "verificado": false
+      }
+    ]
+  },
+  {
+    "archivo": "huawei-ar6700v-l-azure-r25c10.html",
+    "para": "HUAWEI",
+    "guardado": true,
+    "exploracion": true,
+    "intentos": [
+      {
+        "url": "https://support.huawei.cn/enterprise/en/doc/EDOC1100592603",
+        "status": 200,
+        "bytes": 3800,
+        "guardado": true,
+        "verificado": false
+      }
+    ]
+  },
+  {
+    "archivo": "huawei-ar6700v-l-gcp-r25c10.html",
+    "para": "HUAWEI",
+    "guardado": true,
+    "exploracion": true,
+    "intentos": [
+      {
+        "url": "https://support.huawei.cn/enterprise/en/doc/EDOC1100592600",
+        "status": 200,
+        "bytes": 3800,
+        "guardado": true,
+        "verificado": false
+      }
+    ]
+  },
+  {
+    "archivo": "huawei-ar6700v-l-huaweicloud-r23c10.html",
+    "para": "HUAWEI",
+    "guardado": true,
+    "exploracion": true,
+    "intentos": [
+      {
+        "url": "https://support.huawei.com/enterprise/en/doc/EDOC1100368764",
+        "status": 200,
+        "bytes": 3800,
+        "guardado": true,
+        "verificado": false
+      }
+    ]
+  },
+  {
+    "archivo": "huawei-ar6700v-soporte.html",
+    "para": "HUAWEI",
+    "guardado": true,
+    "exploracion": true,
+    "intentos": [
+      {
+        "url": "https://support.huawei.cn/enterprise/en/routers/ar6700v-pid-255317763",
+        "status": 200,
+        "bytes": 25028,
+        "guardado": true,
+        "verificado": false
+      }
+    ]
+  },
+  {
+    "archivo": "mikrotik-ccr2004-16g-2s-pc-manual.html",
+    "para": "MIKROTIK",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://help.mikrotik.com/docs/spaces/UM/pages/93552657/CCR2004-16G-2S+PC",
+        "status": 200,
+        "bytes": 72862,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  }
+]
