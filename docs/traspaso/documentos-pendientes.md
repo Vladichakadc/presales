@@ -8,9 +8,9 @@
 - **Rama:** claude/documentos-pendientes
 - **Cuenta:** servicioiptv2025, sesión 01V8T7S92WvujFK1KCusavSu
 - **Estado:** en curso
-- **Actualizado:** 2026-10-28 09:00
+- **Actualizado:** 2026-10-28 10:00
 - **Archivos que toca:** .github/workflows/traer-cisco-huawei.yml, server/seed/legacyData/aruba.js, server/seed/legacyData/juniper.js, server/seed/legacyData/fuentes.js, server/seed/legacyData/fuentes.lock.json, test/pqc.test.js
-- **Siguiente paso:** lanzar traer-cisco-huawei.yml en esta rama hacia fuente/documentos-pendientes-2026-10-28 y leer lo traído.
+- **Siguiente paso:** abrir el PR, verificar en CI y fusionar con el cierre.
 
 ## Encargo del dueño
 

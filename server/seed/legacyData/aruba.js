@@ -1513,6 +1513,27 @@ for (const m of MODELS) {
     urls:['https://arubanetworking.hpe.com/techdocs/sdwan-PDFs/docs/ECSecurityAlgorithmsCipherProfiles_latest.pdf']};
 }
 
+// PQC DE LOS GATEWAYS CON AOS-8 (2026-10-28, encargo del dueño «busca como un arquitecto senior»).
+// Dos documentos oficiales, traídos por traer-cisco-huawei.yml (ramas
+// fuente/documentos-pendientes-2026-10-28 y -2-): la guía de usuario de AOS-8, «Configuring a VPN
+// with Postquantum Preshared Keys»: «Starting from AOS-8.10.0.0» IKEv2 admite PPK, «PPK is only
+// limited to site-to-site VPNs»; y las notas de AOS-8.12.0.5 (abr-2025), que añaden
+// `crypto-local isakmp ppk-mandatory` y dan en «Mobility Controller Platforms» los equipos que corren
+// 8.10 o posterior: 9240 (8.10–8.13), 9012 (8.7–8.13), 9004 (8.5–8.13) y las series 7000 y 7200
+// (8.0–8.13). Fuera: el 9004-LTE (su ficha: AOS 8 «Not supported»), y el 9106 y el 9114, que esas
+// notas no listan. Solo con AOS-8: en AOS-10 no consta (las notas de AOS-10.8 traen
+// `ppk-mandatory` sin decir en qué equipo). Es una clave simétrica, no un algoritmo post-cuántico.
+const PQC_GW_AOS8 = ['Gateway 9004', 'Gateway 9012', 'Gateway 9240', '7005', '7008', '7010', '7024', '7030', '7205', '7210', '7220', '7240XM'];
+for (const m of MODELS) {
+  if (!PQC_GW_AOS8.includes(m.id)) continue;
+  m.pqc = {tipo:'ppk',
+    mecanismo:'Clave precompartida post-cuántica (PPK) en IKEv2',
+    donde:'VPN IPsec sitio a sitio con IKEv2, con AOS-8 (solo sitio a sitio, según la guía)', desde:'AOS-8.10.0.0',
+    alcance:'solo con AOS-8; en AOS-10 no consta. Exigirla al otro extremo (ppk-mandatory) desde AOS-8.12.0.5',
+    fuente:'HPE Aruba Networking, guía de usuario de AOS-8 («Configuring a VPN with Postquantum Preshared Keys») y notas de versión de AOS-8.12.0.5 («Mobility Controller Platforms»)',
+    urls:['https://arubanetworking.hpe.com/techdocs/ArubaOS/AOS_8x_WebHelp/Content/arubaos-solutions/vpn/vpn-ppk.htm', 'https://arubanetworking.hpe.com/techdocs/ArubaOS-8.x-Books/Release-Notes/812/ArubaOS-8.12.0.5-Release-Notes.pdf']};
+}
+
 module.exports = {
   MODELS, BUNDLES, CARE, CARE_SKU, LICENSES, LICENSES_HA, BW_TIERS, BOOST, FEC_OVERHEAD,
   SOFTWARE, CENTRAL_TIERS, CENTRAL_POR_SERIE, DATASHEETS, EOL_ANNOUNCED, RETIRADOS_SIN_FECHA, PUERTOS, OS_MATRIX,

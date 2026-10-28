@@ -249,7 +249,8 @@ const MODELS = [
 // motor lo trata como un modo distinto — el error que se corrigió en el dimensionador de Cisco.
 //
 // TRES CAPAS DE CIFRADO, IGUAL QUE EL SRX TIENE CAPAS DE INSPECCIÓN (2026-10-19). Las fichas de
-// las líneas SSR100 (1000728-005, mar-2023, solo se encontró en japonés) y SSR1000
+// las líneas SSR100 (1000728-005, mar-2023, leída en japonés; desde el 2026-10-28 la edición
+// inglesa a00150824ENW, con las mismas cifras) y SSR1000
 // (1000757-002-EN, mar-2023) publican el rendimiento agregado en tres capas y dos tamaños:
 //   cap      «Unencrypted (IMIX)»            — la que el catálogo ya traía como única cifra
 //   capCif   «Encrypted only (IMIX)»
