@@ -79,3 +79,12 @@ test('el Excel de Juniper lleva las figuras con su leyenda (mejora aprobada el 2
   assert.match(juniper, /fotos: \{ modelo: m\.id, origen: 'Extraídas de los documentos oficiales de Juniper'/);
   assert.match(juniper, /frontLeyenda: vistaBom\.frontLeyenda \|\| null, rearLeyenda: vistaBom\.rearLeyenda \|\| null/);
 });
+
+test('la foto de producto viaja al Excel con su pie (mejora aprobada el 2026-10-27)', () => {
+  const bom = fs.readFileSync(path.join(RAIZ, 'public/js/bom.js'), 'utf8');
+  assert.match(bom, /if \(fotos\.foto\) \{\s*pon\('Foto de producto', true\);\s*if \(fotos\.fotoFuente\) pon\(fotos\.fotoFuente\);/);
+  const juniper = fs.readFileSync(path.join(RAIZ, 'public/js/dimensionador-juniper-srx.js'), 'utf8');
+  assert.match(juniper, /foto: vistaBom\.foto \|\| null, fotoFuente: vistaBom\.fotoFuente \|\| null/);
+  const cisco = fs.readFileSync(path.join(RAIZ, 'public/js/dimensionador-cisco-catalyst8k.js'), 'utf8');
+  assert.match(cisco, /foto:VISTAS\[m\.id\]\.foto \|\| null, fotoFuente:VISTAS\[m\.id\]\.fotoFuente \|\| null/);
+});

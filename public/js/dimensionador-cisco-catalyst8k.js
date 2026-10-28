@@ -766,7 +766,8 @@ function renderBom(){
     // (mejora aprobada el 2026-10-27; Aruba, Fortinet y Huawei ya las llevaban).
     ...(VISTAS && VISTAS[m.id] && VISTAS[m.id].front ? {fotos:{modelo:m.id, origen:'Extraídas de los documentos oficiales de Cisco',
       front:VISTAS[m.id].front, rear:VISTAS[m.id].rear || null, pie:VISTAS[m.id].fuente || null,
-      frontLeyenda:VISTAS[m.id].frontLeyenda || null, rearLeyenda:VISTAS[m.id].rearLeyenda || null}} : {}),
+      frontLeyenda:VISTAS[m.id].frontLeyenda || null, rearLeyenda:VISTAS[m.id].rearLeyenda || null,
+      foto:VISTAS[m.id].foto || null, fotoFuente:VISTAS[m.id].fotoFuente || null}} : {}),
     notas:[
       '',
       'NOTAS DE PREVENTA',

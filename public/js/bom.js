@@ -898,6 +898,25 @@
         r++;
       }
     }
+    // Foto de producto a color (opt-in `foto` + `fotoFuente`, mejora aprobada el 2026-10-27):
+    // donde la frontal es el dibujo numerado de la guía (Cisco 8500 e ISR 1111X-8P) o hay foto
+    // aparte (Juniper), la imagen que el cliente reconoce viaja también, con su propio pie: sale
+    // de otro documento que los dibujos y no se mezcla con su procedencia.
+    if (fotos.foto) {
+      pon('Foto de producto', true);
+      if (fotos.fotoFuente) pon(fotos.fotoFuente);
+      try {
+        const f = await fotoPng(fotos.foto);
+        const W = Math.min(f.w, 860);
+        const H = Math.round(f.h * W / f.w);
+        const id = libro.addImage({ base64: f.b64, extension: 'png' });
+        h.addImage(id, { tl: { col: 0, row: r - 1 }, ext: { width: W, height: H } });
+        r += Math.ceil(H / 20) + 2;
+        incrustadas++;
+      } catch (e) {
+        pon(`La foto de producto no se pudo incrustar (${e.message}) — está disponible en la ficha del equipo dentro de la herramienta.`);
+      }
+    }
     return incrustadas;
   }
 
@@ -945,7 +964,8 @@
     }
 
     // Fotos oficiales del equipo (plan 20): solo viajan cuando la página las declara en
-    // meta.fotos: Aruba, Fortinet, Huawei, Cisco y Juniper (estos dos, y el Aruba 7010, con la leyenda de los números).
+    // meta.fotos: Aruba, Fortinet, Huawei, Cisco y Juniper (estos dos, y el Aruba 7010, con la leyenda de los números;
+    // Cisco y Juniper, además, con la foto de producto donde la ficha la tiene).
     if (m.fotos && m.fotos.front) {
       const incrustadas = await hojaDeFotos(libro, m.fotos);
       if (incrustadas > 0) {

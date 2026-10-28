@@ -74,6 +74,10 @@ const leerLupa = (page) => page.evaluate(() => {
   t.ok(/Qué es cada número de la vista frontal/.test(plano) && /Qué es cada número de la vista trasera/.test(plano),
     'y bajo cada cara, la tabla de sus números');
   t.ok(/^\s*1\. .+ — «.+»/m.test(plano), 'cada fila con lo que es y su rótulo literal');
+  // La foto de producto también (mejora aprobada el 2026-10-27): tercera imagen, con su pie propio.
+  t.ok(buf.includes(Buffer.from('xl/media/image3.png')), 'el Excel incrusta además la foto de producto');
+  t.ok(/^Foto de producto$/m.test(plano) && /^Foto de producto de la (ficha|página) /m.test(plano),
+    'con su título y el pie del documento del que sale');
   t.ok(libro.SheetNames[0] === 'BOM' && libro.SheetNames[1] === 'Supuestos',
     `la hoja BOM sigue primera y «Supuestos» segunda (${libro.SheetNames.join(', ')})`);
 
