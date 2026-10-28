@@ -4,9 +4,9 @@
 - **Rama:** claude/elegant-pascal-7ymts7
 - **Cuenta:** vladichakadc, sesión 01TxCQ3W2sHYVmimAdMKht3j
 - **Estado:** en curso
-- **Actualizado:** 2026-10-28 09:20
-- **Archivos que toca:** scripts/transporte/, .github/workflows/traer-cisco-huawei.yml (el paso de descarga; se fusiona DESPUÉS de claude/figuras-cisco-isr-mx, ver *Decisiones*), test/transporte-documentos.test.js, test/traer-exploracion.test.js, test/traer-pantalla-login.test.js, test/workflows-node-e.test.js, public/js/fortinet-reglas.js, server/seed/legacyData/fortinet.js, server/seed/legacyData/huawei.js, server/seed/legacyData/fuentes.js
-- **Siguiente paso:** leer la corrida de transporte con las entradas nuevas (Fortinet F3, N1 de Huawei, nubes del AR6700V-L) y cerrar solo lo que digan
+- **Actualizado:** 2026-10-28 17:30
+- **Archivos que toca:** scripts/transporte/, .github/workflows/traer-cisco-huawei.yml (el paso de descarga y la cabecera; ver *Decisiones* por claude/fotos-modelo-cisco), test/transporte-documentos.test.js, test/traer-exploracion.test.js, test/traer-pantalla-login.test.js, test/workflows-node-e.test.js, public/js/fortinet-reglas.js, public/js/fortinet-motor.js, test/fortinet-reglas.test.js, server/seed/legacyData/fortinet.js, server/seed/legacyData/fuentes.js
+- **Siguiente paso:** verificación con navegador (pantallas, contraste, e2e, puerta), PR y cierre (PENDIENTES, RELEVO, CLAUDE.md)
 
 ## Encargo del dueño
 
@@ -26,12 +26,26 @@ PR #45: la lista del transporte fuera del YAML.
   `traer-pantalla-login` y `workflows-node-e` leen el módulo. Dos siguen en rojo hasta cambiar el
   workflow (esperan a que se fusione el PR #49, que declara `traer-cisco-huawei.yml`).
 
+- El workflow ejecuta `node scripts/transporte/traer.js` (con `SOLO` en el entorno); la corrida real
+  `fuente/transporte-1-2026-10-28` lo probó en Actions. Fusionado `main` con el PR #52: sus entradas
+  de los ASR, regeneradas al módulo (402 entradas).
+- **Fortinet F3 cerrado**: `haLicenciaUnica` en 8 FortiGate (40F, 60F, 61F, 70F, 71F, 80F, 81F, 100F)
+  desde «Single FortiGuard license for FortiGate A-P HA cluster» (FortiOS 7.6.6), con el SKU de HA
+  de la lista firmada donde lo trae y el heartbeat de la serie; aviso informativo en A-P.
+- Leído sin cerrar: la ficha N1 Business Mode (V100R019, vieja); la página del AR6700V-L (las nubes,
+  sin regiones ni «flavors»); la matriz de MikroTik de hoy (sigue sin el CCR2004-16G-2S+PC).
+
 ## Falta
 
-- Mejora: scripts/transporte/documentos.js y traer.js; el workflow los ejecuta; pruebas por require().
-- Pendientes: buscar el documento oficial de cada uno, traerlo por Actions y cerrar solo lo que diga.
+- Verificación con navegador, PR, cierre y despliegue.
 
 ## Decisiones y hallazgos
+
+- 2026-10-28 17:30 UTC: `claude/fotos-modelo-cisco` (otra sesión, traspaso de las 09:55, después
+  del de este tema) añade entradas al YAML de `traer-cisco-huawei.yml`. **Quien fusione segundo
+  adapta**: si esta rama llega antes, sus entradas pasan tal cual al final de
+  `scripts/transporte/documentos.js` (mismo formato, sin la sangría del YAML) y
+  `test/transporte-documentos.test.js` frena una entrada que vuelva al YAML.
 
 - 2026-10-28 14:03 UTC: `claude/figuras-cisco-isr-mx` (otra sesión) declaró también
   `traer-cisco-huawei.yml` y le añadió 14 líneas de entradas (figuras de los ASR). Para no
