@@ -84,12 +84,17 @@ test('solo lleva `pqc` el equipo que su documento nombra', () => {
     assert.strictEqual(!!m.pqc, m.fam === 'ec', `${m.id}: pqc donde no toca`);
     if (m.pqc) assert.strictEqual(m.pqc.desde, null);
   }
-  // MikroTik: donde la ficha o el manual de usuario dicen «RouterOS v7» y en CHR; los que solo
-  // dicen «la versión de /system resource o superior» se quedan en «no consta».
-  const sinV7 = ['RB750UPr2', 'RB960PGS-PB', 'RB1100x4'];
+  // MikroTik: donde la ficha o el manual de usuario dicen «RouterOS v7», en CHR y, desde el
+  // 2026-10-28, donde el changelog oficial de una versión posterior a la 7.21 trae un cambio para
+  // el equipo (los tres cuya ficha y manual no daban la versión). Hoy, los 20.
   for (const m of CATALOGOS.mikrotik) {
-    assert.strictEqual(!!m.pqc, !sinV7.includes(m.codigo), `${m.id}: pqc donde no toca`);
-    if (m.pqc) assert.strictEqual(m.pqc.desde, 'RouterOS 7.21');
+    assert.ok(m.pqc, `${m.id}: sin pqc`);
+    assert.strictEqual(m.pqc.desde, 'RouterOS 7.21');
+  }
+  for (const [codigo, version] of [['RB1100x4', '7.23'], ['RB960PGS-PB', '7.21.3'], ['RB750UPr2', '7.24.2']]) {
+    const m = CATALOGOS.mikrotik.find((x) => x.codigo === codigo);
+    assert.match(m.pqc.alcance, new RegExp(`changelog oficial de RouterOS ${version.replace(/\./g, '\\.')} trae un cambio para este equipo`));
+    assert.strictEqual(m.pqc.urls[1], `https://download.mikrotik.com/routeros/${version}/CHANGELOG`);
   }
   for (const [v, L] of Object.entries(CATALOGOS)) {
     for (const m of L.filter((x) => x.pqc)) {
