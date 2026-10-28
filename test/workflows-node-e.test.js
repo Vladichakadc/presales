@@ -16,19 +16,29 @@ const path = require('path');
 const DIR = path.join(__dirname, '..', '.github', 'workflows');
 
 // Devuelve el cuerpo de cada `node -e "..."` de un bloque `run`, cortado en la primera comilla
-// doble sin escapar, que es donde bash lo cierra.
-function scriptsNodeE(run) {
+// doble sin escapar, que es donde bash lo cierra, y lo que sigue a esa comilla en su línea.
+function scriptsNodeE(run, conCola = false) {
   const out = [];
   const abre = 'node -e "';
   let i = run.indexOf(abre);
   while (i >= 0) {
     let k = i + abre.length;
     while (k < run.length && !(run[k] === '"' && run[k - 1] !== '\\')) k++;
-    out.push(run.slice(i + abre.length, k));
+    const fin = run.indexOf('\n', k + 1);
+    const cuerpo = run.slice(i + abre.length, k);
+    out.push(conCola ? { cuerpo, cola: run.slice(k + 1, fin < 0 ? run.length : fin) } : cuerpo);
     i = run.indexOf(abre, k + 1);
   }
   return out;
 }
+
+// La comilla que cierra el script tiene que ser la última del script: detrás va el fin de línea, un
+// espacio (los argumentos del script) o sintaxis de bash (`|`, `&&`, `;`, una redirección), nunca
+// texto pegado. El 2026-10-28 una entrada de traer-cisco-huawei.yml llevaba `debeContener: "What's
+// new"`: bash cerró el script en esa comilla, Node recibió medio programa y la corrida 40622507025
+// cayó antes de traer nada. La misma prueba sacó otra que llevaba años en silencio: con
+// `debeContener: '"rows"'` bash pegaba los trozos y el script buscaba `rows` sin sus comillas.
+const colaDeBash = (cola) => /^(\s|$|[|&;>)<])/.test(cola);
 
 // Comillas invertidas y `$` sin escapar; `${{ ... }}` es de GitHub, no de bash, y se resuelve
 // antes de que bash lo vea.
@@ -74,6 +84,20 @@ test('ningún `node -e "..."` de un workflow deja a bash ejecutar o expandir alg
     }
   }
   assert.ok(vistos >= 5, `solo se encontraron ${vistos} scripts node -e: la extracción dejó de verlos`);
+});
+
+test('ningún `node -e "..."` de un workflow lleva una comilla doble que lo corte a medias', () => {
+  for (const f of fs.readdirSync(DIR).filter((x) => /\.ya?ml$/.test(x))) {
+    for (const run of bloquesRun(fs.readFileSync(path.join(DIR, f), 'utf8'))) {
+      for (const { cuerpo, cola } of scriptsNodeE(run, true)) {
+        assert.ok(colaDeBash(cola), `${f}: una comilla doble corta el script node -e "..." tras «${cuerpo.slice(-60).replace(/\n/g, '⏎')}»; sigue «${cola.slice(0, 40)}»`);
+      }
+    }
+  }
+  const [corto] = scriptsNodeE('node -e "\n  const d = { debeContener: "What\'s new", urls: [] };\n"', true);
+  assert.ok(!colaDeBash(corto.cola), 'el detector no ve la comilla doble de debeContener');
+  const [bien] = scriptsNodeE('node -e "\n  console.log(1);\n" > salida.txt', true);
+  assert.ok(colaDeBash(bien.cola), 'una redirección detrás del script es de bash');
 });
 
 test('el detector ve lo que tiene que ver', () => {
