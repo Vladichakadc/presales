@@ -301,7 +301,7 @@
     });
     $('xlsBtn').onclick = () => BOM.exportarExcel(filas, {
       titulo: `Nokia ${m.id}`, subtitulo: `${m.ser} · ${m.seg}`, archivo: 'nokia-agregacion-core',
-      supuestos: { vendor: 'nokia', fabricante: 'Nokia', modelo: m.id, serie: m.ser, pqc: m.pqc || null, pqcNo: m.pqcNo || null },
+      supuestos: { vendor: 'nokia', fabricante: 'Nokia', modelo: m.id, serie: m.ser, pqc: m.pqc || null, pqcNo: m.pqcNo || null, ciclo: BOM.cicloDe(m) },
     });
     $('copyBtn').onclick = () => {
       const out = $('bomOut');
