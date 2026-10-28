@@ -32,6 +32,21 @@ function scriptsNodeE(run, conCola = false) {
   return out;
 }
 
+// Los scripts que van por la entrada estándar (`node - <<DELIM`, sin comillas en el delimitador):
+// bash ejecuta las comillas invertidas y expande los `$` igual que entre comillas dobles. Con el
+// delimitador entre comillas no toca nada, y no hace falta mirarlo. El transporte de documentos va
+// así desde el 2026-10-28: su `node -e "..."` pasó el tope de 128 KiB de un argumento.
+function scriptsHeredoc(run) {
+  const out = [];
+  const re = /node - <<(-?)(\w+)\n/g;
+  let m;
+  while ((m = re.exec(run))) {
+    const fin = run.indexOf(`\n${m[2]}`, re.lastIndex - 1);
+    out.push(run.slice(re.lastIndex, fin < 0 ? run.length : fin));
+  }
+  return out;
+}
+
 // La comilla que cierra el script tiene que ser la última del script: detrás va el fin de línea, un
 // espacio (los argumentos del script) o sintaxis de bash (`|`, `&&`, `;`, una redirección), nunca
 // texto pegado. El 2026-10-28 una entrada de traer-cisco-huawei.yml llevaba `debeContener: "What's
@@ -84,6 +99,22 @@ test('ningún `node -e "..."` de un workflow deja a bash ejecutar o expandir alg
     }
   }
   assert.ok(vistos >= 5, `solo se encontraron ${vistos} scripts node -e: la extracción dejó de verlos`);
+});
+
+test('ningún `node - <<DELIM` sin comillas deja a bash ejecutar o expandir algo sin escapar', () => {
+  let vistos = 0;
+  for (const f of fs.readdirSync(DIR).filter((x) => /\.ya?ml$/.test(x))) {
+    for (const run of bloquesRun(fs.readFileSync(path.join(DIR, f), 'utf8'))) {
+      for (const cuerpo of scriptsHeredoc(run)) {
+        vistos++;
+        const malos = peligrosos(cuerpo);
+        assert.deepStrictEqual(malos, [], `${f}: comilla invertida o $ sin escapar dentro de node - <<...: ${malos.join(' | ')}`);
+      }
+    }
+  }
+  assert.ok(vistos >= 1, 'el transporte de documentos va por la entrada estándar y la extracción no lo ve');
+  const [cuerpo] = scriptsHeredoc('node - <<JS\n  // `x` y $HOME\n  const ok = 1;\nJS\n');
+  assert.strictEqual(peligrosos(cuerpo).length, 3);
 });
 
 test('ningún `node -e "..."` de un workflow lleva una comilla doble que lo corte a medias', () => {
