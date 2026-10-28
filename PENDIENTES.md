@@ -4,7 +4,8 @@ Registro vivo de lo que falta. **Al empezar una tarea se buscan aquí los puntos
 tocan, y al terminarla se actualiza**, y su contenido se resume al usuario al cerrar cada entrega — esa es la instrucción
 permanente que lo justifica (ver `CLAUDE.md`, sección *Instrucciones permanentes del dueño*).
 
-Última revisión: 2026-10-28 · PR #44 (**El fin de venta también en el consolidado multi-sede.** Encargo del dueño: «ejecuta pendientes y mejora propuesta». Ver *Cerrado recientemente*.)
+Última revisión: 2026-10-28 · PR #45 (**La fuente de la PQC enlazada a `fuentes.js`, los 20 MikroTik con documento y el transporte sin tope de tamaño.** Encargo del dueño: «ejecutas y buscar para solucionar pendientes de fuentes siempre oficiales, no especules ni asumas; así mismo, ejecutar las mejoras propuestas». Ver *Cerrado recientemente* y *Abierto: criptografía post-cuántica sin documento*.)
+Revisión anterior: 2026-10-28 · PR #44 (**El fin de venta también en el consolidado multi-sede.** Encargo del dueño: «ejecuta pendientes y mejora propuesta». Ver *Cerrado recientemente*.)
 Revisión anterior: 2026-10-28 · PR #43 (**`npm run candidatas` compara cada PDF servido con su copia de `public/datasheets/`.** Encargo del dueño: «ejecuta la mejora propuesta». Ver *Cerrado recientemente*.)
 Revisión anterior: 2026-10-28 · PR #41 (**El fin de venta del equipo también en el Excel del BOM.** Encargo del dueño: «ejecuta los pendientes que puedas cerrar y la mejora propuesta; si encuentras alguna mejora por el camino, avanza con la ejecución». Ver *Cerrado recientemente*.)
 Revisión anterior: 2026-10-28 · PR #42 (**Las URL del PDF de las dos fuentes de Aruba que eran un cascarón, probadas desde Actions.** Encargo del dueño: «baja los PDF de Aruba desde tu Chrome». Ver *Cerrado recientemente* y el pendiente de las dos fuentes de HPE.)
@@ -2147,11 +2148,23 @@ equipo la traiga. Lo que queda, y por qué:
   «quantum-safe»; support.huawei.com pide sesión (ver la cuenta de Huawei en *Decisiones*). Huawei
   anunció en marzo de 2026 una tarjeta QKD para la serie NetEngine 8000E (no está en el catálogo, y
   QKD no es PQC).
-- **Aruba: los gateways AOS (9000/9100/9200 y la línea 7000/7200)**. ~~EdgeConnect~~ **cerrado el
+- **Aruba: los gateways AOS (9000/9100/9200 y la línea 7000/7200)**. 2026-10-28 (PR #45): las
+  novedades oficiales de AOS-10.8.0.0 traen «New ppk-mandatory CLI Command […] to enforce mandatory
+  Post-Quantum Preshared Key (PPK) setup on the Initiator during IKEv2 negotiation», pero no dicen en
+  qué equipo (AOS-10 es de puntos de acceso y gateways), y la página «Supported Gateway Platforms»
+  da AOS-10 sin última versión en los 7000, 7200, 9004, 9004-LTE, 9012, 9106, 9114 y 9240. No se
+  marca: falta el documento que lo diga del gateway. Lo cierra la referencia de CLI de AOS-10 (o la
+  guía de IPsec del gateway) que nombre el comando; el índice de la documentación de New Central
+  (`Data/Tocs/nc_proto.js`, rama `fuente/pqc-6-2026-10-28`) no tiene un tema de IPsec/IKE con la
+  PPK. ~~EdgeConnect~~ **cerrado el
   2026-10-27**: el technical brief de cifrados (Rev C, ago-2025, ECOS 9.4.4/9.5.4/9.6.0) da «RFC 8784
   Post Quantum Pre-Shared Key» en los túneles IPsec con IKE; no dice en qué versión entra. Las notas
   de ECOS 9.7.1.0 traen PQC solo para la firma de la imagen.
-- **MikroTik: tres equipos** (RB1100AHx4, hEX PoE lite y PowerBox Pro): su ficha dice solo
+- ~~**MikroTik: tres equipos** (RB1100AHx4, hEX PoE lite y PowerBox Pro)~~ **Cerrado el 2026-10-28
+  (PR #45)**: el changelog oficial de una versión posterior a la 7.21 trae un cambio para cada uno
+  (RouterOS 7.23: «port - remove unused serial port on RB1100AHx4»; 7.21.3: «poe-out - firmware
+  update for hEX PoE, OmniTIK 5 PoE ac, PowerBox Pro»; 7.24.2: «poe-out - fixed missing PoE-Out
+  interface on hEX PoE lite, …»). Los 20 MikroTik traen la PPK. Antes: su ficha dice solo
   «RouterOS» y su manual, «the version number at or above what is indicated in […] /system
   resource». ~~El hEX lite, el hEX, el hEX PoE y el hEX S~~ **cerrados el 2026-10-27** por su manual
   de usuario («The device supports RouterOS v7 and above»). ~~El resto~~ **cerrado el 2026-10-27**: la
@@ -2169,19 +2182,26 @@ equipo la traiga. Lo que queda, y por qué:
   y el Catalyst 8500. Nombra también la serie ASR 1000, pero los del catálogo están fuera de venta y
   ningún documento del catálogo dice que lleguen a la 17.11.1a (un hilo de la comunidad dice que el
   ASR1001-X se queda en la 17.9: no es fuente, pero es razón para no extenderlo). Lo cerraría el
-  boletín de fin de venta de cada ASR con su última versión. Los G2-MX llevan MX OS.
+  boletín de fin de venta de cada ASR con su última versión. Los G2-MX llevan MX OS. 2026-10-28 (PR
+  #45): el «Cisco Quantum-Safe Communications Roadmap» (actualizado el 11-ago-2026) solo cita de
+  Meraki el TLS del Dashboard: ni los MX ni los G2-MX tienen PQC de VPN en él; siguen en «no consta».
 - ~~**FortiGate 400G, 3000G, 3500G, 3800G (y variantes), 7081F y 7121F**~~ **Cerrado el 2026-10-27**:
   las Release Notes de FortiOS 7.6.7 y 7.6.6. Los 58 FortiGate del catálogo documentan ML-KEM.
-- **SRX4100 y SRX de sucursal (300/320/340/345/380)**: no están en la tabla del Feature Explorer.
+- **SRX4100 y SRX de sucursal (300/320/340/345/380)**: no están en la tabla del Feature Explorer
+  (vuelta a traer el 2026-10-28: igual). La sección «Post-Quantum Cryptography» de las notas de Junos
+  OS 25.4R1 es la firma ML-DSA de las imágenes de software, no el tráfico: no los cierra.
 - **Nokia 7250 IXR y 7220 IXR**. 2026-10-27: la ficha Release 26 de los 7250 IXR-e/e2 (asset
   206825) da «MACsec (only on IXR-e 14 x SFP+ + 4 x RJ45)» sin llamarlo quantum-safe: sigue en «no
   consta». ~~7750 SR-1x~~ **cerrado el 2026-10-27**: su ficha Release 26
   (asset 212738) da MACsec y MKA con clave precompartida quantum-safe, y ANYsec. Las fichas Release
   26 de los 7250 IXR del catálogo no lo dicen (IXR-6e/10e: MACsec e IPsec sin llamarlos quantum-safe;
   IXR-X: «planned future capabilities»; IXR-R: no los nombra). La nota de aplicación de IPsec
-  «quantum-safe» describe PPK con tarjetas ISA o ESA sin versión de SR OS: no entra.
+  «quantum-safe» describe PPK con tarjetas ISA o ESA sin versión de SR OS: no entra. 2026-10-28
+  (PR #45): la ficha Release 26 de la serie 7220 IXR-D (CID207599, septiembre) no nombra MACsec ni
+  quantum-safe: los D1, D2L, D3L y D5 siguen en «no consta».
 Si un fabricante publica el documento, entra por `traer-cisco-huawei.yml` y su fuente en
-`fuentes.js` con `campos: ['pqc']` (la prueba frena un equipo marcado sin fuente).
+`fuentes.js` con `campos: ['pqc']`, y el `pqc` del equipo la cita por su URL en `urls` (la prueba
+frena un equipo marcado sin fuente, o con una URL que no es una entrada de `fuentes.js` que lo declare).
 
 ## Abierto: modelos de una ficha que el catálogo no trae (2026-10-27)
 
@@ -2417,6 +2437,7 @@ que ya se comprobó y lo que cuesta cada opción.
 
 ## Cerrado recientemente
 
+- **2026-10-28 · La fuente de la PQC enlazada a `fuentes.js`, los 20 MikroTik con documento y el transporte sin tope de tamaño (PR #45).** Encargo del dueño: «ejecutas y buscar para solucionar pendientes de fuentes siempre oficiales, no especules ni asumas; así mismo, ejecutar las mejoras propuestas». **La mejora** (propuesta en la septuagesimoprimera): cada `pqc` y `pqcNo` de los seis catálogos lleva `urls`, y `test/pqc.test.js` exige que cada una sea una entrada de `fuentes.js` que respalde ese campo y declare al equipo (más de 145 citas; el ASR 1002-HX y el 1006-X citan la guía de la PPK y su boletín). La ficha pinta «Documento oficial» con su enlace (solo `https`) y la hoja «Supuestos» escribe la URL (`e2e-pqc-supuestos.js` lo lee en el Excel). La otra mejora de entonces, la foto en el Excel, la hizo otra sesión (PR #40). **De lo pendiente**, solo con documento oficial traído por Actions (`fuente/pqc-4`, `pqc-5` y `pqc-6-2026-10-28`): los tres MikroTik que faltaban, con el changelog oficial que los nombra (RB1100AHx4 en la 7.23, PowerBox Pro en la 7.21.3, hEX PoE lite en la 7.24.2; tres entradas nuevas en `fuentes.js`); siguen en «no consta», con lo leído, los SRX de sucursal y el SRX4100, los 7220 IXR-D, los Meraki y los gateways AOS (ver *Abierto: criptografía post-cuántica sin documento*). **El transporte**: una comilla doble (`debeContener: "What's new"`) cortaba el `node -e "..."` de `traer-cisco-huawei.yml` (corrida 40622507025), y el script, de 125.535 bytes en `main` (el 96 % del tope de 128 KiB de un argumento en Linux), lo pasó con las entradas nuevas (corrida 40683042861, «Argument list too long»). Ahora va por la entrada estándar (`node - <<NODE_JS`), comprobado con bash y `node --check` que Node recibe el mismo programa; `test/workflows-node-e.test.js` vigila la comilla doble y los heredocs, y sacó dos fallos que ya estaban: `'"rows"'` llegaba como `rows` y ocho comillas invertidas de comentarios se ejecutaban como órdenes. Verificado: `verificar` (1185 pruebas), `auditar`, servidor en producción, `pantallas` 17/17, `contraste --todos` 10/10 (cobertura aparte), `e2e` entera, `puerta`, y la ficha del RB1100AHx4, el hEX PoE lite, la PowerBox Pro y el SRX4700 conducida en Chromium con sus enlaces.
 - **2026-10-28 · PR #44 · El fin de venta también en el consolidado multi-sede.** Encargo del dueño: «ejecuta pendientes y mejora propuesta». **La mejora propuesta** (la del PR #41): el BOM de varias sedes no lleva hoja «Supuestos», así que no decía que un perfil usa un equipo con fin de venta. Ahora cada perfil guarda el ciclo de su equipo al crearse (`ciclo: BOM.cicloDe(...)`, en las cinco páginas con perfiles: Aruba, Cisco, Fortinet, Huawei y MikroTik); el consolidado en pantalla lo avisa en rojo perfil a perfil, con fecha, sucesor y boletín, y su Excel lo escribe en la hoja BOM («Ciclo de vida de los equipos del despliegue»). Un perfil guardado antes no trae el dato: se dice «sin dato de ciclo» y se pide guardarlo de nuevo, nunca «vigente». `BOM.cicloDePerfiles` y `BOM.avisoCicloConsolidado`. Pruebas: dos en `bom-perfiles.test.js` y el consolidado en `e2e-ciclo-excel.js`. **Los pendientes**: ninguno nuevo cerrable desde una sesión; siguen los del dueño y los que esperan documento (ver `RELEVO.md`).
 - **2026-10-28 · `npm run candidatas` compara cada PDF servido con su copia (PR #43).** Mejora propuesta al cerrar el PR #42, aprobada por el dueño («ejecuta la mejora propuesta»). Una candidata puede declarar `copia` (la copia de `public/datasheets/` de la que salieron las cifras) y el script dice, por la huella sha256, «MISMO DOCUMENTO: basta cambiar la URL» o «EDICION DISTINTA: contrastar las cifras antes de cambiar la URL»; también en `--json`. Las cuatro descargas de psnow la declaran. Corrida 40683073603: la serie 9000 sale mismo documento y EdgeConnect edición distinta (Rev. 9), como se había comparado a mano. `test/candidatas-copia.test.js` prueba los cuatro estados sin red y frena una `copia` que no existe o no es un PDF.
 - **2026-10-28 · PR #41 · El fin de venta del equipo también en el Excel del BOM.** Encargo del dueño: «ejecuta los pendientes que puedas cerrar y la mejora propuesta; si encuentras alguna mejora por el camino, avanza con la ejecución». **La mejora propuesta** (la del PR #40): en pantalla el equipo que está o va a estar fuera de venta sale en rojo, y el Excel que llega al cliente no lo decía. Ahora la hoja «Supuestos» trae la sección «Ciclo de vida del equipo» (estado, último día de pedido, referencia del boletín, sucesor —el del boletín, o el inferido por capacidad dicho como tal—, fin de soporte si consta y enlace al boletín) y la hoja BOM una línea en rojo que avisa y remite a ella. Sin dato de ciclo no sale nada (un equipo sin boletín no se declara vigente); la línea anterior aparece en la sección pero sin aviso, porque se sigue pidiendo. `BOM.cicloDe(m)` y `BOM.cicloDelEquipo(c, hoy)`; las siete páginas pasan `ciclo` en `meta.supuestos`. Pruebas: dos en `bom-supuestos.test.js` y la batería `e2e-ciclo-excel.js` (Excel de Cisco con el Catalyst 8300-1N1S-6T y con el C8130-G2). **Los pendientes**: lo único que una sesión puede cerrar sin acceso especial eran las mejoras propuestas; la otra (la fuente de la PQC enlazada a `fuentes.js`) toca los `legacyData/` que declara el traspaso `pqc-documentos` (rama `claude/elegant-pascal-7ymts7`, cuyo único commit fuera de `main` es el que abre ese traspaso: si el tema está cerrado, borrar esa rama lo libera). Se volvió a mirar el 10GBASE-T en SFP+ en las guías de Cisco ya traídas: sigue sin documento fuera de la serie 8300 y de las 8100 VAI/VAP.

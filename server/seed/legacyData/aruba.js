@@ -1507,7 +1507,8 @@ for (const m of MODELS) {
     mecanismo:'Clave precompartida post-cuántica (PPK, RFC 8784) en IKEv2',
     donde:'Túneles IPsec con IKE (no en los IPsec UDP propios de EdgeConnect, que son el valor por defecto)', desde:null,
     alcance:'la fuente cubre ECOS 9.4.4, 9.5.4 y 9.6.0 y no dice en qué versión entra',
-    fuente:'HPE Aruba Networking, «EdgeConnect SD-WAN Cryptographic Algorithms, Cipher Profiles, & CSfC», technical brief Rev C (ago-2025)'};
+    fuente:'HPE Aruba Networking, «EdgeConnect SD-WAN Cryptographic Algorithms, Cipher Profiles, & CSfC», technical brief Rev C (ago-2025)',
+    urls:['https://arubanetworking.hpe.com/techdocs/sdwan-PDFs/docs/ECSecurityAlgorithmsCipherProfiles_latest.pdf']};
 }
 
 module.exports = {

@@ -307,18 +307,30 @@ const PQC_ROUTEROS_V7 = new Set(['L009UiGS-2HaxD-IN', 'L009UiGS-RM', 'RB4011iGS+
   'RB5009UPr+S+OUT', 'CCR2004-16G-2S+', 'CCR2004-16G-2S+PC', 'CCR2004-1G-12S+2XS', 'CCR2116-12G-4S+',
   'CCR2216-1G-12XS-2XQ', 'E50UG', 'E60iUGS']);
 const PQC_MANUAL_V7 = new Set(['RB750r2', 'RB750Gr3', 'RB960PGS', 'RB760iGS']);
+// Y los tres cuya ficha y manual no dan la versión (2026-10-28): el changelog oficial de una versión
+// posterior a la 7.21 trae un cambio para ese equipo, así que corre esa versión. Citas literales de
+// download.mikrotik.com/routeros/<versión>/CHANGELOG (rama fuente/pqc-4-2026-10-28 y pqc-5).
+const PQC_CHANGELOG = {
+  RB1100x4: {version:'7.23', cita:'port - remove unused serial port on RB1100AHx4'},
+  'RB960PGS-PB': {version:'7.21.3', cita:'poe-out - firmware update for hEX PoE, OmniTIK 5 PoE ac, PowerBox Pro'},
+  RB750UPr2: {version:'7.24.2', cita:'poe-out - fixed missing PoE-Out interface on hEX PoE lite, RB260GSP, OmniTIK 5 PoE, PowerBox'},
+};
 for (const m of MODELS) {
   const chr = m.ser === 'CHR';
   const manual = PQC_MANUAL_V7.has(m.codigo);
-  if (!chr && !manual && !PQC_ROUTEROS_V7.has(m.codigo)) continue;
+  const log = PQC_CHANGELOG[m.codigo];
+  if (!chr && !manual && !log && !PQC_ROUTEROS_V7.has(m.codigo)) continue;
   m.pqc = {tipo:'ppk',
     mecanismo:'Claves precompartidas post-cuánticas (PPK, RFC 9867 sobre la 8784) mezcladas en IKEv2: estáticas por par, PSK de un solo uso o tomadas de un servidor QKD',
     donde:'IKEv2 (IPsec); en la 7.21, solo por CLI', desde:'RouterOS 7.21',
     alcance: chr ? 'CHR es la edición virtual de RouterOS, con las mismas funciones de VPN (manual de RouterOS 7.26)'
       : manual ? 'su manual de usuario dice «The device supports RouterOS v7 and above»; la PPK es de RouterOS, no de un modelo'
+      : log ? `el changelog oficial de RouterOS ${log.version} trae un cambio para este equipo («${log.cita}»): corre esa versión, posterior a la 7.21; la PPK es de RouterOS, no de un modelo`
       : 'su ficha dice «RouterOS v7»; la PPK es de RouterOS, no de un modelo',
     fuente:'«QKD Integration in RouterOS IPsec (PPK)» del manual de RouterOS y el changelog oficial de RouterOS 7.21'
-      + (manual ? `; manual de usuario del ${m.codigo}` : '')};
+      + (manual ? `; manual de usuario del ${m.codigo}` : '') + (log ? `; changelog oficial de RouterOS ${log.version}` : ''),
+    urls:['https://manual.mikrotik.com/docs/virtual-private-networks/ipsec/qkd-integration-in-routeros-ipsec-ppk',
+      ...(log ? [`https://download.mikrotik.com/routeros/${log.version}/CHANGELOG`] : [])]};
 }
 
 module.exports = {

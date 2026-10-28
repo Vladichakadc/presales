@@ -610,7 +610,8 @@ const PQC_FORTIOS={tipo:'mlkem',
   mecanismo:'ML-KEM-512, ML-KEM-768 o ML-KEM-1024 (FIPS 203) como intercambio de claves adicional (addke1 a addke7)',
   donde:'IKEv2 (IPsec)', desde:'FortiOS 7.6.1',
   alcance:'Modelo listado en la Maximum Values Table de FortiOS 7.6.7: corre una versión que la trae.',
-  fuente:'FortiOS 7.6.5 Administration Guide, «Post-Quantum Cryptography for IPsec key exchange»; la versión, de «New features» de FortiOS 7.6.0'};
+  fuente:'FortiOS 7.6.5 Administration Guide, «Post-Quantum Cryptography for IPsec key exchange»; la versión, de «New features» de FortiOS 7.6.0',
+  urls:['https://docs.fortinet.com/document/fortigate/7.6.5/administration-guide/229631']};
 // Los FortiGate sin fila en la Maximum Values Table de 7.6.7 (2026-10-27): las Release Notes
 // dicen que version corren. Las de 7.6.7 listan el 3800G/3801G en «Supported models» y el
 // 7081F/7121F en «FortiGate 6000 and 7000 support» (sus limitaciones de IPsec, en la guia del
@@ -631,7 +632,8 @@ const PQC_POR_RN = {
 };
 for (const m of MODELS) {
   m.pqc = m.bgpDe ? PQC_FORTIOS
-    : PQC_POR_RN[m.id] ? {...PQC_FORTIOS, alcance:`Corre una versión posterior a la 7.6.1: ${PQC_POR_RN[m.id]}.`} : null;
+    : PQC_POR_RN[m.id] ? {...PQC_FORTIOS, alcance:`Corre una versión posterior a la 7.6.1: ${PQC_POR_RN[m.id]}.`,
+      urls:[PQC_POR_RN[m.id].includes('7.6.7') ? 'https://docs.fortinet.com/document/fortigate/7.6.7/fortios-release-notes/' : 'https://docs.fortinet.com/document/fortigate/7.6.6/fortios-release-notes']} : null;
 }
 
 // ── PLATAFORMA POR MODELO: LO QUE EL MATRIX PUBLICA ADEMAS DEL RENDIMIENTO (2026-09-23) ──

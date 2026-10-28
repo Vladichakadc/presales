@@ -1,6 +1,6 @@
 # Relevo
 
-Última actualización: 2026-10-28 · PR #44
+Última actualización: 2026-10-28 · PR #45
 
 Informe para continuar el trabajo. Lo pidió el dueño del repositorio el 2026-10-27: «de aquí en
 adelante, un informe de pendientes y mejoras para que la cuenta **servicioiptv2025@gmail.com**
@@ -33,6 +33,16 @@ está en curso no va aquí: lo dice `npm run traspasos` (protocolo en `docs/tras
 
 ## Estado al cerrar esta entrega
 
+- **2026-10-28 · PR #45**: la fuente de la PQC, enlazada a `fuentes.js` (la mejora propuesta):
+  cada `pqc`/`pqcNo` cita su documento por la URL de su entrada (`urls`), la prueba exige que esa
+  entrada exista, respalde el campo y declare al equipo, y la ficha y la hoja «Supuestos» lo
+  enlazan. De los pendientes de fuentes, solo con documento oficial: **los 20 MikroTik traen ya la
+  PPK** (el RB1100AHx4, la PowerBox Pro y el hEX PoE lite, por el changelog oficial de RouterOS que
+  los nombra en la 7.23, la 7.21.3 y la 7.24.2). El resto de la PQC se leyó y sigue en «no consta»
+  (ver abajo). **El transporte de documentos** (`traer-cisco-huawei.yml`) iba como argumento de
+  `node -e` y llegó al tope de 128 KiB de Linux: va por la entrada estándar (`node - <<NODE_JS`).
+  **Criterio que conviene conservar**: una entrada nueva del transporte no lleva comillas dobles
+  (`test/workflows-node-e.test.js` lo frena), y un dato de PQC sin URL de `fuentes.js` no pasa.
 - **2026-10-28 · PR #44**: el fin de venta también en el consolidado multi-sede (la mejora
   propuesta): cada perfil guarda el ciclo de su equipo y el consolidado lo avisa en pantalla y en
   la hoja BOM de su Excel. Un perfil guardado antes dice «sin dato de ciclo».
@@ -163,11 +173,14 @@ traspaso (el #37, de otra sesión, se fusionó mientras se cerraba esta).
 
 ### Esperan un documento oficial (se cierran trayéndolo por Actions)
 
-- **Criptografía post-cuántica sin documento**: Huawei (pide la cuenta), los gateways AOS de
-  Aruba, tres MikroTik (RB1100AHx4, hEX PoE lite y PowerBox Pro: su manual solo dice «la versión de
-  /system resource o superior»), los G2-MX (MX OS), el SRX4100 y los SRX de sucursal, y los Nokia
-  7250 IXR (sus fichas Release 26 no llaman quantum-safe a su MACsec) y 7220 IXR. Dicen «no consta»
-  y el requisito los aparta con ese motivo. El ASR 1001-X no es un hueco: su boletín lo deja en la
+- **Criptografía post-cuántica sin documento**: Huawei (pide la cuenta); los gateways AOS de
+  Aruba (AOS-10.8.0.0 trae el comando `ppk-mandatory` de IKEv2 sin decir en qué equipo: lo cierra
+  la referencia de CLI de AOS-10 que lo nombre en el gateway, que corre AOS-10 según «Supported
+  Gateway Platforms»); los Meraki MX y G2-MX (el roadmap quantum-safe de Cisco de ago-2026 solo cita
+  el TLS del Dashboard); el SRX4100 y los SRX de sucursal (fuera del Feature Explorer; la PQC de Junos
+  25.4R1 es la firma de imágenes); y los Nokia 7250 IXR (sus fichas Release 26 no llaman
+  quantum-safe a su MACsec) y 7220 IXR (la ficha R26 de los IXR-D no nombra MACsec). Dicen «no
+  consta» y el requisito los aparta con ese motivo. El ASR 1001-X no es un hueco: su boletín lo deja en la
   17.9, anterior a la PPK, y la ficha dice «no la trae» (`pqcNo`). Si un documento oficial dice que
   otro equipo no la trae, entra igual: `pqcNo` con su fuente en `fuentes.js` (`campos: ['pqcNo']`).
 - **Cisco**: ficha del Secure Firewall dedicado (y decidir si entra al portal), precio de Secure
@@ -205,20 +218,19 @@ existen los workflows de transporte. Huawei y HPE niegan además el navegador au
   consolidar un despliegue con un aviso viejo. Cuesta pasar una función de búsqueda de modelo a
   `BOM.cicloDePerfiles` desde las cinco páginas; si se hace mal, un perfil de otro fabricante
   podría quedarse sin aviso, y lo vería `bom-perfiles.test.js`. Se decide por el dueño.
-- **La fuente de la PQC, enlazada a `fuentes.js` y no escrita a mano** (propuesta al cerrar la
-  septuagesimoprimera entrega). Hoy `pqc.fuente` y `pqcNo.fuente` son un texto libre en cada
-  `legacyData/` («Boletín de fin de venta de los Cisco ASR1001-X y ASR1002-X»), y nada comprueba
-  que ese documento esté en `fuentes.js` ni que el vigía lo mire: en esta entrega salió que dos de
-  los tres boletines de los ASR que respaldan la PQC no los vigilaba nadie. La propuesta: que cada
-  `pqc`/`pqcNo` cite su fuente por la URL de su entrada en `fuentes.js`, que la prueba exija que
-  esa entrada exista, declare al equipo en `modelos` y lleve `pqc` o `pqcNo` en `campos`, y que la
-  ficha pinte el documento con su enlace. Evita que una cifra de seguridad cite un documento que ya
-  no se vigila (o que cambió sin que nadie lo contraste). Cuesta tocar las fuentes de la PQC de
-  seis `legacyData/` (145 equipos, 14 fuentes distintas), `seccionPqc` y el texto de
-  la hoja «Supuestos» (`bom.js`, compartido), y la batería `e2e-pqc-supuestos.js`. Si se hace mal,
-  la ficha pierde el nombre del documento o el Excel no se descarga; lo verían `pqc.test.js` y esa
-  batería. Se decide por el dueño.
-- (Hecha en el PR #44: el ciclo en el consolidado multi-sede. Hecha en el PR #41: el fin de venta en el Excel. Hecha en el PR #40: la foto de producto en el Excel. Hecha en la septuagesimoprimera: el «no la trae» documentado, `pqcNo`. Hecha en la sexagesimoctava: la
+- **El transporte de documentos, con su lista fuera del YAML** (propuesta al cerrar el PR #45).
+  `traer-cisco-huawei.yml` lleva dentro un script de Node de 132 KB que bash lee antes que Node:
+  en una sola entrega dio tres fallos de ese origen (una comilla doble que lo cortaba, el tope de
+  tamaño de un argumento y comillas invertidas que bash ejecutaba sin que nadie lo viera), y las
+  pruebas lo leen con expresiones regulares sobre el YAML. Propuesta: la lista de documentos
+  (`DOCS`) a un módulo `scripts/transporte/documentos.js` y el script a `scripts/transporte/traer.js`,
+  que el workflow ejecuta con `node scripts/transporte/traer.js`; bash deja de tocarlo y las pruebas
+  hacen `require()` de la lista. Evita la clase entera de fallos de comillas y tamaño, y que una
+  entrada mal escrita se descubra en Actions en vez de en `npm run verificar`. Cuesta mover unas
+  1.700 líneas y adaptar `traer-exploracion`, `traer-pantalla-login` y `workflows-node-e`; si se hace
+  mal, el transporte deja de traer documentos, y por eso se prueba con una corrida real de una
+  entrada conocida antes de fusionar. Se decide por el dueño.
+- (Hecha en el PR #45: la fuente de la PQC enlazada a `fuentes.js`. Hecha en el PR #44: el ciclo en el consolidado multi-sede. Hecha en el PR #41: el fin de venta en el Excel. Hecha en el PR #40: la foto de producto en el Excel. Hecha en la septuagesimoprimera: el «no la trae» documentado, `pqcNo`. Hecha en la sexagesimoctava: la
   versión mínima de la PQC en la hoja «Supuestos».)
 
 ## Decisiones del dueño abiertas

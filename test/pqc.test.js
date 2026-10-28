@@ -84,12 +84,17 @@ test('solo lleva `pqc` el equipo que su documento nombra', () => {
     assert.strictEqual(!!m.pqc, m.fam === 'ec', `${m.id}: pqc donde no toca`);
     if (m.pqc) assert.strictEqual(m.pqc.desde, null);
   }
-  // MikroTik: donde la ficha o el manual de usuario dicen «RouterOS v7» y en CHR; los que solo
-  // dicen «la versión de /system resource o superior» se quedan en «no consta».
-  const sinV7 = ['RB750UPr2', 'RB960PGS-PB', 'RB1100x4'];
+  // MikroTik: donde la ficha o el manual de usuario dicen «RouterOS v7», en CHR y, desde el
+  // 2026-10-28, donde el changelog oficial de una versión posterior a la 7.21 trae un cambio para
+  // el equipo (los tres cuya ficha y manual no daban la versión). Hoy, los 20.
   for (const m of CATALOGOS.mikrotik) {
-    assert.strictEqual(!!m.pqc, !sinV7.includes(m.codigo), `${m.id}: pqc donde no toca`);
-    if (m.pqc) assert.strictEqual(m.pqc.desde, 'RouterOS 7.21');
+    assert.ok(m.pqc, `${m.id}: sin pqc`);
+    assert.strictEqual(m.pqc.desde, 'RouterOS 7.21');
+  }
+  for (const [codigo, version] of [['RB1100x4', '7.23'], ['RB960PGS-PB', '7.21.3'], ['RB750UPr2', '7.24.2']]) {
+    const m = CATALOGOS.mikrotik.find((x) => x.codigo === codigo);
+    assert.match(m.pqc.alcance, new RegExp(`changelog oficial de RouterOS ${version.replace(/\./g, '\\.')} trae un cambio para este equipo`));
+    assert.strictEqual(m.pqc.urls[1], `https://download.mikrotik.com/routeros/${version}/CHANGELOG`);
   }
   for (const [v, L] of Object.entries(CATALOGOS)) {
     for (const m of L.filter((x) => x.pqc)) {
@@ -133,6 +138,50 @@ test('cada equipo con `pqc` tiene una fuente que lo declara con ese campo', () =
     const sin = L.filter((m) => m.pqc && !declarados.has(m.id)).map((m) => m.id);
     assert.deepStrictEqual(sin, [], `${v}: sin fuente de PQC → ${sin.join(', ')}`);
   }
+});
+
+// La fuente de cada `pqc` y `pqcNo`, por su URL de fuentes.js (mejora del 2026-10-28): el texto de
+// `fuente` es para leer, pero lo que se comprueba es que cada URL citada sea una entrada de
+// fuentes.js —y por eso la vigile el vigía—, que respalde ese campo y que declare al equipo. Así
+// una cifra de seguridad no cita un documento que nadie vigila (pasó con los boletines de los ASR).
+test('cada `pqc` y `pqcNo` cita por URL una entrada de fuentes.js que lo respalda y declara al equipo', () => {
+  let citas = 0;
+  for (const [v, L] of Object.entries(CATALOGOS)) {
+    const porUrl = new Map((FUENTES[v] || []).map((f) => [f.url, f]));
+    for (const m of L) {
+      for (const campo of ['pqc', 'pqcNo']) {
+        const d = m[campo];
+        if (!d) continue;
+        assert.ok(Array.isArray(d.urls) && d.urls.length, `${m.id}: \`${campo}\` sin urls`);
+        for (const url of d.urls) {
+          const f = porUrl.get(url);
+          assert.ok(f, `${m.id}: ${url} no es una entrada de fuentes.js (${v})`);
+          assert.ok((f.campos || []).includes(campo), `${m.id}: ${url} no respalda \`${campo}\``);
+          assert.ok((resolverModelos(v, f).ids || []).includes(m.id), `${m.id}: ${url} no declara este equipo`);
+          citas++;
+        }
+      }
+    }
+  }
+  assert.ok(citas >= 145, `se esperaban al menos 145 citas, hay ${citas}`);
+  // Lo que se apoya en dos documentos los cita los dos: el ASR 1002-HX, la guía de la PPK y su boletín.
+  const hx = CATALOGOS.cisco.find((m) => m.id === 'ASR 1002-HX');
+  assert.strictEqual(hx.pqc.urls.length, 2);
+  assert.match(hx.pqc.urls[1], /asr1002-hx-asso-part-eol\.html$/);
+});
+
+test('la ficha enlaza el documento de la PQC (y del «no»), y solo si es https', () => {
+  const enlace = (sec) => (sec.filas.find((f) => /^Documentos? oficial/.test(f[0])) || [])[1] || '';
+  const srx = FICHA.seccionPqc(CATALOGOS.juniper.find((m) => m.id === 'SRX4700'));
+  assert.match(enlace(srx), /^<a href="https:\/\/apps\.juniper\.net\/feature-explorer\/feature\/7502" target="_blank" rel="noopener">abrir el documento<\/a>$/);
+  const hx = FICHA.seccionPqc(CATALOGOS.cisco.find((m) => m.id === 'ASR 1002-HX'));
+  assert.match(enlace(hx), /documento 1 de 2.*documento 2 de 2/);
+  const no = FICHA.seccionPqc(CATALOGOS.cisco.find((m) => m.id === 'ASR 1001-X'));
+  assert.match(enlace(no), /asr1001-x-1002-x-eol\.html/);
+  // Un esquema que no es https no se enlaza (ni javascript:, ni http).
+  const raro = FICHA.seccionPqc({ id: 'x', pqc: { tipo: 'ppk', mecanismo: 'm', donde: 'd', fuente: 'f',
+    urls: ['javascript:alert(1)', 'http://ejemplo.com/x'] } });
+  assert.strictEqual(enlace(raro), '');
 });
 
 test('las siete páginas de un equipo pintan la sección', () => {

@@ -1017,14 +1017,25 @@
     ppk: 'Resistencia cuántica por clave precompartida (PPK, RFC 8784): no es un algoritmo post-cuántico',
     macsec: 'MACsec/ANYsec «quantum-safe» (cifrado simétrico con clave precompartida): no es un algoritmo post-cuántico',
   };
+  // El documento de la PQC, por la URL de su entrada en fuentes.js (`urls`, 2026-10-28): la prueba
+  // exige que cada una sea una fuente que el vigía mira. Solo https; lo demás no se enlaza.
+  function filaDocumentos(urls) {
+    const L = (Array.isArray(urls) ? urls : []).filter((u) => /^https:\/\/[^\s"<>]+$/.test(String(u)));
+    if (!L.length) return null;
+    const a = (u, txt) => `<a href="${esc(u)}" target="_blank" rel="noopener">${txt}</a>`;
+    return L.length === 1 ? ['Documento oficial', a(L[0], 'abrir el documento')]
+      : ['Documentos oficiales', L.map((u, i) => a(u, `documento ${i + 1} de ${L.length}`)).join(' · ')];
+  }
   function seccionPqc(m) {
     const titulo = 'Criptografía post-cuántica (PQC)';
     const p = m && m.pqc;
     // Un «no» con su documento (`pqcNo`, 2026-10-28) no es un «no consta»: se dice con su fuente.
     const no = m && !p && m.pqcNo;
     if (no && no.motivo && no.fuente) {
-      return { titulo, filas: [['Soporte', '<span class="warn">no la trae</span>'], ['Motivo', esc(no.motivo)]],
-        nota: 'Un documento oficial dice que este equipo no la trae. Fuente: ' + esc(no.fuente) + '.' };
+      const filas = [['Soporte', '<span class="warn">no la trae</span>'], ['Motivo', esc(no.motivo)]];
+      const doc = filaDocumentos(no.urls);
+      if (doc) filas.push(doc);
+      return { titulo, filas, nota: 'Un documento oficial dice que este equipo no la trae. Fuente: ' + esc(no.fuente) + '.' };
     }
     if (!p || !PQC_TIPO[p.tipo]) {
       return { titulo, filas: [['Soporte', '<span class="warn">no consta</span>']],
@@ -1037,6 +1048,8 @@
       ['Software', p.desde ? esc(p.desde) + ' o superior' : '<span class="warn">la fuente no da la versión</span>'],
     ];
     if (p.alcance) filas.push(['Alcance', esc(p.alcance)]);
+    const doc = filaDocumentos(p.urls);
+    if (doc) filas.push(doc);
     return { titulo, filas, nota: 'Fuente: ' + esc(p.fuente) + '.' };
   }
 
