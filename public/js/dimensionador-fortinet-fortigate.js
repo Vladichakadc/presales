@@ -706,6 +706,24 @@ function aplicarReglas(r) {
   if (grp) { if ($('chkRemoto').checked) grp.removeAttribute('data-inactivo'); else grp.setAttribute('data-inactivo', '1'); }
 }
 
+/* La suscripción FortiGuard de un clúster (F3, 2026-10-28). La regla general es una por nodo; la
+   guía de FortiOS 7.6.6 deja compartir una sola en activo-pasivo a las series que declara
+   `m.haLicenciaUnica` (40F, 60F, 70F, 80F, 100F y sus variantes). El BOM sigue cotizando una por
+   nodo, porque pasar al SKU de HA es una decisión comercial, y el motor lo dice en el aviso
+   `ha-licencia-unica`; aquí se dice lo mismo donde la página habla de las suscripciones del HA. */
+function licenciaHa(m, modo) {
+  if (modo === 'standalone') return null;
+  const u = m && m.haLicenciaUnica;
+  if (u && modo === 'ha-ap') {
+    return { unica: true, texto: `este BOM cotiza una suscripción por nodo, pero la serie ${u.serie} admite una sola `
+      + `para el par en activo-pasivo, con dos unidades del SKU de HA (${u.skuHa || 'que la lista firmada no trae para '
+      + 'este modelo: consultar'}), según la guía de FortiOS 7.6.6` };
+  }
+  return { unica: false, texto: u
+    ? 'una suscripción por nodo: la licencia única de su serie solo vale en activo-pasivo (guía de FortiOS 7.6.6)'
+    : 'una suscripción por nodo: la guía de FortiOS 7.6.6 no da licencia única en HA a este modelo' };
+}
+
 // Lo que cada control dice de si mismo segun el resto del escenario.
 function pintarControles(r) {
   const s = r.snapshot;
@@ -713,7 +731,7 @@ function pintarControles(r) {
   const nodos = s.disponibilidad.modo === 'standalone' ? 1 : 2;
   $('qty').value = String(nodos);
   $('qtyHint').innerHTML = nodos === 2
-    ? `<b>2 nodos</b> por el clúster ${s.disponibilidad.modo === 'ha-aa' ? 'activo-activo' : 'activo-pasivo'}: la cantidad no se puede bajar, y cada nodo lleva su propia suscripción FortiGuard y su FortiCare.`
+    ? `<b>2 nodos</b> por el clúster ${s.disponibilidad.modo === 'ha-aa' ? 'activo-activo' : 'activo-pasivo'}: la cantidad no se puede bajar, y cada nodo lleva su FortiCare. FortiGuard: ${esc(licenciaHa(r.seleccion ? r.seleccion.modelo : null, s.disponibilidad.modo).texto)}.`
     : 'Se deriva de la alta disponibilidad: 1 nodo, o 2 en clúster. Varias sedes se cotizan con los perfiles multi-sede de la lista de materiales.';
   // FortiOS decide si SSL-VPN existe (T06): con 7.6.3+ la opcion se deshabilita y se dice.
   const opSsl = $('vpnTipo').querySelector('option[value=sslvpn]');
@@ -1058,7 +1076,7 @@ function porQueDe(r, c) {
   if (s.seguridad.funciones.includes('chkAv')) flags.push('El antivirus en línea fija el piso en Threat Protection: esa cifra ya lo incluye, junto con el logging.');
   if (s.seguridad.funciones.includes('chkSandbox')) flags.push(`FortiSandbox analiza <b>fuera de banda</b>: no consume throughput del FortiGate. Cobertura elegida: <b>${esc({ incluido: 'incluida en el bundle', ai: 'servicio de sandbox del FortiGate', dedicado: 'FortiSandbox dedicado' }[s.comercial.sandbox] || s.comercial.sandbox)}</b>.`);
   if (s.seguridad.funciones.includes('chkIotDlp')) flags.push('IoT Security y DLP <b>fijan el bundle mínimo en Enterprise Protection</b> y elevan el piso a Threat Protection.');
-  if (s.disponibilidad.modo !== 'standalone') flags.push(`<b>HA ${s.disponibilidad.modo === 'ha-aa' ? 'activo-activo' : 'activo-pasivo'}:</b> se cotizan 2 nodos y cada uno lleva su propia suscripción. El clúster <b>no suma capacidad</b>: en el failover un nodo carga con todo, y ese es el escenario contra el que se dimensiona.`);
+  if (s.disponibilidad.modo !== 'standalone') flags.push(`<b>HA ${s.disponibilidad.modo === 'ha-aa' ? 'activo-activo' : 'activo-pasivo'}:</b> se cotizan 2 nodos; FortiGuard: ${esc(licenciaHa(m, s.disponibilidad.modo).texto)}. El clúster <b>no suma capacidad</b>: en el failover un nodo carga con todo, y ese es el escenario contra el que se dimensiona.`);
   if (rolSdwan !== 'none' && d) {
     const ipsec = eje('vpn');
     const insp = eje(d.capa.k);
@@ -1163,7 +1181,7 @@ function seccionesDe(r, m) {
       ['Servicios incluidos', BUNDLES[bundle] ? esc(BUNDLES[bundle].svcs) : 'Ninguno', true],
       ['SKU del bundle', !BUNDLES[bundle] ? '—' : lt && lt.sku ? `<code>${esc(lt.sku)}</code>` : '<span class="warn">Sin SKU vigente para este modelo</span>'],
       ['Término', `${anios} año${anios > 1 ? 's' : ''}`],
-      ['Nodos a licenciar', s.disponibilidad.modo === 'standalone' ? '1' : '2 — la licencia no se comparte en HA'],
+      ['Nodos a licenciar', s.disponibilidad.modo === 'standalone' ? '1' : `2 — ${esc(licenciaHa(m, s.disponibilidad.modo).texto)}`, true],
     ], nota: 'En FortiGate el SKU lleva el código del modelo: la licencia va atada al equipo, no al ancho de banda.' },
     { titulo: 'Software del portafolio', filas: SOFTWARE.map((sw) => [esc(sw.n), esc(sw.d), true]) },
     { titulo: 'Soporte', filas: [
@@ -1467,7 +1485,7 @@ function pintarBom() {
   const dto = dtoActual();
   $('bomTabla').innerHTML = BOM.renderTabla(filas, {
     dto,
-    aviso: r.bom.nodos > 1 ? 'Clúster HA: cada nodo lleva su propia suscripción FortiGuard y su propio contrato FortiCare.' : null,
+    aviso: r.bom.nodos > 1 ? `Clúster HA: cada nodo lleva su propio contrato FortiCare. FortiGuard: ${licenciaHa(r.seleccion ? r.seleccion.modelo : null, r.snapshot.disponibilidad.modo).texto}.` : null,
   });
   const fin = BOM.tco(filas, { opex: OPEX_FORTINET, anios });
   const hayPrecios = fin.capex > 0 || fin.opexTermino > 0;
