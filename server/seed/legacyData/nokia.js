@@ -221,7 +221,8 @@ for (const m of MODELS_ROUTER) {
   m.pqc = {tipo:'macsec',
     mecanismo:'MACsec IEEE 802.1AE con MKA y clave precompartida «quantum-safe», y ANYsec (MACsec extendido a flujos MPLS e IP), a velocidad de línea',
     donde:'Enlaces y flujos MPLS/IP, en los adaptadores y tarjetas de línea que lo soportan (ver la ficha)', desde:null,
-    fuente:PQC_7750[m.id]};
+    fuente:PQC_7750[m.id],
+    urls:[m.id.startsWith('7750 SR-1x') ? 'https://www.nokia.com/asset/f/212738/' : 'https://www.nokia.com/asset/f/205421/']};
 }
 
 module.exports = { MODELS, MODELS_ROUTER, PLATAFORMAS };

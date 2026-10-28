@@ -318,7 +318,8 @@ for (const m of MODELS) {
   m.pqc = {tipo:'ppk',
     mecanismo:'Claves precompartidas post-cuánticas (PPK, RFC 8784) mezcladas en la derivación de claves de IKEv2, estáticas o por QKD a través del Junos Key Manager',
     donde:'IKEv2 (IPsec), con el paquete junos-ike', desde:`Junos OS ${PQC_SRX[m.id]}`,
-    fuente:'Juniper Pathfinder Feature Explorer, «Quantum-Safe: IPsec: RFC 8784 with ETSI QKD», y «Quantum Safe IPsec VPN» de la documentación de Junos OS'};
+    fuente:'Juniper Pathfinder Feature Explorer, «Quantum-Safe: IPsec: RFC 8784 with ETSI QKD», y «Quantum Safe IPsec VPN» de la documentación de Junos OS',
+    urls:['https://apps.juniper.net/feature-explorer/feature/7502']};
 }
 
 module.exports = { MODELS, SDWAN, BUNDLES, CARE };

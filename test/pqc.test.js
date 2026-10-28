@@ -135,6 +135,36 @@ test('cada equipo con `pqc` tiene una fuente que lo declara con ese campo', () =
   }
 });
 
+// La fuente de cada `pqc` y `pqcNo`, por su URL de fuentes.js (mejora del 2026-10-28): el texto de
+// `fuente` es para leer, pero lo que se comprueba es que cada URL citada sea una entrada de
+// fuentes.js —y por eso la vigile el vigía—, que respalde ese campo y que declare al equipo. Así
+// una cifra de seguridad no cita un documento que nadie vigila (pasó con los boletines de los ASR).
+test('cada `pqc` y `pqcNo` cita por URL una entrada de fuentes.js que lo respalda y declara al equipo', () => {
+  let citas = 0;
+  for (const [v, L] of Object.entries(CATALOGOS)) {
+    const porUrl = new Map((FUENTES[v] || []).map((f) => [f.url, f]));
+    for (const m of L) {
+      for (const campo of ['pqc', 'pqcNo']) {
+        const d = m[campo];
+        if (!d) continue;
+        assert.ok(Array.isArray(d.urls) && d.urls.length, `${m.id}: \`${campo}\` sin urls`);
+        for (const url of d.urls) {
+          const f = porUrl.get(url);
+          assert.ok(f, `${m.id}: ${url} no es una entrada de fuentes.js (${v})`);
+          assert.ok((f.campos || []).includes(campo), `${m.id}: ${url} no respalda \`${campo}\``);
+          assert.ok((resolverModelos(v, f).ids || []).includes(m.id), `${m.id}: ${url} no declara este equipo`);
+          citas++;
+        }
+      }
+    }
+  }
+  assert.ok(citas >= 145, `se esperaban al menos 145 citas, hay ${citas}`);
+  // Lo que se apoya en dos documentos los cita los dos: el ASR 1002-HX, la guía de la PPK y su boletín.
+  const hx = CATALOGOS.cisco.find((m) => m.id === 'ASR 1002-HX');
+  assert.strictEqual(hx.pqc.urls.length, 2);
+  assert.match(hx.pqc.urls[1], /asr1002-hx-asso-part-eol\.html$/);
+});
+
 test('las siete páginas de un equipo pintan la sección', () => {
   const paginas = ['aruba-edgeconnect', 'cisco-catalyst8k', 'fortinet-fortigate', 'huawei-netengine',
     'juniper-srx', 'mikrotik-routeros', 'nokia-7750sr'];
