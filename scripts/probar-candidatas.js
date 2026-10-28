@@ -98,6 +98,14 @@ const CASOS = [
     candidatas: [
       { url: 'https://www.hpe.com/psnow/resources/ebooks/a00109847enw/a00109847enw.pdf',
         porQue: 'ruta del PDF de psnow para ese mismo id, anotada en PENDIENTES (2026-10-15) como la que cierra el cascaron' },
+      // 2026-10-28: la pagina psnow/doc, leida con WebFetch (fuera del proxy), nombra su descarga
+      // en psnow/downloadDoc/<titulo>-<id>.pdf?id=<id>&... ; la forma corta, sin titulo ni
+      // parametros, sirvio el texto de la Rev. 9. Las dos se miden: la corta es la que cabe en
+      // `fuentes.js`, la larga es la que la pagina publica.
+      { url: 'https://www.hpe.com/psnow/downloadDoc/a00109847enw.pdf?id=a00109847enw',
+        porQue: 'descarga de psnow en su forma corta (la que se pondria en fuentes.js)' },
+      { url: 'https://www.hpe.com/psnow/downloadDoc/HPE%20Networking%20EdgeConnect-a00109847enw.pdf?id=a00109847enw&contentDisposition=attachment',
+        porQue: 'descarga de psnow como la nombra la pagina psnow/doc/a00109847enw' },
     ],
     control: { url: 'https://www.hpe.com/us/en/aruba-networking.html',
       porQue: 'pagina del mismo dominio que scripts/descargar-datasheets.js usa como Referer' },
@@ -109,6 +117,12 @@ const CASOS = [
     candidatas: [
       { url: 'https://www.hpe.com/psnow/resources/ebooks/a00067607enw/a00067607enw.pdf',
         porQue: 'la misma serie en psnow (a00067607enw, `gw9000Psnow` en legacyData/aruba.js), por la ruta del PDF' },
+      // 2026-10-28: a00067607enw es la guia de pedido; el DATA SHEET de la serie en psnow es
+      // a00067608enw («HPE Aruba Networking 9000 Series Gateway», Rev. 2: 9004, 9004-LTE, 9012).
+      { url: 'https://www.hpe.com/psnow/downloadDoc/a00067608enw.pdf?id=a00067608enw',
+        porQue: 'data sheet de la serie 9000 en psnow (a00067608enw), descarga en forma corta' },
+      { url: 'https://www.hpe.com/psnow/downloadDoc/HPE%20Aruba%20Networking%209000%20Series%20Gateway-a00067608enw.pdf?id=a00067608enw&contentDisposition=attachment',
+        porQue: 'la misma descarga como la nombra la pagina psnow/doc/a00067608enw' },
     ],
     control: { url: 'https://www.hpe.com/us/en/aruba-networking.html',
       porQue: 'pagina del mismo dominio de la candidata' },

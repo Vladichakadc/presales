@@ -57,6 +57,18 @@ jobs:
             echo '```'
           } >> "$GITHUB_STEP_SUMMARY"
 
+      # Los artefactos y el resumen viven en un dominio que el proxy del entorno de edicion
+      # deniega; las anotaciones se leen por la API (check-runs/<id>/annotations). Un aviso por
+      # caso (bloque «== »), con los saltos de linea codificados: GitHub admite 10 por paso.
+      - name: Publicar cada caso como anotacion
+        run: |
+          awk '/^== /{n++} n>0{print > ("caso-" n ".txt")}' candidatas.txt
+          for f in caso-*.txt; do
+            [ -f "$f" ] || continue
+            msg=$(sed -e 's/%/%25/g' -e 's/\r/%0D/g' "$f" | awk 'BEGIN{ORS="%0A"} {print}')
+            echo "::notice title=candidatas::$msg"
+          done
+
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: candidatas-fuentes
