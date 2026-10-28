@@ -77,8 +77,12 @@ jobs:
       - name: Descargar los documentos
         env:
           SOLO: ${{ inputs.solo }}
+        # El script va por la entrada estandar, no como argumento: `node -e "..."` choca con el tope
+        # de Linux para un solo argumento (128 KiB) y el 2026-10-28 lo paso (corrida 40683042861,
+        # «Argument list too long»). El heredoc sin comillas trata `$` y las comillas invertidas
+        # igual que las comillas dobles (van escapados, test/workflows-node-e.test.js).
         run: |
-          node -e "
+          node - <<NODE_JS
             const fs = require('fs');
             const DOCS = [
               { archivo: 'cisco-isr1000-ds.html', tipo: 'html', para: 'CISCO', debeContener: 'C1111-8P', urls: [
@@ -1721,7 +1725,7 @@ jobs:
                 for (const i of d.intentos) console.log('        ' + (i.status || i.error) + '  ' + i.url + (i.nota ? '  <- ' + i.nota : ''));
               }
             })().catch((e) => { console.error(e); process.exit(1); });
-          "
+          NODE_JS
 
       - name: Publicar en la rama de transporte
         env:
