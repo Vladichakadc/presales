@@ -372,6 +372,23 @@ const DOCS = [
   { archivo: 'aruba-ec-data-sheet.pdf', tipo: 'pdf', para: 'ARUBA', urls: [
     'https://www.hpe.com/psnow/downloadDoc/HPE%20Networking%20EdgeConnect-a00109847enw.pdf?id=a00109847enw&isFutureVersion=true&ver=&form=false&preview=false&print=&hf=regular&r=&section=&prelaunchSection=&softrollSection=&deepLink=&utm_source=&utm_medium=&utm_campaign=&utm_content=&utm_term=&originalObjectName=&isLinearized=false&contentDisposition=attachment',
   ] },
+  // 2026-10-28, PQC de los gateways AOS de Aruba: la guia de AOS-8 da la PPK «Starting from
+  // AOS-8.10.0.0» sin nombrar equipos, y las notas de AOS-8.12.0.5 dan los gateways que
+  // corren 8.10 o posterior (tabla «Mobility Controller Platforms»).
+  { archivo: 'aruba-aos8-vpn-ppk.html', tipo: 'html', para: 'ARUBA', exploracion: true, urls: [
+    'https://arubanetworking.hpe.com/techdocs/ArubaOS/AOS_8x_WebHelp/Content/arubaos-solutions/vpn/vpn-ppk.htm',
+  ] },
+  { archivo: 'aruba-aos-8.12.0.5-release-notes.pdf', tipo: 'pdf', para: 'ARUBA', urls: [
+    'https://arubanetworking.hpe.com/techdocs/ArubaOS-8.x-Books/Release-Notes/812/ArubaOS-8.12.0.5-Release-Notes.pdf',
+  ] },
+  // 2026-10-28, JUNIPER: las fichas en ingles de la serie MX y de la linea SSR100 redirigen
+  // desde juniper.net a psnow de HPE (a00150825enw y a00150824enw); se trae la descarga.
+  { archivo: 'juniper-mx-series-ds.pdf', tipo: 'pdf', para: 'JUNIPER', urls: [
+    'https://www.hpe.com/psnow/downloadDoc/a00150825enw.pdf?id=a00150825enw',
+  ] },
+  { archivo: 'juniper-ssr100-ds-en.pdf', tipo: 'pdf', para: 'JUNIPER', urls: [
+    'https://www.hpe.com/psnow/downloadDoc/a00150824enw.pdf?id=a00150824enw',
+  ] },
   // HUAWEI A816 E: su pagina de documentos responde 200 pero ya no enlaza el material de
   // la ficha (corrida 38422143556); el PDF citado da 404. Se guarda para leer que
   // enlaza ahora, sin exigir el identificador viejo.
@@ -1514,6 +1531,26 @@ const DOCS = [
       'meraki-mx250-ig.html', 'meraki-mx450-ig.html', 'meraki-c8111-c8121-ig.html', 'meraki-c8355-ig.html'],
       base: 'https://documentation.meraki.com/', dominios: ['meraki.com', 'cisco.com'], relativas: true,
       contiene: ['/@api/deki/files/', '/c/dam/', '/content/dam/'], max: 250 } },
+  // Pendientes que esperan documento oficial (2026-10-28, tema transporte-y-fuentes):
+  // · Fortinet F3: la licencia FortiGuard única en un clúster HA activo-pasivo, por modelo y versión.
+  { archivo: 'fortinet-ha-licencia-unica-7.6.6.html', tipo: 'html', para: 'FORTINET', debeContener: 'logical-sn', urls: [
+    'https://docs.fortinet.com/document/fortigate/7.6.6/administration-guide/246857',
+    'https://docs.fortinet.com/document/fortigate/7.6.5/administration-guide/246857',
+  ] },
+  // · Huawei: qué trae el paquete N1 Advanced frente al Foundation. La ficha de la solución SD-WAN
+  //   R25C00 (su página de documento y el PDF que enlaza) y la ficha del modelo de negocio N1.
+  { archivo: 'huawei-sdwan-r25c00-documento.html', tipo: 'html', para: 'HUAWEI', debeContener: 'dd12f8cc04ac4d9da4b020382fbe6c2e', urls: [
+    'https://e.huawei.com/en/documents/products/enterprise-network/dd12f8cc04ac4d9da4b020382fbe6c2e',
+  ] },
+  { archivo: 'huawei-sdwan-r25c00-ds.pdf', tipo: 'pdf', para: 'HUAWEI', urls: [],
+    descubrir: { de: 'huawei-sdwan-r25c00-documento.html', material: 'Material/dd12f8cc04ac4d9da4b020382fbe6c2e/' } },
+  { archivo: 'huawei-n1-modelo-negocio.pdf', tipo: 'pdf', para: 'HUAWEI', urls: [
+    'https://carrier.huawei.cn/-/media/cnbgv2/download/products/networks/Huawei-SD-WAN-N1-Business-Mode-datasheet-en.pdf',
+  ] },
+  // · Huawei: en qué nubes e hipervisores se despliega el vCPE AR6700V-L (su página de producto).
+  { archivo: 'huawei-ar6700v-l-producto.html', tipo: 'html', para: 'HUAWEI', debeContener: 'AWS', urls: [
+    'https://e.huawei.com/en/products/routers/netengine-ar6700v-l',
+  ] },
 ];
 
 module.exports = { DOCS };

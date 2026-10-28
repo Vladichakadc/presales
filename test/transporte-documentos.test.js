@@ -41,11 +41,12 @@ test('lo que se descubre en otra página nombra una entrada de la lista', () => 
   }
 });
 
-test('el workflow ejecuta el módulo, y ningún script del transporte queda dentro del YAML', () => {
+test('el workflow ejecuta el módulo, y la lista no vuelve al YAML', () => {
   const yml = fs.readFileSync(path.join(__dirname, '..', '.github', 'workflows', 'traer-cisco-huawei.yml'), 'utf8');
   assert.match(yml, /run: node scripts\/transporte\/traer\.js/);
-  assert.doesNotMatch(yml, /node -e "|node - <</, 'el transporte vuelve a llevar un script dentro del YAML');
-  assert.doesNotMatch(yml, /archivo: '/, 'una entrada de la lista quedó en el YAML');
+  // El paso «Resumen» conserva su `node -e` corto, que solo imprime el informe; la lista y la
+  // descarga no vuelven al YAML.
+  assert.doesNotMatch(yml, /const DOCS|archivo: '/, 'la lista de documentos volvió al YAML');
   // Y el script, antes de pedir nada, se niega a correr con una entrada HTML sin declarar.
   const traer = fs.readFileSync(path.join(__dirname, '..', 'scripts', 'transporte', 'traer.js'), 'utf8');
   assert.ok(traer.indexOf("d.tipo === 'html' && !d.debeContener && !d.exploracion") < traer.indexOf('const SOLO'));

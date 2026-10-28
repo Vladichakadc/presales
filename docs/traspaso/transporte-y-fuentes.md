@@ -3,10 +3,10 @@
 - **Tema:** La lista del transporte de documentos fuera del YAML (mejora propuesta en el PR #45) y los pendientes que esperan documento oficial
 - **Rama:** claude/elegant-pascal-7ymts7
 - **Cuenta:** vladichakadc, sesión 01TxCQ3W2sHYVmimAdMKht3j
-- **Estado:** bloqueado (espera la fusión de claude/documentos-pendientes)
-- **Actualizado:** 2026-10-28 09:35
-- **Archivos que toca:** scripts/transporte/, test/transporte-documentos.test.js, test/traer-exploracion.test.js, test/traer-pantalla-login.test.js, test/workflows-node-e.test.js (y, cuando se fusione el PR #49: .github/workflows/traer-cisco-huawei.yml, server/seed/legacyData/fuentes.js y los legacyData de cada pendiente)
-- **Siguiente paso:** cuando se fusione el PR #49, rebasar, regenerar scripts/transporte/ desde el traer-cisco-huawei.yml fusionado (el programa que bash entrega, partido en DOCS y lógica; sin el duplicado de huawei-a800-producto.html) y cambiar el paso del workflow a `run: node scripts/transporte/traer.js`
+- **Estado:** en curso
+- **Actualizado:** 2026-10-28 09:20
+- **Archivos que toca:** scripts/transporte/, .github/workflows/traer-cisco-huawei.yml (el paso de descarga; se fusiona DESPUÉS de claude/figuras-cisco-isr-mx, ver *Decisiones*), test/transporte-documentos.test.js, test/traer-exploracion.test.js, test/traer-pantalla-login.test.js, test/workflows-node-e.test.js, public/js/fortinet-reglas.js, server/seed/legacyData/fortinet.js, server/seed/legacyData/huawei.js, server/seed/legacyData/fuentes.js
+- **Siguiente paso:** leer la corrida de transporte con las entradas nuevas (Fortinet F3, N1 de Huawei, nubes del AR6700V-L) y cerrar solo lo que digan
 
 ## Encargo del dueño
 
@@ -32,6 +32,13 @@ PR #45: la lista del transporte fuera del YAML.
 - Pendientes: buscar el documento oficial de cada uno, traerlo por Actions y cerrar solo lo que diga.
 
 ## Decisiones y hallazgos
+
+- 2026-10-28 14:03 UTC: `claude/figuras-cisco-isr-mx` (otra sesión) declaró también
+  `traer-cisco-huawei.yml` y le añadió 14 líneas de entradas (figuras de los ASR). Para no
+  romperle el rebase, **esta rama se fusiona después de la suya**: al rebasar se regenera
+  `scripts/transporte/documentos.js` desde su YAML fusionado (generador en el scratchpad de la
+  sesión; si se perdiera: el programa que bash entrega del heredoc, partido en `DOCS` y la lógica),
+  y sus entradas quedan en el módulo sin que tenga que tocar nada.
 
 - 2026-10-28 13:37 UTC: la rama claude/documentos-pendientes (cuenta servicioiptv2025) declaró
   traer-cisco-huawei.yml, fuentes.js, fuentes.lock.json, aruba.js, juniper.js y pqc.test.js doce
