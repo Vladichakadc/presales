@@ -1,0 +1,33 @@
+What's new in 7.22.1 (2026-Mar-23 16:35):
+
+*) bgp-vpn - fixed non-working import filter after reboot;
+*) certificate - added option to configure built-in trust store for all services (CLI only);
+*) certificate - use "default" for built-in trust store default value;
+*) chr - improved virtio_net stability;
+*) console - removed the "reset" command from shared settings menus (IP/IPv6/Bridge/L3HW/Neighbor-Discovery/Connection-Tracking);
+*) defconf - fixed architecture detection for apps;
+*) hardware - name serial devices after port names;
+*) hardware - name storage hardware devices after slot name in "/disk" menu;
+*) l3hw - fixed a system stability issue (introduced in v7.21);
+*) leds - allow multiple interface selection for interface-activity trigger;
+*) log - do not provide non-existent logging topics for configuration;
+*) log - fixed "/system/logging/action/get" command (introduced in v7.22);
+*) lte - fixed LTE modem automatic modeswitch (introduced in v7.22);
+*) lte - fixed Tx stat reporting in LTE passthrough mode (introduced in v7.22);
+*) qos-hw - display queue0 limits for CPU port;
+*) qos-hw - fixed "offline" tx-manager ability to queue at least one packet (introduced in v7.21);
+*) qos-hw - prohibit setting CPU port with "offline" tx-manager;
+*) quickset - fixed configuration of multi-link APs;
+*) ssh - make login process asynchronous;
+*) switch - disable EEE on RB5009 and CCR2004-16G-2S+ devices;
+*) system - fixed total memory reporting on hAP be3 Media;
+*) tr069 - fixed modem extended revision reporting;
+*) wifi - fixed bridge VLAN configuration for multi-link interfaces;
+*) wifi - fixed EAP authentication for multi-link clients;
+*) wifi - improved link-specific parameter application after reboot for multi-link interfaces;
+*) wifi - improved stability during association;
+*) winbox - added "Supported HW Caps" and "Multi Link Mode" configuration options under the "WiFi/Provisioning" menu;
+*) winbox - do not set empty chain when adding/editing routing rule;
+*) winbox - fixed "Remote AS" setting under the "Routing/BGP/Connections" menu;
+*) winbox - fixed "Src/Dst Address Type" under the "IP/Firewall/NAT" menu;
+*) winbox - make the band field on the WiFi registration table multi-argument;

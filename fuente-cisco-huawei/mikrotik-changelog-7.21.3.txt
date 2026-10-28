@@ -1,0 +1,16 @@
+What's new in 7.21.3 (2026-Feb-12 15:10):
+
+*) bridge - fixed dhcp-snooping incorrectly disabling HW offloading on QCA8337, Atheros8327 switch chips (introduced in v7.20);
+*) certificate - fixed initial certificate creation using SCEP (introduced in v7.21);
+*) console - improved service stability when processing files over CLI;
+*) dhcpv4-server - append "s" after lease-time value in setup command;
+*) gps - fixed port configuration for CubeG-5ac60ay;
+*) hotspot - rename totp-secret to otp-secret;
+*) ipv6 - do not invalidate router if RA without included prefix is received (introduced in v7.21);
+*) ipv6 - fixed "on-link" and "autonomous" flag detection (introduced in v7.21);
+*) ipv6 - invalidate router only when router lifetime expires (introduced in v7.21);
+*) lte - fixed eSIM profile switching on ATL 5G R16;
+*) lte - improved notification handling during firmware update for Quectel modems;
+*) poe-out - firmware update for hEX PoE, OmniTIK 5 PoE ac, PowerBox Pro (the update will cause a brief power interruption to poe-out interfaces);
+*) poe-out - fixed rare false overload triggers on hEX PoE, OmniTIK 5 PoE ac, PowerBox Pro;
+*) sfp - fixed sfp-ignore-rx-loss parameter for hEX PoE;

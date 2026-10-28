@@ -1,0 +1,367 @@
+[
+  {
+    "archivo": "mikrotik-changelog-7.21.1.txt",
+    "para": "MIKROTIK",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://download.mikrotik.com/routeros/7.21.1/CHANGELOG",
+        "status": 200,
+        "bytes": 765,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "mikrotik-changelog-7.21.2.txt",
+    "para": "MIKROTIK",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://download.mikrotik.com/routeros/7.21.2/CHANGELOG",
+        "status": 200,
+        "bytes": 2543,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "mikrotik-changelog-7.21.3.txt",
+    "para": "MIKROTIK",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://download.mikrotik.com/routeros/7.21.3/CHANGELOG",
+        "status": 200,
+        "bytes": 1197,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "mikrotik-changelog-7.21.4.txt",
+    "para": "MIKROTIK",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://download.mikrotik.com/routeros/7.21.4/CHANGELOG",
+        "status": 200,
+        "bytes": 3978,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "mikrotik-changelog-7.21.5.txt",
+    "para": "MIKROTIK",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://download.mikrotik.com/routeros/7.21.5/CHANGELOG",
+        "status": 200,
+        "bytes": 2184,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "mikrotik-changelog-7.21.6.txt",
+    "para": "MIKROTIK",
+    "guardado": false,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://download.mikrotik.com/routeros/7.21.6/CHANGELOG",
+        "status": 404
+      },
+      {
+        "url": "https://upgrade.mikrotik.com/routeros/7.21.6/CHANGELOG",
+        "status": 404
+      }
+    ]
+  },
+  {
+    "archivo": "mikrotik-changelog-7.22.txt",
+    "para": "MIKROTIK",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://download.mikrotik.com/routeros/7.22/CHANGELOG",
+        "status": 200,
+        "bytes": 21557,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "mikrotik-changelog-7.22.1.txt",
+    "para": "MIKROTIK",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://download.mikrotik.com/routeros/7.22.1/CHANGELOG",
+        "status": 200,
+        "bytes": 2226,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "mikrotik-changelog-7.22.2.txt",
+    "para": "MIKROTIK",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://download.mikrotik.com/routeros/7.22.2/CHANGELOG",
+        "status": 200,
+        "bytes": 2420,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "mikrotik-changelog-7.22.3.txt",
+    "para": "MIKROTIK",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://download.mikrotik.com/routeros/7.22.3/CHANGELOG",
+        "status": 200,
+        "bytes": 368,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "mikrotik-changelog-7.22.4.txt",
+    "para": "MIKROTIK",
+    "guardado": false,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://download.mikrotik.com/routeros/7.22.4/CHANGELOG",
+        "status": 404
+      },
+      {
+        "url": "https://upgrade.mikrotik.com/routeros/7.22.4/CHANGELOG",
+        "status": 404
+      }
+    ]
+  },
+  {
+    "archivo": "mikrotik-changelog-7.23.txt",
+    "para": "MIKROTIK",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://download.mikrotik.com/routeros/7.23/CHANGELOG",
+        "status": 200,
+        "bytes": 20205,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "mikrotik-changelog-7.23.1.txt",
+    "para": "MIKROTIK",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://download.mikrotik.com/routeros/7.23.1/CHANGELOG",
+        "status": 200,
+        "bytes": 1052,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "mikrotik-changelog-7.23.2.txt",
+    "para": "MIKROTIK",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://download.mikrotik.com/routeros/7.23.2/CHANGELOG",
+        "status": 200,
+        "bytes": 2274,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "mikrotik-routeros-estable.txt",
+    "para": "MIKROTIK",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://upgrade.mikrotik.com/routeros/NEWESTa7.stable",
+        "status": 200,
+        "bytes": 16,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "juniper-junos-25.4r1-rn.pdf",
+    "para": "JUNIPER",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://www.juniper.net/documentation/us/en/software/junos/release-notes/25.4/junos-release-notes-25.4r1/junos-release-notes-25.4r1.pdf",
+        "status": 200,
+        "bytes": 1030011,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "juniper-fe-7502-2.html",
+    "para": "JUNIPER",
+    "guardado": true,
+    "exploracion": true,
+    "intentos": [
+      {
+        "url": "https://apps.juniper.net/feature-explorer/feature/7502",
+        "status": 200,
+        "bytes": 109128,
+        "guardado": true,
+        "verificado": false
+      }
+    ]
+  },
+  {
+    "archivo": "nokia-7220ixr-d-ds.pdf",
+    "para": "NOKIA",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://www.nokia.com/asset/f/207599/",
+        "status": 200,
+        "bytes": 818294,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "cisco-quantum-safe-roadmap.pdf",
+    "para": "CISCO",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://www.cisco.com/c/dam/en_us/about/doing_business/trust-center/docs/quantum-safe-communications-roadmap.pdf",
+        "status": 200,
+        "bytes": 262134,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "aruba-aos10-novedades-10.8.1.0.html",
+    "para": "ARUBA",
+    "guardado": true,
+    "exploracion": true,
+    "intentos": [
+      {
+        "url": "https://arubanetworking.hpe.com/techdocs/new-central/content/aos10x/whats-new-aos10.8.1.0.htm",
+        "status": 200,
+        "bytes": 57196,
+        "guardado": true,
+        "verificado": false
+      }
+    ]
+  },
+  {
+    "archivo": "aruba-aos10-novedades-10.8.0.0.html",
+    "para": "ARUBA",
+    "guardado": true,
+    "exploracion": true,
+    "intentos": [
+      {
+        "url": "https://arubanetworking.hpe.com/techdocs/new-central/content/aos10x/whats-new-aos10.8.0.0.htm",
+        "status": 200,
+        "bytes": 65175,
+        "guardado": true,
+        "verificado": false
+      }
+    ]
+  },
+  {
+    "archivo": "aruba-aos10-novedades-10.7.2.0.html",
+    "para": "ARUBA",
+    "guardado": false,
+    "exploracion": true,
+    "intentos": [
+      {
+        "url": "https://arubanetworking.hpe.com/techdocs/new-central/content/aos10x/whats-new-aos10.7.2.0.htm",
+        "status": 404
+      }
+    ]
+  },
+  {
+    "archivo": "aruba-aos10-novedades-10.7.1.0.html",
+    "para": "ARUBA",
+    "guardado": false,
+    "exploracion": true,
+    "intentos": [
+      {
+        "url": "https://arubanetworking.hpe.com/techdocs/new-central/content/aos10x/whats-new-aos10.7.1.0.htm",
+        "status": 404
+      }
+    ]
+  },
+  {
+    "archivo": "aruba-aos10-novedades-10.7.0.0.html",
+    "para": "ARUBA",
+    "guardado": false,
+    "exploracion": true,
+    "intentos": [
+      {
+        "url": "https://arubanetworking.hpe.com/techdocs/new-central/content/aos10x/whats-new-aos10.7.0.0.htm",
+        "status": 404
+      }
+    ]
+  },
+  {
+    "archivo": "aruba-aos10-novedades-10.6.0.0.html",
+    "para": "ARUBA",
+    "guardado": false,
+    "exploracion": true,
+    "intentos": [
+      {
+        "url": "https://arubanetworking.hpe.com/techdocs/new-central/content/aos10x/whats-new-aos10.6.0.0.htm",
+        "status": 404
+      }
+    ]
+  }
+]

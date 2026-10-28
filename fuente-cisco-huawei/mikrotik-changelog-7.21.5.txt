@@ -1,0 +1,31 @@
+What's new in 7.21.5 (2026-Jul-03 13:23):
+
+!) fixed a service security issue, home user with default config not affected, but we recommend the upgrade for all users regardless;
+*) bfd - fixed delay on session print;
+*) bgp - fixed advertisement print handling by "dst" when destination is in VRF;
+*) bgp - fixed IPv6 End-of-Route processing;
+*) bgp - improved stability on MP (multiprotocol) parsing;
+*) bridge - fixed dynamic VLAN update for wifi interfaces;
+*) bridge - fixed stability issue when using DHCPv4 snooping;
+*) cloud - cloud backup file management now requires "policy" policy;
+*) console - fixed unresponsiveness when entering safe-mode through the Windows 11 terminal;
+*) container - fixed missing config.json issue when upgrading from version 7.20.8 or older;
+*) disk - avoid reading SCSI stats all the time to allow disks to go to sleep;
+*) ethernet - fixed stability issue with TSO on Alpine CPUs;
+*) ethernet - improved system stability on devices with Alpine CPUs;
+*) ipv6 - do not disable IPv6 FastPath when Traffic Flow is enabled;
+*) isis - allow to configure metric-type;
+*) isis - fixed missing "l2.lsp-refresh-interval" parameter;
+*) l3hw - improved system stability on device shutdown/reboot;
+*) lte - fixed cases where EC25-EU and EG25-G boards would receive packets with missing last 4 bytes;
+*) lte - fixed crash on LTE passthrough interface deactivation;
+*) ospf - fixed interface passive flag update in WinBox;
+*) route - fixed static route flag handling by WinBox on disable;
+*) route - removed deprecated "/routing/route/rule" menu;
+*) switch - fixed issue with MAC table for RB2011 (introduced in v7.21);
+*) switch - fixed rare possibility of tx-timeout or simultaneous flap of all switch ports on devices with Alpine CPUs;
+*) switch - increase "ingress-rate" and "egress-rate" maximum value to 400G;
+*) timezone - updated timezone information from "tzdata2026b" release;
+*) upgrade - prevent package scheduling from interfering with the upgrade feature;
+*) vxlan - fixed fast-path when using "checksum=no" (introduced in v7.20);
+*) winbox - do not pre-fill "Allowed Address" and "Client Allowed Address" with "::/0" when adding new WireGuard Peer;

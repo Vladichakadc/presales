@@ -1,0 +1,5 @@
+What's new in 7.22.3 (2026-May-07 12:19):
+
+*) console - fixed unresponsiveness when entering safe-mode through the Windows 11 terminal;
+*) ethernet - fixed stability issue after switch reset on devices with IPQ-40xx, IPQ-60xx CPUs (introduced in v7.22);
+*) vrrp - fixed stability issue when using VRRP with a hardware-offloaded bridge for Marvell Prestera switch chip;

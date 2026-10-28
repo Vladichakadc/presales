@@ -1,0 +1,34 @@
+What's new in 7.23.2 (2026-Jul-03 12:08):
+
+!) fixed a service security issue, home user with default config not affected, but we recommend the upgrade for all users regardless;
+*) app - fixed "reset" not working with certain apps;
+*) app - fixed home-assistant default config files;
+*) app - only generate secrets for enabled apps;
+*) app - resolved issue where duplicate swaps are created;
+*) bfd - fixed delay on session print;
+*) bgp - added option to add BGP VPLS created interfaces in interface-list;
+*) bgp - fixed advertisement print handling by "dst" when destination is in VRF;
+*) bgp - fixed IPv6 End-of-Route processing;
+*) bgp - improved stability on MP (multiprotocol) parsing;
+*) certificate - always use all trust stores for downloaded CRL validation;
+*) container - fixed missing config.json issue when upgrading from version 7.20.8 or older;
+*) interface - fixed duplicate MAC warning for wireless, wifi, macsec, w60g interfaces (introduced in v7.23);
+*) ipsec - fixed policy move handling;
+*) ipsec,ike2 - fixed active connection termination;
+*) ipsec,ike2 - fixed SA payload validation;
+*) ipsec,ike2 - improved pending child SA cleanup and removal of dangling SAs during Phase 2 deletion;
+*) isis - fixed missing "l2.lsp-refresh-interval" parameter;
+*) leds - fixed missing wireless LED configuration (introduced in v7.21);
+*) lte - fixed cases where EC25-EU and EG25-G boards would receive packets with missing last 4 bytes;
+*) ospf - added missing "type=ptmp-broadcast" parameter to "/routing/ospf/interface" menu;
+*) ospf - allow comments on static interfaces;
+*) ospf - fixed interface passive flag update in WinBox;
+*) pim - added comment for "/routing/gmp" entries;
+*) ppp - improved system stability;
+*) route - fixed static route flag handling by WinBox on disable;
+*) routerboard - renamed "ipq53xx" firmware type to "ipq5300";
+*) switch - increase "ingress-rate" and "egress-rate" maximum value to 400G;
+*) upgrade - prevent package scheduling from interfering with the upgrade feature;
+*) winbox - added missing values to "AFI" setting under "Routing/BGP" menus;
+*) winbox - do not pre-fill "Allowed Address" and "Client Allowed Address" with "::/0" when adding new WireGuard Peer;
+*) winbox - fixed value unset under "MPLS/LDP Neighbor" menu;

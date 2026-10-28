@@ -1,0 +1,12 @@
+What's new in 7.21.1 (2026-Jan-19 17:09):
+
+*) bridge - fixed dynamic switch-cpu VLAN creation (introduced in v7.21);
+*) bridge - improved stability when using MVRP (introduced in v7.21);
+*) certificate - fixed empty trust store handling in certain cases (introduced in v7.21);
+*) container - changed app auto update to be off by default;
+*) container - fixed issue where containers may not start with large mounts;
+*) health - fixed fan and PSU state logging for MIPSBE devices;
+*) leds - fixed power LED behavior for hAP ax S;
+*) lte - fixed APN configuration for QMI modems in a 3G network when use-network-apn=yes is used;
+*) switch - fixed switch type for hAP ax lite devices (introduced in v7.21);
+*) system - fixed rare partial loss of RouterOS configuration;
