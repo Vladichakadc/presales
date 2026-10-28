@@ -283,7 +283,8 @@ const CU01 = new URLSearchParams({
   });
   t.ok(grupo && /^Fuera de venta \(\d+\)/.test(grupo.label) && grupo.n === fueraNueva.length && grupo.sueltos === 0,
     `T21: los fuera de venta van en su grupo con nombre (${grupo ? grupo.label : 'sin grupo'})`);
-  t.ok(/fuera de venta/.test(await texto('#verdict .ficha-cuenta')) && /fuera de venta/.test(await texto('#verdict .ficha-sel-fuera')),
+  // `innerText` devuelve el texto como se ve, y el rótulo del contador va en mayúsculas (`.tag`).
+  t.ok(/fuera de venta/i.test(await texto('#verdict .ficha-cuenta')) && /fuera de venta/i.test(await texto('#verdict .ficha-sel-fuera')),
     'T21: el contador y la nota bajo el desplegable dicen que están');
   if (fueraNueva.length) {
     const recAntes = (await estado()).reco;
