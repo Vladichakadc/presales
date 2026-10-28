@@ -445,6 +445,23 @@ jobs:
               { archivo: 'aruba-ec-data-sheet.pdf', tipo: 'pdf', para: 'ARUBA', urls: [
                 'https://www.hpe.com/psnow/downloadDoc/HPE%20Networking%20EdgeConnect-a00109847enw.pdf?id=a00109847enw&isFutureVersion=true&ver=&form=false&preview=false&print=&hf=regular&r=&section=&prelaunchSection=&softrollSection=&deepLink=&utm_source=&utm_medium=&utm_campaign=&utm_content=&utm_term=&originalObjectName=&isLinearized=false&contentDisposition=attachment',
               ] },
+              // 2026-10-28, PQC de los gateways AOS de Aruba: la guia de AOS-8 da la PPK «Starting from
+              // AOS-8.10.0.0» sin nombrar equipos, y las notas de AOS-8.12.0.5 dan los gateways que
+              // corren 8.10 o posterior (tabla «Mobility Controller Platforms»).
+              { archivo: 'aruba-aos8-vpn-ppk.html', tipo: 'html', para: 'ARUBA', exploracion: true, urls: [
+                'https://arubanetworking.hpe.com/techdocs/ArubaOS/AOS_8x_WebHelp/Content/arubaos-solutions/vpn/vpn-ppk.htm',
+              ] },
+              { archivo: 'aruba-aos-8.12.0.5-release-notes.pdf', tipo: 'pdf', para: 'ARUBA', urls: [
+                'https://arubanetworking.hpe.com/techdocs/ArubaOS-8.x-Books/Release-Notes/812/ArubaOS-8.12.0.5-Release-Notes.pdf',
+              ] },
+              // 2026-10-28, JUNIPER: las fichas en ingles de la serie MX y de la linea SSR100 redirigen
+              // desde juniper.net a psnow de HPE (a00150825enw y a00150824enw); se trae la descarga.
+              { archivo: 'juniper-mx-series-ds.pdf', tipo: 'pdf', para: 'JUNIPER', urls: [
+                'https://www.hpe.com/psnow/downloadDoc/a00150825enw.pdf?id=a00150825enw',
+              ] },
+              { archivo: 'juniper-ssr100-ds-en.pdf', tipo: 'pdf', para: 'JUNIPER', urls: [
+                'https://www.hpe.com/psnow/downloadDoc/a00150824enw.pdf?id=a00150824enw',
+              ] },
               // HUAWEI A816 E: su pagina de documentos responde 200 pero ya no enlaza el material de
               // la ficha (corrida 38422143556); el PDF citado da 404. Se guarda para leer que
               // enlaza ahora, sin exigir el identificador viejo.

@@ -945,12 +945,12 @@
       "bytes": 189901,
       "medido": "2026-10-26T12:35:29.169Z"
     },
-    "juniper::https://www.juniper.net/content/dam/www/assets/datasheets/jp/ja/routers/ssr100-line-of-routers-datasheet.pdf": {
-      "documento": "SSR100 Line of Routers Datasheet (1000728-005-JP)",
-      "hashVerificado": "04f11b5af8d28f82ada7622da0dc4f4aa68cba88785daf1f7764a432939452b1",
+    "juniper::https://www.hpe.com/psnow/downloadDoc/a00150824enw.pdf?id=a00150824enw": {
+      "documento": "SSR100 Line of Routers Datasheet (a00150824ENW)",
+      "hashVerificado": "700b03fe2a4278a49e340712978d9f7c64e6be270a93e8fb1190bc35794e2632",
       "clase": "bytes",
-      "bytes": 787344,
-      "medido": "2026-10-26T12:35:29.169Z"
+      "bytes": 4280442,
+      "medido": "2026-10-28T14:30:00.000Z"
     },
     "juniper::https://www.juniper.net/content/dam/www/assets/datasheets/us/en/routers/ssr1000-line-of-routers-datasheet.pdf": {
       "documento": "SSR1000 Line of Routers Datasheet (1000757-002-EN)",
@@ -959,12 +959,12 @@
       "bytes": 697450,
       "medido": "2026-10-26T12:35:29.169Z"
     },
-    "juniper::https://juniper.net/content/dam/www/assets/datasheets/jp/ja/routers/mx-204-240-480-960-series-universal-routing-platforms-datasheet.pdf": {
-      "documento": "MX 204/240/480/960 Series Universal Routing Platforms Datasheet (1000597-042-JP)",
-      "hashVerificado": "1fb31e728814889e96852c3968dab8a129d42080fc8e535d4575525b15353565",
+    "juniper::https://www.hpe.com/psnow/downloadDoc/a00150825enw.pdf?id=a00150825enw": {
+      "documento": "MX 204/240/480/960 Series Universal Routing Platforms Datasheet (a00150825ENW, Rev. 1)",
+      "hashVerificado": "dd37a225da8ea1f064fed5a274919357a68f1dea89e6db6c67a7e3f818b3d883",
       "clase": "bytes",
-      "bytes": 996014,
-      "medido": "2026-10-26T12:35:29.169Z"
+      "bytes": 964739,
+      "medido": "2026-10-28T14:00:00.000Z"
     },
     "huawei::https://e-file.huawei.com/marketingcloud/pep/asset/20000001/Material/c39e035b25f14a1897536864b6b928b3/M3T1A590N1185280594916528416/Huawei%20SD-WAN%20Solution%20Datasheet_R25C00.pdf": {
       "documento": "Huawei SD-WAN Solution Datasheet R25C00",
