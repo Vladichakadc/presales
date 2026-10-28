@@ -146,3 +146,20 @@ test('el artefacto del repositorio, si está, tiene la forma que el inventario e
     else assert.ok(typeof m.pct === 'number' && m.total > 0);
   }
 });
+
+test('el lock no cita un módulo que ya no existe en public/js/', () => {
+  // Mejora aprobada el 2026-10-27: al retirar el piloto «del pliego al escenario», el lock siguió
+  // listando pliego.js hasta la siguiente medida. `npm run catalogo` lo pinta como un hecho, así que
+  // un módulo borrado o renombrado no puede seguir ahí. Quitar su fila a mano no inventa nada; lo
+  // nuevo sin medir, en cambio, no frena: lo mide la siguiente corrida de `pantallas`.
+  const fs = require('fs');
+  const path = require('path');
+  const ruta = path.join(__dirname, '..', 'scripts', 'contrastes', 'cobertura.lock.json');
+  if (!fs.existsSync(ruta)) return;
+  const d = JSON.parse(fs.readFileSync(ruta, 'utf8'));
+  const existen = new Set(fs.readdirSync(path.join(__dirname, '..', 'public', 'js')).filter((f) => f.endsWith('.js')));
+  const sobran = d.modulos.map((m) => m.modulo).filter((m) => !existen.has(m));
+  assert.deepStrictEqual(sobran, [],
+    `cobertura.lock.json cita módulos que ya no están en public/js/: ${sobran.join(', ')}. `
+    + 'Quita sus filas del lock o vuelve a medir con `npm run contraste -- --todos` (ver CLAUDE.md).');
+});
