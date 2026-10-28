@@ -766,7 +766,8 @@ function renderBom(){
     // (mejora aprobada el 2026-10-27; Aruba, Fortinet y Huawei ya las llevaban).
     ...(VISTAS && VISTAS[m.id] && VISTAS[m.id].front ? {fotos:{modelo:m.id, origen:'Extraídas de los documentos oficiales de Cisco',
       front:VISTAS[m.id].front, rear:VISTAS[m.id].rear || null, pie:VISTAS[m.id].fuente || null,
-      frontLeyenda:VISTAS[m.id].frontLeyenda || null, rearLeyenda:VISTAS[m.id].rearLeyenda || null}} : {}),
+      frontLeyenda:VISTAS[m.id].frontLeyenda || null, rearLeyenda:VISTAS[m.id].rearLeyenda || null,
+      foto:VISTAS[m.id].foto || null, fotoFuente:VISTAS[m.id].fotoFuente || null}} : {}),
     notas:[
       '',
       'NOTAS DE PREVENTA',
@@ -970,7 +971,7 @@ $('consolidadoCerrar').addEventListener('click', () => { $('modalConsolidado').h
     for(const [, arr] of ordenadas) arr.sort((a, b) => capDe(a) - capDe(b));
     ordenadas.sort((a, b) => Math.min(...a[1].map(capDe)) - Math.min(...b[1].map(capDe)));
     return ordenadas.map(([g, arr]) =>
-      `<optgroup label="${esc(g)}">${arr.map(m => `<option value="${esc(m.id)}">${esc(m.id)} — ${esc(m.fam)}</option>`).join('')}</optgroup>`).join('');
+      `<optgroup label="${esc(g)}">${arr.map(m => { const oc = FICHA.opcionCiclo(m); return `<option value="${esc(m.id)}"${oc.attr}>${esc(m.id)} — ${esc(m.fam)}${esc(oc.sufijo)}</option>`; }).join('')}</optgroup>`).join('');
   })();
 
   $('opticsAll').innerHTML = Object.keys(OPTICS).map(k => `

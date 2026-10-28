@@ -1,0 +1,64 @@
+/* Controles comunes de los dimensionadores (2026-10-27, peticiones del dueño). Una sola hoja para
+   las ocho páginas que la enlazan, para que el mismo estado se vea igual en todas. Cada página
+   conserva su hoja propia: aquí solo va lo que no cambia de un fabricante a otro.
+
+   Ojo con `--red`: en cada página es el color de MARCA (verde en Aruba, azul en Cisco, azul marino
+   en Nokia). Lo que aquí quiere decir «fuera de venta» es un rojo fijo, nunca esa variable; lo que
+   quiere decir «activado» sí usa el color de marca, que es el acento de la página. */
+
+:root {
+  --ciclo-rojo: #B42318;       /* 6,6:1 sobre blanco (AA en texto normal) */
+  --ciclo-rojo-fondo: #FEF3F2;
+}
+
+/* 1 · El ciclo de vida en los desplegables de equipos: «resalta en rojo en el combo cuando los
+   equipos están o van a estar fuera de venta». La clase la pone FICHA.opcionCiclo() (ficha.js),
+   la misma regla en el desplegable de la ficha y en el selector propio de cada página. El rojo
+   nunca va solo: la opción dice además «fuera de venta» o «fin de venta el <fecha>», porque los
+   desplegables nativos de macOS y del móvil no pintan el color de cada opción. */
+option.opt-ciclo { color: var(--ciclo-rojo); }
+option.opt-ciclo-fuera { font-weight: 600; }
+
+/* El desplegable cerrado también avisa cuando lo elegido es uno de ellos: `:has` sigue a la
+   opción marcada, también cuando la página cambia el valor por programa. */
+select:has(option.opt-ciclo:checked) {
+  color: var(--ciclo-rojo);
+  border-color: var(--ciclo-rojo);
+  background-color: var(--ciclo-rojo-fondo);
+}
+select:has(option.opt-ciclo-fuera:checked) { font-weight: 600; }
+/* Las opciones de la lista abierta recuperan su color: si no, heredarían el rojo del cerrado. */
+select:has(option.opt-ciclo:checked) option:not(.opt-ciclo) { color: var(--ink, #0E1A2B); font-weight: 400; background: var(--card, #FFF); }
+
+/* 2 · Las funciones activadas: «resalta cuando se activa una funcionalidad activando el check para
+   que los usuarios diferencien cuando se activa o se desactiva». La fila entera de la casilla
+   marcada se tiñe con el acento de la página (al 6 %: el texto gris de la explicación conserva
+   4,7:1 con el rojo más oscuro de las marcas), con una barra a la izquierda y el texto en
+   seminegrita; la desmarcada queda como estaba. Todas las filas llevan el mismo relleno (el margen
+   negativo lo compensa), así marcar no mueve nada de sitio. Quedan fuera las casillas compactas de
+   las filas de enlaces (`.wan-sim`, `.wan-ov`) y los interruptores, que ya enseñan su estado. */
+label:has(> input[type="checkbox"]):not(.wan-sim):not(.wan-ov):not(.switch) {
+  padding: 5px 7px;
+  margin-left: -7px;
+  margin-right: -7px;
+  border-radius: 3px;
+  transition: background-color .12s ease, box-shadow .12s ease;
+}
+label:has(> input[type="checkbox"]:checked):not(.wan-sim):not(.wan-ov):not(.switch) {
+  background-color: color-mix(in srgb, var(--red, #0E1A2B) 6%, var(--card, #FFF));
+  box-shadow: inset 3px 0 0 var(--red, #0E1A2B);
+  font-weight: 600;
+}
+/* La explicación que acompaña a la casilla (`.sku`, `.hint`) no se engrosa: lo que se resalta es
+   el nombre de la función. */
+label:has(> input[type="checkbox"]:checked) .sku,
+label:has(> input[type="checkbox"]:checked) .hint { font-weight: 400; }
+/* Una casilla marcada y bloqueada (la fija la página) se ve activa, con la barra en gris: no se
+   apaga con opacidad, que bajaría el contraste del texto por debajo de AA. */
+label:has(> input[type="checkbox"]:checked:disabled):not(.wan-sim):not(.wan-ov):not(.switch) { box-shadow: inset 3px 0 0 var(--steel, #5C6E85); }
+
+/* En alto contraste de Windows el fondo desaparece: queda un borde, que el sistema sí pinta. */
+@media (forced-colors: active) {
+  label:has(> input[type="checkbox"]:checked):not(.wan-sim):not(.wan-ov):not(.switch) { outline: 2px solid Highlight; }
+  select:has(option.opt-ciclo:checked) { outline: 2px solid Mark; }
+}

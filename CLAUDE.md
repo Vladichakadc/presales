@@ -365,7 +365,10 @@ Módulos compartidos:
   soporte, referencias de pedido (bajo demanda por modelo) y figuras con su página y rótulo literal
   (frontal, trasera y, opt-in `foto` + `fotoFuente`, una tercera pestaña con la foto de producto a
   color y su propio pie; Juniper y, desde el 2026-10-27, los Cisco cuya frontal es el dibujo
-  numerado de su guía: Catalyst 8500 y 8500L e ISR 1111X-8P).
+  numerado de su guía: Catalyst 8500 y 8500L e ISR 1111X-8P; las dos viajan también al Excel).
+  **El ciclo de vida en los desplegables** (`opcionCiclo`, 2026-10-28): fuera de venta y fin de venta
+  anunciado salen en rojo fijo y con su texto en el desplegable de la ficha y en el selector de
+  modelo de cada página; una sola regla, nunca una marca escrita a mano (`test/ciclo-y-casillas.test.js`).
   `escalon` (los siete lo declaran): junto al recomendado, el N+1 (menor métrica estrictamente mayor
   en la cifra del desplegable, nunca fuera de venta; `comparable` lo limita a la misma familia o base
   de medida) y el diferencial de precio solo con precio en los dos; no toca la selección. En la
@@ -382,7 +385,8 @@ Módulos compartidos:
   consolidado multi-sede no la lleva. Con «Exigir PQC» (`#reqPqc`), «Supuestos» trae además la
   sección de la PQC exigida: si el equipo la cumple, su mecanismo, **la versión mínima de software**
   y la fuente, del `pqc` que cada página pasa en `meta.supuestos`. La hoja «Fotos del equipo» (`meta.fotos`: Aruba, Fortinet, Huawei,
-  Cisco y Juniper) escribe bajo cada figura su leyenda opt-in (`frontLeyenda`/`rearLeyenda`), como la ficha.
+  Cisco y Juniper) escribe bajo cada figura su leyenda opt-in (`frontLeyenda`/`rearLeyenda`), como la ficha. Detrás, la foto de
+  producto con su pie (`foto`/`fotoFuente`, Cisco y Juniper).
   Llevan leyenda las figuras con números: las de Cisco, las 36 de Juniper y el Aruba 7010 (decidido
   figura a figura en `cisco-leyendas.test.js` y `vistas-leyendas.test.js`); en la tarjeta clavada
   (`panelFijo`) no va el desplegable, solo en la lupa, y el rótulo literal lleva su idioma (`lang`).
@@ -396,6 +400,10 @@ Módulos compartidos:
 - `tabla.js` — ordenación por columna; la coma es separador de miles y el punto decimal, y «sin
   dato» va siempre al final.
 - `fuentes.js` — las tipografías no bloquean el render (va en `PUBLICO`).
+- `public/controles.css` — la hoja común de los ocho dimensionadores con casillas (Starlink no:
+  usa interruptores): el rojo del ciclo de vida en los desplegables (`#B42318`, nunca `--red`, que
+  es el color de marca de cada página) y la fila de la casilla de función marcada, resaltada con el
+  acento de la página al 6 % (AA con el texto gris), sin moverse de sitio.
 - `pqc.js` — **el requisito «Exigir PQC»** (2026-10-27), una sola regla para los siete
   dimensionadores y para el motor de Fortinet en el servidor: `''` no se exige, `'clave'` basta un
   mecanismo quantum-safe documentado (PPK, MACsec/ANYsec o ML-KEM), `'mlkem'` exige ML-KEM. Sin

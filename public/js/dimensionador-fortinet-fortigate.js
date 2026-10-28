@@ -1915,7 +1915,7 @@ function populatePickModel() {
   const ordenados = [...grupos.entries()].sort((a, b) => ORDEN.indexOf(a[0]) - ORDEN.indexOf(b[0]));
   for (const [, ms] of ordenados) ms.sort((a, b) => numDe(a.id) - numDe(b.id));
   $('pickModel').innerHTML = '<option value="">Seguir la recomendación del motor</option>'
-    + ordenados.map(([g, ms]) => `<optgroup label="${esc(g)}">${ms.map((m) => `<option value="${esc(m.id)}">${esc(m.id)} — ${esc(m.seg)}${m.eol || !m.hwSku ? ' (fuera de venta)' : ''}</option>`).join('')}</optgroup>`).join('');
+    + ordenados.map(([g, ms]) => `<optgroup label="${esc(g)}">${ms.map((m) => { const oc = FICHA.opcionCiclo(m, { fuera: m.eol || !m.hwSku }); return `<option value="${esc(m.id)}"${oc.attr}>${esc(m.id)} — ${esc(m.seg)}${esc(oc.sufijo)}</option>`; }).join('')}</optgroup>`).join('');
 }
 // El equipo elegido de un enlace: `pickModel`, o `verdict-sel` en los de antes de la etapa 7.
 function restaurarSeleccionDeUrl() {

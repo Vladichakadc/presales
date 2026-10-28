@@ -209,7 +209,7 @@ function sincronizarConBom(m) {
   for (const [, ms] of ordenados) ms.sort((a, b) => capDe(a) - capDe(b));
   ordenados.sort((a, b) => Math.min(...a[1].map(capDe)) - Math.min(...b[1].map(capDe)));
   sel.innerHTML = ordenados.map(([g, ms]) =>
-    `<optgroup label="${esc(g)}">` + ms.map((x) => `<option value="${esc(x.id)}">${esc(x.id)} — ${esc(x.seg)}</option>`).join('') + `</optgroup>`
+    `<optgroup label="${esc(g)}">` + ms.map((x) => { const oc = FICHA.opcionCiclo(x); return `<option value="${esc(x.id)}"${oc.attr}>${esc(x.id)} — ${esc(x.seg)}${esc(oc.sufijo)}</option>`; }).join('') + `</optgroup>`
   ).join('');
   // Al reconstruir la lista se pierde el valor: se repone si ese equipo sigue existiendo en
   // la plataforma actual, para no tirar una eleccion manual al mover cualquier parametro.
@@ -670,7 +670,8 @@ function renderBom() {
     // Las 36 figuras de Juniper son dibujos numerados de su guía: sin la tabla, el número no dice nada.
     ...(vistaBom && vistaBom.front ? { fotos: { modelo: m.id, origen: 'Extraídas de los documentos oficiales de Juniper',
       front: vistaBom.front, rear: vistaBom.rear || null, pie: [vistaBom.tamano, vistaBom.fuente].filter(Boolean).join(' · '),
-      frontLeyenda: vistaBom.frontLeyenda || null, rearLeyenda: vistaBom.rearLeyenda || null } } : {}),
+      frontLeyenda: vistaBom.frontLeyenda || null, rearLeyenda: vistaBom.rearLeyenda || null,
+      foto: vistaBom.foto || null, fotoFuente: vistaBom.fotoFuente || null } } : {}),
     notas: ['', 'NOTAS DE PREVENTA',
       '  Ninguna linea lleva precio: no hay lista de precios de Juniper en el material',
       '  disponible. Confirmar SKU, nivel de suscripcion y precio con el distribuidor.',
