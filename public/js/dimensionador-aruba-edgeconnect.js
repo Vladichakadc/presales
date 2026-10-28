@@ -2208,7 +2208,9 @@ function render(){
     // el medio de los enlaces, no por capacidad). La MISMA regla del semáforo de #wanResumen.
     const ev=evaluarPuertos(m,D.wanLinks);
     if(ev.nivel==='rojo'){ outByPuertos.push({m, motivo:ev.motivo}); return false; }
-    const motPqc=PQC.motivo(m,nivelPqc);
+    // El SO del escenario va con la regla: la PPK de los gateways es de AOS-8 (pqc.so); los
+    // EdgeConnect corren ECOS y su `pqc` no declara SO, así que el selector no les afecta.
+    const motPqc=PQC.motivo(m,nivelPqc,{so:soMode, soNombre:SO_NOMBRE[soMode]||soMode});
     if(motPqc){ outByPqc.push({m, motivo:motPqc}); return false; }
     return true;
   });
@@ -3185,7 +3187,7 @@ function renderBom(){
     :null;
   const meta={
     titulo:`Lista de materiales — ${m.id}`,
-    supuestos:{vendor:'aruba', fabricante:'Aruba (HPE)', modelo:m.id, serie:m.serie, pqc:m.pqc || null, pqcNo:m.pqcNo || null, ciclo:BOM.cicloDe(m)},
+    supuestos:{vendor:'aruba', fabricante:'Aruba (HPE)', modelo:m.id, serie:m.serie, pqc:m.pqc || null, pqcNo:m.pqcNo || null, ciclo:BOM.cicloDe(m), so:m.fam==='gw'?{so:soMode, soNombre:SO_NOMBRE[soMode]||soMode}:null},
     subtitulo:`${m.seg} · ${famLabel(m)} · ${termino}`,
     archivo:`BOM_${m.id}`,
     ...(fotosBom?{fotos:fotosBom}:{}),

@@ -882,7 +882,9 @@
       aoa.push([]);
       aoa.push(['CRIPTOGRAFÍA POST-CUÁNTICA EXIGIDA']);
       aoa.push(['Requisito del escenario', e.pqc.etiqueta || exigida]);
-      const motivo = P && P.motivo ? P.motivo({ pqc: p, pqcNo: s.pqcNo || null }, exigida) : null;
+      // Con el SO del escenario (`s.so`, solo donde la página lo declara: los gateways de Aruba):
+      // una PQC documentada para otro sistema operativo no se da por cumplida en la hoja.
+      const motivo = P && P.motivo ? P.motivo({ pqc: p, pqcNo: s.pqcNo || null }, exigida, s.so || null) : null;
       aoa.push(['¿El equipo del BOM lo cumple?', motivo ? `No: ${motivo.replace(/^criptografía post-cuántica: /, '')}` : (p ? 'Sí' : 'No consta')]);
       if (p) {
         const tipo = (P && P.TIPO && P.TIPO[p.tipo]) || p.tipo;

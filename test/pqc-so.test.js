@@ -32,3 +32,13 @@ test('solo los gateways con PQC de AOS-8 la declaran por sistema operativo', () 
     else assert.strictEqual(m.pqc.so, undefined, `${m.id}: no depende del SO del gateway`);
   }
 });
+
+test('la página de Aruba y la hoja «Supuestos» pasan el sistema operativo del escenario', () => {
+  const fs = require('fs');
+  const path = require('path');
+  const pag = fs.readFileSync(path.join(__dirname, '..', 'public/js/dimensionador-aruba-edgeconnect.js'), 'utf8');
+  assert.match(pag, /PQC\.motivo\(m,nivelPqc,\{so:soMode/, 'el filtro del dimensionador no pasa el SO');
+  assert.match(pag, /so:m\.fam==='gw'\?\{so:soMode/, 'los supuestos del Excel no llevan el SO');
+  const bom = fs.readFileSync(path.join(__dirname, '..', 'public/js/bom.js'), 'utf8');
+  assert.match(bom, /P\.motivo\(\{ pqc: p, pqcNo: s\.pqcNo \|\| null \}, exigida, s\.so \|\| null\)/, 'la hoja no pasa el SO');
+});
