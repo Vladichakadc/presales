@@ -1,0 +1,1519 @@
+'use strict';
+// LOS DOCUMENTOS QUE TRAE EL TRANSPORTE (`traer-cisco-huawei.yml`), FUERA DEL YAML (2026-10-28).
+//
+// Vivían dentro de un `node -e "..."` de 132 KB que bash leía antes que Node, y en una sola entrega
+// dieron tres fallos de ese origen: una comilla doble que cortaba el script (corrida 40622507025),
+// el tope de 128 KiB de un argumento en Linux (corrida 40683042861) y comillas invertidas de
+// comentarios que bash ejecutaba como órdenes. Aquí bash no toca nada, y `npm run verificar`
+// comprueba la lista entera (`test/transporte-documentos.test.js`) antes de que llegue a Actions.
+//
+// Cada entrada: `archivo` (su nombre en la rama de transporte), `tipo` (html, pdf, texto o
+// imagenes), `para` (el fabricante), `urls` (en orden; vale la primera que responde con el
+// documento) y, en una HTML, `debeContener` (un texto que solo puede estar en el documento
+// correcto) o `exploracion: true` (se pide para ver qué hay, y el informe la dice EXPL, no OK).
+const DOCS = [
+  { archivo: 'cisco-isr1000-ds.html', tipo: 'html', para: 'CISCO', debeContener: 'C1111-8P', urls: [
+    'https://www.cisco.com/c/en/us/products/collateral/routers/1000-series-integrated-services-routers-isr/datasheet-c78-739512.html',
+  ] },
+  { archivo: 'cisco-c8200-ds.html', tipo: 'html', para: 'CISCO', debeContener: 'C8200L', urls: [
+    'https://www.cisco.com/c/en/us/products/collateral/routers/catalyst-8200-series-edge-platforms/nb-06-cat8200-series-edge-plat-ds-cte-en.html',
+  ] },
+  { archivo: 'cisco-c8300-ds.html', tipo: 'html', para: 'CISCO', debeContener: 'C8300-1N1S-6T', urls: [
+    'https://www.cisco.com/c/en/us/products/collateral/routers/catalyst-8300-series-edge-platforms/datasheet-c78-744088.html',
+  ] },
+  { archivo: 'cisco-c8500-ds.html', tipo: 'html', para: 'CISCO', debeContener: 'C8500-12X4QC', urls: [
+    'https://www.cisco.com/c/en/us/products/collateral/routers/catalyst-8500-series-edge-platforms/datasheet-c78-744089.html',
+  ] },
+  { archivo: 'cisco-asr1000-ds.html', tipo: 'html', para: 'CISCO', debeContener: 'ESP200', urls: [
+    'https://www.cisco.com/c/en/us/products/collateral/routers/asr-1000-series-aggregation-services-routers/datasheet-c78-731632.html',
+  ] },
+  { archivo: 'huawei-ar600-ciclo-de-vida.html', tipo: 'html', para: 'HUAWEI', debeContener: 'EOM', urls: [
+    'https://support.huawei.com/enterprise/en/routers/ar611-pid-253265923/bulletins?type=life-cycle-notices',
+    'https://support.huawei.com/enterprise/en/bulletins-product/life-cycle-notices/routers-pid-1482607112869',
+  ] },
+  { archivo: 'huawei-ar610-infofinder.html', tipo: 'html', para: 'HUAWEI', debeContener: 'EOM', urls: [
+    'https://info.support.huawei.com/info-finder/search-center/en/enterprise/routers/ar610-pid-253265923/eom-eofs-and-eos-date',
+  ] },
+  { archivo: 'huawei-ne8000-m8-ds.pdf', tipo: 'pdf', para: 'HUAWEI', urls: [
+    'https://e-file.huawei.com/marketingcloud/pep/asset/20000001/Material/e9dd06e260b64df683f6221fc8442cbf/M3T1A590N1140253824460255266/NetEngine%208000%20M8%20Universal%20Service%20Router%20Datasheet.pdf',
+  ] },
+  { archivo: 'huawei-ne8000-f8-ds.pdf', tipo: 'pdf', para: 'HUAWEI', urls: [
+    'https://e.huawei.com/marketingcloud/pep/asset/20000001/Material/49184bd3a3c54e4b90f6d73b55ba1558/M3T1A590N1101892422391505075/NetEngine%208000%20F8%20Datasheet.pdf',
+  ] },
+  { archivo: 'huawei-ne8000-f8-ds-universal.pdf', tipo: 'pdf', para: 'HUAWEI', urls: [
+    'https://e.huawei.com/marketingcloud/pep/asset/20000001/Material/e679822234f94651b2c2153c21a6621b/M2T1A669N893162565584830493/NetEngine%208000%20F8%20Universal%20Service%20Router%20Datasheet.pdf',
+  ] },
+  { archivo: 'huawei-ne8000-m14-documento.html', tipo: 'html', para: 'HUAWEI', debeContener: 'f4f1a7b9424a44ff9770b75a19eb5d2e', urls: [
+    'https://e.huawei.com/en/documents/products/enterprise-network/f4f1a7b9424a44ff9770b75a19eb5d2e',
+  ] },
+  { archivo: 'huawei-ne8000-m14-ds.pdf', tipo: 'pdf', para: 'HUAWEI', urls: [],
+    descubrir: { de: 'huawei-ne8000-m14-documento.html', material: 'Material/f4f1a7b9424a44ff9770b75a19eb5d2e/' } },
+  { archivo: 'huawei-ne8000-m-serie.html', tipo: 'html', para: 'HUAWEI', debeContener: 'Mpps', urls: [
+    'https://carrier.huawei.com/en/products/fixed-network/data-communication/router/NetEngine-8000-Series-Router/NetEngine-8000-M-Series',
+    'https://support.huawei.com/enterprise/en/doc/EDOC1100518177/e4ccf4a0/netengine-8000-m8',
+  ] },
+  { archivo: 'huawei-ar650-ds.pdf', tipo: 'pdf', para: 'HUAWEI', urls: [
+    'https://e.huawei.com/marketingcloud/pep/asset/20000001/Material/c42dc1420bae4b5cb6188ae903e43fd0/M3T1A590N1161701582779183172/Huawei%20NetEngine%20AR650%20Series%20Enterprise%20Routers%20Datasheet_20250810-v3.pdf',
+  ] },
+  { archivo: 'huawei-ar610-documento.html', tipo: 'html', para: 'HUAWEI', debeContener: 'e1fc81f9c69d43eb96d1190f77711067', urls: [
+    'https://e.huawei.com/en/documents/products/enterprise-network/e1fc81f9c69d43eb96d1190f77711067',
+  ] },
+  { archivo: 'huawei-ar610-ds.pdf', tipo: 'pdf', para: 'HUAWEI', urls: [],
+    descubrir: { de: 'huawei-ar610-documento.html', material: 'Material/e1fc81f9c69d43eb96d1190f77711067/' } },
+  { archivo: 'huawei-ar5710-s-ds.pdf', tipo: 'pdf', para: 'HUAWEI', urls: [
+    'https://e.huawei.com/marketingcloud/pep/asset/20000001/Material/5ed29e82ccc645fb94689a1fbd26bee7/M3T1A590N1245441110459510930/Huawei%20NetEngine%20AR5710-S%20Series%20Enterprise%20Router%20Data%20Sheet-R25C10.pdf',
+  ] },
+  { archivo: 'huawei-ar6710-h-ds.pdf', tipo: 'pdf', para: 'HUAWEI', urls: [
+    'https://e-file.huawei.com/marketingcloud/pep/asset/20000001/Material/c63ee1473b9147a4b6a50dc64c8f1bcd/M3T1A590N1244327824896741626/Huawei%20NetEngine%20AR6710-H%20Series%20Enterprise%20Router%20Data%20Sheet-R25C10.pdf',
+  ] },
+  { archivo: 'huawei-ar8000-ds.pdf', tipo: 'pdf', para: 'HUAWEI', urls: [
+    'https://e.huawei.com/marketingcloud/pep/asset/20000001/Material/eeda8c0f3659461cbe23ad0a36bc7d78/M3T1A590N1244677017247076576/Huawei%20NetEngine%20AR8000%20Series%20Enterprise%20Router%20Data%20Sheet-R25C10.pdf',
+  ] },
+  { archivo: 'huawei-ne8000-m6-ds.pdf', tipo: 'pdf', para: 'HUAWEI', urls: [
+    'https://e.huawei.com/marketingcloud/pep/asset/20000001/Material/b50df453e4bf4ca4b99ef855437e8cc9/M3T1A590N1140254128116289674/NetEngine%208000%20M6%20Universal%20Service%20Router%20Datasheet.pdf',
+  ] },
+  { archivo: 'huawei-ne8000-x-brochure.pdf', tipo: 'pdf', para: 'HUAWEI', urls: [
+    'https://e.huawei.com/marketingcloud/pep/asset/20000001/Material/02d9fbd0807243b5b37d66759665d25a/M3T1A590N1069280707103375400/NetEngine%208000%20X%20Series%20Brochure.pdf',
+  ] },
+  { archivo: 'huawei-ne8000-m1a-documento.html', tipo: 'html', para: 'HUAWEI', debeContener: 'cf634dea810542f1b578ec2a48992ce5', urls: [
+    'https://e.huawei.com/en/documents/products/enterprise-network/cf634dea810542f1b578ec2a48992ce5',
+  ] },
+  { archivo: 'huawei-ne8000-m1a-ds.pdf', tipo: 'pdf', para: 'HUAWEI', urls: [],
+    descubrir: { de: 'huawei-ne8000-m1a-documento.html', material: 'Material/cf634dea810542f1b578ec2a48992ce5/' } },
+  { archivo: 'huawei-ne8000-m1d-b-documento.html', tipo: 'html', para: 'HUAWEI', debeContener: 'd90f145262704e7d98541b3fe592120d', urls: [
+    'https://e.huawei.com/en/documents/products/enterprise-network/d90f145262704e7d98541b3fe592120d',
+    'https://e.huawei.com/en/material/enterprise/d90f145262704e7d98541b3fe592120d',
+  ] },
+  { archivo: 'huawei-ne8000-m1d-b-ds.pdf', tipo: 'pdf', para: 'HUAWEI', urls: [],
+    descubrir: { de: 'huawei-ne8000-m1d-b-documento.html', material: 'Material/d90f145262704e7d98541b3fe592120d/' } },
+  { archivo: 'huawei-a800e-documento.html', tipo: 'html', para: 'HUAWEI', debeContener: '06048a7a12954961b5017a6459145905', urls: [
+    'https://e.huawei.com/en/documents/products/enterprise-network/06048a7a12954961b5017a6459145905',
+  ] },
+  { archivo: 'huawei-a800e-brochure.pdf', tipo: 'pdf', para: 'HUAWEI', urls: [],
+    descubrir: { de: 'huawei-a800e-documento.html', material: 'Material/06048a7a12954961b5017a6459145905/' } },
+  // 2026-10-06 (tarde): los ocho modelos que se quedaron sin figura, y las fichas
+  // individuales de la A800 E, que deciden la capacidad que el folleto da mal.
+  { archivo: 'huawei-ar6710-l-documento.html', tipo: 'html', para: 'HUAWEI', debeContener: '04c9821faf16492ea6cadb03722f97ce', urls: [
+    'https://e.huawei.com/en/documents/products/enterprise-network/04c9821faf16492ea6cadb03722f97ce',
+    'https://e.huawei.com/cz/documents/products/enterprise-network/04c9821faf16492ea6cadb03722f97ce',
+  ] },
+  { archivo: 'huawei-ar6710-l-ds.pdf', tipo: 'pdf', para: 'HUAWEI', urls: [],
+    descubrir: { de: 'huawei-ar6710-l-documento.html', material: 'Material/04c9821faf16492ea6cadb03722f97ce/' } },
+  { archivo: 'huawei-ne8000-m1c-documento.html', tipo: 'html', para: 'HUAWEI', debeContener: '4a59d6b44470458491311a5793c9ccb6', urls: [
+    'https://e.huawei.com/en/material/enterprise/4a59d6b44470458491311a5793c9ccb6',
+    'https://e.huawei.com/en/documents/products/enterprise-network/4a59d6b44470458491311a5793c9ccb6',
+  ] },
+  { archivo: 'huawei-ne8000-m1c-ds.pdf', tipo: 'pdf', para: 'HUAWEI', urls: [],
+    descubrir: { de: 'huawei-ne8000-m1c-documento.html', material: 'Material/4a59d6b44470458491311a5793c9ccb6/' } },
+  { archivo: 'huawei-ne8000-m4-documento.html', tipo: 'html', para: 'HUAWEI', debeContener: '4f9698f641b04f0da9a6ec7a5ddcf78b', urls: [
+    'https://e.huawei.com/en/documents/products/enterprise-network/4f9698f641b04f0da9a6ec7a5ddcf78b',
+    'https://e.huawei.com/en/material/enterprise/4f9698f641b04f0da9a6ec7a5ddcf78b',
+  ] },
+  { archivo: 'huawei-ne8000-m4-ds.pdf', tipo: 'pdf', para: 'HUAWEI', urls: [],
+    descubrir: { de: 'huawei-ne8000-m4-documento.html', material: 'Material/4f9698f641b04f0da9a6ec7a5ddcf78b/' } },
+  { archivo: 'huawei-ne8000-m1d-ds.pdf', tipo: 'pdf', para: 'HUAWEI', urls: [
+    'https://e.huawei.com/marketingcloud/pep/asset/20000001/Material/fba94a0ac23f4dd883d0df9493eb0ed5/M3T1A590N1140256736524767245/NetEngine%208000%20M1D%20Universal%20Service%20Router%20Datasheet.pdf',
+    'https://e-file.huawei.com/marketingcloud/pep/asset/20000001/Material/fba94a0ac23f4dd883d0df9493eb0ed5/M3T1A590N1140256736524767245/NetEngine%208000%20M1D%20Universal%20Service%20Router%20Datasheet.pdf',
+  ] },
+  { archivo: 'huawei-ne8000-f1a-8h20q-ds.pdf', tipo: 'pdf', para: 'HUAWEI', urls: [
+    'https://e-file.huawei.com/marketingcloud/pep/asset/20000001/Material/9d1e5a135656419fb90354e8c68136eb/M3T1A590N1167033276639785031/NetEngine%208000%20F1A-8H20Q%20Datasheet%20V800R024C10.pdf',
+    'https://e.huawei.com/marketingcloud/pep/asset/20000001/Material/9d1e5a135656419fb90354e8c68136eb/M3T1A590N1167033276639785031/NetEngine%208000%20F1A-8H20Q%20Datasheet%20V800R024C10.pdf',
+  ] },
+  { archivo: 'huawei-ne8000e-f1a-ds.pdf', tipo: 'pdf', para: 'HUAWEI', urls: [
+    'https://e.huawei.com/marketingcloud/pep/asset/20000001/Material/cc79caaffb574b87985a8c3526649ae9/M3T1A590N1101938675746685128/NetEngine%208000E%20F1A%20Datasheet.pdf',
+    'https://e-file.huawei.com/marketingcloud/pep/asset/20000001/Material/cc79caaffb574b87985a8c3526649ae9/M3T1A590N1101938675746685128/NetEngine%208000E%20F1A%20Datasheet.pdf',
+  ] },
+  { archivo: 'huawei-a816e-documento.html', tipo: 'html', para: 'HUAWEI', debeContener: '56584a8272b44e61be416b1afc0eb241', urls: [
+    'https://e.huawei.com/en/documents/products/enterprise-network/56584a8272b44e61be416b1afc0eb241',
+  ] },
+  { archivo: 'huawei-a816e-ds.pdf', tipo: 'pdf', para: 'HUAWEI', urls: [],
+    descubrir: { de: 'huawei-a816e-documento.html', material: 'Material/56584a8272b44e61be416b1afc0eb241/' } },
+  { archivo: 'huawei-a813e-documento.html', tipo: 'html', para: 'HUAWEI', debeContener: 'fd349b57d667437c99c0e8f1108aa246', urls: [
+    'https://e.huawei.com/en/documents/products/enterprise-network/fd349b57d667437c99c0e8f1108aa246',
+  ] },
+  { archivo: 'huawei-a813e-ds.pdf', tipo: 'pdf', para: 'HUAWEI', urls: [],
+    descubrir: { de: 'huawei-a813e-documento.html', material: 'Material/fd349b57d667437c99c0e8f1108aa246/' } },
+  { archivo: 'huawei-a822e-documento.html', tipo: 'html', para: 'HUAWEI', debeContener: 'b61bc5869a67495888e7b2e4210ebb37', urls: [
+    'https://e.huawei.com/en/documents/products/enterprise-network/b61bc5869a67495888e7b2e4210ebb37',
+  ] },
+  // La A822 E y la A821 E solo publican su ficha como presentacion (.pptx): la pagina de
+  // documentos no enlaza ningun PDF de ese material (corrida 37405345929). Un .pptx es
+  // un zip, y su indice de contenido es la firma que se exige.
+  { archivo: 'huawei-a822e-ds.pptx', tipo: 'pptx', para: 'HUAWEI', debeContener: '[Content_Types].xml', urls: [
+    'https://e-file.huawei.com/marketingcloud/pep/asset/20000001/Material/b61bc5869a67495888e7b2e4210ebb37/M3T1A590N1144953970340237579/NetEngine%20A822%20E%20Datasheet%20V800R025C00.pptx',
+    'https://e.huawei.com/marketingcloud/pep/asset/20000001/Material/b61bc5869a67495888e7b2e4210ebb37/M3T1A590N1144953970340237579/NetEngine%20A822%20E%20Datasheet%20V800R025C00.pptx',
+  ] },
+  { archivo: 'huawei-a821e-documento.html', tipo: 'html', para: 'HUAWEI', debeContener: '1ff4ee729369411ba9288d36e86e3474', urls: [
+    'https://e.huawei.com/en/documents/products/enterprise-network/1ff4ee729369411ba9288d36e86e3474',
+    'https://e.huawei.com/en/material/enterprise/1ff4ee729369411ba9288d36e86e3474',
+  ] },
+  { archivo: 'huawei-a821e-ds.pptx', tipo: 'pptx', para: 'HUAWEI', debeContener: '[Content_Types].xml', urls: [
+    'https://e-file.huawei.com/marketingcloud/pep/asset/20000001/Material/1ff4ee729369411ba9288d36e86e3474/M3T1A590N1149651611493585023/NetEngine%20A821%20E%20Datasheet%20V800R025C00.pptx',
+    'https://e.huawei.com/marketingcloud/pep/asset/20000001/Material/1ff4ee729369411ba9288d36e86e3474/M3T1A590N1149651611493585023/NetEngine%20A821%20E%20Datasheet%20V800R025C00.pptx',
+  ] },
+  // 2026-10-06 (noche): paginas de e.huawei.com, NO de support.huawei.com (esas las niega
+  // Akamai, ver la cabecera). Las de producto, para leer en el texto oficial la capacidad
+  // por modelo de la A800 E y la alimentacion de las NE8000 y los AR. Las «Single-page
+  // view» las senalo la busqueda al preguntar por las fuentes de los AR6710 y el AR8700:
+  // se guardan solo si enlazan su documento (Material/), para leer cual es antes de bajarlo.
+  { archivo: 'huawei-a800-producto.html', tipo: 'html', para: 'HUAWEI', debeContener: 'A821', urls: [
+    'https://e.huawei.com/en/products/routers/netengine-a800',
+  ] },
+  { archivo: 'huawei-ne8000-producto.html', tipo: 'html', para: 'HUAWEI', debeContener: 'M1A', urls: [
+    'https://e.huawei.com/en/products/routers/ne8000',
+  ] },
+  { archivo: 'huawei-ar6700-producto.html', tipo: 'html', para: 'HUAWEI', debeContener: 'AR6710', urls: [
+    'https://e.huawei.com/en/products/routers/netengine-ar6700',
+  ] },
+  { archivo: 'huawei-ar8700-producto.html', tipo: 'html', para: 'HUAWEI', debeContener: 'AR8700', urls: [
+    'https://e.huawei.com/en/products/routers/netengine-ar8700',
+  ] },
+  { archivo: 'huawei-spv-811ac338.html', tipo: 'html', para: 'HUAWEI', debeContener: 'Material/', urls: [
+    'https://e.huawei.com/en/documents/products/enterprise-network/811ac3380ca7453fa9fd7edf8dbad52c',
+  ] },
+  { archivo: 'huawei-spv-5cb30774.html', tipo: 'html', para: 'HUAWEI', debeContener: 'Material/', urls: [
+    'https://e.huawei.com/en/material/enterprise/5cb3077476e2493aac3972db0663066a',
+  ] },
+  { archivo: 'huawei-spv-ecb4d450.html', tipo: 'html', para: 'HUAWEI', debeContener: 'Material/', urls: [
+    'https://e.huawei.com/en/documents/products/enterprise-network/ecb4d45066bf4b629f4783bca1b846f9',
+  ] },
+  { archivo: 'huawei-spv-960a6a66.html', tipo: 'html', para: 'HUAWEI', debeContener: 'Material/', urls: [
+    'https://e.huawei.com/en/documents/products/enterprise-network/960a6a66b96547eebb830949dce209ae',
+  ] },
+  { archivo: 'huawei-spv-1e3d1fc4.html', tipo: 'html', para: 'HUAWEI', debeContener: 'Material/', urls: [
+    'https://e.huawei.com/en/documents/products/enterprise-network/1e3d1fc4b14e4782846c8731be090909',
+  ] },
+  { archivo: 'huawei-spv-90f6fd47.html', tipo: 'html', para: 'HUAWEI', debeContener: 'Material/', urls: [
+    'https://e.huawei.com/en/material/enterprise/90f6fd472b63452da07ec6e9faf5f261',
+  ] },
+  { archivo: 'huawei-spv-f693e277.html', tipo: 'html', para: 'HUAWEI', debeContener: 'Material/', urls: [
+    'https://e.huawei.com/en/documents/others/f693e27702504d748be545b1caa77854',
+  ] },
+  { archivo: 'huawei-spv-729aba28.html', tipo: 'html', para: 'HUAWEI', debeContener: 'Material/', urls: [
+    'https://e.huawei.com/en/material/enterprise/729aba28dcdc41c5a608dc1859eb3211',
+  ] },
+  { archivo: 'huawei-spv-f65d1efd.html', tipo: 'html', para: 'HUAWEI', debeContener: 'Material/', urls: [
+    'https://e.huawei.com/en/documents/products/enterprise-network/f65d1efd2cc24c2e882d5268ab74e419',
+  ] },
+  { archivo: 'huawei-spv-1eb8951b.html', tipo: 'html', para: 'HUAWEI', debeContener: 'Material/', urls: [
+    'https://e.huawei.com/en/documents/others/1eb8951bd3fa4220a01a401b3b345add',
+  ] },
+  // 2026-10-06 (octava): las FOTOS de producto de Huawei. Las figuras de la tarjeta salen
+  // de las fichas, que las publican pequenas: 27 de 42 miden menos de 150 px de alto, la
+  // altura a la que la tarjeta las pinta. Las paginas de producto de e.huawei.com sirven
+  // una imagen por modelo. El listado de routers enlaza cada pagina de serie, y de ellas
+  // se bajan las imagenes de producto. Que modelo dibuja cada una se decide MIRANDOLA
+  // contra el dibujo de la ficha, nunca por el nombre del archivo.
+  { archivo: 'huawei-routers-listado.html', tipo: 'html', para: 'HUAWEI', debeContener: 'NetEngine', urls: [
+    'https://e.huawei.com/en/products/routers',
+  ] },
+  { archivo: 'huawei-carrier-ne8000.html', tipo: 'html', para: 'HUAWEI', debeContener: 'NetEngine 8000', urls: [
+    'https://carrier.huawei.com/en/products/fixed-network/data-communication/router/NetEngine-8000-Series-Router',
+    'https://carrier.huawei.com/en/products/fixed-network/data-communication/router/NetEngine-8000-Series-Router/NetEngine-8000-M-Series',
+  ] },
+  { archivo: 'huawei-carrier-ne8000-x.html', tipo: 'html', para: 'HUAWEI', debeContener: 'NetEngine 8000 X', urls: [
+    'https://carrier.huawei.com/en/products/fixed-network/data-communication/router/NetEngine-8000-Series-Router/NetEngine-8000-X-series',
+  ] },
+  // La serie X tiene ficha propia ademas del folleto (que la publica a 233-303 px):
+  // la dio la busqueda el 2026-10-06. Su pagina de documentos no enlaza un PDF sino
+  // una presentacion, como la A821 E y la A822 E (corrida 37515043606).
+  { archivo: 'huawei-ne8000-x-documento.html', tipo: 'html', para: 'HUAWEI', debeContener: 'b67577cb8f4f4dc68c091d8d9e8fb429', urls: [
+    'https://e.huawei.com/en/documents/products/enterprise-network/b67577cb8f4f4dc68c091d8d9e8fb429',
+  ] },
+  { archivo: 'huawei-ne8000-x-ds.pptx', tipo: 'pptx', para: 'HUAWEI', debeContener: '[Content_Types].xml', urls: [
+    'https://e-file.huawei.com/marketingcloud/pep/asset/20000001/Material/b67577cb8f4f4dc68c091d8d9e8fb429/M3T1A590N1113914198691180598/NetEngine%208000%20X%20Series%20Router%20Datasheet%20V8R024C10.pptx',
+    'https://e.huawei.com/marketingcloud/pep/asset/20000001/Material/b67577cb8f4f4dc68c091d8d9e8fb429/M3T1A590N1113914198691180598/NetEngine%208000%20X%20Series%20Router%20Datasheet%20V8R024C10.pptx',
+  ] },
+  // El estante de fichas AR de e.huawei.com, que nombra otras revisiones de la del
+  // AR610: la vigente publica el AR611 a 293 x 46 px.
+  { archivo: 'huawei-ar-estante.html', tipo: 'html', para: 'HUAWEI', debeContener: 'AR', urls: [
+    'https://e.huawei.com/en/material/bookshelf/bookshelfview/20190907/436e499e649743f1b9c4c633f80797f4',
+  ] },
+  // Las paginas de serie van en datos del listado, no siempre en un href: se busca la
+  // ruta en el texto, y solo las de las series que el catalogo vende.
+  { archivo: 'huawei-series', tipo: 'paginas', para: 'HUAWEI', urls: [],
+    descubrirPiezas: { de: ['huawei-routers-listado.html'], base: 'https://e.huawei.com/en/products/routers',
+      dominios: ['e.huawei.com'], prefijo: ['en', 'products', 'routers'], max: 40,
+      solo: ['netengine-ar610', 'netengine-ar650', 'ar5710-s', 'netengine-ar5700', 'netengine-ar6700',
+        'netengine-ar8000', 'netengine-ar8700', 'netengine-a800', 'ne8000', 'ne8000e'] } },
+  { archivo: 'huawei-img', tipo: 'imagenes', para: 'HUAWEI', urls: [],
+    descubrirPiezas: { de: ['huawei-series', 'huawei-ne8000-producto.html', 'huawei-a800-producto.html',
+      'huawei-ar6700-producto.html', 'huawei-ar8700-producto.html', 'huawei-carrier-ne8000.html',
+      'huawei-carrier-ne8000-x.html'],
+      base: 'https://e.huawei.com/', dominios: ['huawei.com'],
+      contiene: ['/products/', '/productcontenthubdata/', '/productsandsolutions/'], max: 150 } },
+  // 2026-10-13: MIKROTIK. Las fichas de producto publican la matriz de pruebas RFC 2544
+  // (ruteo en fast path, con 25 colas simples y con 25 reglas de filtro, a 1518/512/64 B,
+  // e IPsec por tunel) con la que se redisena el dimensionador. Ocho ya estan en
+  // fuente/mikrotik-fichas y fuente/mikrotik-hex-aruba (2026-09-03); faltan los CCR que
+  // el catalogo vende y los relevos del hEX. Las URL de producto salieron de BUSCAR cada
+  // equipo; el listado de routers se guarda para DESCUBRIR los demas, no se adivinan.
+  { archivo: 'mikrotik-ccr2004-1g-12s-2xs.html', tipo: 'html', para: 'MIKROTIK', debeContener: 'CCR2004-1G-12S+2XS', urls: [
+    'https://mikrotik.com/product/ccr2004_1g_12s_2xs',
+  ] },
+  { archivo: 'mikrotik-ccr2116.html', tipo: 'html', para: 'MIKROTIK', debeContener: 'CCR2116-12G-4S+', urls: [
+    'https://mikrotik.com/product/ccr2116_12g_4splus',
+  ] },
+  { archivo: 'mikrotik-ccr2216.html', tipo: 'html', para: 'MIKROTIK', debeContener: 'CCR2216-1G-12XS-2XQ', urls: [
+    'https://mikrotik.com/product/ccr2216_1g_12xs_2xq',
+  ] },
+  { archivo: 'mikrotik-hex-2024.html', tipo: 'html', para: 'MIKROTIK', debeContener: 'E50UG', urls: [
+    'https://mikrotik.com/product/hex_2024',
+  ] },
+  { archivo: 'mikrotik-hex-s-2025.html', tipo: 'html', para: 'MIKROTIK', debeContener: 'E60iUGS', urls: [
+    'https://mikrotik.com/product/hex_s_2025',
+  ] },
+  { archivo: 'mikrotik-routers-listado.html', tipo: 'html', para: 'MIKROTIK', exploracion: true, urls: [
+    'https://mikrotik.com/products/group/ethernet-routers',
+  ] },
+  { archivo: 'mikrotik-routers', tipo: 'paginas', para: 'MIKROTIK', urls: [],
+    descubrirPiezas: { de: ['mikrotik-routers-listado.html'], base: 'https://mikrotik.com/products/group/ethernet-routers',
+      dominios: ['mikrotik.com'], prefijo: ['product'], max: 45 } },
+  // Primera corrida (38394703476): el descubrimiento no admitia «_» en la ruta y trunco
+  // hex_s, rb5009ug_s_in... en /product/hex, /product/rb5009ug (404). Ya lo admite.
+  // Los AP de CAPsMAN y las opticas del BOM salen de sus listados, igual que los routers.
+  { archivo: 'mikrotik-wifi-listado.html', tipo: 'html', para: 'MIKROTIK', exploracion: true, urls: [
+    'https://mikrotik.com/products/group/indoor-wireless',
+  ] },
+  { archivo: 'mikrotik-wifi', tipo: 'paginas', para: 'MIKROTIK', urls: [],
+    descubrirPiezas: { de: ['mikrotik-wifi-listado.html'], base: 'https://mikrotik.com/products/group/indoor-wireless',
+      dominios: ['mikrotik.com'], prefijo: ['product'], max: 45 } },
+  { archivo: 'mikrotik-sfp-listado.html', tipo: 'html', para: 'MIKROTIK', exploracion: true, urls: [
+    'https://mikrotik.com/products/group/sfp-qsfp',
+  ] },
+  { archivo: 'mikrotik-sfp', tipo: 'paginas', para: 'MIKROTIK', urls: [],
+    descubrirPiezas: { de: ['mikrotik-sfp-listado.html'], base: 'https://mikrotik.com/products/group/sfp-qsfp',
+      dominios: ['mikrotik.com'], prefijo: ['product'], max: 90 } },
+  // 2026-10-13 (segunda vuelta): las FIGURAS de los equipos. Cada ficha trae su galeria
+  // oficial («Product images», sin rotulo de cara) en PNG de alta resolucion
+  // (<id>_hi_res.png en cdn.mikrotik.com). Se piden solo esas, de las fichas de los
+  // routers y de la del L009UiGS-2HaxD-IN, que esta en el listado Wi-Fi. Que cara es
+  // cada una se decide MIRANDOLAS, no por el orden de la galeria.
+  { archivo: 'mikrotik-l009-2haxd.html', tipo: 'html', para: 'MIKROTIK', debeContener: 'L009UiGS-2HaxD-IN', urls: [
+    'https://mikrotik.com/product/l009uigs_2haxd_in',
+  ] },
+  { archivo: 'mikrotik-img', tipo: 'imagenes', para: 'MIKROTIK', urls: [],
+    descubrirPiezas: { de: ['mikrotik-routers', 'mikrotik-l009-2haxd.html'], base: 'https://mikrotik.com/',
+      dominios: ['mikrotik.com'], contiene: ['_hi_res.png'], max: 200 } },
+  { archivo: 'mikrotik-licencias.html', tipo: 'html', para: 'MIKROTIK', exploracion: true, urls: [
+    'https://help.mikrotik.com/docs/spaces/ROS/pages/328149/RouterOS+license+keys',
+    'https://help.mikrotik.com/docs/display/ROS/RouterOS+license+keys',
+  ] },
+  { archivo: 'mikrotik-chr.html', tipo: 'html', para: 'MIKROTIK', exploracion: true, urls: [
+    'https://manual.mikrotik.com/docs/getting-started/routeros-licensing/chr/chr-licensing/',
+    'https://help.mikrotik.com/docs/spaces/ROS/pages/18350234/Cloud+Hosted+Router+CHR',
+  ] },
+  // 2026-10-13 (pendientes): el MANUAL de cada equipo. Cada ficha enlaza el suyo en
+  // manual.mikrotik.com/hardware/<modelo>/; de ahi salen la alimentacion (cuantas
+  // entradas y si son de respaldo) y la potencia PoE de salida que la ficha da en
+  // amperios. Se descubren en las fichas, sin adivinar rutas: van con mikrotik-routers
+  // (y su listado) y con mikrotik-l009-2haxd.html; las de las opticas, con mikrotik-sfp.
+  { archivo: 'mikrotik-manuales', tipo: 'paginas', para: 'MIKROTIK', urls: [],
+    descubrirPiezas: { de: ['mikrotik-routers', 'mikrotik-l009-2haxd.html'], base: 'https://mikrotik.com/',
+      dominios: ['manual.mikrotik.com'], prefijo: ['hardware'], max: 45 } },
+  { archivo: 'mikrotik-manuales-sfp', tipo: 'paginas', para: 'MIKROTIK', urls: [],
+    descubrirPiezas: { de: ['mikrotik-sfp'], base: 'https://mikrotik.com/',
+      dominios: ['manual.mikrotik.com'], prefijo: ['hardware'], max: 45 } },
+  // 2026-10-13 (pendiente F4-resto de Fortinet): la «Maximum Values Table» de FortiOS
+  // (rutas, vecinos BGP/OSPF y VRF por modelo). La pagina es una aplicacion: se trae su
+  // HTML y sus scripts para LEER de donde saca los datos; los scripts no se ejecutan.
+  { archivo: 'fortinet-mvt.html', tipo: 'html', para: 'FORTINET', exploracion: true, urls: [
+    'https://docs.fortinet.com/max-value-table',
+  ] },
+  { archivo: 'fortinet-mvt-js', tipo: 'scripts', para: 'FORTINET', urls: [],
+    descubrirPiezas: { de: ['fortinet-mvt.html'], base: 'https://docs.fortinet.com/max-value-table',
+      dominios: ['docs.fortinet.com', 'fortinet.com'], max: 20 } },
+  // 2026-10-13: el script de la pagina pide sus filas a /api/tools/max-values con familia,
+  // version y modelos (leido en dist/assets/app-*.js, corrida 38450065531). Se piden los
+  // 56 FortiGate vigentes del catalogo que la tabla lista (7081F y 7121F no figuran) en
+  // FortiOS 7.6.7, la ultima de la rama 7.6 que el catalogo da por vigente.
+  // 2026-10-13: el vigia vio cambiar el PDF de las Release Notes de 7.6.0 (1.325.974 a
+  // 1.338.345 bytes). Se trae para contrastar lo que el catalogo toma de el (SSL-VPN).
+  { archivo: 'fortinet-rn-7.6.0.pdf', tipo: 'pdf', para: 'FORTINET', urls: [
+    'https://fortinetweb.s3.amazonaws.com/docs.fortinet.com/v2/attachments/51fcbb4f-33ff-11ef-bfe5-fa163e15d75b/fortios-v7.6.0-release-notes.pdf',
+  ] },
+  { archivo: 'fortinet-mvt-7.6.7.json', tipo: 'html', para: 'FORTINET', debeContener: '\"rows\"', urls: [
+    'https://docs.fortinet.com/api/tools/max-values?family=fortigate&version=7.6.7&models=30G%2C31G%2C50G%2C51G%2C70G%2C71G%2C90G%2C91G%2C120G%2C121G%2C200G%2C201G%2C400G%2C401G%2C700G%2C701G%2C900G%2C901G%2C3000G%2C3001G%2C3500G%2C3501G%2C3800G%2C3801G%2C40F%2C60F%2C61F%2C70F%2C71F%2C80F%2C81F%2C100F%2C200F%2C400F%2C401F%2C600F%2C1000F%2C1001F%2C1800F%2C1801F%2C2600F%2C2601F%2C3000F%2C3001F%2C3200F%2C3201F%2C3500F%2C3501F%2C3700F%2C3701F%2C4200F%2C4201F%2C4400F%2C4401F%2C4800F%2C4801F',
+  ] },
+  // 2026-10-13 (segundo enlace WAN y opticas por equipo): la matriz OFICIAL de que
+  // modulo va en que equipo. Sustituye a la vieja tabla del wiki, que ya solo remite aqui.
+  { archivo: 'mikrotik-compatibilidad.html', tipo: 'html', para: 'MIKROTIK', debeContener: 'S+RJ10', urls: [
+    'https://manual.mikrotik.com/docs/7.25/wired-connections/mikrotik-wired-interface-compatibility',
+    'https://help.mikrotik.com/docs/spaces/ROS/pages/220233794/MikroTik+wired+interface+compatibility',
+  ] },
+  // 2026-10-14 (pendientes de MikroTik): la matriz de compatibilidad en su version vigente
+  // (sin fijar la 7.25), por si ya lista el CCR2004-16G-2S+PC; el registro de cambios del
+  // manual nuevo, que anuncia una pagina sobre como medir la capacidad de reenvio con
+  // tamanos de paquete (su URL se descubre ahi, no se adivina), y la pagina IPsec del
+  // manual, por si dice si la cifra IPsec de las pruebas es por sentido o la suma.
+  { archivo: 'mikrotik-compatibilidad-vigente.html', tipo: 'html', para: 'MIKROTIK', debeContener: 'S+RJ10', urls: [
+    'https://manual.mikrotik.com/docs/wired-connections/mikrotik-wired-interface-compatibility',
+    'https://manual.mikrotik.com/docs/wired-connections/mikrotik-wired-interface-compatibility/',
+  ] },
+  { archivo: 'mikrotik-manual-cambios.html', tipo: 'html', para: 'MIKROTIK', exploracion: true, urls: [
+    'https://manual.mikrotik.com/changelog/',
+  ] },
+  { archivo: 'mikrotik-manual-ipsec.html', tipo: 'html', para: 'MIKROTIK', exploracion: true, urls: [
+    'https://manual.mikrotik.com/docs/virtual-private-networks/ipsec/',
+  ] },
+  // La pagina «Bandwidth test» (7.26) explica como medir la capacidad de reenvio con una
+  // cadena de tres routers y tamanos de paquete: por si dice en que sentido cuenta.
+  { archivo: 'mikrotik-manual-bandwidth-test.html', tipo: 'html', para: 'MIKROTIK', exploracion: true, urls: [
+    'https://manual.mikrotik.com/docs/diagnostics-monitoring-and-troubleshooting/bandwidth-test',
+  ] },
+  // ARUBA: la «EdgeConnect US Spec Sheet» ya no esta en arubanetworks.com (404). La
+  // pagina de producto de HPE la lista en psnow como a00109847enw: se trae la pagina
+  // para leer que documento es y su enlace de descarga, que no se adivina.
+  { archivo: 'aruba-psnow-a00109847enw.html', tipo: 'html', para: 'ARUBA', exploracion: true, urls: [
+    'https://www.hpe.com/psnow/doc/a00109847enw',
+  ] },
+  // La pagina (corrida 38422143556) es la data sheet «HPE Networking EdgeConnect» y enlaza
+  // esta descarga; la URL se copio de ahi.
+  { archivo: 'aruba-ec-data-sheet.pdf', tipo: 'pdf', para: 'ARUBA', urls: [
+    'https://www.hpe.com/psnow/downloadDoc/HPE%20Networking%20EdgeConnect-a00109847enw.pdf?id=a00109847enw&isFutureVersion=true&ver=&form=false&preview=false&print=&hf=regular&r=&section=&prelaunchSection=&softrollSection=&deepLink=&utm_source=&utm_medium=&utm_campaign=&utm_content=&utm_term=&originalObjectName=&isLinearized=false&contentDisposition=attachment',
+  ] },
+  // HUAWEI A816 E: su pagina de documentos responde 200 pero ya no enlaza el material de
+  // la ficha (corrida 38422143556); el PDF citado da 404. Se guarda para leer que
+  // enlaza ahora, sin exigir el identificador viejo.
+  { archivo: 'huawei-a816e-documento-hoy.html', tipo: 'html', para: 'HUAWEI', exploracion: true, urls: [
+    'https://e.huawei.com/en/documents/products/enterprise-network/56584a8272b44e61be416b1afc0eb241',
+  ] },
+  // La pagina de documentos vieja ya sirve un 404 de Huawei con estado 200 (corrida
+  // 38423580897); la de producto enlaza esta otra pagina de documentos de la familia.
+  { archivo: 'huawei-a800-documentos.html', tipo: 'html', para: 'HUAWEI', exploracion: true, urls: [
+    'https://e.huawei.com/en/documents/products/enterprise-network/06048a7a12954961b5017a6459145905',
+  ] },
+  // 2026-10-06 (octava): ARUBA, la pagina de IDS/IPS del Orchestrator. La auditoria A1
+  // aparto el EC-XS de Dynamic Threat Defense con esta documentacion, y la spec sheet
+  // vigente del EC-XS (a00110177ENW Rev. 3) publica capacidad IDS/IPS: se lee entera
+  // para ver a que numeros de parte se refiere la restriccion.
+  { archivo: 'aruba-orch-ids.html', tipo: 'html', para: 'ARUBA', debeContener: 'EC-XS', urls: [
+    'https://arubanetworking.hpe.com/techdocs/sdwan/docs/orch/configuration/overlays/ids/',
+  ] },
+  // Y la politica de ciclo de vida de EdgeConnect (pendiente 16 de «Datos por confirmar»):
+  // terceros dan fin de venta al EC-L-H y al EC-XS, y el 2026-09-16 este PDF dio 403.
+  // Vive en el mismo techdocs que ya sirvio el Hardware Reference desde Actions.
+  { archivo: 'aruba-ec-ciclo-de-vida.pdf', tipo: 'pdf', para: 'ARUBA', urls: [
+    'https://arubanetworking.hpe.com/techdocs/sdwan-PDFs/docs/eula/EC_LifecyclePolicy_latest.pdf',
+  ] },
+  // 2026-10-06 (septima): ARUBA, las figuras de los controladores AOS 8 (pendiente 41).
+  // El portal de documentacion de hardware de HPE Aruba enlaza la guia de instalacion
+  // de cada controlador; la del 7024 la dio la busqueda. Las demas se leen en el
+  // portal antes de pedirlas, no se adivinan por el patron de esa URL.
+  // La primera corrida (37493689965) trajo la guia del 7024; el portal respondio 200 con
+  // 27.933 bytes sin «7024» ni ningun «.pdf» (37494434563), y psnow da su pagina de
+  // aterrizaje en HTML. Las tres se guardan sin exigir texto, solo para LEER que enlazan:
+  // la URL de cada documento sale de ahi, no de un patron.
+  { archivo: 'aruba-controladores-portal.html', tipo: 'html', para: 'ARUBA', exploracion: true, urls: [
+    'https://arubanetworking.hpe.com/techdocs/hardware/DocumentationPortal/Content/ArubaTopics/gatecontroller/controller-top.htm',
+  ] },
+  { archivo: 'aruba-7024-ig.pdf', tipo: 'pdf', para: 'ARUBA', urls: [
+    'https://arubanetworking.hpe.com/techdocs/hardware/controllers/7024/ig/Aruba-7024IG_EN.pdf',
+  ] },
+  { archivo: 'aruba-psnow-c05272689.html', tipo: 'html', para: 'ARUBA', exploracion: true, urls: [
+    'https://www.hpe.com/psnow/doc/c05272689',
+  ] },
+  { archivo: 'aruba-psnow-c05272677.html', tipo: 'html', para: 'ARUBA', exploracion: true, urls: [
+    'https://www.hpe.com/psnow/doc/c05272677',
+  ] },
+  // 2026-10-06 (corrida 37502072088): cada pagina de psnow enlaza su PDF en «downloadDoc/...»;
+  // la URL se copio de ahi, con el titulo y la version que la pagina declara. El portal es
+  // una ayuda MadCap que pinta su lista desde los indices de Data/Tocs: se traen para leer
+  // en ellos la pagina de cada controlador. El nombre del indice lo declara la propia pagina
+  // (Data/Tocs/product_toc__con_gat__controller.js); Default.js dio 404 (37504395999).
+  { archivo: 'aruba-7000-serie-ds.pdf', tipo: 'pdf', para: 'ARUBA', urls: [
+    'https://www.hpe.com/psnow/downloadDoc/Aruba%207000%20Series%20Mobility%20Controllers-c05272689.pdf?id=c05272689.pdf&isFutureVersion=true&ver=13&form=false&preview=false&print=&hf=regular&r=&section=&prelaunchSection=&softrollSection=&deepLink=&utm_source=&utm_medium=&utm_campaign=&utm_content=&utm_term=&originalObjectName=&isLinearized=false&contentDisposition=attachment',
+  ] },
+  { archivo: 'aruba-7200-serie-ds.pdf', tipo: 'pdf', para: 'ARUBA', urls: [
+    'https://www.hpe.com/psnow/downloadDoc/HPE%20Aruba%20Networking%207200%20Series%20Mobility%20Controllers-c05272677.pdf?id=c05272677.pdf&isFutureVersion=true&ver=14&form=false&preview=false&print=&hf=regular&r=&section=&prelaunchSection=&softrollSection=&deepLink=&utm_source=&utm_medium=&utm_campaign=&utm_content=&utm_term=&originalObjectName=&isLinearized=false&contentDisposition=attachment',
+  ] },
+  { archivo: 'aruba-portal-toc.js', tipo: 'html', para: 'ARUBA', exploracion: true, urls: [
+    'https://arubanetworking.hpe.com/techdocs/hardware/DocumentationPortal/Data/Tocs/product_toc__con_gat__controller.js',
+  ] },
+  { archivo: 'aruba-portal-toc-chunk0.js', tipo: 'html', para: 'ARUBA', exploracion: true, urls: [
+    'https://arubanetworking.hpe.com/techdocs/hardware/DocumentationPortal/Data/Tocs/product_toc__con_gat__controller_Chunk0.js',
+  ] },
+  // El indice (37504707952) enlaza una pagina por controlador; cada una enlaza su guia de
+  // instalacion. Se guarda la pagina y se pide el PDF que ella enlaza: la del 7024 sirve de
+  // control, porque su guia ya se conoce.
+  { archivo: 'aruba-7024-pagina.html', tipo: 'html', para: 'ARUBA', debeContener: '7024', urls: [
+    'https://arubanetworking.hpe.com/techdocs/hardware/DocumentationPortal/Content/ArubaTopics/gatecontroller/7024.htm',
+  ] },
+  { archivo: 'aruba-7005-pagina.html', tipo: 'html', para: 'ARUBA', debeContener: '7005', urls: [
+    'https://arubanetworking.hpe.com/techdocs/hardware/DocumentationPortal/Content/ArubaTopics/gatecontroller/7005.htm',
+  ] },
+  { archivo: 'aruba-7005-ig.pdf', tipo: 'pdf', para: 'ARUBA', urls: [],
+    descubrirEnlace: { de: 'aruba-7005-pagina.html', contiene: '/ig/', dominios: ['arubanetworks.com', 'hpe.com'], base: 'https://arubanetworking.hpe.com/techdocs/hardware/DocumentationPortal/Content/ArubaTopics/gatecontroller/7005.htm' } },
+  { archivo: 'aruba-7008-pagina.html', tipo: 'html', para: 'ARUBA', debeContener: '7008', urls: [
+    'https://arubanetworking.hpe.com/techdocs/hardware/DocumentationPortal/Content/ArubaTopics/gatecontroller/7008.htm',
+  ] },
+  { archivo: 'aruba-7008-ig.pdf', tipo: 'pdf', para: 'ARUBA', urls: [],
+    descubrirEnlace: { de: 'aruba-7008-pagina.html', contiene: '/ig/', dominios: ['arubanetworks.com', 'hpe.com'], base: 'https://arubanetworking.hpe.com/techdocs/hardware/DocumentationPortal/Content/ArubaTopics/gatecontroller/7008.htm' } },
+  { archivo: 'aruba-7010-pagina.html', tipo: 'html', para: 'ARUBA', debeContener: '7010', urls: [
+    'https://arubanetworking.hpe.com/techdocs/hardware/DocumentationPortal/Content/ArubaTopics/gatecontroller/7010.htm',
+  ] },
+  { archivo: 'aruba-7010-ig.pdf', tipo: 'pdf', para: 'ARUBA', urls: [],
+    descubrirEnlace: { de: 'aruba-7010-pagina.html', contiene: '/ig/', dominios: ['arubanetworks.com', 'hpe.com'], base: 'https://arubanetworking.hpe.com/techdocs/hardware/DocumentationPortal/Content/ArubaTopics/gatecontroller/7010.htm' } },
+  { archivo: 'aruba-7030-pagina.html', tipo: 'html', para: 'ARUBA', debeContener: '7030', urls: [
+    'https://arubanetworking.hpe.com/techdocs/hardware/DocumentationPortal/Content/ArubaTopics/gatecontroller/7030.htm',
+  ] },
+  { archivo: 'aruba-7030-ig.pdf', tipo: 'pdf', para: 'ARUBA', urls: [],
+    descubrirEnlace: { de: 'aruba-7030-pagina.html', contiene: '/ig/', dominios: ['arubanetworks.com', 'hpe.com'], base: 'https://arubanetworking.hpe.com/techdocs/hardware/DocumentationPortal/Content/ArubaTopics/gatecontroller/7030.htm' } },
+  { archivo: 'aruba-7205-pagina.html', tipo: 'html', para: 'ARUBA', debeContener: '7205', urls: [
+    'https://arubanetworking.hpe.com/techdocs/hardware/DocumentationPortal/Content/ArubaTopics/gatecontroller/7205.htm',
+  ] },
+  { archivo: 'aruba-7205-ig.pdf', tipo: 'pdf', para: 'ARUBA', urls: [],
+    descubrirEnlace: { de: 'aruba-7205-pagina.html', contiene: '/ig/', dominios: ['arubanetworks.com', 'hpe.com'], base: 'https://arubanetworking.hpe.com/techdocs/hardware/DocumentationPortal/Content/ArubaTopics/gatecontroller/7205.htm' } },
+  { archivo: 'juniper-srx300-ds.html', tipo: 'html', para: 'JUNIPER', debeContener: 'SRX340', urls: [
+    'https://www.juniper.net/us/en/products/security/srx-series/srx300-line-firewalls-branch-datasheet.html',
+    'https://www.juniper.net/gb/en/products/security/srx-series/srx300-line-firewalls-branch-datasheet.html',
+  ] },
+  // 2026-10-19: los MX que el cotizador cita sin pareja (MX204, MX304, MX480, MX960). URL de
+  // buscar cada documento, no por patron. La serie 204/240/480/960 solo aparecio en japones
+  // y en el 1000597-en; se traen los dos y manda el mas reciente que traiga la tabla.
+  { archivo: 'juniper-mx304-ds.pdf', tipo: 'pdf', para: 'JUNIPER', urls: [
+    'https://www.juniper.net/content/dam/www/assets/datasheets/us/en/routers/mx304-universal-routing-platform-datasheet.pdf',
+  ] },
+  { archivo: 'juniper-mx304-ds.html', tipo: 'html', para: 'JUNIPER', debeContener: 'MX304', urls: [
+    'https://www.juniper.net/us/en/products/routers/mx-series/mx304-universal-routing-platform-datasheet.html',
+    'https://www.juniper.net/gb/en/products/routers/mx-series/mx304-universal-routing-platform-datasheet.html',
+  ] },
+  { archivo: 'juniper-mx-serie-ds-ja.pdf', tipo: 'pdf', para: 'JUNIPER', urls: [
+    'https://juniper.net/content/dam/www/assets/datasheets/jp/ja/routers/mx-204-240-480-960-series-universal-routing-platforms-datasheet.pdf',
+  ] },
+  { archivo: 'juniper-mx-1000597-en.pdf', tipo: 'pdf', para: 'JUNIPER', urls: [
+    'https://www.juniper.net/assets/es/es/local/pdf/datasheets/1000597-en.pdf',
+  ] },
+  { archivo: 'juniper-mx204-producto.html', tipo: 'html', para: 'JUNIPER', debeContener: 'MX204', urls: [
+    'https://www.juniper.net/us/en/products/routers/mx-series/mx204.html',
+    'https://www.juniper.net/gb/en/products/routers/mx-series/mx204-universal-routing-platform.html',
+  ] },
+  { archivo: 'juniper-mx480-producto.html', tipo: 'html', para: 'JUNIPER', exploracion: true, urls: [
+    'https://www.juniper.net/mx/es/products/routers/mx-series/mx480-universal-routing-platform.html',
+  ] },
+  // 2026-10-19: el `cap` de los Session Smart Router no tiene fuente declarada. URL
+  // buscadas; si la pagina es un visor de HPE, el PDF de psnow se lee de ella.
+  { archivo: 'juniper-ssr100-ds.pdf', tipo: 'pdf', para: 'JUNIPER', urls: [
+    'https://www.juniper.net/content/dam/www/assets/datasheets/us/en/routers/ssr100-line-of-routers-datasheet.pdf',
+    'https://www.juniper.net/content/dam/www/assets/datasheets/jp/ja/routers/ssr100-line-of-routers-datasheet.pdf',
+  ] },
+  { archivo: 'juniper-ssr100-ds.html', tipo: 'html', para: 'JUNIPER', debeContener: 'SSR130', urls: [
+    'https://www.juniper.net/us/en/products/routers/session-smart-router/ssr100-line-of-routers-datasheet.html',
+    'https://www.juniper.net/gb/en/products/routers/session-smart-router/ssr100-line-of-routers-datasheet.html',
+  ] },
+  { archivo: 'juniper-ssr1000-ds.pdf', tipo: 'pdf', para: 'JUNIPER', urls: [
+    'https://www.juniper.net/content/dam/www/assets/datasheets/us/en/routers/ssr1000-line-of-routers-datasheet.pdf',
+    'https://www.juniper.net/content/dam/www/assets/datasheets/jp/ja/routers/ssr1000-line-of-routers-datasheet.pdf',
+  ] },
+  { archivo: 'juniper-ssr1000-ds.html', tipo: 'html', para: 'JUNIPER', debeContener: 'SSR1200', urls: [
+    'https://www.juniper.net/gb/en/products/routers/session-smart-router/ssr1000-line-of-routers-datasheet.html',
+  ] },
+  // 2026-10-19: la guia de hardware del SRX380, la unica de los doce SRX que no se habia
+  // traido; sus vistas frontal y trasera van a la tarjeta grafica del dimensionador.
+  { archivo: 'juniper-hw-srx380.pdf', tipo: 'pdf', para: 'JUNIPER', urls: [
+    'https://www.juniper.net/documentation/us/en/hardware/srx380/srx380.pdf',
+  ] },
+  // 2026-10-19: guias de hardware de los Session Smart Router, por sus vistas frontal y
+  // trasera a mas resolucion que las de la ficha comercial. Las del SSR130 y SSR1500 solo
+  // aparecieron como indice: el PDF se descubre en el, no se adivina.
+  { archivo: 'juniper-hw-ssr120.pdf', tipo: 'pdf', para: 'JUNIPER', urls: [ 'https://juniper.net/documentation/us/en/hardware/ssr120/ssr120.pdf' ] },
+  { archivo: 'juniper-hw-ssr1200.pdf', tipo: 'pdf', para: 'JUNIPER', urls: [ 'https://juniper.net/documentation/us/en/hardware/ssr1200/ssr1200.pdf' ] },
+  { archivo: 'juniper-hw-ssr1300.pdf', tipo: 'pdf', para: 'JUNIPER', urls: [ 'https://juniper.net/documentation/us/en/hardware/ssr1300/ssr1300.pdf' ] },
+  { archivo: 'juniper-hw-ssr1400.pdf', tipo: 'pdf', para: 'JUNIPER', urls: [ 'https://juniper.net/documentation/us/en/hardware/ssr1400/ssr1400.pdf' ] },
+  { archivo: 'juniper-hw-ssr130-indice.html', tipo: 'html', para: 'JUNIPER', debeContener: 'SSR130', urls: [ 'https://www.juniper.net/documentation/us/en/hardware/ssr130/index.html' ] },
+  { archivo: 'juniper-hw-ssr130.pdf', tipo: 'pdf', para: 'JUNIPER', urls: [],
+    descubrirEnlace: { de: 'juniper-hw-ssr130-indice.html', contiene: 'ssr130', dominios: ['juniper.net'], base: 'https://www.juniper.net/documentation/us/en/hardware/ssr130/index.html' } },
+  { archivo: 'juniper-hw-ssr1500-indice.html', tipo: 'html', para: 'JUNIPER', debeContener: 'SSR1500', urls: [ 'https://juniper.net/documentation/us/en/hardware/ssr1500/index.html' ] },
+  { archivo: 'juniper-hw-ssr1500.pdf', tipo: 'pdf', para: 'JUNIPER', urls: [],
+    descubrirEnlace: { de: 'juniper-hw-ssr1500-indice.html', contiene: 'ssr1500', dominios: ['juniper.net'], base: 'https://juniper.net/documentation/us/en/hardware/ssr1500/index.html' } },
+  // 2026-10-20: las fotos de producto a color de los SRX, para la tercera vista de la tarjeta
+  // («Foto»). Las fichas de la generacion 2024 ya la traen; estas son las del resto de la
+  // linea, y la pagina de la serie, cuyas imagenes de producto se descubren en ella.
+  { archivo: 'juniper-srx300-ds.pdf', tipo: 'pdf', para: 'JUNIPER', urls: [
+    'https://www.juniper.net/content/dam/www/assets/datasheets/us/en/security/srx300-line-firewalls-branch-datasheet.pdf',
+  ] },
+  { archivo: 'juniper-srx1500-ds.pdf', tipo: 'pdf', para: 'JUNIPER', urls: [
+    'https://www.juniper.net/content/dam/www/assets/datasheets/us/en/security/srx1500-firewall-datasheet.pdf',
+  ] },
+  { archivo: 'juniper-srx4100-4200-ds.pdf', tipo: 'pdf', para: 'JUNIPER', urls: [
+    'https://www.juniper.net/content/dam/www/assets/datasheets/us/en/security/srx4100-srx4200-firewall-datasheet.pdf',
+  ] },
+  { archivo: 'juniper-srx4700-ds.pdf', tipo: 'pdf', para: 'JUNIPER', urls: [
+    'https://www.juniper.net/content/dam/www/assets/datasheets/us/en/security/srx4700-firewall-datasheet.pdf',
+  ] },
+  // La ficha en ingles del SRX4100/SRX4200 devolvio HTML (corrida 39409681340): la japonesa,
+  // encontrada por busqueda, es la siguiente via para su foto de producto.
+  { archivo: 'juniper-srx4100-4200-ds-ja.pdf', tipo: 'pdf', para: 'JUNIPER', urls: [
+    'https://www.juniper.net/content/dam/www/assets/datasheets/jp/ja/security/srx4100-srx4200-firewall-datasheet.pdf',
+  ] },
+  { archivo: 'juniper-srx-serie.html', tipo: 'html', para: 'JUNIPER', exploracion: true, urls: [
+    'https://www.juniper.net/gb/en/products/security/srx-series.html',
+  ] },
+  { archivo: 'juniper-srx-img', tipo: 'imagenes', para: 'JUNIPER', urls: [],
+    descubrirPiezas: { de: ['juniper-srx-serie.html', 'juniper-srx300-ds.html'], base: 'https://www.juniper.net/',
+      dominios: ['juniper.net'], contiene: ['/products/security/srx-series/'], max: 40 } },
+  // La ficha del MX304 en juniper.net ya es un visor de HPE: el PDF vive en psnow
+  // (a00150831enw). URL leida de la propia pagina traida el 2026-10-19, no adivinada.
+  { archivo: 'juniper-mx304-ds-hpe.pdf', tipo: 'pdf', para: 'JUNIPER', urls: [
+    'https://www.hpe.com/psnow/downloadDoc/MX304%20Universal%20Routing%20Platform-a00150831enw.pdf?id=a00150831enw&isFutureVersion=true&contentDisposition=attachment',
+    'https://www.hpe.com/psnow/doc/a00150831enw',
+  ] },
+  // HUAWEI, OTRAS VIAS (2026-10-07, encargo del dueno: lo que Akamai bloquea, buscarlo por
+  // otro camino legitimo). Nada de esto rodea la defensa de Huawei: el Wayback Machine
+  // sirve la copia que el archivo de Internet guardo de la pagina publica, desde sus
+  // propios servidores; y la herramienta EOX es una pagina publica del fabricante que
+  // aqui se pide como cualquier otra. Primero los indices (CDX): dicen que paginas de la
+  // descripcion de hardware y de la herramienta EOX guardo el archivo y en que fecha. Luego
+  // la copia en bruto (id_) de las paginas que hacen falta, y la de control (AR6710-H), cuyo
+  // contenido ya se leyo por PDF4me: si la de control no trae el texto, las demas tampoco.
+  { archivo: 'huawei-hd-cdx.json', tipo: 'html', para: 'HUAWEI', exploracion: true, urls: [
+    'https://web.archive.org/cdx/search/cdx?url=support.huawei.com/enterprise/en/doc/EDOC1100213474/*&output=json&fl=timestamp,original,statuscode,mimetype,length&limit=5000',
+  ] },
+  { archivo: 'huawei-hedex-cdx.json', tipo: 'html', para: 'HUAWEI', exploracion: true, urls: [
+    'https://web.archive.org/cdx/search/cdx?url=support.huawei.com/hedex/&matchType=prefix&output=json&fl=timestamp,original,statuscode,mimetype,length&filter=original:.*EDOC1100213474.*&limit=3000',
+  ] },
+  { archivo: 'huawei-eox-cdx.json', tipo: 'html', para: 'HUAWEI', exploracion: true, urls: [
+    'https://web.archive.org/cdx/search/cdx?url=support.huawei.com/eoxtoolwebsite/&matchType=prefix&output=json&fl=timestamp,original,statuscode,mimetype,length&limit=3000',
+  ] },
+  { archivo: 'huawei-infofinder-cdx.json', tipo: 'html', para: 'HUAWEI', exploracion: true, urls: [
+    'https://web.archive.org/cdx/search/cdx?url=info.support.huawei.com/info-finder/&matchType=prefix&output=json&fl=timestamp,original,statuscode,mimetype,length&filter=original:.*%28eom%7Clife%7Ceox%29.*&limit=3000',
+  ] },
+  { archivo: 'huawei-hd-ar6710-h-archivo.html', tipo: 'html', para: 'HUAWEI', debeContener: 'PAC300S12', urls: [
+    'https://web.archive.org/web/2026id_/https://support.huawei.com/enterprise/en/doc/EDOC1100213474/3e859eec/ar6710-h4t4x2y7',
+    'https://web.archive.org/web/2025id_/https://support.huawei.com/enterprise/en/doc/EDOC1100213474/3e859eec/ar6710-h4t4x2y7',
+  ] },
+  { archivo: 'huawei-hd-ar6710-l26-archivo.html', tipo: 'html', para: 'HUAWEI', debeContener: 'L26T2X4', urls: [
+    'https://web.archive.org/web/2026id_/https://support.huawei.com/enterprise/en/doc/EDOC1100213474/5d943f96/ar6710-l26t2x4',
+    'https://web.archive.org/web/2025id_/https://support.huawei.com/enterprise/en/doc/EDOC1100213474/5d943f96/ar6710-l26t2x4',
+  ] },
+  { archivo: 'huawei-hd-ar6710-l50-archivo.html', tipo: 'html', para: 'HUAWEI', debeContener: 'L50T2X4', urls: [
+    'https://web.archive.org/web/2026id_/https://support.huawei.com/enterprise/en/doc/EDOC1100213474/b4f79aa3/ar6710-l50t2x4',
+    'https://web.archive.org/web/2025id_/https://support.huawei.com/enterprise/en/doc/EDOC1100213474/b4f79aa3/ar6710-l50t2x4',
+  ] },
+  { archivo: 'huawei-hd-vivo.html', tipo: 'html', para: 'HUAWEI', exploracion: true, urls: [
+    'https://support.huawei.com/enterprise/en/doc/EDOC1100213474/3e859eec/ar6710-h4t4x2y7',
+  ] },
+  { archivo: 'huawei-hd-scripts', tipo: 'scripts', para: 'HUAWEI', urls: [],
+    descubrirPiezas: { de: ['huawei-hd-vivo.html'], base: 'https://support.huawei.com/enterprise/en/doc/EDOC1100213474/3e859eec/ar6710-h4t4x2y7',
+      dominios: ['support.huawei.com', 'res-static.hc-cdn.cn', 'hc-cdn.cn'], max: 25 } },
+  { archivo: 'huawei-eox-herramienta.html', tipo: 'html', para: 'HUAWEI', exploracion: true, urls: [
+    'https://support.huawei.com/eoxtoolwebsite/en/tool/product-lifecycle-query-assistant',
+  ] },
+  // Segunda ronda (2026-10-07): la herramienta EOX de support.huawei.com ya no existe (su URL
+  // sirve el portal general y el archivo registra un 301 en 2023), y el visor de documentos
+  // pide un token CSRF a su API: esas llamadas no se reconstruyen, seria rodear la proteccion.
+  // Info-Finder si sirve sus paginas de ciclo de vida desde el servidor (JSP), con el mismo
+  // pid que las paginas de soporte: 256863203 es la serie AR5700/6700/8000 y 250517169 el
+  // NE8000 F1A. La de un AR6280 guardada por el archivo sirve para ver la forma de la pagina.
+  { archivo: 'huawei-if-ar6280-archivo.html', tipo: 'html', para: 'HUAWEI', exploracion: true, urls: [
+    'https://web.archive.org/web/20250906065723id_/https://info.support.huawei.com/info-finder/search-center/en/enterprise/routers/ar6280-pid-23924290/eom-eofs-and-eos-date',
+  ] },
+  { archivo: 'huawei-if-eoxlist-archivo.html', tipo: 'html', para: 'HUAWEI', exploracion: true, urls: [
+    'https://web.archive.org/web/20250324092928id_/https://info.support.huawei.com/info-finder/eox/getEoxList',
+  ] },
+  { archivo: 'huawei-if-ar5700-6700-8000.html', tipo: 'html', para: 'HUAWEI', exploracion: true, urls: [
+    'https://info.support.huawei.com/info-finder/search-center/en/enterprise/routers/ar5700-6700-8000-pid-256863203/eom-eofs-and-eos-date',
+  ] },
+  { archivo: 'huawei-if-ne8000-f1a.html', tipo: 'html', para: 'HUAWEI', exploracion: true, urls: [
+    'https://info.support.huawei.com/info-finder/search-center/en/enterprise/routers/netengine-8000-f1a-8h20q-pid-250517169/eom-eofs-and-eos-date',
+  ] },
+  { archivo: 'huawei-if-routers.html', tipo: 'html', para: 'HUAWEI', exploracion: true, urls: [
+    'https://info.support.huawei.com/info-finder/search-center/en/enterprise/routers',
+  ] },
+  { archivo: 'huawei-if-herramienta.html', tipo: 'html', para: 'HUAWEI', exploracion: true, urls: [
+    'https://info.support.huawei.com/info-finder/tool/en/enterprise/eom-eofs-and-eos-date/product',
+  ] },
+  { archivo: 'huawei-if-scripts', tipo: 'scripts', para: 'HUAWEI', urls: [],
+    descubrirPiezas: { de: ['huawei-if-herramienta.html', 'huawei-if-ar5700-6700-8000.html'], base: 'https://info.support.huawei.com/info-finder/tool/en/enterprise/eom-eofs-and-eos-date/product',
+      dominios: ['info.support.huawei.com'], max: 25 } },
+  { archivo: 'huawei-eox-scripts', tipo: 'scripts', para: 'HUAWEI', urls: [],
+    descubrirPiezas: { de: ['huawei-eox-herramienta.html'], base: 'https://support.huawei.com/eoxtoolwebsite/en/tool/product-lifecycle-query-assistant',
+      dominios: ['support.huawei.com', 'res-static.hc-cdn.cn', 'hc-cdn.cn'], max: 25 } },
+  // Tercera ronda (2026-10-07, tarde): el buscador indexa Info-Finder tambien bajo
+  // support.huawei.com/enterprise/en/info-finder/ (la del AR6280 es la de control), y el
+  // centro de hardware y las fichas «vue» de los AR6710. Se piden como cualquier pagina
+  // publica, sin cabeceras de navegador ni token: si responden con el inicio de sesion o
+  // con un 403, eso es lo que se reporta. Los indices del archivo dicen si alguna de esas
+  // rutas quedo guardada. La Security Target de Common Criteria del software de los
+  // AR6700/AR8000 la redacta Huawei y la publica el portal de Common Criteria.
+  { archivo: 'huawei-if3-ar6280-soporte.html', tipo: 'html', para: 'HUAWEI', exploracion: true, urls: [
+    'https://support.huawei.com/enterprise/en/info-finder/routers/ar6280-pid-23924290/eom-eofs-and-eos-date',
+  ] },
+  { archivo: 'huawei-if3-ar610-soporte.html', tipo: 'html', para: 'HUAWEI', exploracion: true, urls: [
+    'https://support.huawei.com/enterprise/en/info-finder/routers/ar610-pid-253265923/eom-eofs-and-eos-date',
+  ] },
+  { archivo: 'huawei-if3-ar651-soporte.html', tipo: 'html', para: 'HUAWEI', exploracion: true, urls: [
+    'https://support.huawei.com/enterprise/en/info-finder/routers/ar651-pid-23924233/eom-eofs-and-eos-date',
+  ] },
+  { archivo: 'huawei-if3-ar5700-soporte.html', tipo: 'html', para: 'HUAWEI', exploracion: true, urls: [
+    'https://support.huawei.com/enterprise/en/info-finder/routers/ar5700-6700-8000-pid-256863203/eom-eofs-and-eos-date',
+  ] },
+  { archivo: 'huawei-if3-ar6710-h-vue.html', tipo: 'html', para: 'HUAWEI', exploracion: true, urls: [
+    'https://info.support.huawei.com/info-finder/vue/search-center/en/enterprise/routers/ar6710-h4t4x2y7-pid-C00000019260',
+  ] },
+  { archivo: 'huawei-if3-soporte-cdx.json', tipo: 'html', para: 'HUAWEI', exploracion: true, urls: [
+    'https://web.archive.org/cdx/search/cdx?url=support.huawei.com/enterprise/en/info-finder/&matchType=prefix&output=json&fl=timestamp,original,statuscode,mimetype,length&limit=3000',
+  ] },
+  { archivo: 'huawei-if3-routers-cdx.json', tipo: 'html', para: 'HUAWEI', exploracion: true, urls: [
+    'https://web.archive.org/cdx/search/cdx?url=info.support.huawei.com/info-finder/search-center/en/enterprise/routers/&matchType=prefix&output=json&fl=timestamp,original,statuscode,mimetype,length&limit=3000',
+  ] },
+  { archivo: 'huawei-if3-vue-cdx.json', tipo: 'html', para: 'HUAWEI', exploracion: true, urls: [
+    'https://web.archive.org/cdx/search/cdx?url=info.support.huawei.com/info-finder/vue/&matchType=prefix&output=json&fl=timestamp,original,statuscode,mimetype,length&limit=3000',
+  ] },
+  // Cuarta ronda (2026-10-07, noche): Huawei sirve su documentacion HedEx tambien como
+  // paginas estaticas en info.support.huawei.com/hedex/api/pages/<EDOC>/<codigo>/<ed>/,
+  // sin el visor que pide el token. Dos paginas de hardware de los AR de otra familia
+  // (EDOC1100331435) dicen si esa ruta es publica desde un ejecutor; el indice del
+  // archivo, que documentos de hardware tiene guardados y con que codigo. Y la
+  // herramienta de configuracion de hardware Info+, que el buscador indexa.
+  { archivo: 'huawei-hedex-tipos-fuente.html', tipo: 'html', para: 'HUAWEI', exploracion: true, urls: [
+    'https://info.support.huawei.com/hedex/api/pages/EDOC1100331435/AEM10132/04/resources/dc/dc_ar_hw_020055.html',
+  ] },
+  { archivo: 'huawei-hedex-pac60.html', tipo: 'html', para: 'HUAWEI', exploracion: true, urls: [
+    'https://info.support.huawei.com/hedex/api/pages/EDOC1100331435/AEM10132/05/resources/ar_power_02131664.html',
+  ] },
+  { archivo: 'huawei-hedex-hw-cdx.json', tipo: 'html', para: 'HUAWEI', exploracion: true, urls: [
+    'https://web.archive.org/cdx/search/cdx?url=info.support.huawei.com/hedex/api/pages/&matchType=prefix&output=json&fl=timestamp,original,statuscode,length&filter=original:.*%28_hw_%7Chardware%7Cpower%7Cpac%7Cpdc%29.*&collapse=urlkey&limit=3000',
+  ] },
+  { archivo: 'huawei-infoplus-hdcfg.html', tipo: 'html', para: 'HUAWEI', exploracion: true, urls: [
+    'https://info.support.huawei.com/network/hdcfg/manual?id=13660&domain=0&lang=zh&hidden=3',
+  ] },
+  // Quinta ronda (2026-10-08, figuras): la biblioteca de imagenes de producto de Huawei
+  // (info.support.huawei.com/network/imagelib/, fotos HD de frontal y trasera y plantillas
+  // Visio) y la coleccion de fotos del NetEngine 8000 del centro de materiales de
+  // e.huawei.com. Primero se mira que devuelven; los archivos se piden en otra ronda.
+  { archivo: 'huawei-imagelib-ne.html', tipo: 'html', para: 'HUAWEI', exploracion: true, urls: [
+    'https://info.support.huawei.com/network/imagelib/getImagePartList?product_family=Router&product_type=NE+Series&lang=en',
+  ] },
+  { archivo: 'huawei-imagelib-ar.html', tipo: 'html', para: 'HUAWEI', exploracion: true, urls: [
+    'https://info.support.huawei.com/network/imagelib/getImagePartList?product_family=Router&product_type=AR+Series&lang=en',
+  ] },
+  { archivo: 'huawei-imagelib-raiz.html', tipo: 'html', para: 'HUAWEI', exploracion: true, urls: [
+    'https://info.support.huawei.com/network/imagelib/index?lang=en',
+    'https://info.support.huawei.com/network/imagelib/',
+  ] },
+  { archivo: 'huawei-material-ne8000-fotos.html', tipo: 'html', para: 'HUAWEI', exploracion: true, urls: [
+    'https://e.huawei.com/en/material/enterprise/ff6b9c516d604e50ae3af6702b583740',
+  ] },
+  { archivo: 'cc-huawei-ar6700-ar8000-st.pdf', tipo: 'pdf', para: 'HUAWEI', urls: [
+    'https://commoncriteriaportal.org/files/epfiles/huawei-netengine-ar6700ar8000-series-routers-yunshan-software-v600r021c10spc100-v1.1.pdf',
+    'https://www.commoncriteriaportal.org/files/epfiles/huawei-netengine-ar6700ar8000-series-routers-yunshan-software-v600r021c10spc100-v1.1.pdf',
+  ] },
+  // 2026-10-12: fichas que las paginas de familia de e.huawei.com/en/products/routers
+  // enlazan y que el repositorio no tenia (barrido de las 21 familias con sesion).
+  { archivo: 'huawei-ar6000-documento.html', tipo: 'html', para: 'HUAWEI', debeContener: 'b67ae821185b4ae68465a9494e6e3b81', urls: [
+    'https://e.huawei.com/en/documents/products/enterprise-network/b67ae821185b4ae68465a9494e6e3b81',
+  ] },
+  { archivo: 'huawei-ar6000-ds.pdf', tipo: 'pdf', para: 'HUAWEI', urls: [],
+    descubrir: { de: 'huawei-ar6000-documento.html', material: 'Material/b67ae821185b4ae68465a9494e6e3b81/' } },
+  { archivo: 'huawei-ar5710i-ru-nrgl-documento.html', tipo: 'html', para: 'HUAWEI', debeContener: '16333c5bd2dc442ba180ef2fecc2d317', urls: [
+    'https://e.huawei.com/en/documents/products/enterprise-network/16333c5bd2dc442ba180ef2fecc2d317',
+  ] },
+  { archivo: 'huawei-ar5710i-ru-nrgl-ds.pdf', tipo: 'pdf', para: 'HUAWEI', urls: [],
+    descubrir: { de: 'huawei-ar5710i-ru-nrgl-documento.html', material: 'Material/16333c5bd2dc442ba180ef2fecc2d317/' } },
+  { archivo: 'huawei-ar5710-h-documento.html', tipo: 'html', para: 'HUAWEI', debeContener: 'cf32710e9bd1417b9a9f16577d65257a', urls: [
+    'https://e.huawei.com/en/documents/products/enterprise-network/cf32710e9bd1417b9a9f16577d65257a',
+  ] },
+  { archivo: 'huawei-ar5710-h-ds.pdf', tipo: 'pdf', para: 'HUAWEI', urls: [],
+    descubrir: { de: 'huawei-ar5710-h-documento.html', material: 'Material/cf32710e9bd1417b9a9f16577d65257a/' } },
+  { archivo: 'huawei-ar502h-v2-documento.html', tipo: 'html', para: 'HUAWEI', debeContener: '4cca978bb8e74d2390504b091884b299', urls: [
+    'https://e.huawei.com/en/documents/products/enterprise-network/4cca978bb8e74d2390504b091884b299',
+  ] },
+  { archivo: 'huawei-ar502h-v2-ds.pdf', tipo: 'pdf', para: 'HUAWEI', urls: [],
+    descubrir: { de: 'huawei-ar502h-v2-documento.html', material: 'Material/4cca978bb8e74d2390504b091884b299/' } },
+  { archivo: 'huawei-ar6700v-l-documento.html', tipo: 'html', para: 'HUAWEI', debeContener: '38fc9bf1621e4da1be2124f1a0682d46', urls: [
+    'https://e.huawei.com/en/documents/products/enterprise-network/38fc9bf1621e4da1be2124f1a0682d46',
+  ] },
+  { archivo: 'huawei-ar6700v-l-ds.pdf', tipo: 'pdf', para: 'HUAWEI', urls: [],
+    descubrir: { de: 'huawei-ar6700v-l-documento.html', material: 'Material/38fc9bf1621e4da1be2124f1a0682d46/' } },
+  { archivo: 'huawei-ne8000-f1a-c-documento.html', tipo: 'html', para: 'HUAWEI', debeContener: 'b4d387a588a44b67b8a55e9c63847336', urls: [
+    'https://e.huawei.com/en/documents/products/enterprise-network/b4d387a588a44b67b8a55e9c63847336',
+  ] },
+  { archivo: 'huawei-ne8000-f1a-c-ds.pdf', tipo: 'pdf', para: 'HUAWEI', urls: [],
+    descubrir: { de: 'huawei-ne8000-f1a-c-documento.html', material: 'Material/b4d387a588a44b67b8a55e9c63847336/' } },
+  // 2026-10-20: CISCO, la linea Secure Router (G2) entera y Meraki MX, para el rediseno
+  // del dimensionador con las vistas frontal y trasera de cada equipo. Un HTML adjunto
+  // por el dueno traia 35 equipos con cifras, precios y dibujos SVG sin documento; aqui
+  // se traen los documentos que deciden cada cifra y cada figura. Las URL salieron de
+  // BUSCAR cada documento ese dia. Las guias de instalacion (HIG) se piden en PDF porque
+  // traen las caras rotuladas («front panel», «rear panel»); donde el buscador solo dio
+  // la edicion en espanol, se pide antes la inglesa de la misma ruta y la espanola queda
+  // de respaldo: las figuras son las mismas y el PDF se valida por su firma.
+  { archivo: 'cisco-sr8100-ds.html', tipo: 'html', para: 'CISCO', debeContener: 'C8161-G2', urls: [
+    'https://www.cisco.com/c/en/us/products/collateral/routers/secure-routers/8100-series-secure-routers-ds.html',
+    'https://www.cisco.com/site/us/en/products/collateral/networking/sdwan-routers/8000-secure-routers/8100-series-secure-routers-ds.html',
+  ] },
+  { archivo: 'cisco-sr8200-ds.html', tipo: 'html', para: 'CISCO', debeContener: 'C8235-G2', urls: [
+    'https://www.cisco.com/c/en/us/products/collateral/routers/secure-routers/8200-series-secure-routers-ds.html',
+    'https://www.cisco.com/site/us/en/products/collateral/networking/sdwan-routers/8000-secure-routers/8200-series-secure-routers-ds.html',
+  ] },
+  { archivo: 'cisco-sr8300-ds.html', tipo: 'html', para: 'CISCO', debeContener: 'C8375-E-G2', urls: [
+    'https://www.cisco.com/c/en/us/products/collateral/routers/secure-routers/8300-series-secure-routers-ds.html',
+    'https://www.cisco.com/site/us/en/products/collateral/networking/sdwan-routers/8000-secure-routers/8300-series-secure-routers-ds.html',
+  ] },
+  { archivo: 'cisco-sr8400-ds.html', tipo: 'html', para: 'CISCO', debeContener: 'C8475-G2', urls: [
+    'https://www.cisco.com/c/en/us/products/collateral/routers/secure-routers/8400-series-secure-routers-ds.html',
+    'https://www.cisco.com/site/us/en/products/collateral/networking/sdwan-routers/8000-secure-routers/8400-series-secure-routers-ds.html',
+  ] },
+  { archivo: 'cisco-sr8500-ds.html', tipo: 'html', para: 'CISCO', debeContener: 'C8570-G2', urls: [
+    'https://www.cisco.com/c/en/us/products/collateral/routers/secure-routers/8500-series-secure-routers-ds.html',
+    'https://www.cisco.com/site/us/en/products/collateral/networking/sdwan-routers/8000-secure-routers/8500-series-secure-routers-ds.html',
+  ] },
+  { archivo: 'cisco-sr8600-ds.html', tipo: 'html', para: 'CISCO', debeContener: 'C8650-G2', urls: [
+    'https://www.cisco.com/site/us/en/products/collateral/networking/sdwan-routers/8000-secure-routers/8600-series-secure-routers-ds.html',
+    'https://cisco.com/site/us/en/products/collateral/networking/sdwan-routers/8000-secure-routers/8600-series-secure-routers-ds.html',
+  ] },
+  { archivo: 'cisco-sr8500-ds.pdf', tipo: 'pdf', para: 'CISCO', urls: [
+    'https://www.cisco.com/c/dam/en/us/products/collateral/routers/secure-routers/8500-series-secure-routers-ds.pdf',
+  ] },
+  { archivo: 'cisco-sr8600-ds.pdf', tipo: 'pdf', para: 'CISCO', urls: [
+    'https://www.cisco.com/c/dam/en/us/products/collateral/routers/secure-routers/8600-series-secure-routers-ds.pdf',
+  ] },
+  { archivo: 'cisco-sr8000-og.html', tipo: 'html', para: 'CISCO', debeContener: 'C8375-E-G2', urls: [
+    'https://www.cisco.com/c/en/us/products/collateral/networking/sdwan-routers/8000-secure-routers/8000-secure-router-og.html',
+  ] },
+  { archivo: 'cisco-sr8000-og.pdf', tipo: 'pdf', para: 'CISCO', urls: [
+    'https://www.cisco.com/c/en/us/products/collateral/networking/sdwan-routers/8000-secure-routers/8000-secure-router-og.pdf',
+  ] },
+  { archivo: 'cisco-sr8100-hig.pdf', tipo: 'pdf', para: 'CISCO', urls: [
+    'https://www.cisco.com/c/en/us/td/docs/routers/secure-routers/sec-8100-series/hardware-installation-guide-for-the-cisco-8100-series-secure-routers.pdf',
+  ] },
+  { archivo: 'cisco-sr8200-hig.pdf', tipo: 'pdf', para: 'CISCO', urls: [
+    'https://www.cisco.com/c/en/us/td/docs/routers/secure-routers/sec-8200-series/hardware-installation-guide/secure-8200-series-hig.pdf',
+    'https://www.cisco.com/c/es_es/td/docs/routers/secure-routers/sec-8200-series/hardware-installation-guide/secure-8200-series-hig.pdf',
+  ] },
+  { archivo: 'cisco-sr8300-hig.pdf', tipo: 'pdf', para: 'CISCO', urls: [
+    'https://www.cisco.com/c/en/us/td/docs/routers/secure-routers/sec-8300-series/hardware_installation-guide/secure-8300-series-hig.pdf',
+    'https://www.cisco.com/c/es_es/td/docs/routers/secure-routers/sec-8300-series/hardware_installation-guide/secure-8300-series-hig.pdf',
+  ] },
+  // Segunda corrida (misma fecha): el PDF de la 8400 llego como HTML y el de la 8500 dio
+  // 404 (corrida 39360888778). Se guarda la pagina de cada guia y el PDF se DESCUBRE en
+  // ella, como las guias de los controladores de Aruba.
+  // La de la 8400 es un indice sin el nombre del modelo (corrida 39410454052): se explora.
+  { archivo: 'cisco-sr8400-hig.html', tipo: 'html', para: 'CISCO', exploracion: true, urls: [
+    'https://www.cisco.com/c/en/us/td/docs/routers/c84xx/c8400-g2-hardware-installation-guide.html',
+  ] },
+  { archivo: 'cisco-sr8500-hig.html', tipo: 'html', para: 'CISCO', debeContener: 'C8550-G2', urls: [
+    'https://www.cisco.com/c/en/us/td/docs/routers/secure-routers/sec-8500-series/cisco-8500-series-secure-router-HIG.html',
+  ] },
+  { archivo: 'cisco-sr8400-hig.pdf', tipo: 'pdf', para: 'CISCO', urls: [
+    'https://www.cisco.com/c/en/us/td/docs/routers/c84xx/c8400-g2-hardware-installation-guide.pdf',
+  ], descubrirEnlace: { de: 'cisco-sr8400-hig.html', contiene: 'c8400', base: 'https://www.cisco.com/c/en/us/td/docs/routers/c84xx/c8400-g2-hardware-installation-guide.html',
+    dominios: ['cisco.com'] } },
+  { archivo: 'cisco-sr8500-hig.pdf', tipo: 'pdf', para: 'CISCO', urls: [
+    'https://www.cisco.com/c/en/us/td/docs/routers/cloud_edge/secure_8500/cisco-8500-series-secure-router-HIG.pdf',
+  ], descubrirEnlace: { de: 'cisco-sr8500-hig.html', contiene: 'HIG', base: 'https://www.cisco.com/c/en/us/td/docs/routers/secure-routers/sec-8500-series/cisco-8500-series-secure-router-HIG.html',
+    dominios: ['cisco.com'] } },
+  // Las guias de los Catalyst 8200/8300/8500 Edge: sus paginas las enlazan las listas de
+  // guias de instalacion que trajo la primera corrida (exploracion).
+  { archivo: 'cisco-c8200-hig.html', tipo: 'html', para: 'CISCO', debeContener: 'C8200', urls: [
+    'https://www.cisco.com/c/en/us/td/docs/routers/cloud_edge/c8200/hardware_install/b-cat-8200-series-edge-platforms-hig.html',
+  ] },
+  { archivo: 'cisco-c8300-hig.html', tipo: 'html', para: 'CISCO', debeContener: 'C8300', urls: [
+    'https://www.cisco.com/c/en/us/td/docs/routers/cloud_edge/c8300/hardware_installation/b-catalyst-8300-series-edge-platforms-hig.html',
+  ] },
+  { archivo: 'cisco-c8500-hig.html', tipo: 'html', para: 'CISCO', debeContener: 'C8500', urls: [
+    'https://www.cisco.com/c/en/us/td/docs/routers/cloud_edge/c8500/hardware-installation-guide/b_C8500_HIG.html',
+  ] },
+  { archivo: 'cisco-c8200-hig.pdf', tipo: 'pdf', para: 'CISCO', urls: [],
+    descubrirEnlace: { de: 'cisco-c8200-hig.html', contiene: 'hig', base: 'https://www.cisco.com/c/en/us/td/docs/routers/cloud_edge/c8200/hardware_install/b-cat-8200-series-edge-platforms-hig.html',
+      dominios: ['cisco.com'] } },
+  { archivo: 'cisco-c8300-hig.pdf', tipo: 'pdf', para: 'CISCO', urls: [],
+    descubrirEnlace: { de: 'cisco-c8300-hig.html', contiene: 'hig', base: 'https://www.cisco.com/c/en/us/td/docs/routers/cloud_edge/c8300/hardware_installation/b-catalyst-8300-series-edge-platforms-hig.html',
+      dominios: ['cisco.com'] } },
+  { archivo: 'cisco-c8500-hig.pdf', tipo: 'pdf', para: 'CISCO', urls: [],
+    descubrirEnlace: { de: 'cisco-c8500-hig.html', contiene: 'HIG', base: 'https://www.cisco.com/c/en/us/td/docs/routers/cloud_edge/c8500/hardware-installation-guide/b_C8500_HIG.html',
+      dominios: ['cisco.com'] } },
+  // Los boletines de fin de venta que el catalogo ya cita, por las fechas de los PID que
+  // aun no lleva (C8300-1N1S-4T2X, C8300-2N2S-4T2X, C8500L-8S4X y C8500-12X).
+  { archivo: 'cisco-eol-c8300-c8200.html', tipo: 'html', para: 'CISCO', debeContener: 'C8300-2N2S-4T2X', urls: [
+    'https://www.cisco.com/c/en/us/products/collateral/networking/sdwan-routers/catalyst-8000-edge-platforms/catalyst-c8300-2n2s-4t2x-6t-1n-4t-c8200l-eol.html',
+  ] },
+  { archivo: 'cisco-eol-c8500l-c8300.html', tipo: 'html', para: 'CISCO', debeContener: 'C8500L-8S4X', urls: [
+    'https://www.cisco.com/c/en/us/products/collateral/networking/sdwan-routers/catalyst-8000-edge-platforms/catalyst-c8500l-8s4x-4t2x-c8300-1n1s-6t-eol.html',
+  ] },
+  { archivo: 'cisco-eol-c8500.html', tipo: 'html', para: 'CISCO', debeContener: 'C8500-12X', urls: [
+    'https://www.cisco.com/c/en/us/products/collateral/networking/sdwan-routers/catalyst-8000-edge-platforms/catalyst-c8500-12x-c8500-12x4qc-eol.html',
+  ] },
+  // El vigia del 2026-10-26 (issue #18) los dio por cambiados: se traen para contrastar la
+  // edicion nueva con la que verifico el catalogo, que esta en fuente/fortinet-pendientes y
+  // en public/datasheets/sd-branch-design-vsg.pdf.
+  { archivo: 'fortinet-og-secure-sdwan.pdf', tipo: 'pdf', para: 'FORTINET', urls: [
+    'https://www.fortinet.com/content/dam/fortinet/assets/data-sheets/og-secure-sdwan.pdf',
+  ] },
+  { archivo: 'aruba-vsg-sd-branch-design.pdf', tipo: 'pdf', para: 'ARUBA', urls: [
+    'https://arubanetworking.hpe.com/techdocs/VSG/docs/070-sd-branch-design/Media/PDF/Aruba_VSG_SD-Branch-Design.pdf',
+  ] },
+  { archivo: 'cisco-sr8600-soporte.html', tipo: 'html', para: 'CISCO', exploracion: true, urls: [
+    'https://www.cisco.com/c/en/us/support/routers/8600-series-secure-routers/series.html',
+  ] },
+  { archivo: 'cisco-c8500l-hig.pdf', tipo: 'pdf', para: 'CISCO', urls: [
+    'https://www.cisco.com/c/en/us/td/docs/routers/cloud_edge/c8500l/b-catalyst-8500L-8S4X-edge-platform-hig.pdf',
+    'https://bxin.cisco.com/c/en/us/td/docs/routers/cloud_edge/c8500l/b-catalyst-8500L-8S4X-edge-platform-hig.pdf',
+  ] },
+  { archivo: 'cisco-c8200-guias.html', tipo: 'html', para: 'CISCO', exploracion: true, urls: [
+    'https://www.cisco.com/c/en/us/support/routers/catalyst-8200-series-edge-platforms/products-installation-guides-list.html',
+  ] },
+  { archivo: 'cisco-c8300-guias.html', tipo: 'html', para: 'CISCO', exploracion: true, urls: [
+    'https://www.cisco.com/c/en/us/support/routers/catalyst-8300-series-edge-platforms/products-installation-guides-list.html',
+  ] },
+  { archivo: 'cisco-c8500-guias.html', tipo: 'html', para: 'CISCO', exploracion: true, urls: [
+    'https://www.cisco.com/c/en/us/support/routers/catalyst-8500-series-edge-platforms/products-installation-guides-list.html',
+  ] },
+  { archivo: 'meraki-mx67-68-ds.html', tipo: 'html', para: 'CISCO', debeContener: 'MX68', urls: [
+    'https://documentation.meraki.com/MX/MX_Overviews_and_Specifications/MX67_and_MX68_Overview_and_Specifications',
+  ] },
+  { archivo: 'meraki-mx75-ds.html', tipo: 'html', para: 'CISCO', debeContener: 'MX75', urls: [
+    'https://documentation.meraki.com/SASE_and_SD-WAN/MX/Product_Information/Overviews_and_Datasheets/MX75_Datasheet',
+  ] },
+  { archivo: 'meraki-mx85-ds.html', tipo: 'html', para: 'CISCO', debeContener: 'MX85', urls: [
+    'https://documentation.meraki.com/SASE_and_SD-WAN/MX/Product_Information/Overviews_and_Datasheets/MX85_Datasheet',
+  ] },
+  { archivo: 'meraki-mx95-105-ds.html', tipo: 'html', para: 'CISCO', debeContener: 'MX105', urls: [
+    'https://documentation.meraki.com/SASE_and_SD-WAN/MX/Product_Information/Overviews_and_Datasheets/MX95%2F%2F105_Datasheet',
+    'https://documentation.meraki.com/MX/MX_Overviews_and_Specifications/MX95%2F%2F105_Datasheet',
+  ] },
+  { archivo: 'meraki-mx250-ds.html', tipo: 'html', para: 'CISCO', debeContener: 'MX250', urls: [
+    'https://documentation.meraki.com/SASE_and_SD-WAN/MX/Product_Information/Overviews_and_Datasheets/MX250_Datasheet',
+    'https://documentation.meraki.com/MX/MX_Overviews_and_Specifications/MX250_Datasheet',
+  ] },
+  { archivo: 'meraki-mx450-ds.html', tipo: 'html', para: 'CISCO', debeContener: 'MX450', urls: [
+    'https://documentation.meraki.com/SASE_and_SD-WAN/MX/Product_Information/Overviews_and_Datasheets/MX450_Datasheet',
+  ] },
+  { archivo: 'meraki-c8111-c8121-ds.html', tipo: 'html', para: 'CISCO', debeContener: 'C8121-G2', urls: [
+    'https://documentation.meraki.com/SASE_and_SD-WAN/MX/Product_Information/Overviews_and_Datasheets/C8111-G2-MX_and_C8121-G2-MX_Data_Sheet',
+    'https://documentation.meraki.com/SASE_and_SD-WAN/MX/Product_Information/Overviews_and_Datasheets/C8111-G2-MX_and_C8121-G2-MX_Datasheet',
+  ] },
+  { archivo: 'meraki-mx67-68-ig.html', tipo: 'html', para: 'CISCO', debeContener: 'MX68', urls: [
+    'https://documentation.meraki.com/SASE_and_SD-WAN/MX/Install_and_Get_Started/Installation_Guides/MX67%2F%2FMX68_Installation_Guide',
+  ] },
+  { archivo: 'meraki-mx75-ig.html', tipo: 'html', para: 'CISCO', debeContener: 'MX75', urls: [
+    'https://documentation.meraki.com/SASE_and_SD-WAN/MX/Install_and_Get_Started/Installation_Guides/MX75_Hardware_Installation_Guide',
+    'https://documentation.meraki.com/MX/MX_Installation_Guides/MX75_Hardware_Installation_Guide',
+  ] },
+  { archivo: 'meraki-mx85-ig.html', tipo: 'html', para: 'CISCO', debeContener: 'MX85', urls: [
+    'https://documentation.meraki.com/SASE_and_SD-WAN/MX/Install_and_Get_Started/Installation_Guides/MX85_Series_Hardware_Installation_Guide',
+    'https://documentation.meraki.com/MX/MX_Installation_Guides/MX85_Series_Hardware_Installation_Guide',
+  ] },
+  { archivo: 'meraki-mx95-105-ig.html', tipo: 'html', para: 'CISCO', debeContener: 'MX105', urls: [
+    'https://documentation.meraki.com/MX/MX_Installation_Guides/MX95%2F%2FMX105_Series_Hardware_Installation_Guide',
+  ] },
+  { archivo: 'meraki-mx250-ig.html', tipo: 'html', para: 'CISCO', debeContener: 'MX250', urls: [
+    'https://documentation.meraki.com/MX/MX_Installation_Guides/MX250_Installation_Guide',
+    'https://documentation.meraki.com/MX/Installation_Guides/MX250_Installation_Guide',
+  ] },
+  { archivo: 'meraki-mx450-ig.html', tipo: 'html', para: 'CISCO', debeContener: 'MX450', urls: [
+    'https://documentation.meraki.com/MX/MX_Installation_Guides/MX450_Installation_Guide',
+    'https://documentation.meraki.com/MX/Installation_Guides/MX450_Installation_Guide',
+  ] },
+  { archivo: 'meraki-c8111-c8121-ig.html', tipo: 'html', para: 'CISCO', debeContener: 'C8121-G2', urls: [
+    'https://documentation.meraki.com/SASE_and_SD-WAN/MX/Install_and_Get_Started/Installation_Guides/C8111-G2-MX_and_C8121-G2-MX_Installation_Guide',
+  ] },
+  { archivo: 'meraki-c8355-ig.html', tipo: 'html', para: 'CISCO', debeContener: 'C8355-G2', urls: [
+    'https://documentation.meraki.com/SASE_and_SD-WAN/MX/Install_and_Get_Started/Installation_Guides/C8355-G2-MX_Installation_Guide',
+  ] },
+  { archivo: 'meraki-mx-sizing.pdf', tipo: 'pdf', para: 'CISCO', urls: [
+    'https://meraki.cisco.com/lib/pdf/meraki_whitepaper_mx_sizing_guide.pdf',
+  ] },
+  // Tercera vuelta (2026-10-20, cierre de pendientes). La guia de la 8400 cambio de ruta
+  // (sec-8400-series/...): la vieja redirige a la de software (corrida 39410454052). La de
+  // la 8600 la enlaza su pagina de soporte desde el 12-oct-2026. La HTML de la 8200, por si
+  // es una edicion posterior al PDF del 10-sep-2025, que no dibuja C8211/C8221L/C8225.
+  { archivo: 'cisco-sr8400-hig2.html', tipo: 'html', para: 'CISCO', debeContener: 'C8455-G2', urls: [
+    'https://www.cisco.com/c/en/us/td/docs/routers/secure-routers/sec-8400-series/hardware-installation-guide/c8400-g2-hardware-installation-guide/m-overview.html',
+    'https://www.cisco.com/c/en/us/td/docs/routers/secure-routers/sec-8400-series/hardware-installation-guide/c8400-g2-hardware-installation-guide.html',
+  ] },
+  { archivo: 'cisco-sr8400-hig2.pdf', tipo: 'pdf', para: 'CISCO', urls: [
+    'https://www.cisco.com/c/en/us/td/docs/routers/secure-routers/sec-8400-series/hardware-installation-guide/c8400-g2-hardware-installation-guide.pdf',
+  ], descubrirEnlace: { de: 'cisco-sr8400-hig2.html', contiene: 'hardware-installation-guide', base: 'https://www.cisco.com/c/en/us/td/docs/routers/secure-routers/sec-8400-series/hardware-installation-guide/c8400-g2-hardware-installation-guide/m-overview.html',
+    dominios: ['cisco.com'] } },
+  { archivo: 'cisco-sr8600-hig.html', tipo: 'html', para: 'CISCO', debeContener: 'C8650-G2', urls: [
+    'https://www.cisco.com/c/en/us/td/docs/routers/secure-routers/sec-8600-series/hardware-installation-guide/secure-8600-series-hig.html',
+  ] },
+  { archivo: 'cisco-sr8600-hig.pdf', tipo: 'pdf', para: 'CISCO', urls: [
+    'https://www.cisco.com/c/en/us/td/docs/routers/secure-routers/sec-8600-series/hardware-installation-guide/secure-8600-series-hig.pdf',
+  ], descubrirEnlace: { de: 'cisco-sr8600-hig.html', contiene: 'hig', base: 'https://www.cisco.com/c/en/us/td/docs/routers/secure-routers/sec-8600-series/hardware-installation-guide/secure-8600-series-hig.html',
+    dominios: ['cisco.com'] } },
+  { archivo: 'cisco-sr8200-hig.html', tipo: 'html', para: 'CISCO', debeContener: 'C8235-G2', urls: [
+    'https://www.cisco.com/c/en/us/td/docs/routers/secure-routers/sec-8200-series/hardware-installation-guide/secure-8200-series-hig.html',
+  ] },
+  { archivo: 'cisco-sr8200-guias.html', tipo: 'html', para: 'CISCO', exploracion: true, urls: [
+    'https://www.cisco.com/c/en/us/support/routers/8200-series-secure-routers/products-installation-guides-list.html',
+  ] },
+  // La guia de instalacion de la serie ISR 1100 (figuras de los C1111/C1116/C1121/C1161): la
+  // ficha solo dibuja otras variantes. La italiana de la misma ruta es el respaldo.
+  { archivo: 'cisco-isr1100-hig.html', tipo: 'html', para: 'CISCO', exploracion: true, urls: [
+    'https://www.cisco.com/c/en/us/td/docs/routers/access/1100/hardware/installation/guide/b-cisco-1100-series-hig.html',
+    'https://www.cisco.com/c/en/us/td/docs/routers/access/1100/hardware/installation/guide/1100-hig.html',
+  ] },
+  { archivo: 'cisco-isr1100-hig.pdf', tipo: 'pdf', para: 'CISCO', urls: [
+    'https://www.cisco.com/c/en/us/td/docs/routers/access/1100/hardware/installation/guide/b-cisco-1100-series-hig.pdf',
+    'https://www.cisco.com/c/dam/en/us/td/docs/routers/access/1100/hardware/installation/guide/b-cisco-1100-series-hig.pdf',
+    'https://www.cisco.com/c/dam/en/us/td/docs/routers/access/1100/hardware/installation/guide/Localization/b-cisco-1100-series-hig_it_IT.pdf',
+  ], descubrirEnlace: { de: 'cisco-isr1100-hig.html', contiene: 'hig', base: 'https://www.cisco.com/c/en/us/td/docs/routers/access/1100/hardware/installation/guide/b-cisco-1100-series-hig.html',
+    dominios: ['cisco.com'] } },
+  { archivo: 'cisco-isr1000-guias.html', tipo: 'html', para: 'CISCO', exploracion: true, urls: [
+    'https://www.cisco.com/c/en/us/support/routers/1000-series-integrated-services-routers-isr/products-installation-guides-list.html',
+  ] },
+  // Modulos NIM, SM y PIM de los Catalyst 8200/8300: su guia de pedido (la de la G2 es otra).
+  { archivo: 'cisco-c8000-og.html', tipo: 'html', para: 'CISCO', debeContener: 'NIM', urls: [
+    'https://www.cisco.com/c/en/us/products/collateral/routers/catalyst-8300-series-edge-platforms/cat-8300-8200-series-edge-plat-og.html',
+  ] },
+  // Fin de venta del Catalyst 8500-20X6C: ningun boletin traido lo nombra; la lista de avisos
+  // de la serie y su pagina de soporte dicen si hay uno.
+  { archivo: 'cisco-c8500-eol-lista.html', tipo: 'html', para: 'CISCO', exploracion: true, urls: [
+    'https://www.cisco.com/c/en/us/products/routers/catalyst-8500-series-edge-platforms/eos-eol-notice-listing.html',
+  ] },
+  { archivo: 'cisco-c8500-soporte.html', tipo: 'html', para: 'CISCO', exploracion: true, urls: [
+    'https://www.cisco.com/c/en/us/support/routers/catalyst-8500-series-edge-platforms/series.html',
+  ] },
+  // La lista de avisos (19-oct-2026) trae el boletin del 20X6C y marca los otros dos como
+  // actualizados: los tres se vuelven a traer con `solo`.
+  { archivo: 'cisco-eol-c8500-20x6c.html', tipo: 'html', para: 'CISCO', debeContener: 'C8500-20X6C', urls: [
+    'https://www.cisco.com/c/en/us/products/collateral/networking/sdwan-routers/catalyst-8000-edge-platforms/catalyst-c8500-20x6c-eol.html',
+  ] },
+  { archivo: 'meraki-c8355-ds.html', tipo: 'html', para: 'CISCO', debeContener: 'C8355-G2', urls: [
+    'https://documentation.meraki.com/SASE_and_SD-WAN/MX/Product_Information/Overviews_and_Datasheets/C8355-G2-MX_Datasheet',
+  ] },
+  { archivo: 'meraki-c8455-ds.html', tipo: 'html', para: 'CISCO', debeContener: 'C8455-G2', urls: [
+    'https://documentation.meraki.com/SASE_and_SD-WAN/MX/Product_Information/Overviews_and_Datasheets/C8455-G2-MX_Datasheet',
+    'https://documentation.meraki.com/MX/MX_Overviews_and_Specifications/C8455-G2-MX_Data_Sheet',
+  ] },
+  { archivo: 'meraki-c8455-ig.html', tipo: 'html', para: 'CISCO', debeContener: 'C8455-G2', urls: [
+    'https://documentation.meraki.com/SASE_and_SD-WAN/MX/Install_and_Get_Started/Installation_Guides/C8455-G2-MX_Installation_Guide',
+  ] },
+  { archivo: 'meraki-licencias.html', tipo: 'html', para: 'CISCO', debeContener: 'Advanced Security', urls: [
+    'https://documentation.meraki.com/Platform_Management/Product_Information/Meraki_Licensing/Co-Termination_Licensing/Meraki_MX%2F%2FZ_Security_and_SD-WAN_Licensing',
+    'https://documentation.meraki.com/Platform_Management/Product_Information/Licensing/Meraki_MX_Security_and_SD-WAN_Licensing',
+    'https://documentation.meraki.com/General_Administration/Product_Information/Licensing/Meraki_MX_Security_and_SD-WAN_Licensing',
+  ] },
+  { archivo: 'meraki-mx-sizing.html', tipo: 'html', para: 'CISCO', debeContener: 'MX95', urls: [
+    'https://documentation.meraki.com/SASE_and_SD-WAN/MX/Design_and_Configure/Architectures_and_Best_Practices/MX_Sizing_Guide_%26_Principles',
+  ] },
+  { archivo: 'cisco-hig2-img', tipo: 'imagenes', para: 'CISCO', urls: [],
+    descubrirPiezas: { de: ['cisco-sr8400-hig2.html', 'cisco-sr8600-hig.html', 'cisco-sr8200-hig.html', 'cisco-isr1100-hig.html'],
+      base: 'https://www.cisco.com/', dominios: ['cisco.com'], relativas: true,
+      contiene: ['/c/dam/', '/content/dam/'], max: 200 } },
+  { archivo: 'meraki2-img', tipo: 'imagenes', para: 'CISCO', urls: [],
+    descubrirPiezas: { de: ['meraki-c8355-ds.html', 'meraki-c8455-ds.html', 'meraki-c8455-ig.html', 'meraki-c8355-ig.html'],
+      base: 'https://documentation.meraki.com/', dominios: ['meraki.com', 'cisco.com'], relativas: true,
+      contiene: ['/@api/deki/files/', '/c/dam/', '/content/dam/'], max: 120 } },
+  // Cuarta vuelta (2026-10-20): lo que la tercera dejo sin documento. La guia del ISR 1000
+  // en ingles se actualizo el 29-oct-2025 (la italiana es de 2021): su capitulo de
+  // presentacion dibuja las vistas de cada variante. La guia HTML de la serie 8200 puede
+  // ser posterior a su PDF (10-sep-2025). Y la licencia por suscripcion de Meraki publica
+  // referencias por clase de equipo.
+  { archivo: 'cisco-isr1100-hig-overview.html', tipo: 'html', para: 'CISCO', debeContener: 'C11', urls: [
+    'https://www.cisco.com/c/en/us/td/docs/routers/access/1100/hardware/installation/guide/b-cisco-1100-series-hig/isr1k-hig-overview.html',
+  ] },
+  { archivo: 'cisco-sr8200-hig-libro.html', tipo: 'html', para: 'CISCO', exploracion: true, urls: [
+    'https://www.cisco.com/c/en/us/td/docs/routers/secure-routers/sec-8200-series/hardware-installation-guide/secure-8200-series-hig.html',
+  ] },
+  { archivo: 'cisco-sr8200-hig-overview.html', tipo: 'html', para: 'CISCO', debeContener: 'C82', urls: [
+    'https://www.cisco.com/c/en/us/td/docs/routers/secure-routers/sec-8200-series/hardware-installation-guide/secure-8200-series-hig/m-overview.html',
+    'https://www.cisco.com/c/en/us/td/docs/routers/secure-routers/sec-8200-series/hardware-installation-guide/secure-8200-series-hig/m-product-overview.html',
+    'https://www.cisco.com/c/en/us/td/docs/routers/secure-routers/sec-8200-series/hardware-installation-guide/secure-8200-series-hig/overview.html',
+  ] },
+  { archivo: 'meraki-sub-mx.html', tipo: 'html', para: 'CISCO', debeContener: 'LIC-MX', urls: [
+    'https://documentation.meraki.com/Platform_Management/Product_Information/Meraki_Licensing/Subscription_Licensing/Subscription_-_MX_Licensing',
+    'https://documentation.meraki.com/Platform_Management/Product_Information/Licensing/Subscription_-_MX_Licensing',
+    'https://documentation.meraki.com/General_Administration/Licensing/Subscription_-_MX_Licensing',
+  ] },
+  { archivo: 'meraki-sub-skus.html', tipo: 'html', para: 'CISCO', debeContener: 'LIC-', urls: [
+    'https://documentation.meraki.com/Platform_Management/Product_Information/Meraki_Licensing/Subscription_Licensing/Subscription_-_Licensing_SKUs',
+    'https://documentation.meraki.com/Platform_Management/Product_Information/Licensing/Subscription_-_Licensing_SKUs',
+    'https://documentation.meraki.com/General_Administration/Licensing/Subscription_-_Licensing_SKUs',
+  ] },
+  // Quinta vuelta: las vistas del chasis de la 8400 y del Catalyst 8500 en su edicion HTML,
+  // por si dibujan una cara que el PDF no trae.
+  { archivo: 'cisco-sr8400-vistas-c8455.html', tipo: 'html', para: 'CISCO', debeContener: 'C8455', urls: [
+    'https://www.cisco.com/c/en/us/td/docs/routers/secure-routers/sec-8400-series/hardware-installation-guide/c8400-g2-hardware-installation-guide/intro-cisco-8400-series-secure-routers/chassis-views-c8455-g2.html',
+  ] },
+  { archivo: 'cisco-sr8400-vistas-c8475.html', tipo: 'html', para: 'CISCO', debeContener: 'C8475', urls: [
+    'https://www.cisco.com/c/en/us/td/docs/routers/secure-routers/sec-8400-series/hardware-installation-guide/c8400-g2-hardware-installation-guide/intro-cisco-8400-series-secure-routers/chassis-views-c4875-g2.html',
+  ] },
+  { archivo: 'cisco-c8500-hig-overview.html', tipo: 'html', para: 'CISCO', debeContener: '20X6C', urls: [
+    'https://www.cisco.com/c/en/us/td/docs/routers/cloud_edge/c8500/hardware-installation-guide/b_C8500_HIG/m_Router_Overview.html',
+  ] },
+  { archivo: 'cisco-hig4-img', tipo: 'imagenes', para: 'CISCO', urls: [],
+    descubrirPiezas: { de: ['cisco-sr8400-vistas-c8455.html', 'cisco-sr8400-vistas-c8475.html', 'cisco-c8500-hig-overview.html'],
+      base: 'https://www.cisco.com/', dominios: ['cisco.com'], relativas: true,
+      contiene: ['/c/dam/', '/content/dam/'], max: 120 } },
+  // Revision de seguridad y licencias (2026-10-21): la guia de pedido de los Catalyst
+  // remite a este FAQ para los tiers de ancho de banda DNA y lo que cuenta en cada uno.
+  { archivo: 'cisco-dna-faq.html', tipo: 'html', para: 'CISCO', debeContener: 'DNA', urls: [
+    'https://www.cisco.com/c/en/us/products/collateral/software/one-wan-subscription/nb-06-dna-sw-rout-sub-faq-ctp-en.html',
+  ] },
+  // Las fichas del MX250 y el MX450 no listan opticas: remiten a esta guia.
+  { archivo: 'meraki-sfp.html', tipo: 'html', para: 'CISCO', debeContener: 'MA-SFP', urls: [
+    'https://documentation.meraki.com/Platform_Management/Product_Information/Overviews_and_Datasheets/Small-Form_Factor_Pluggable_(SFP)_and_Stacking_Accessories',
+  ] },
+  // Opticas por distancia (2026-10-21, mejora aprobada): el alcance de cada optica del
+  // catalogo, por tipo de fibra, sale de la ficha de su familia, no del texto `d`.
+  { archivo: 'cisco-opt-1g.html', tipo: 'html', para: 'CISCO', debeContener: 'GLC-LH-SMD', urls: [
+    'https://www.cisco.com/c/en/us/products/collateral/interfaces-modules/gigabit-ethernet-gbic-sfp-modules/datasheet-c78-366584.html',
+  ] },
+  { archivo: 'cisco-opt-10g.html', tipo: 'html', para: 'CISCO', debeContener: 'SFP-10G-LR', urls: [
+    'https://www.cisco.com/c/en/us/products/collateral/interfaces-modules/transceiver-modules/data_sheet_c78-455693.html',
+  ] },
+  { archivo: 'cisco-opt-25g.html', tipo: 'html', para: 'CISCO', debeContener: 'SFP-10/25G-CSR-S', urls: [
+    'https://www.cisco.com/c/en/us/products/collateral/interfaces-modules/transceiver-modules/datasheet-c78-736950.html',
+  ] },
+  { archivo: 'cisco-opt-40g.html', tipo: 'html', para: 'CISCO', debeContener: 'QSFP-40G-LR4', urls: [
+    'https://www.cisco.com/c/en/us/products/collateral/interfaces-modules/transceiver-modules/data_sheet_c78-660083.html',
+  ] },
+  { archivo: 'cisco-opt-100g.html', tipo: 'html', para: 'CISCO', debeContener: 'QSFP-100G-LR4', urls: [
+    'https://www.cisco.com/c/en/us/products/collateral/interfaces-modules/transceiver-modules/datasheet-c78-736282.html',
+  ] },
+  // Bahias del C8570-G2 (2026-10-21): la ficha solo da «max 240GE ports can be enabled
+  // simultaneously»; que puertos deja cada configuracion lo dice este capitulo de su guia.
+  { archivo: 'cisco-sr8500-hig-bahias.html', tipo: 'html', para: 'CISCO', debeContener: 'C8570-G2', urls: [
+    'https://www.cisco.com/c/en/us/td/docs/routers/secure-routers/sec-8500-series/hardware-installation-guide/cisco-8500-series-secure-router-HIG/introduction-c8500/bay-configuration.html',
+  ] },
+  // Propuestas de conectividad, SD-WAN y seguridad (2026-10-21, encargo «avanza con todo»):
+  // cada cifra nueva del dimensionador Cisco sale de uno de estos documentos.
+  // 1.2 celular por categoría: los PIM y su categoría LTE/5G.
+  { archivo: 'cisco-pim-wwan.html', tipo: 'html', para: 'CISCO', debeContener: 'P-LTEA7', urls: [
+    'https://www.cisco.com/c/en/us/solutions/collateral/enterprise-networks/4g-lte-solutions/datasheet-c78-743503.html',
+  ] },
+  { archivo: 'cisco-pim-overview.pdf', tipo: 'pdf', para: 'CISCO', urls: [
+    'https://www.cisco.com/c/en/us/td/docs/routers/iot-antennas/cellular-pluggable-modules/b-cellular-pluggable-interface-module-configuration-guide/m-pluggable-module-overview.pdf',
+  ] },
+  // 1.3 sitio en alta disponibilidad: el diseño de dos routers (TLOC extension, VRRP).
+  { archivo: 'cisco-sdwan-design.html', tipo: 'html', para: 'CISCO', debeContener: 'TLOC', urls: [
+    'https://www.cisco.com/c/en/us/td/docs/solutions/CVD/SDWAN/cisco-sdwan-design-guide.html',
+  ] },
+  { archivo: 'cisco-tloc-ext.html', tipo: 'html', para: 'CISCO', debeContener: 'TLOC', urls: [
+    'https://www.cisco.com/c/en/us/td/docs/routers/sdwan/17-x/systems-interfaces/systems-interfaces-guide-17-x/tloc-extension.html',
+  ] },
+  // 2.2 controladores: recursos recomendados por número de equipos (versión 20.18).
+  { archivo: 'cisco-sdwan-recursos.html', tipo: 'html', para: 'CISCO', debeContener: 'vCPU', urls: [
+    'https://www.cisco.com/c/en/us/td/docs/routers/sdwan/release/notes/compatibility-and-server-recommendations/ch-server-recs-20-18-combined11.html',
+  ] },
+  // 2.3 AppQoE: qué equipos lo admiten y con qué perfil.
+  { archivo: 'cisco-appqoe-dre.html', tipo: 'html', para: 'CISCO', debeContener: 'DRE', urls: [
+    'https://www.cisco.com/c/en/us/td/docs/routers/sdwan/26x-later/appqoe/appqoe-configuration-guide/tcp-optimization-with-dre.html',
+  ] },
+  { archivo: 'cisco-sr8300-scg.html', tipo: 'html', para: 'CISCO', debeContener: 'AppQoE', urls: [
+    'https://www.cisco.com/c/en/us/td/docs/routers/secure-routers/sec-8300-series/software-config-guide/secure-8300-series-scg/overview.html',
+  ] },
+  // 3.1 Secure Access: guía de pedido y límite por túnel.
+  { archivo: 'cisco-sa-og.html', tipo: 'html', para: 'CISCO', debeContener: 'Secure Access', urls: [
+    'https://www.cisco.com/c/en/us/products/collateral/security/secure-access/secure-access-sub-og.html',
+  ] },
+  { archivo: 'cisco-sa-tuneles.html', tipo: 'html', para: 'CISCO', debeContener: 'Gbps', urls: [
+    'https://docs.sse.cisco.com/sse-user-guide/docs/secure-access-network-tunnels',
+  ] },
+  // 3.2 Secure Firewall: fichas de las series 1200, 3100 y 4200 y guía de pedido.
+  { archivo: 'cisco-fw1200-ds.html', tipo: 'html', para: 'CISCO', debeContener: '1250', urls: [
+    'https://www.cisco.com/c/en/us/products/collateral/security/firewalls/secure-firewall-1200-series-ds.html',
+  ] },
+  { archivo: 'cisco-fw3100-ds.html', tipo: 'html', para: 'CISCO', debeContener: '3140', urls: [
+    'https://www.cisco.com/c/en/us/products/collateral/security/firewalls/secure-firewall-3100-series-ds.html',
+  ] },
+  { archivo: 'cisco-fw4200-ds.html', tipo: 'html', para: 'CISCO', debeContener: '4245', urls: [
+    'https://www.cisco.com/c/en/us/products/collateral/security/firewalls/secure-firewall-4200-ds.html',
+  ] },
+  { archivo: 'cisco-netsec-og.pdf', tipo: 'pdf', para: 'CISCO', urls: [
+    'https://www.cisco.com/c/en/us/products/collateral/security/secure-firewall/guide-c07-737902.pdf',
+  ] },
+  // Pendiente del DSL por módulo: ficha de los NIM VDSL2/ADSL2+ y su fin de venta.
+  { archivo: 'cisco-nim-dsl-ds.html', tipo: 'html', para: 'CISCO', debeContener: 'NIM-VAB-A', urls: [
+    'https://www.cisco.com/c/en/us/products/collateral/routers/4000-series-integrated-services-routers-isr/datasheet-c78-733645.html',
+  ] },
+  { archivo: 'cisco-nim-dsl-eol.html', tipo: 'html', para: 'CISCO', debeContener: 'NIM-VA', urls: [
+    'https://www.cisco.com/c/en/us/products/collateral/interfaces-modules/network-modules/select-wan-interface-modules-eol.html',
+  ] },
+  // Pendientes de enlaces y puertos de Cisco (2026-10-27): la velocidad mínima de los mGig
+  // de Meraki, el sentido del túnel de Secure Access, la ONT XGSPON de la jaula de las
+  // 8100 VAI/VAP y CVAI/CVAP, y los módulos del ASR 1000 (NIM del 1001-X, EPA del 1002-HX).
+  { archivo: 'meraki-wan-behavior.html', tipo: 'html', para: 'CISCO', debeContener: 'MX105', urls: [
+    'https://documentation.meraki.com/SASE_and_SD-WAN/MX/Product_Information/Overviews_and_Datasheets/WAN_Behavior_on_MX75%2F%2F85%2F%2F95%2F%2F105',
+    'https://documentation.meraki.com/MX/MX_Overviews_and_Specifications/WAN_Behavior_on_MX75%2F%2F85%2F%2F95%2F%2F105',
+  ] },
+  { archivo: 'cisco-sa-tunel-tamano.html', tipo: 'html', para: 'CISCO', debeContener: 'Gbps', urls: [
+    'https://securitydocs.cisco.com/docs/csa/olh/119020.dita',
+  ] },
+  { archivo: 'cisco-sa-tunel-ecmp.html', tipo: 'html', para: 'CISCO', exploracion: true, urls: [
+    'https://securitydocs.cisco.com/docs/csa/olh/119011.dita',
+  ] },
+  { archivo: 'cisco-sa-tunel-guia.html', tipo: 'html', para: 'CISCO', exploracion: true, urls: [
+    'https://securitydocs.cisco.com/docs/csa/olh/118929.dita',
+  ] },
+  // Los identificadores 119020 y 119011 dieron 404 (corrida 40493337677); estos salen de la
+  // navegación de la ayuda que sí se trajo (118929): túneles, límites y grupos de túneles.
+  { archivo: 'cisco-sa-tuneles-intro.html', tipo: 'html', para: 'CISCO', exploracion: true, urls: [
+    'https://securitydocs.cisco.com/docs/csa/olh/118824.dita',
+  ] },
+  { archivo: 'cisco-sa-limites.html', tipo: 'html', para: 'CISCO', exploracion: true, urls: [
+    'https://securitydocs.cisco.com/docs/csa/olh/118830.dita',
+  ] },
+  { archivo: 'cisco-sa-grupos-tunel.html', tipo: 'html', para: 'CISCO', exploracion: true, urls: [
+    'https://securitydocs.cisco.com/docs/csa/olh/118900.dita',
+  ] },
+  { archivo: 'cisco-sa-ipsec.html', tipo: 'html', para: 'CISCO', exploracion: true, urls: [
+    'https://securitydocs.cisco.com/docs/csa/olh/120419.dita',
+  ] },
+  { archivo: 'cisco-sa-caudal.html', tipo: 'html', para: 'CISCO', exploracion: true, urls: [
+    'https://securitydocs.cisco.com/docs/csa/olh/120799.dita',
+  ] },
+  // Criptografía post-cuántica (PQC, 2026-10-27, encargo del dueño): qué equipos la traen,
+  // con qué mecanismo y desde qué software. Solo documentos del fabricante; lo que no
+  // tenga documento queda «no consta».
+  { archivo: 'cisco-sr-rn-26-1.html', tipo: 'html', para: 'CISCO', debeContener: '26.1', urls: [
+    'https://www.cisco.com/c/en/us/td/docs/routers/secure-routers/cisco-8000-series-secure-routers-release-26-1-x.html',
+  ] },
+  { archivo: 'cisco-sr-rn-26-2.html', tipo: 'html', para: 'CISCO', debeContener: '26.2', urls: [
+    'https://www.cisco.com/c/en/us/td/docs/routers/secure-routers/cisco-8000-series-secure-routers-release-26-2-x.html',
+  ] },
+  { archivo: 'cisco-blog-pqc-ke.html', tipo: 'html', para: 'CISCO', exploracion: true, urls: [
+    'https://blogs.cisco.com/developer/post-quantum-key-exchange-on-cisco-routers-ipsec-series-part-9',
+  ] },
+  { archivo: 'fortinet-pqc-ipsec.html', tipo: 'html', para: 'FORTINET', exploracion: true, urls: [
+    'https://docs.fortinet.com/document/fortigate/7.6.5/administration-guide/229631',
+  ] },
+  { archivo: 'fortinet-pqc-nuevas-7.6.0.html', tipo: 'html', para: 'FORTINET', exploracion: true, urls: [
+    'https://docs.fortinet.com/document/fortigate/7.6.0/new-features/90507',
+  ] },
+  { archivo: 'juniper-quantum-safe-ipsec.html', tipo: 'html', para: 'JUNIPER', exploracion: true, urls: [
+    'https://www.juniper.net/documentation/us/en/software/junos/vpn-ipsec/topics/topic-map/quantum-safe-ipsec-vpn.html',
+  ] },
+  { archivo: 'juniper-pqc-intro.html', tipo: 'html', para: 'JUNIPER', exploracion: true, urls: [
+    'https://www.juniper.net/documentation/us/en/software/junos/pki/topics/concept/get-started-with-pqc.html',
+  ] },
+  { archivo: 'juniper-fe-7502.html', tipo: 'html', para: 'JUNIPER', exploracion: true, urls: [
+    'https://apps.juniper.net/feature-explorer/feature/7502',
+  ] },
+  { archivo: 'nokia-7750sr-ds.pdf', tipo: 'pdf', para: 'NOKIA', urls: [
+    'https://www.nokia.com/asset/f/164728/', 'https://www.nokia.com/asset/164728/',
+  ] },
+  { archivo: 'nokia-7750sr-s-ds.pdf', tipo: 'pdf', para: 'NOKIA', urls: [
+    'https://www.nokia.com/asset/f/205421/', 'https://www.nokia.com/asset/205421/',
+  ] },
+  { archivo: 'nokia-ipsec-quantum-safe.pdf', tipo: 'pdf', para: 'NOKIA', urls: [
+    'https://www.nokia.com/asset/f/174280/', 'https://www.nokia.com/asset/174280/',
+  ] },
+  { archivo: 'cisco-pon-ont-ds.html', tipo: 'html', para: 'CISCO', debeContener: 'SFP-10G-ONT20-I', urls: [
+    'https://www.cisco.com/c/en/us/products/collateral/networking/optics-transceiver-modules/10g-pon-ont-modules-ds.html',
+  ] },
+  { archivo: 'cisco-pon-ont-ds.pdf', tipo: 'pdf', para: 'CISCO', urls: [
+    'https://www.cisco.com/c/en/us/products/collateral/networking/optics-transceiver-modules/10g-pon-ont-modules-ds.pdf',
+  ] },
+  { archivo: 'cisco-asr1001x-hig-hw.html', tipo: 'html', para: 'CISCO', exploracion: true, urls: [
+    'https://www.cisco.com/c/en/us/td/docs/routers/asr1000/install/guide/1001-x/asr1hig-book/asr1hig-book_chapter_011.html',
+  ] },
+  { archivo: 'cisco-asr1002hx-hig-hw.html', tipo: 'html', para: 'CISCO', exploracion: true, urls: [
+    'https://www.cisco.com/c/en/us/td/docs/routers/asr1000/install/guide/1001HX_1002HX/b_ASR1001HX-1002HX_HIG/b_ASR1001HX-1002HX_HIG_chapter_010.html',
+  ] },
+  { archivo: 'cisco-asr-epa-ds.html', tipo: 'html', para: 'CISCO', debeContener: 'EPA', urls: [
+    'https://www.cisco.com/c/en/us/products/collateral/application-networking-services/wide-area-application-services-waas-software/data-sheet-c78-729778.html',
+  ] },
+  // Pendientes que se cierran con papel (2026-10-27, encargo «ejecuta las mejoras propuestas
+  // y cierra las tareas pendientes»), uno por documento:
+  // · PQC de los FortiGate sin fila en la Maximum Values Table (400G, 3000G, 3500G, 3800G,
+  //   sus variantes, 7081F y 7121F): si las Release Notes de FortiOS 7.6.7 los listan como
+  //   soportados, corren una 7.6 posterior a la 7.6.1, la que trae ML-KEM.
+  { archivo: 'fortinet-rn-7.6.7.html', tipo: 'html', para: 'FORTINET', exploracion: true, urls: [
+    'https://docs.fortinet.com/document/fortigate/7.6.7/fortios-release-notes/',
+  ] },
+  { archivo: 'fortinet-rn-7.6.7.pdf', tipo: 'pdf', para: 'FORTINET', urls: [],
+    descubrirEnlace: { de: 'fortinet-rn-7.6.7.html', contiene: 'release-notes',
+      base: 'https://docs.fortinet.com/document/fortigate/7.6.7/fortios-release-notes/',
+      dominios: ['fortinet.com', 'fortinetweb.s3.amazonaws.com'] } },
+  //   Las de 7.6.7 (corrida 40535630075) listan el 3800G/3801G y, aparte, el 7081F/7121F
+  //   con sus «incompatibilities and limitations»; el 400G, el 3000G y el 3500G no estan:
+  //   las de 7.6.6 dicen en que build se publica cada uno.
+  { archivo: 'fortinet-rn-7.6.7-6000-7000.html', tipo: 'html', para: 'FORTINET', exploracion: true, urls: [
+    'https://docs.fortinet.com/document/fortigate/7.6.7/fortios-release-notes/866373/fortigate-6000-and-7000-incompatibilities-and-limitations',
+  ] },
+  // La pagina anterior remite a esta para el 7081F y el 7121F (corrida 40537044470).
+  { archivo: 'fortinet-7000f-limitaciones.html', tipo: 'html', para: 'FORTINET', exploracion: true, urls: [
+    'https://docs.fortinet.com/document/fortigate/7.6.7/fortigate-7000f-administration-guide/301266',
+  ] },
+  // Y esa remite, para IPsec, a «IPsec VPN load balancing» (corrida del 2026-10-27).
+  { archivo: 'fortinet-7000f-ipsec.html', tipo: 'html', para: 'FORTINET', exploracion: true, urls: [
+    'https://docs.fortinet.com/document/fortigate/7.6.7/fortigate-7000f-administration-guide/813847/ipsec-vpn-load-balancing',
+  ] },
+  { archivo: 'fortinet-rn-7.6.6.html', tipo: 'html', para: 'FORTINET', exploracion: true, urls: [
+    'https://docs.fortinet.com/document/fortigate/7.6.6/fortios-release-notes',
+  ] },
+  { archivo: 'fortinet-rn-7.6.6.pdf', tipo: 'pdf', para: 'FORTINET', urls: [],
+    descubrirEnlace: { de: 'fortinet-rn-7.6.6.html', contiene: 'release-notes',
+      base: 'https://docs.fortinet.com/document/fortigate/7.6.6/fortios-release-notes',
+      dominios: ['fortinet.com', 'fortinetweb.s3.amazonaws.com'] } },
+  // · Combinaciones del C8570-G2: su guia de hardware no trae la nota de la bahia 1 en
+  //   100G; el capitulo «Bay configuration» de su guia de configuracion, si (leida en la
+  //   edicion japonesa: la bahia 0 se deshabilita).
+  { archivo: 'cisco-sr8500-scg-bahias.html', tipo: 'html', para: 'CISCO', debeContener: 'C8570-G2', urls: [
+    'https://www.cisco.com/c/en/us/td/docs/routers/secure-routers/sec-8500-series/secure-8500-software-config-guide/bay-configuration.html',
+  ] },
+  { archivo: 'cisco-sr8500-scg.pdf', tipo: 'pdf', para: 'CISCO', urls: [
+    'https://www.cisco.com/c/en/us/td/docs/routers/secure-routers/sec-8500-series/secure-8500-software-config-guide.pdf',
+  ] },
+  // · Puerto de la interconexion EdgeHA de Aruba: que puertos puede usar el enlace HA.
+  { archivo: 'aruba-edgeha.html', tipo: 'html', para: 'ARUBA', debeContener: 'HA Link', urls: [
+    'https://arubanetworking.hpe.com/techdocs/sdwan/docs/orch/configuration/overlays/deploy-edgeha/',
+  ] },
+  // Criptografia post-cuantica de los equipos que dicen «no consta» (2026-10-27, tema
+  // pqc-documentos), un documento por pregunta:
+  // · MikroTik: la PPK (RFC 8784/9867) de IPsec en el manual de RouterOS, la version en
+  //   que entra (changelog oficial de la 7.21) y que version corre cada equipo (su ficha
+  //   dice «RouterOS v7» o solo «RouterOS»).
+  { archivo: 'mikrotik-ppk-qkd.html', tipo: 'html', para: 'MIKROTIK', debeContener: 'PPK', urls: [
+    'https://manual.mikrotik.com/docs/virtual-private-networks/ipsec/qkd-integration-in-routeros-ipsec-ppk',
+    'https://help.mikrotik.com/docs/spaces/ROS/pages/341770268/QKD',
+  ] },
+  { archivo: 'mikrotik-ipsec.html', tipo: 'html', para: 'MIKROTIK', exploracion: true, urls: [
+    'https://manual.mikrotik.com/docs/virtual-private-networks/ipsec',
+    'https://help.mikrotik.com/docs/spaces/ROS/pages/11993097/IPsec',
+  ] },
+  { archivo: 'mikrotik-changelog-7.21.txt', tipo: 'texto', para: 'MIKROTIK', debeContener: 'PPK', urls: [
+    'https://download.mikrotik.com/routeros/7.21/CHANGELOG',
+    'https://upgrade.mikrotik.com/routeros/7.21/CHANGELOG',
+  ] },
+  { archivo: 'mikrotik-descargas.html', tipo: 'html', para: 'MIKROTIK', exploracion: true, urls: [
+    'https://mikrotik.com/download',
+  ] },
+  // (La ficha del L009 con wifi se pide con su entrada de siempre, mikrotik-l009-2haxd.html.)
+  { archivo: 'mikrotik-chr-intro.html', tipo: 'html', para: 'MIKROTIK', debeContener: 'Cloud Hosted Router', urls: [
+    'https://manual.mikrotik.com/docs/getting-started/routeros-licensing/chr/',
+  ] },
+  // · Cisco IOS XE 17 (Catalyst 8000, ISR, ASR): el capitulo de PPK de la guia de VPN con
+  //   IPsec; el indice del libro, por si la ruta del capitulo es otra.
+  { archivo: 'cisco-iosxe-ppk.html', tipo: 'html', para: 'CISCO', exploracion: true, urls: [
+    'https://www.cisco.com/c/en/us/td/docs/routers/ios/config/17-x/sec-vpn/b-security-vpn/m-sec-cfg-quantum-encryption-ppk.html',
+  ] },
+  { archivo: 'cisco-iosxe-sec-vpn-libro.html', tipo: 'html', para: 'CISCO', exploracion: true, urls: [
+    'https://www.cisco.com/c/en/us/td/docs/routers/ios/config/17-x/sec-vpn/b-security-vpn.html',
+  ] },
+  // · Aruba EdgeConnect: los algoritmos de cifrado del plano de datos y las notas de la
+  //   ECOS mas reciente que dio la busqueda.
+  { archivo: 'aruba-ec-cifrados.pdf', tipo: 'pdf', para: 'ARUBA', urls: [
+    'https://arubanetworking.hpe.com/techdocs/sdwan-PDFs/docs/ECSecurityAlgorithmsCipherProfiles_latest.pdf',
+  ] },
+  { archivo: 'aruba-ecos-9.7.1.0-rn.pdf', tipo: 'pdf', para: 'ARUBA', urls: [
+    'https://arubanetworking.hpe.com/techdocs/ArubaEdgeConnectEnterprise/GatewaysSoftware/9.7.1.0_109666/ECOS_9.7.1.0_Release_Notes.pdf',
+  ] },
+  // · Nokia: la ficha del 7750 SR-1x (Release 26) y las de los 7250 IXR del catalogo.
+  { archivo: 'nokia-7750sr1x-ds.pdf', tipo: 'pdf', para: 'NOKIA', urls: [
+    'https://www.nokia.com/asset/f/212738/', 'https://www.nokia.com/asset/212738/',
+  ] },
+  { archivo: 'nokia-7250ixr-r-ds.pdf', tipo: 'pdf', para: 'NOKIA', urls: [
+    'https://www.nokia.com/asset/f/206658/', 'https://www.nokia.com/asset/206658/',
+  ] },
+  { archivo: 'nokia-7250ixr-x-ds.pdf', tipo: 'pdf', para: 'NOKIA', urls: [
+    'https://www.nokia.com/asset/f/214173/', 'https://www.nokia.com/asset/214173/',
+  ] },
+  { archivo: 'nokia-7250ixr-6e-ds.pdf', tipo: 'pdf', para: 'NOKIA', urls: [
+    'https://www.nokia.com/asset/f/212673/', 'https://www.nokia.com/asset/212673/',
+  ] },
+  { archivo: 'nokia-asset-215309.pdf', tipo: 'pdf', para: 'NOKIA', urls: [
+    'https://www.nokia.com/asset/f/215309/', 'https://www.nokia.com/asset/215309/',
+  ] },
+  // PQC que sigue en «no consta» (2026-10-27, tema pqc-version-supuestos):
+  // · Los ASR 1000: la PPK de IOS XE llega en la 17.11.1a; el boletin de fin de venta de
+  //   cada chasis dice cual es su ultima version.
+  { archivo: 'cisco-asr1001x-eol.html', tipo: 'html', para: 'CISCO', debeContener: 'ASR1001-X', urls: [
+    'https://www.cisco.com/c/en/us/products/collateral/routers/asr-1000-series-aggregation-services-routers/asr1001-x-1002-x-eol.html',
+  ] },
+  { archivo: 'cisco-asr1002hx-eol.html', tipo: 'html', para: 'CISCO', debeContener: 'ASR1002-HX', urls: [
+    'https://www.cisco.com/c/en/us/products/collateral/routers/asr-1000-series-aggregation-services-routers/asr1002-hx-asso-part-eol.html',
+  ] },
+  { archivo: 'cisco-asr1006x-eol.html', tipo: 'html', para: 'CISCO', debeContener: 'ASR1006-X', urls: [
+    'https://www.cisco.com/c/en/us/products/collateral/routers/asr-1000-series-aggregation-services-routers/asr1006-x-chassis-eol.html',
+  ] },
+  // · Los 7250 IXR-e y IXR-e2: su ficha de serie (la del IXR-e3 remite a ella).
+  { archivo: 'nokia-7250ixr-e-ds.pdf', tipo: 'pdf', para: 'NOKIA', urls: [
+    'https://www.nokia.com/asset/f/206825/', 'https://www.nokia.com/asset/206825/',
+  ] },
+  // PQC que sigue en «no consta» (2026-10-28, tema pqc-fuente-y-fuentes-oficiales), solo
+  // documentos oficiales:
+  // · MikroTik: el changelog de cada version posterior a la 7.21 (la que trae la PPK). Si
+  //   uno nombra el RB1100AHx4, el hEX PoE lite o el PowerBox Pro, ese equipo corre esa
+  //   version. Las versiones que no existan fallan sin cortar la corrida.
+  { archivo: 'mikrotik-changelog-7.21.1.txt', tipo: 'texto', para: 'MIKROTIK', debeContener: 'new in 7.', urls: [
+    'https://download.mikrotik.com/routeros/7.21.1/CHANGELOG',
+    'https://upgrade.mikrotik.com/routeros/7.21.1/CHANGELOG',
+  ] },
+  { archivo: 'mikrotik-changelog-7.21.2.txt', tipo: 'texto', para: 'MIKROTIK', debeContener: 'new in 7.', urls: [
+    'https://download.mikrotik.com/routeros/7.21.2/CHANGELOG',
+    'https://upgrade.mikrotik.com/routeros/7.21.2/CHANGELOG',
+  ] },
+  { archivo: 'mikrotik-changelog-7.21.3.txt', tipo: 'texto', para: 'MIKROTIK', debeContener: 'new in 7.', urls: [
+    'https://download.mikrotik.com/routeros/7.21.3/CHANGELOG',
+    'https://upgrade.mikrotik.com/routeros/7.21.3/CHANGELOG',
+  ] },
+  { archivo: 'mikrotik-changelog-7.21.4.txt', tipo: 'texto', para: 'MIKROTIK', debeContener: 'new in 7.', urls: [
+    'https://download.mikrotik.com/routeros/7.21.4/CHANGELOG',
+    'https://upgrade.mikrotik.com/routeros/7.21.4/CHANGELOG',
+  ] },
+  { archivo: 'mikrotik-changelog-7.21.5.txt', tipo: 'texto', para: 'MIKROTIK', debeContener: 'new in 7.', urls: [
+    'https://download.mikrotik.com/routeros/7.21.5/CHANGELOG',
+    'https://upgrade.mikrotik.com/routeros/7.21.5/CHANGELOG',
+  ] },
+  { archivo: 'mikrotik-changelog-7.21.6.txt', tipo: 'texto', para: 'MIKROTIK', debeContener: 'new in 7.', urls: [
+    'https://download.mikrotik.com/routeros/7.21.6/CHANGELOG',
+    'https://upgrade.mikrotik.com/routeros/7.21.6/CHANGELOG',
+  ] },
+  { archivo: 'mikrotik-changelog-7.22.txt', tipo: 'texto', para: 'MIKROTIK', debeContener: 'new in 7.', urls: [
+    'https://download.mikrotik.com/routeros/7.22/CHANGELOG',
+    'https://upgrade.mikrotik.com/routeros/7.22/CHANGELOG',
+  ] },
+  { archivo: 'mikrotik-changelog-7.22.1.txt', tipo: 'texto', para: 'MIKROTIK', debeContener: 'new in 7.', urls: [
+    'https://download.mikrotik.com/routeros/7.22.1/CHANGELOG',
+    'https://upgrade.mikrotik.com/routeros/7.22.1/CHANGELOG',
+  ] },
+  { archivo: 'mikrotik-changelog-7.22.2.txt', tipo: 'texto', para: 'MIKROTIK', debeContener: 'new in 7.', urls: [
+    'https://download.mikrotik.com/routeros/7.22.2/CHANGELOG',
+    'https://upgrade.mikrotik.com/routeros/7.22.2/CHANGELOG',
+  ] },
+  { archivo: 'mikrotik-changelog-7.22.3.txt', tipo: 'texto', para: 'MIKROTIK', debeContener: 'new in 7.', urls: [
+    'https://download.mikrotik.com/routeros/7.22.3/CHANGELOG',
+    'https://upgrade.mikrotik.com/routeros/7.22.3/CHANGELOG',
+  ] },
+  { archivo: 'mikrotik-changelog-7.22.4.txt', tipo: 'texto', para: 'MIKROTIK', debeContener: 'new in 7.', urls: [
+    'https://download.mikrotik.com/routeros/7.22.4/CHANGELOG',
+    'https://upgrade.mikrotik.com/routeros/7.22.4/CHANGELOG',
+  ] },
+  { archivo: 'mikrotik-changelog-7.23.txt', tipo: 'texto', para: 'MIKROTIK', debeContener: 'new in 7.', urls: [
+    'https://download.mikrotik.com/routeros/7.23/CHANGELOG',
+    'https://upgrade.mikrotik.com/routeros/7.23/CHANGELOG',
+  ] },
+  { archivo: 'mikrotik-changelog-7.23.1.txt', tipo: 'texto', para: 'MIKROTIK', debeContener: 'new in 7.', urls: [
+    'https://download.mikrotik.com/routeros/7.23.1/CHANGELOG',
+    'https://upgrade.mikrotik.com/routeros/7.23.1/CHANGELOG',
+  ] },
+  { archivo: 'mikrotik-changelog-7.23.2.txt', tipo: 'texto', para: 'MIKROTIK', debeContener: 'new in 7.', urls: [
+    'https://download.mikrotik.com/routeros/7.23.2/CHANGELOG',
+    'https://upgrade.mikrotik.com/routeros/7.23.2/CHANGELOG',
+  ] },
+  { archivo: 'mikrotik-routeros-estable.txt', tipo: 'texto', para: 'MIKROTIK', debeContener: '7.', urls: [
+    'https://upgrade.mikrotik.com/routeros/NEWESTa7.stable',
+  ] },
+  // · Juniper: las notas de Junos OS 25.4R1 (su seccion «Post-Quantum Cryptography»); el
+  //   Feature Explorer (juniper-fe-7502.html) no lista el SRX4100 ni los SRX de sucursal.
+  { archivo: 'juniper-junos-25.4r1-rn.pdf', tipo: 'pdf', para: 'JUNIPER', urls: [
+    'https://www.juniper.net/documentation/us/en/software/junos/release-notes/25.4/junos-release-notes-25.4r1/junos-release-notes-25.4r1.pdf',
+  ] },
+  { archivo: 'juniper-fe-7502-2.html', tipo: 'html', para: 'JUNIPER', exploracion: true, urls: [
+    'https://apps.juniper.net/feature-explorer/feature/7502',
+  ] },
+  // · Nokia: la ficha de la serie 7220 IXR-D para SR Linux (D1, D2L, D3L y D5 del catalogo).
+  { archivo: 'nokia-7220ixr-d-ds.pdf', tipo: 'pdf', para: 'NOKIA', urls: [
+    'https://www.nokia.com/asset/f/207599/', 'https://www.nokia.com/asset/207599/',
+  ] },
+  // · Cisco: el roadmap de comunicaciones quantum-safe del Trust Center (Meraki MX y MX OS).
+  { archivo: 'cisco-quantum-safe-roadmap.pdf', tipo: 'pdf', para: 'CISCO', urls: [
+    'https://www.cisco.com/c/dam/en_us/about/doing_business/trust-center/docs/quantum-safe-communications-roadmap.pdf',
+  ] },
+  // · Aruba: las novedades de cada AOS 10 de los gateways 9000/9100/9200.
+  { archivo: 'aruba-aos10-novedades-10.8.1.0.html', tipo: 'html', para: 'ARUBA', exploracion: true, urls: [
+    'https://arubanetworking.hpe.com/techdocs/new-central/content/aos10x/whats-new-aos10.8.1.0.htm',
+  ] },
+  { archivo: 'aruba-aos10-novedades-10.8.0.0.html', tipo: 'html', para: 'ARUBA', exploracion: true, urls: [
+    'https://arubanetworking.hpe.com/techdocs/new-central/content/aos10x/whats-new-aos10.8.0.0.htm',
+  ] },
+  { archivo: 'aruba-aos10-novedades-10.7.2.0.html', tipo: 'html', para: 'ARUBA', exploracion: true, urls: [
+    'https://arubanetworking.hpe.com/techdocs/new-central/content/aos10x/whats-new-aos10.7.2.0.htm',
+  ] },
+  { archivo: 'aruba-aos10-novedades-10.7.1.0.html', tipo: 'html', para: 'ARUBA', exploracion: true, urls: [
+    'https://arubanetworking.hpe.com/techdocs/new-central/content/aos10x/whats-new-aos10.7.1.0.htm',
+  ] },
+  { archivo: 'aruba-aos10-novedades-10.7.0.0.html', tipo: 'html', para: 'ARUBA', exploracion: true, urls: [
+    'https://arubanetworking.hpe.com/techdocs/new-central/content/aos10x/whats-new-aos10.7.0.0.htm',
+  ] },
+  { archivo: 'aruba-aos10-novedades-10.6.0.0.html', tipo: 'html', para: 'ARUBA', exploracion: true, urls: [
+    'https://arubanetworking.hpe.com/techdocs/new-central/content/aos10x/whats-new-aos10.6.0.0.htm',
+  ] },
+  // Segunda vuelta (2026-10-28): la version estable de RouterOS es ya la 7.25 (su
+  // NEWESTa7.stable), y el hEX PoE lite no salio en los changelogs hasta la 7.23.2.
+  { archivo: 'mikrotik-changelog-7.24.txt', tipo: 'texto', para: 'MIKROTIK', debeContener: 'new in 7.', urls: [
+    'https://download.mikrotik.com/routeros/7.24/CHANGELOG',
+    'https://upgrade.mikrotik.com/routeros/7.24/CHANGELOG',
+  ] },
+  { archivo: 'mikrotik-changelog-7.24.1.txt', tipo: 'texto', para: 'MIKROTIK', debeContener: 'new in 7.', urls: [
+    'https://download.mikrotik.com/routeros/7.24.1/CHANGELOG',
+    'https://upgrade.mikrotik.com/routeros/7.24.1/CHANGELOG',
+  ] },
+  { archivo: 'mikrotik-changelog-7.24.2.txt', tipo: 'texto', para: 'MIKROTIK', debeContener: 'new in 7.', urls: [
+    'https://download.mikrotik.com/routeros/7.24.2/CHANGELOG',
+    'https://upgrade.mikrotik.com/routeros/7.24.2/CHANGELOG',
+  ] },
+  { archivo: 'mikrotik-changelog-7.24.3.txt', tipo: 'texto', para: 'MIKROTIK', debeContener: 'new in 7.', urls: [
+    'https://download.mikrotik.com/routeros/7.24.3/CHANGELOG',
+    'https://upgrade.mikrotik.com/routeros/7.24.3/CHANGELOG',
+  ] },
+  { archivo: 'mikrotik-changelog-7.25.txt', tipo: 'texto', para: 'MIKROTIK', debeContener: 'new in 7.', urls: [
+    'https://download.mikrotik.com/routeros/7.25/CHANGELOG',
+    'https://upgrade.mikrotik.com/routeros/7.25/CHANGELOG',
+  ] },
+  { archivo: 'mikrotik-changelog-7.25.1.txt', tipo: 'texto', para: 'MIKROTIK', debeContener: 'new in 7.', urls: [
+    'https://download.mikrotik.com/routeros/7.25.1/CHANGELOG',
+    'https://upgrade.mikrotik.com/routeros/7.25.1/CHANGELOG',
+  ] },
+  // · AOS-10.8.0.0 trae el comando ppk-mandatory (PPK en IKEv2), pero su pagina no dice en que
+  //   equipo. El sitio es MadCap Flare: HelpSystem.xml dice donde esta su indice de temas, y
+  //   de ahi se busca la pagina del comando sin adivinar rutas; y que gateway corre cada AOS.
+  { archivo: 'aruba-nc-helpsystem.xml', tipo: 'html', para: 'ARUBA', exploracion: true, urls: [
+    'https://arubanetworking.hpe.com/techdocs/new-central/Data/HelpSystem.xml',
+  ] },
+  { archivo: 'aruba-nc-gateways-soportados.html', tipo: 'html', para: 'ARUBA', exploracion: true, urls: [
+    'https://arubanetworking.hpe.com/techdocs/new-central/content/mon-gw/supported-gateways.htm',
+  ] },
+  // Tercera vuelta: HelpSystem.xml da el indice en Data/Tocs/nc_proto.js; sus trozos, con la
+  // ruta y el titulo de cada tema, dicen donde esta la pagina del IPsec/IKE de los gateways.
+  { archivo: 'aruba-nc-toc.js', tipo: 'html', para: 'ARUBA', exploracion: true, urls: [
+    'https://arubanetworking.hpe.com/techdocs/new-central/Data/Tocs/nc_proto.js',
+  ] },
+  { archivo: 'aruba-nc-toc-chunk0.js', tipo: 'html', para: 'ARUBA', exploracion: true, urls: [
+    'https://arubanetworking.hpe.com/techdocs/new-central/Data/Tocs/nc_proto_Chunk0.js',
+  ] },
+  { archivo: 'aruba-nc-toc-chunk1.js', tipo: 'html', para: 'ARUBA', exploracion: true, urls: [
+    'https://arubanetworking.hpe.com/techdocs/new-central/Data/Tocs/nc_proto_Chunk1.js',
+  ] },
+  { archivo: 'aruba-nc-toc-chunk2.js', tipo: 'html', para: 'ARUBA', exploracion: true, urls: [
+    'https://arubanetworking.hpe.com/techdocs/new-central/Data/Tocs/nc_proto_Chunk2.js',
+  ] },
+  { archivo: 'aruba-nc-toc-chunk3.js', tipo: 'html', para: 'ARUBA', exploracion: true, urls: [
+    'https://arubanetworking.hpe.com/techdocs/new-central/Data/Tocs/nc_proto_Chunk3.js',
+  ] },
+  { archivo: 'aruba-nc-toc-chunk4.js', tipo: 'html', para: 'ARUBA', exploracion: true, urls: [
+    'https://arubanetworking.hpe.com/techdocs/new-central/Data/Tocs/nc_proto_Chunk4.js',
+  ] },
+  { archivo: 'aruba-nc-toc-chunk5.js', tipo: 'html', para: 'ARUBA', exploracion: true, urls: [
+    'https://arubanetworking.hpe.com/techdocs/new-central/Data/Tocs/nc_proto_Chunk5.js',
+  ] },
+  { archivo: 'aruba-nc-toc-chunk6.js', tipo: 'html', para: 'ARUBA', exploracion: true, urls: [
+    'https://arubanetworking.hpe.com/techdocs/new-central/Data/Tocs/nc_proto_Chunk6.js',
+  ] },
+  { archivo: 'aruba-nc-toc-chunk7.js', tipo: 'html', para: 'ARUBA', exploracion: true, urls: [
+    'https://arubanetworking.hpe.com/techdocs/new-central/Data/Tocs/nc_proto_Chunk7.js',
+  ] },
+  { archivo: 'cisco-hig3-img', tipo: 'imagenes', para: 'CISCO', urls: [],
+    descubrirPiezas: { de: ['cisco-isr1100-hig-overview.html', 'cisco-sr8200-hig-overview.html'],
+      base: 'https://www.cisco.com/', dominios: ['cisco.com'], relativas: true,
+      contiene: ['/c/dam/', '/content/dam/'], max: 200 } },
+  // Las figuras de las fichas y de las guias de Meraki: las paginas de Cisco las enlazan
+  // con ruta relativa a la raiz («/c/dam/...»), por eso `relativas`. Que modelo y que
+  // cara es cada una se decide MIRANDOLA y leyendo su pie, no por el orden en la pagina.
+  { archivo: 'cisco-img', tipo: 'imagenes', para: 'CISCO', urls: [],
+    descubrirPiezas: { de: ['cisco-sr8100-ds.html', 'cisco-sr8200-ds.html', 'cisco-sr8300-ds.html',
+      'cisco-sr8400-ds.html', 'cisco-sr8500-ds.html', 'cisco-sr8600-ds.html', 'cisco-sr8000-og.html',
+      'cisco-isr1000-ds.html', 'cisco-c8200-ds.html', 'cisco-c8300-ds.html', 'cisco-c8500-ds.html'],
+      base: 'https://www.cisco.com/', dominios: ['cisco.com'], relativas: true,
+      contiene: ['/c/dam/', '/content/dam/'], max: 200 } },
+  { archivo: 'cisco-hig-img', tipo: 'imagenes', para: 'CISCO', urls: [],
+    descubrirPiezas: { de: ['cisco-sr8400-hig.html', 'cisco-sr8500-hig.html', 'cisco-c8200-hig.html',
+      'cisco-c8300-hig.html', 'cisco-c8500-hig.html'],
+      base: 'https://www.cisco.com/', dominios: ['cisco.com'], relativas: true,
+      contiene: ['/c/dam/', '/content/dam/'], max: 200 } },
+  { archivo: 'meraki-img', tipo: 'imagenes', para: 'CISCO', urls: [],
+    descubrirPiezas: { de: ['meraki-mx67-68-ds.html', 'meraki-mx75-ds.html', 'meraki-mx85-ds.html',
+      'meraki-mx95-105-ds.html', 'meraki-mx250-ds.html', 'meraki-mx450-ds.html', 'meraki-c8111-c8121-ds.html',
+      'meraki-mx67-68-ig.html', 'meraki-mx75-ig.html', 'meraki-mx85-ig.html', 'meraki-mx95-105-ig.html',
+      'meraki-mx250-ig.html', 'meraki-mx450-ig.html', 'meraki-c8111-c8121-ig.html', 'meraki-c8355-ig.html'],
+      base: 'https://documentation.meraki.com/', dominios: ['meraki.com', 'cisco.com'], relativas: true,
+      contiene: ['/@api/deki/files/', '/c/dam/', '/content/dam/'], max: 250 } },
+];
+
+module.exports = { DOCS };

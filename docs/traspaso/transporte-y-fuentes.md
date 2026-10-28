@@ -4,9 +4,9 @@
 - **Rama:** claude/elegant-pascal-7ymts7
 - **Cuenta:** vladichakadc, sesión 01TxCQ3W2sHYVmimAdMKht3j
 - **Estado:** bloqueado (espera la fusión de claude/documentos-pendientes)
-- **Actualizado:** 2026-10-28 09:10
-- **Archivos que toca:** scripts/transporte/, test/transporte-documentos.test.js (y, cuando se fusione claude/documentos-pendientes: .github/workflows/traer-cisco-huawei.yml, test/traer-exploracion.test.js, test/traer-pantalla-login.test.js, test/workflows-node-e.test.js, server/seed/legacyData/fuentes.js y los legacyData de cada pendiente)
-- **Siguiente paso:** esperar a que se fusione claude/documentos-pendientes (otra sesión declaró antes traer-cisco-huawei.yml, fuentes.js, aruba.js, juniper.js y pqc.test.js); mientras, localizar las URL oficiales de los pendientes sin tocar esos archivos
+- **Actualizado:** 2026-10-28 09:35
+- **Archivos que toca:** scripts/transporte/, test/transporte-documentos.test.js, test/traer-exploracion.test.js, test/traer-pantalla-login.test.js, test/workflows-node-e.test.js (y, cuando se fusione el PR #49: .github/workflows/traer-cisco-huawei.yml, server/seed/legacyData/fuentes.js y los legacyData de cada pendiente)
+- **Siguiente paso:** cuando se fusione el PR #49, rebasar, regenerar scripts/transporte/ desde el traer-cisco-huawei.yml fusionado (el programa que bash entrega, partido en DOCS y lógica; sin el duplicado de huawei-a800-producto.html) y cambiar el paso del workflow a `run: node scripts/transporte/traer.js`
 
 ## Encargo del dueño
 
@@ -17,7 +17,14 @@ PR #45: la lista del transporte fuera del YAML.
 
 ## Hecho
 
-- (nada todavía)
+- `scripts/transporte/documentos.js` (la lista, 392 entradas) y `traer.js` (la lógica), generados del
+  programa exacto que bash entrega hoy a Node: recompuestos, casan línea a línea con él (salvo dos
+  `catch (e)` sin usar que pasan a `catch`), y con `SOLO=no-existe` los dos fallan igual. Al moverlo
+  salió un archivo repetido (`huawei-a800-producto.html`, misma URL dos veces): se queda la entrada
+  con `debeContener`.
+- Pruebas: `test/transporte-documentos.test.js` (nueva, por `require()`), y `traer-exploracion`,
+  `traer-pantalla-login` y `workflows-node-e` leen el módulo. Dos siguen en rojo hasta cambiar el
+  workflow (esperan a que se fusione el PR #49, que declara `traer-cisco-huawei.yml`).
 
 ## Falta
 
