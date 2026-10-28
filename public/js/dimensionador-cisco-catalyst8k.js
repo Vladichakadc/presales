@@ -753,7 +753,7 @@ function renderBom(){
   const f = filaDe(m.id);
   const meta = {
     titulo:`Lista de materiales — ${m.id}`,
-    supuestos:{vendor:VENDOR, fabricante:'Cisco', plataforma:ultimaEval ? ultimaEval.plataforma.n : null, modelo:m.id, serie:m.ser, pqc:m.pqc || null, pqcNo:m.pqcNo || null,
+    supuestos:{vendor:VENDOR, fabricante:'Cisco', plataforma:ultimaEval ? ultimaEval.plataforma.n : null, modelo:m.id, serie:m.ser, pqc:m.pqc || null, pqcNo:m.pqcNo || null, ciclo:BOM.cicloDe(m),
       // Pares [clave, valor], como la hoja «Supuestos» los espera (un texto suelto tumbaba el Excel).
       resumen:ultimaEval ? [
         ['Demanda del overlay', fmt(ultimaEval.demanda.overlayNeed)],

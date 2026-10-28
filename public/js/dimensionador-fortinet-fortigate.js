@@ -1478,7 +1478,7 @@ function documentoMeta(r, confirmacion) {
   const meta = {
     titulo: `${borrador ? 'BORRADOR TÉCNICO — ' : ''}Lista de materiales — ${m.id}`,
     // Hoja «Supuestos» del Excel (bom.js): la puerta, el cuello y los supuestos que el motor declara.
-    supuestos: { vendor: VENDOR, fabricante: 'Fortinet', modelo: m.id, pqc: m.pqc || null, pqcNo: m.pqcNo || null, resumen: [
+    supuestos: { vendor: VENDOR, fabricante: 'Fortinet', modelo: m.id, pqc: m.pqc || null, pqcNo: m.pqcNo || null, ciclo: BOM.cicloDe(m), resumen: [
       ['Puerta de cotización', `${r.quoteGate} (${GATE[r.quoteGate].n}) · confianza ${r.confianza}`],
       ['Cuello de botella', r.seleccion.eval.manda ? `${r.seleccion.eval.manda.n} al ${R.pct(r.seleccion.eval.manda.u)}` : 'sin dato'],
       ['Huella del escenario', r.scenarioHash],

@@ -648,7 +648,7 @@ function renderBom(){
 
   const meta={
     titulo:`Lista de materiales — ${m.id}`,
-    supuestos:{vendor:'mikrotik', fabricante:'MikroTik', modelo:m.id, serie:m.ser, pqc:m.pqc || null, pqcNo:m.pqcNo || null},
+    supuestos:{vendor:'mikrotik', fabricante:'MikroTik', modelo:m.id, serie:m.ser, pqc:m.pqc || null, pqcNo:m.pqcNo || null, ciclo:BOM.cicloDe(m)},
     subtitulo:`${m.seg} · RouterOS v7 · licencia ${lvlTxt(m)}`,
     archivo:`BOM_${m.id}`,
     notas:[

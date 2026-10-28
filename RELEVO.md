@@ -1,6 +1,6 @@
 # Relevo
 
-Última actualización: 2026-10-28 · PR #42
+Última actualización: 2026-10-28 · PR #41
 
 Informe para continuar el trabajo. Lo pidió el dueño del repositorio el 2026-10-27: «de aquí en
 adelante, un informe de pendientes y mejoras para que la cuenta **servicioiptv2025@gmail.com**
@@ -33,6 +33,9 @@ está en curso no va aquí: lo dice `npm run traspasos` (protocolo en `docs/tras
 
 ## Estado al cerrar esta entrega
 
+- **2026-10-28 · PR #41**: el fin de venta del equipo también en el Excel (la mejora propuesta):
+  sección «Ciclo de vida del equipo» en «Supuestos» (estado, último pedido, sucesor, boletín) y
+  un aviso en rojo en la hoja BOM. Sin dato de ciclo no sale nada.
 - **2026-10-28 · PR #42**: las dos fuentes de Aruba que eran un cascarón ya tienen URL del PDF
   probada desde Actions (`psnow/downloadDoc/<id>.pdf?id=<id>`): la de la serie 9000 sirve el mismo
   documento que se leyó; la de EdgeConnect, la Rev. 9, que falta contrastar. `fuentes.js` no se tocó
@@ -188,16 +191,16 @@ existen los workflows de transporte. Huawei y HPE niegan además el navegador au
 
 ## Mejoras propuestas sin decidir
 
-- **El fin de venta también en el Excel que ve el cliente** (propuesta al cerrar el PR #40). En
-  pantalla el equipo fuera de venta o con fin de venta anunciado sale en rojo, pero el Excel del BOM
-  no lo dice: una propuesta puede llegar al cliente con un equipo cuyo último pedido es dentro de
-  dos meses sin una línea que lo avise. Añadir en la hoja «Supuestos» (`matrizSupuestos`, `bom.js`)
-  una fila «Ciclo de vida: fin de venta el <fecha> · sucesor <…> (boletín)» cuando el equipo la
-  tenga, leída de `FICHA.cicloOpcion` y del `eolAnnounced` del modelo, con su URL. Evita entregar
-  un equipo que no se podrá pedir cuando el cliente firme. Cuesta una fila en `bom.js`
-  (compartido por los siete) y pasar el ciclo en `meta.supuestos` desde cada página; si se hace
-  mal, la hoja «Supuestos» descuadra o el Excel no se descarga, y lo verían `bom-supuestos.test.js`
-  y las baterías de Excel. Se decide por el dueño.
+- **El ciclo de vida también en el Excel multi-sede** (propuesta al cerrar el PR #41). El BOM
+  consolidado de varias sedes (`sinRefs`) no lleva hoja «Supuestos», así que tampoco el aviso de
+  fin de venta: un despliegue de 50 sedes con un equipo cuyo último pedido es en enero sale sin una
+  línea que lo diga, y es justo el pedido grande el que más sufre el corte. Añadir al consolidado
+  una línea por perfil cuyo equipo tenga ciclo (`BOM.cicloDelEquipo`, que ya existe), guardando el
+  `ciclo` en cada perfil al crearlo (`guardarPerfil`). Evita prometer un despliegue por fases que no
+  se podrá pedir. Cuesta tocar `guardarPerfil` y el consolidado de `bom.js` (compartidos por los
+  siete), y los perfiles ya guardados en el almacenamiento local no traen el dato: dirían «sin dato
+  de ciclo», nunca «vigente». Si se hace mal, el consolidado no se descarga; lo vería la batería de
+  perfiles. Se decide por el dueño.
 - **La fuente de la PQC, enlazada a `fuentes.js` y no escrita a mano** (propuesta al cerrar la
   septuagesimoprimera entrega). Hoy `pqc.fuente` y `pqcNo.fuente` son un texto libre en cada
   `legacyData/` («Boletín de fin de venta de los Cisco ASR1001-X y ASR1002-X»), y nada comprueba
@@ -211,7 +214,7 @@ existen los workflows de transporte. Huawei y HPE niegan además el navegador au
   la hoja «Supuestos» (`bom.js`, compartido), y la batería `e2e-pqc-supuestos.js`. Si se hace mal,
   la ficha pierde el nombre del documento o el Excel no se descarga; lo verían `pqc.test.js` y esa
   batería. Se decide por el dueño.
-- (Hecha en el PR #40: la foto de producto en el Excel. Hecha en la septuagesimoprimera: el «no la trae» documentado, `pqcNo`. Hecha en la sexagesimoctava: la
+- (Hecha en el PR #41: el fin de venta en el Excel. Hecha en el PR #40: la foto de producto en el Excel. Hecha en la septuagesimoprimera: el «no la trae» documentado, `pqcNo`. Hecha en la sexagesimoctava: la
   versión mínima de la PQC en la hoja «Supuestos».)
 
 ## Decisiones del dueño abiertas

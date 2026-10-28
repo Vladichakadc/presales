@@ -711,6 +711,47 @@
      navegador. `entorno` = { fecha, url, parametros: [{etiqueta, valor, cambiado}],
      fuentes: { error?, lista: [...], todas? }, pqc?: { nivel, etiqueta } }. Nada se rellena: lo que
      no consta lo dice. */
+  // Lo que la página pasa del equipo para su ciclo de vida, sin nada más del modelo: así la hoja no
+  // depende de la forma de cada catálogo. `null` si el catálogo no trae ningún dato de ciclo.
+  function cicloDe(m) {
+    if (!m || !(m.eol || m.legacy || m.eolAnnounced)) return null;
+    return { eol: !!m.eol, legacy: !!m.legacy, eolAnnounced: m.eolAnnounced || null, sucesor: m.sucesor || null };
+  }
+  // Las filas de la sección y una línea corta para la hoja BOM. Puro: la fecha de hoy entra por
+  // parámetro para poder probar el vencimiento.
+  function cicloDelEquipo(c, hoy) {
+    if (!c || !(c.eol || c.legacy || c.eolAnnounced)) return null;
+    const a = c.eolAnnounced || null;
+    const t = a && a.lastOrder ? Date.parse(a.lastOrder) : NaN;
+    const vencido = Number.isFinite(t) && t < (hoy == null ? Date.now() : hoy);
+    const filas = [];
+    let linea;
+    if (c.eol) {
+      filas.push(['Estado', 'Fuera de venta']);
+      filas.push(['Último día de pedido', a && a.lastOrder ? a.lastOrder : 'el catálogo no trae la fecha']);
+      linea = 'el equipo está fuera de venta';
+    } else if (a && vencido) {
+      filas.push(['Estado', 'Fuera de venta: la fecha de último pedido ya pasó']);
+      filas.push(['Último día de pedido', a.lastOrder]);
+      linea = `el equipo está fuera de venta (último pedido el ${a.lastOrder})`;
+    } else if (a) {
+      filas.push(['Estado', 'Fin de venta anunciado: se pide con normalidad hasta la fecha']);
+      filas.push(['Último día de pedido', a.lastOrder || 'el boletín no da la fecha']);
+      linea = `el equipo tiene fin de venta anunciado${a.lastOrder ? ` (último pedido el ${a.lastOrder})` : ''}`;
+    } else {
+      filas.push(['Estado', 'Línea anterior: sigue en canal; solo se recomienda si ningún equipo de la generación actual cumple']);
+    }
+    if (a && a.pid) filas.push(['Referencia del boletín', a.pid]);
+    if (a && a.sucesor) filas.push(['Sucesor según el boletín', a.sucesor]);
+    else if (c.sucesor) filas.push(['Sucesor natural', `${c.sucesor} (inferencia por capacidad, sin documento oficial)`]);
+    else if (a) filas.push(['Sucesor', 'el boletín no nombra un reemplazo directo']);
+    if (a && a.endOfSupport) filas.push(['Fin de soporte del parque instalado', a.endOfSupport]);
+    if (a && a.url) filas.push(['Boletín oficial', a.url]);
+    else if (c.eol || a) filas.push(['Boletín oficial', 'el catálogo no trae el boletín: confirmarlo con el fabricante']);
+    if (linea) filas.push(['', 'Confirmar con el fabricante o el mayorista la disponibilidad antes de comprometer la propuesta; para un diseño nuevo, valorar el sucesor.']);
+    return { filas, linea: linea || null };
+  }
+
   function matrizSupuestos(meta, entorno) {
     const m = meta || {};
     const s = m.supuestos || {};
@@ -759,6 +800,18 @@
       } else {
         aoa.push(['', 'Ningún documento oficial del catálogo dice que este equipo la traiga; eso no prueba que no la tenga. Confirmarlo con el fabricante antes de comprometerlo.']);
       }
+    }
+    // CICLO DE VIDA DEL EQUIPO (2026-10-28, mejora propuesta al cerrar el PR #40). En pantalla el
+    // equipo que está o va a estar fuera de venta sale en rojo; el Excel que llega al cliente no lo
+    // decía, y una propuesta podía viajar con un equipo cuyo último pedido es dentro de dos meses.
+    // Sale solo si el catálogo trae algo que decir (`eol`, `eolAnnounced`, `legacy`): de un equipo sin
+    // boletín no se afirma que esté vigente. El sucesor del boletín y el inferido por capacidad no se
+    // mezclan, como en la ficha.
+    const ciclo = cicloDelEquipo(s.ciclo);
+    if (ciclo) {
+      aoa.push([]);
+      aoa.push(['CICLO DE VIDA DEL EQUIPO']);
+      for (const fila of ciclo.filas) aoa.push(fila);
     }
     aoa.push([]);
     aoa.push(['PARÁMETROS ACTIVOS DE LA PANTALLA', 'Valor', 'Cambiado respecto al valor por defecto']);
@@ -961,6 +1014,12 @@
       // Los rótulos de sección van en mayúsculas: esos se destacan, como el título.
       hs.eachRow((row) => { const v = row.getCell(1).value; if (typeof v === 'string' && /[A-Z]/.test(v) && v === v.toUpperCase()) row.font = { bold: true }; });
       hoja.addRow(['', 'Los supuestos, los parámetros y las fuentes de este escenario viajan en la hoja «Supuestos».']);
+      // El aviso de ciclo de vida también en la hoja BOM, que es la que lee el cliente primero.
+      const ciclo = cicloDelEquipo((m.supuestos || {}).ciclo);
+      if (ciclo && ciclo.linea) {
+        const fila = hoja.addRow(['', `Atención: ${ciclo.linea}. Detalle, sucesor y boletín en la hoja «Supuestos».`]);
+        fila.font = { bold: true, color: { argb: 'FFB42318' } };
+      }
     }
 
     // Fotos oficiales del equipo (plan 20): solo viajan cuando la página las declara en
@@ -1322,7 +1381,7 @@
     });
   }
 
-  global.BOM = { renderTabla, exportarExcel, comoTexto, matrizExcel, matrizSupuestos, fuentesDelEquipo, money, esc, claveFila,
+  global.BOM = { renderTabla, exportarExcel, comoTexto, matrizExcel, matrizSupuestos, cicloDe, cicloDelEquipo, fuentesDelEquipo, money, esc, claveFila,
     enviarACotizador, recogerEntrada, montarBotonCotizador, normalizar,
     sincronizar, soltarManual, avisoDesvio, fijarRepintado,
     agregarRef, quitarRef, cantidadRef, refsExtra, fijarVendor,

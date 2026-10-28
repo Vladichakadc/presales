@@ -124,3 +124,51 @@ test('las siete páginas pasan el `pqc` del equipo a la hoja', () => {
     assert.match(js, /pqc: ?m\.pqc \|\| null, pqcNo: ?m\.pqcNo \|\| null/, `${p} no pasa la PQC (y su «no») a «Supuestos»`);
   }
 });
+
+// CICLO DE VIDA (2026-10-28, mejora propuesta al cerrar el PR #40): el equipo que está o va a estar
+// fuera de venta lo dice también el Excel, con la fecha, el sucesor y el boletín; un equipo sin
+// dato de ciclo no se declara vigente (la sección no sale).
+test('ciclo de vida: fin de venta anunciado, vencido, fuera de venta y línea anterior; sin dato, nada', () => {
+  const HOY = Date.parse('2026-10-28');
+  const anunciado = BOM.cicloDe({ id: 'C8300-1N1S-6T', eolAnnounced: { pid: 'C8300-1N1S-6T', lastOrder: '2027-01-31', sucesor: 'Cisco Secure Router C8375-E-G2', url: 'https://www.cisco.com/x-eol.html' } });
+  let c = BOM.cicloDelEquipo(anunciado, HOY);
+  let t = texto(c.filas);
+  assert.match(t, /Estado \| Fin de venta anunciado/);
+  assert.match(t, /Último día de pedido \| 2027-01-31/);
+  assert.match(t, /Sucesor según el boletín \| Cisco Secure Router C8375-E-G2/);
+  assert.match(t, /Boletín oficial \| https:\/\/www\.cisco\.com\/x-eol\.html/);
+  assert.match(c.linea, /fin de venta anunciado \(último pedido el 2027-01-31\)/);
+
+  c = BOM.cicloDelEquipo(anunciado, Date.parse('2027-03-01'));
+  assert.match(texto(c.filas), /Estado \| Fuera de venta: la fecha de último pedido ya pasó/);
+  assert.match(c.linea, /está fuera de venta \(último pedido el 2027-01-31\)/);
+
+  c = BOM.cicloDelEquipo(BOM.cicloDe({ eol: true, sucesor: 'EC-10106' }), HOY);
+  t = texto(c.filas);
+  assert.match(t, /Estado \| Fuera de venta/);
+  assert.match(t, /Último día de pedido \| el catálogo no trae la fecha/);
+  assert.match(t, /Sucesor natural \| EC-10106 \(inferencia por capacidad, sin documento oficial\)/, 'el sucesor inferido se dice como tal');
+  assert.match(t, /Boletín oficial \| el catálogo no trae el boletín/);
+
+  c = BOM.cicloDelEquipo(BOM.cicloDe({ legacy: true }), HOY);
+  assert.match(texto(c.filas), /Estado \| Línea anterior/);
+  assert.strictEqual(c.linea, null, 'la línea anterior no lleva aviso en la hoja BOM: se sigue pidiendo');
+
+  assert.strictEqual(BOM.cicloDe({ id: 'AR651' }), null, 'sin dato de ciclo no se afirma nada');
+  assert.strictEqual(BOM.cicloDelEquipo(null), null);
+  // En la hoja: sección propia, y nada si no hay ciclo.
+  const meta = { titulo: 'BOM', supuestos: { fabricante: 'Cisco', modelo: 'C8300-1N1S-6T', ciclo: anunciado } };
+  assert.match(texto(BOM.matrizSupuestos(meta, { fecha: 'f', url: 'u' }).aoa), /CICLO DE VIDA DEL EQUIPO\n.*Estado \| Fin de venta anunciado/);
+  assert.doesNotMatch(texto(BOM.matrizSupuestos(META, ENTORNO).aoa), /CICLO DE VIDA/);
+});
+
+test('las siete páginas pasan el ciclo de vida del equipo a la hoja', () => {
+  const fs = require('fs');
+  const path = require('path');
+  for (const p of ['aruba-edgeconnect', 'cisco-catalyst8k', 'fortinet-fortigate', 'huawei-netengine', 'juniper-srx', 'mikrotik-routeros', 'nokia-7750sr']) {
+    const js = fs.readFileSync(path.join(__dirname, '..', 'public', 'js', `dimensionador-${p}.js`), 'utf8');
+    assert.match(js, /pqcNo: ?m\.pqcNo \|\| null, ciclo: ?BOM\.cicloDe\(m\)/, `${p} no pasa el ciclo de vida a «Supuestos»`);
+  }
+  const bom = fs.readFileSync(path.join(__dirname, '..', 'public', 'js', 'bom.js'), 'utf8');
+  assert.match(bom, /Atención: \$\{ciclo\.linea\}\. Detalle, sucesor y boletín en la hoja «Supuestos»\./, 'el aviso no llega a la hoja BOM');
+});
