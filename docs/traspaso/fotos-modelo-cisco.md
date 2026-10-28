@@ -4,9 +4,9 @@
 - **Rama:** claude/fotos-modelo-cisco
 - **Cuenta:** sesión de Claude del 2026-10-28 (cuenta del dueño)
 - **Estado:** en curso
-- **Actualizado:** 2026-10-28 09:55
+- **Actualizado:** 2026-10-28 12:15
 - **Archivos que toca:** .github/workflows/traer-cisco-huawei.yml, public/data/cisco-vistas-equipos.json, public/img/equipos/cs-*, test/cisco-vistas-equipos.test.js
-- **Siguiente paso:** traer las páginas a `fuente/cisco-fotos-2026-10-28` y mirar cada imagen
+- **Siguiente paso:** sacar la lista y el script del transporte del YAML (`scripts/transporte/`), la otra mejora aprobada
 
 ## Encargo del dueño
 
@@ -19,7 +19,7 @@ color de los Secure Router, Catalyst 8200/8300, ISR y MX67/MX68 que no la tienen
 
 ## Falta
 
-- Traer, mirar cada imagen y asignarla solo al modelo que nombra su texto o su archivo.
+- Hecho: MX67, MX68 y C8355-G2-MX con foto propia (corrida 40708139056). Las páginas de serie de los Secure Router solo repiten lo ya servido; las de Catalyst 8300 e ISR traen fotos de familia sin rótulo de modelo, que no se asignan.
 
 ## Decisiones y hallazgos
 

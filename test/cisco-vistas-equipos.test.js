@@ -162,8 +162,13 @@ test('los Meraki de sobremesa se abren por la cara de puertos y llevan su foto d
   for (const m of ['Meraki MX75', 'Meraki MX85', 'Meraki MX95', 'Meraki MX105', 'Meraki MX67C', 'Meraki MX68CW', 'Cisco Secure Router C8455-G2-MX']) {
     assert.ok(VISTAS[m].foto, `${m}: sin la foto de producto de su ficha`);
   }
-  // La foto de la ficha del MX67/MX68 lleva antenas: no va a los modelos sin radio.
-  assert.ok(!VISTAS['Meraki MX67'].foto && !VISTAS['Meraki MX68'].foto);
+  // La foto de la ficha del MX67/MX68 lleva antenas: no va a los modelos sin radio, que llevan la de su
+  // propia página de producto en cisco.com (2026-10-28, fuente/cisco-fotos-2026-10-28).
+  for (const m of ['Meraki MX67', 'Meraki MX68']) {
+    assert.ok(VISTAS[m].foto && VISTAS[m].foto !== VISTAS['Meraki MX67C'].foto, `${m}: sin foto propia o con la de antenas`);
+    assert.match(VISTAS[m].fotoFuente, new RegExp(`imagen «Cisco Meraki ${m.split(' ')[1]} Security`), `${m}: la foto no nombra su modelo`);
+  }
+  assert.match(VISTAS['Cisco Secure Router C8355-G2-MX'].fotoFuente, /«8355-G2-MX secure router»/);
 });
 
 test('los ASR (fuera de venta) tienen figura: la vista de frente de la página de la serie y su foto (2026-10-28)', () => {
