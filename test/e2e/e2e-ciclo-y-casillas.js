@@ -36,6 +36,7 @@ async function probarCasilla(t, page, id, pagina) {
     `${pagina}: al desmarcarla vuelve a como estaba`);
 }
 
+let paso = 'arranque';
 (async () => {
   const { chromium } = cargarPlaywright();
   const browser = await chromium.launch();
@@ -45,10 +46,11 @@ async function probarCasilla(t, page, id, pagina) {
   const t = contador();
   await abrirSesion(page);
 
+  paso = 'Cisco';
   // --- Cisco: el selector de modelo del BOM lista el catálogo entero, con los ASR fuera de venta.
   // El selector de modelo vive en la pestaña BOM, oculta al cargar: se espera a la ficha y a que el
   // combo esté poblado, y se cambia de pestaña antes de elegir.
-  await trasNavegar(page, () => page.goto(`${BASE}/dimensionador-cisco-catalyst8k.html`, { waitUntil: 'domcontentloaded' }), { selector: '#verdict-sel' });
+  await trasNavegar(page, () => page.goto(`${BASE}/dimensionador-cisco-catalyst8k.html?bw=100`, { waitUntil: 'domcontentloaded' }), { selector: '#verdict-sel' });
   await page.waitForFunction(() => globalThis.document.querySelectorAll('#pickModel option').length > 1, null, { timeout: 20000 });
   await asentar(page);
   // La casilla primero, en la pestaña de dimensionamiento que está a la vista.
@@ -83,11 +85,13 @@ async function probarCasilla(t, page, id, pagina) {
   const ficha = await page.$$eval('#verdict-sel option', (os) => os.filter((o) => o.dataset.ciclo).map((o) => globalThis.getComputedStyle(o).color));
   t.ok(ficha.every((c) => c === ROJO), `el desplegable de la ficha usa la misma regla (${ficha.length} con ciclo)`);
 
+  paso = 'Fortinet';
   // --- Fortinet: una función que fija el piso de capa.
   await trasNavegar(page, () => page.goto(`${BASE}/dimensionador-fortinet-fortigate.html`, { waitUntil: 'domcontentloaded' }), { selector: '#chkAv' });
   await asentar(page);
   await probarCasilla(t, page, 'chkAv', 'Fortinet');
 
+  paso = 'Nokia 7220 IXR';
   // --- Nokia 7220 IXR: sin ficha, con la hoja común.
   await trasNavegar(page, () => page.goto(`${BASE}/dimensionador-nokia-7220ixr.html`, { waitUntil: 'domcontentloaded' }), { selector: '#chkDual' });
   await asentar(page);
@@ -96,4 +100,4 @@ async function probarCasilla(t, page, id, pagina) {
   t.ok(errores.length === 0, 'sin errores de JS' + (errores.length ? ': ' + errores.join(' | ') : ''));
   await browser.close();
   process.exit(t.resumen('e2e-ciclo-y-casillas'));
-})().catch((e) => { console.error('ERROR E2E:', e.message); process.exit(2); });
+})().catch((e) => { console.error(`ERROR E2E (e2e-ciclo-y-casillas, ${paso}):`, e.message); process.exit(2); });
