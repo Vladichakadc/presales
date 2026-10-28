@@ -1,6 +1,6 @@
 # Relevo
 
-Última actualización: 2026-10-28 · PR #49
+Última actualización: 2026-10-28 · PR #52
 
 Informe para continuar el trabajo. Lo pidió el dueño del repositorio el 2026-10-27: «de aquí en
 adelante, un informe de pendientes y mejoras para que la cuenta **servicioiptv2025@gmail.com**
@@ -33,6 +33,17 @@ está en curso no va aquí: lo dice `npm run traspasos` (protocolo en `docs/tras
 
 ## Estado al cerrar esta entrega
 
+- **2026-10-28 · PR #52**: el dimensionador Cisco ya enseña figura de todos sus equipos. El ISR
+  1161X-8P (cara de puertos de la familia 11x1(X)-8P, con su tabla de 9 números, y foto), el ISR
+  1116-4P (cara del logotipo de la serie C111x; la pestaña «Frontal» dice que Cisco no publica la de
+  puertos) y los tres ASR (vista de frente de cisco.com y foto de su ficha). Los Meraki de sobremesa
+  se abren por la cara de puertos y siete MX llevan la foto de producto de su ficha; seis Secure
+  Router, la foto de cabecera de su serie; y las 95 previas de Cisco, a 1.600 px y calidad 90.
+  **Criterio que conviene conservar**: la figura de una familia entra solo si el documento la
+  rotula para esa familia (la 29 de la guía del ISR dice «11x1(X)-8P»), y el pie dice lo que no
+  coincide; una foto de otro modelo, nunca (por eso el MX67 y el MX68 sin radio no llevan la foto
+  con antenas, ni el 1116-4P la del C1117-4PLTE). Dos opt-in nuevos en `ficha.js`: `inicial` (la
+  cara por la que se abre la tarjeta) y `frontNota` (la frontal que falta, dicha).
 - **2026-10-28 · PR #49**: PQC con documento en 12 gateways AOS-8 de Aruba (9004, 9012, 9240 y la
   línea 7000/7200), y Juniper MX y SSR100 citan su ficha inglesa (psnow). Lo buscado sin documento
   nuevo está en *Cerrado recientemente* de `PENDIENTES.md`.
@@ -217,6 +228,17 @@ existen los workflows de transporte. Huawei y HPE niegan además el navegador au
 
 ## Mejoras propuestas sin decidir
 
+- **La foto a color de cada Secure Router, Catalyst 8000 e ISR, desde su página de modelo**
+  (propuesta al cerrar el PR #52). La página de la serie ASR en cisco.com traía una vista de frente
+  a color de cada modelo («model-comparison», 758 × 549) y la del 1006-X su foto: las páginas de
+  serie y de modelo de los Secure Router (`/site/us/en/products/networking/sdwan-routers/8000-secure-routers/…`),
+  de los Catalyst 8200/8300 y de los ISR 1000 suelen traer la misma comparativa. Buscar cada URL
+  (no adivinarla), traerlas con `traer-cisco-huawei.yml` y dar la foto a los 15 Secure Router y
+  los 6 Catalyst 8200/8300 que no la tienen, y a los MX67/MX68 sin radio si Meraki publica la suya.
+  Evita que el cliente vea solo un dibujo de línea en la mitad de la gama. Cuesta una o dos vueltas
+  de transporte y mirar cada foto (el rótulo y el nombre del archivo tienen que nombrar el modelo);
+  si se hace mal, un modelo enseñaría la foto de un hermano, que es justo lo que las pruebas frenan.
+  Se decide por el dueño.
 - **Los perfiles de otros fabricantes, también al día** (propuesta al cerrar el PR #46). Un
   consolidado multi-fabricante (spokes Fortinet y core Cisco, por ejemplo) solo pone al día los
   perfiles de la página donde se pulsa «Consolidar»; los demás salen «ciclo a fecha de …». Cada

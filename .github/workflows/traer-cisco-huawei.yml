@@ -1607,6 +1607,20 @@ jobs:
                   'meraki-mx250-ig.html', 'meraki-mx450-ig.html', 'meraki-c8111-c8121-ig.html', 'meraki-c8355-ig.html'],
                   base: 'https://documentation.meraki.com/', dominios: ['meraki.com', 'cisco.com'], relativas: true,
                   contiene: ['/@api/deki/files/', '/c/dam/', '/content/dam/'], max: 250 } },
+              // Figuras de los ASR 1000 (2026-10-28, encargo del dueño: «incluye las gráficas de los
+              // equipos Cisco»). Los tres ASR del catálogo no tenían ninguna: la ficha c78-731632 dibuja
+              // el 1001-X y el 1002-HX (figuras 2 y 4) y la página de producto del 1006-X lo enseña.
+              // Las URL salen de buscar cada página el 2026-10-28, no de adivinarlas por patrón.
+              { archivo: 'cisco-asr1006x-producto.html', tipo: 'html', para: 'CISCO', debeContener: '1006-X', urls: [
+                'https://www.cisco.com/site/us/en/products/networking/sdwan-routers/asr-1000-series-aggregation-services-routers/asr-1006-x/index.html',
+              ] },
+              { archivo: 'cisco-asr1002hx-producto.html', tipo: 'html', para: 'CISCO', debeContener: '1002-HX', urls: [
+                'https://www.cisco.com/c/en/us/products/routers/asr-1002-hx-router/index.html',
+              ] },
+              { archivo: 'cisco-asr-img', tipo: 'imagenes', para: 'CISCO', urls: [],
+                descubrirPiezas: { de: ['cisco-asr1000-ds.html', 'cisco-asr1006x-producto.html', 'cisco-asr1002hx-producto.html'],
+                  base: 'https://www.cisco.com/', dominios: ['cisco.com'], relativas: true,
+                  contiene: ['/c/dam/', '/content/dam/'], max: 120 } },
             ];
             // Una pagina HTML se valida por un texto que solo puede estar en el documento correcto
             // (debeContener). La que se pide para ver que hay —un indice del archivo, una pagina de

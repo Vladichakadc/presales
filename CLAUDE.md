@@ -371,8 +371,10 @@ Módulos compartidos:
   da en una línea), licenciamiento, software,
   soporte, referencias de pedido (bajo demanda por modelo) y figuras con su página y rótulo literal
   (frontal, trasera y, opt-in `foto` + `fotoFuente`, una tercera pestaña con la foto de producto a
-  color y su propio pie; Juniper y, desde el 2026-10-27, los Cisco cuya frontal es el dibujo
-  numerado de su guía: Catalyst 8500 y 8500L e ISR 1111X-8P; las dos viajan también al Excel).
+  color y su propio pie; Juniper y los Cisco que la tienen en su ficha —Catalyst 8500, ISR, ASR, siete
+  Meraki MX y seis Secure Router—; las dos viajan también al Excel). Opt-in `inicial`: la cara por
+  la que se abre la tarjeta (los Meraki de sobremesa, por la de puertos, que Meraki rotula «Back»);
+  `frontNota`, gemelo de `rearNota`, dice por qué falta la frontal (ISR 1116-4P).
   **El ciclo de vida en los desplegables** (`opcionCiclo`, 2026-10-28): fuera de venta y fin de venta
   anunciado salen en rojo fijo y con su texto en el desplegable de la ficha y en el selector de
   modelo de cada página; una sola regla, nunca una marca escrita a mano (`test/ciclo-y-casillas.test.js`).
@@ -576,7 +578,8 @@ Módulos compartidos:
   Meraki llevan sus ópticas MA-SFP (guía de accesorios SFP), por familia: los G2-MX no admiten la
   SX ni la ZR. Módulos de la guía de pedido de cada familia: G2 (`MODULOS_G2`) y Catalyst 8300/8200
   (`MODULOS_C8K`, con sus límites de ranura). Figuras en `public/data/cisco-vistas-equipos.json`
-  (sin pérdida, pie literal, `rearNota` donde no hay trasera). **`npm run cisco`** lee las fichas
+  (sin pérdida, pie literal, `rearNota` donde no hay trasera; previas a 1.600 px y calidad 90; la
+  figura de una familia solo si el documento la rotula para ella, y el pie dice lo que no coincide). **`npm run cisco`** lee las fichas
   HTML traídas (la carpeta de una rama `fuente/*`, o de la red con `--traer`, que es como lo corre
   el vigía cada lunes) y las contrasta con el catálogo celda a celda, en la base que cada modelo
   declara; solo compara y falla cerrado (una ficha de la que no sale ninguna celda, o que no se pudo
