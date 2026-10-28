@@ -1607,35 +1607,23 @@ module.exports = [
     'https://docs.fortinet.com/document/fortigate/7.6.6/administration-guide/246857',
     'https://docs.fortinet.com/document/fortigate/7.6.5/administration-guide/246857',
   ] },
-  // · Huawei, N1 Advanced frente a Foundation: la ficha de la solución SD-WAN R25C00 se leyó el
-  //   2026-10-14 en el navegador del dueño, sin copia. Se trae para contrastar su tabla «Software
-  //   Package Functions» y anotar su huella.
+  // · Huawei, N1 Advanced frente a Foundation: la ficha de la solución SD-WAN R25C00, leída el
+  //   2026-10-14 en el navegador del dueño. Traída el 2026-10-28 (fuente/transporte-2-2026-10-28):
+  //   los mismos bytes que el vigía tiene verificados, y su tabla «Software Package Functions»
+  //   (páginas 13 y 14) casa con lo transcrito.
   { archivo: 'huawei-sdwan-solucion-r25c00.pdf', tipo: 'pdf', para: 'HUAWEI', urls: [
     'https://e-file.huawei.com/marketingcloud/pep/asset/20000001/Material/c39e035b25f14a1897536864b6b928b3/M3T1A590N1185280594916528416/Huawei%20SD-WAN%20Solution%20Datasheet_R25C00.pdf',
   ] },
-  // · Huawei, nubes y «flavors» del vCPE AR6700V-L: su página de producto (las nubes) y las guías de
-  //   despliegue por nube, que remiten a una sección «Supported Flavors» (URL buscadas el 2026-10-28;
-  //   se piden en exploración porque el portal de soporte puede servir solo el cascarón).
+  // · Huawei, nubes del vCPE AR6700V-L: su página de producto da la lista de nubes, no las regiones
+  //   ni los «flavors». Sus guías de despliegue por nube (Azure EDOC1100591294 y EDOC1100592603,
+  //   GCP EDOC1100592600, Huawei Cloud EDOC1100368764, en support.huawei.*) traen una sección
+  //   «Supported Flavors», pero al ejecutor solo le llega el cascarón de 3.800 bytes de su aplicación
+  //   de JavaScript (corrida fuente/transporte-2-2026-10-28): no se piden aquí.
   { archivo: 'huawei-ar6700v-l-producto.html', tipo: 'html', para: 'HUAWEI', debeContener: 'AWS', urls: [
     'https://e.huawei.com/en/products/routers/netengine-ar6700v-l',
   ] },
-  { archivo: 'huawei-ar6700v-l-azure-r25c00.html', tipo: 'html', para: 'HUAWEI', exploracion: true, urls: [
-    'https://support.huawei.cn/enterprise/en/doc/EDOC1100591294/eac8359b/preparing-for-deployment',
-  ] },
-  { archivo: 'huawei-ar6700v-l-azure-r25c10.html', tipo: 'html', para: 'HUAWEI', exploracion: true, urls: [
-    'https://support.huawei.cn/enterprise/en/doc/EDOC1100592603',
-  ] },
-  { archivo: 'huawei-ar6700v-l-gcp-r25c10.html', tipo: 'html', para: 'HUAWEI', exploracion: true, urls: [
-    'https://support.huawei.cn/enterprise/en/doc/EDOC1100592600',
-  ] },
-  { archivo: 'huawei-ar6700v-l-huaweicloud-r23c10.html', tipo: 'html', para: 'HUAWEI', exploracion: true, urls: [
-    'https://support.huawei.com/enterprise/en/doc/EDOC1100368764',
-  ] },
-  { archivo: 'huawei-ar6700v-soporte.html', tipo: 'html', para: 'HUAWEI', exploracion: true, urls: [
-    'https://support.huawei.cn/enterprise/en/routers/ar6700v-pid-255317763',
-  ] },
-  // · MikroTik, el CCR2004-16G-2S+PC fuera de la matriz de compatibilidad: su manual de usuario, por
-  //   si dice qué módulos admiten sus jaulas SFP+.
+  // · MikroTik, el CCR2004-16G-2S+PC fuera de la matriz de compatibilidad: su manual de usuario
+  //   (leído el 2026-10-28: no dice qué módulos admiten sus jaulas SFP+).
   { archivo: 'mikrotik-ccr2004-16g-2s-pc-manual.html', tipo: 'html', para: 'MIKROTIK', debeContener: 'CCR2004-16G-2S+PC', urls: [
     'https://help.mikrotik.com/docs/spaces/UM/pages/93552657/CCR2004-16G-2S+PC',
     'https://manual.mikrotik.com/hardware/ccr2004-16g-2s-plus-pc',

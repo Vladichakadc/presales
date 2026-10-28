@@ -4,9 +4,9 @@
 - **Rama:** claude/elegant-pascal-7ymts7
 - **Cuenta:** vladichakadc, sesión 01TxCQ3W2sHYVmimAdMKht3j
 - **Estado:** en curso
-- **Actualizado:** 2026-10-28 17:45
+- **Actualizado:** 2026-10-28 18:05
 - **Archivos que toca:** scripts/transporte/, .github/workflows/traer-cisco-huawei.yml (el paso de descarga y la cabecera; ver *Decisiones* por claude/fotos-modelo-cisco), test/transporte-documentos.test.js, test/traer-exploracion.test.js, test/traer-pantalla-login.test.js, test/workflows-node-e.test.js, public/js/fortinet-reglas.js, public/js/fortinet-motor.js, test/fortinet-reglas.test.js, server/seed/legacyData/fortinet.js, server/seed/legacyData/fuentes.js
-- **Siguiente paso:** cuando se fusionen el PR #54 (transporte) y el PR #51 (página de Fortinet): fusionar main tomando SU versión de scripts/transporte/ y sus pruebas, añadir al final de su `documentos.js` las tres entradas de este tema, corregir en `dimensionador-fortinet-fortigate.js` «la licencia no se comparte en HA» (F3), verificación con navegador, PR y cierre
+- **Siguiente paso:** cuando se fusione el PR #51 (página de Fortinet): corregir en `dimensionador-fortinet-fortigate.js` «la licencia no se comparte en HA» (F3), verificación con navegador, PR y cierre
 
 ## Encargo del dueño
 
@@ -34,6 +34,25 @@ PR #45: la lista del transporte fuera del YAML.
   de la lista firmada donde lo trae y el heartbeat de la serie; aviso informativo en A-P.
 - Leído sin cerrar: la ficha N1 Business Mode (V100R019, vieja); la página del AR6700V-L (las nubes,
   sin regiones ni «flavors»); la matriz de MikroTik de hoy (sigue sin el CCR2004-16G-2S+PC).
+
+- **Encargo del dueño (2026-10-28 17:50): «revisar y cerrar estos temas, busca por internet»** (los
+  tres leídos sin cerrar). Corrida `fuente/transporte-2-2026-10-28`:
+  - **N1 Advanced frente a Foundation: cerrado del todo.** Ya estaba cerrado el 2026-10-14 (leído en
+    el navegador del dueño) y RELEVO lo seguía dando por abierto. La ficha de la solución SD-WAN
+    R25C00, traída, son los mismos 1.105.535 bytes con la huella que el vigía tiene verificada, y
+    su tabla (pp. 13-14) casa con `N1_SOLO_ADVANCED` y con la nota de `fuentes.js` (que ahora lo
+    dice, con la fecha de generación del PDF, 2025-10-15).
+  - **Regiones y «flavors» del AR6700V-L: localizado, no leído.** Las guías de despliegue por nube
+    tienen una sección «Supported Flavors» (Azure V600R025C00 EDOC1100591294, Azure V600R025C10
+    EDOC1100592603, GCP V600R025C10 EDOC1100592600, Huawei Cloud V600R023C10 EDOC1100368764). Al
+    ejecutor le llega el cascarón de JavaScript (3.800 bytes) y Huawei niega el navegador
+    automatizado: lo cierra una persona con navegador. El buscador indexa su texto, así que no
+    parecen pedir cuenta (no se pudo comprobar).
+  - **CCR2004-16G-2S+PC: sigue sin fuente.** Su manual (help.mikrotik.com, 25-08-2022) no dice qué
+    módulos admiten sus SFP+, y la matriz de hoy no lo lista. Atribuirle la fila del
+    CCR2004-16G-2S+ sería inferir: sigue «a consultar».
+- Main fusionado otra vez con el PR #54: se toman sus `scripts/transporte/` y sus pruebas; mis
+  entradas, al final de su lista.
 
 ## Falta
 
