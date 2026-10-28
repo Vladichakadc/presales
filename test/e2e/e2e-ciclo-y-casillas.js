@@ -15,8 +15,11 @@ const ROJO = 'rgb(180, 35, 24)'; // --ciclo-rojo de controles.css
 const fila = (page, id) => page.$eval(`#${id}`, (el) => {
   const l = el.closest('label');
   const cs = globalThis.getComputedStyle(l);
+  // La posición de la casilla DENTRO de su fila: lo que la página repinta por encima al activar la
+  // función (avisos, pistas) puede mover la fila entera, y eso no es cosa del resaltado.
   const r = el.getBoundingClientRect();
-  return { fondo: cs.backgroundColor, sombra: cs.boxShadow, peso: cs.fontWeight, x: Math.round(r.left), y: Math.round(r.top), marcada: el.checked };
+  const rl = l.getBoundingClientRect();
+  return { fondo: cs.backgroundColor, sombra: cs.boxShadow, peso: cs.fontWeight, x: Math.round(r.left - rl.left), y: Math.round(r.top - rl.top), marcada: el.checked };
 });
 
 async function probarCasilla(t, page, id, pagina) {
@@ -28,7 +31,7 @@ async function probarCasilla(t, page, id, pagina) {
   const on = await fila(page, id);
   t.ok(on.marcada && on.fondo !== off.fondo && /inset/.test(on.sombra) && Number(on.peso) >= 600,
     `${pagina}: al marcar #${id} la fila se resalta (fondo ${off.fondo} → ${on.fondo}, barra y seminegrita)`);
-  t.ok(on.x === off.x && Math.abs(on.y - off.y) <= 1, `${pagina}: la casilla no se mueve al marcarla`);
+  t.ok(on.x === off.x && Math.abs(on.y - off.y) <= 1, `${pagina}: la casilla no se mueve dentro de su fila al marcarla (${off.x},${off.y} → ${on.x},${on.y})`);
   await page.click(`#${id}`);
   await asentar(page);
   const otraVez = await fila(page, id);
