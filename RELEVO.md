@@ -22,8 +22,10 @@ está en curso no va aquí: lo dice `npm run traspasos` (protocolo en `docs/tras
    en `main`: `npm run verificar`, `npm run auditar`, el servidor con `NODE_ENV=production`, la
    pantalla conducida en el navegador (`npm run pantallas`, los casos de `npm run contraste`,
    `npm run e2e`, `npm run puerta`). Railway despliega `main` cuando CI pasa.
-4. **Al fusionar**: rebase sobre `main`; `PENDIENTES.md` (lo cerrado a *Cerrado recientemente*),
-   este archivo y `CLAUDE.md` si cambió una regla; el traspaso del tema se borra en ese commit.
+4. **Al fusionar**: abre el PR primero, porque **la entrega se nombra por fecha y número de PR**
+   (`AAAA-MM-DD · PR #N`, nunca por ordinal); rebase sobre `main`; `PENDIENTES.md` (lo cerrado a
+   *Cerrado recientemente*), este archivo y `CLAUDE.md` si cambió una regla; el traspaso del tema se
+   borra en ese commit.
 5. **Lo que no se negocia**: nunca se inventa un dato (sin documento oficial, `null` y «sin dato»);
    un 403 del proxy de egreso se reporta, no se rodea; los documentos de los fabricantes se traen con
    `traer-cisco-huawei.yml` a una rama `fuente/*` nueva por corrida; las decisiones del dueño no se
