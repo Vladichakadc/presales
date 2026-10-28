@@ -1,0 +1,82 @@
+[
+  {
+    "archivo": "aruba-aos8-vpn-ppk.html",
+    "para": "ARUBA",
+    "guardado": false,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://arubanetworking.hpe.com/techdocs/ArubaOS/AOS_8x_WebHelp/Content/arubaos-solutions/vpn/vpn-ppk.htm",
+        "status": 200,
+        "bytes": 54520,
+        "nota": "no contiene el texto esperado"
+      }
+    ]
+  },
+  {
+    "archivo": "aruba-aos-8.12.0.5-release-notes.pdf",
+    "para": "ARUBA",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://arubanetworking.hpe.com/techdocs/ArubaOS-8.x-Books/Release-Notes/812/ArubaOS-8.12.0.5-Release-Notes.pdf",
+        "status": 200,
+        "bytes": 301753,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "juniper-mx-series-ds.pdf",
+    "para": "JUNIPER",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://www.hpe.com/psnow/downloadDoc/a00150825enw.pdf?id=a00150825enw",
+        "status": 200,
+        "bytes": 964739,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "juniper-ssr100-ds.pdf",
+    "para": "JUNIPER",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://www.hpe.com/psnow/downloadDoc/a00150824enw.pdf?id=a00150824enw",
+        "status": 200,
+        "bytes": 4280442,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "juniper-ssr100-ds.pdf",
+    "para": "JUNIPER",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://www.juniper.net/content/dam/www/assets/datasheets/us/en/routers/ssr100-line-of-routers-datasheet.pdf",
+        "status": 200,
+        "firma": "3c212d2d5b696620",
+        "nota": "no es un PDF"
+      },
+      {
+        "url": "https://www.juniper.net/content/dam/www/assets/datasheets/jp/ja/routers/ssr100-line-of-routers-datasheet.pdf",
+        "status": 200,
+        "bytes": 787344,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  }
+]
