@@ -12,8 +12,11 @@ const assert = require('node:assert');
 const fs = require('node:fs');
 const path = require('node:path');
 
-const WORKFLOWS = ['traer-cisco-huawei.yml', 'traer-fortinet-pendientes.yml'];
+// La lista de traer-cisco-huawei vive en scripts/transporte/ desde el 2026-10-28 (antes, dentro del YAML).
+const WORKFLOWS = ['traer-fortinet-pendientes.yml'];
 const leer = (f) => fs.readFileSync(path.join(__dirname, '..', '.github', 'workflows', f), 'utf8');
+const TRAER = fs.readFileSync(path.join(__dirname, '..', 'scripts', 'transporte', 'traer.js'), 'utf8');
+const DOCS = require('../scripts/transporte/documentos.js');
 
 // Cada entrada empieza en «{ archivo: '…'» y sus atributos llegan hasta «urls:».
 function entradasHtml(src) {
@@ -32,13 +35,19 @@ test('toda entrada HTML de un transporte declara su texto exigido o que es una e
         `${f}: ${e.archivo} no dice ni debeContener ni exploracion: true`);
     }
   }
+  const html = DOCS.filter((d) => d.tipo === 'html');
+  assert.ok(html.length > 0, 'scripts/transporte/documentos.js: ninguna entrada HTML');
+  for (const d of html) {
+    assert.ok(d.debeContener || d.exploracion === true, `documentos.js: ${d.archivo} no dice ni debeContener ni exploracion: true`);
+  }
 });
 
 test('traer-cisco-huawei se niega a correr con una entrada sin declarar, e informa EXPL aparte de OK', () => {
-  const src = leer('traer-cisco-huawei.yml');
+  const src = TRAER;
   assert.match(src, /d\.tipo === 'html' && !d\.debeContener && !d\.exploracion/);
   assert.match(src, /process\.exit\(1\); \}\n\s*const SOLO/, 'la comprobacion corre antes de pedir nada');
-  const impresiones = src.match(/d\.guardado \? \(d\.exploracion \? 'EXPL ' : 'OK   '\) : 'FALLA'/g) || [];
-  assert.strictEqual(impresiones.length, 2, 'el registro de la corrida y el resumen dicen EXPL');
+  const re = /d\.guardado \? \(d\.exploracion \? 'EXPL ' : 'OK   '\) : 'FALLA'/g;
+  assert.strictEqual((src.match(re) || []).length, 1, 'el registro de la corrida dice EXPL');
+  assert.strictEqual((leer('traer-cisco-huawei.yml').match(re) || []).length, 1, 'el resumen de la corrida dice EXPL');
   assert.match(src, /verificado: !doc\.exploracion/);
 });
