@@ -1536,6 +1536,35 @@ jobs:
               { archivo: 'aruba-nc-gateways-soportados.html', tipo: 'html', para: 'ARUBA', exploracion: true, urls: [
                 'https://arubanetworking.hpe.com/techdocs/new-central/content/mon-gw/supported-gateways.htm',
               ] },
+              // Tercera vuelta: HelpSystem.xml da el indice en Data/Tocs/nc_proto.js; sus trozos, con la
+              // ruta y el titulo de cada tema, dicen donde esta la pagina del IPsec/IKE de los gateways.
+              { archivo: 'aruba-nc-toc.js', tipo: 'html', para: 'ARUBA', exploracion: true, urls: [
+                'https://arubanetworking.hpe.com/techdocs/new-central/Data/Tocs/nc_proto.js',
+              ] },
+              { archivo: 'aruba-nc-toc-chunk0.js', tipo: 'html', para: 'ARUBA', exploracion: true, urls: [
+                'https://arubanetworking.hpe.com/techdocs/new-central/Data/Tocs/nc_proto_Chunk0.js',
+              ] },
+              { archivo: 'aruba-nc-toc-chunk1.js', tipo: 'html', para: 'ARUBA', exploracion: true, urls: [
+                'https://arubanetworking.hpe.com/techdocs/new-central/Data/Tocs/nc_proto_Chunk1.js',
+              ] },
+              { archivo: 'aruba-nc-toc-chunk2.js', tipo: 'html', para: 'ARUBA', exploracion: true, urls: [
+                'https://arubanetworking.hpe.com/techdocs/new-central/Data/Tocs/nc_proto_Chunk2.js',
+              ] },
+              { archivo: 'aruba-nc-toc-chunk3.js', tipo: 'html', para: 'ARUBA', exploracion: true, urls: [
+                'https://arubanetworking.hpe.com/techdocs/new-central/Data/Tocs/nc_proto_Chunk3.js',
+              ] },
+              { archivo: 'aruba-nc-toc-chunk4.js', tipo: 'html', para: 'ARUBA', exploracion: true, urls: [
+                'https://arubanetworking.hpe.com/techdocs/new-central/Data/Tocs/nc_proto_Chunk4.js',
+              ] },
+              { archivo: 'aruba-nc-toc-chunk5.js', tipo: 'html', para: 'ARUBA', exploracion: true, urls: [
+                'https://arubanetworking.hpe.com/techdocs/new-central/Data/Tocs/nc_proto_Chunk5.js',
+              ] },
+              { archivo: 'aruba-nc-toc-chunk6.js', tipo: 'html', para: 'ARUBA', exploracion: true, urls: [
+                'https://arubanetworking.hpe.com/techdocs/new-central/Data/Tocs/nc_proto_Chunk6.js',
+              ] },
+              { archivo: 'aruba-nc-toc-chunk7.js', tipo: 'html', para: 'ARUBA', exploracion: true, urls: [
+                'https://arubanetworking.hpe.com/techdocs/new-central/Data/Tocs/nc_proto_Chunk7.js',
+              ] },
               { archivo: 'cisco-hig3-img', tipo: 'imagenes', para: 'CISCO', urls: [],
                 descubrirPiezas: { de: ['cisco-isr1100-hig-overview.html', 'cisco-sr8200-hig-overview.html'],
                   base: 'https://www.cisco.com/', dominios: ['cisco.com'], relativas: true,
