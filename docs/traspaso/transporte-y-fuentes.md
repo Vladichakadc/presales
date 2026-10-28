@@ -6,7 +6,7 @@
 - **Estado:** en curso
 - **Actualizado:** 2026-10-28 18:05
 - **Archivos que toca:** scripts/transporte/, .github/workflows/traer-cisco-huawei.yml (el paso de descarga y la cabecera; ver *Decisiones* por claude/fotos-modelo-cisco), test/transporte-documentos.test.js, test/traer-exploracion.test.js, test/traer-pantalla-login.test.js, test/workflows-node-e.test.js, public/js/fortinet-reglas.js, public/js/fortinet-motor.js, test/fortinet-reglas.test.js, server/seed/legacyData/fortinet.js, server/seed/legacyData/fuentes.js
-- **Siguiente paso:** cuando se fusione el PR #51 (página de Fortinet): corregir en `dimensionador-fortinet-fortigate.js` «la licencia no se comparte en HA» (F3), verificación con navegador, PR y cierre
+- **Siguiente paso:** cuando se fusione el PR #51 (página de Fortinet): en `dimensionador-fortinet-fortigate.js`, enseñar el aviso `ha-licencia-unica` (hoy los avisos `info` del BOM no llegan a la página: F3 solo existe en el motor y la API) y corregir los cuatro textos de HA («cada nodo lleva su propia suscripción», «la licencia no se comparte en HA»), con su prueba; luego verificación con navegador, PR y cierre
 
 ## Encargo del dueño
 
