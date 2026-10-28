@@ -29,7 +29,35 @@
  *
  *   node scripts/probar-candidatas.js [--json] [--timeout=20]
  */
+const fs = require('fs');
+const path = require('path');
+const crypto = require('crypto');
 const { FUENTES } = require('../server/seed/legacyData/fuentes.js');
+
+const RAIZ = path.join(__dirname, '..');
+
+// ¿LO SERVIDO ES EL DOCUMENTO QUE SE LEYO? (mejora aprobada el 2026-10-28). Una candidata puede
+// declarar `copia`: la ruta, desde la raiz, de la copia de public/datasheets/ de la que salieron
+// las cifras. Con la huella de lo servido, el veredicto lo da el script y no una comparacion a
+// mano: el 2026-10-28 la descarga de EdgeConnect resulto ser la Rev. 9 y la copia era la Rev. 8.
+// «distinta» no dice que las cifras cambien: dice que hay que contrastar antes de cambiar la URL.
+function huellaArchivo(ruta) {
+  return crypto.createHash('sha256').update(fs.readFileSync(path.join(RAIZ, ruta))).digest('hex');
+}
+function compararConCopia(sha256Servido, ruta, leer = huellaArchivo) {
+  if (!ruta) return null;
+  let copia;
+  try { copia = leer(ruta); } catch { return { estado: 'sin-copia', ruta }; }
+  if (!sha256Servido) return { estado: 'sin-pdf', ruta, copia };
+  return { estado: sha256Servido === copia ? 'igual' : 'distinta', ruta, copia };
+}
+function lineaCopia(cmp) {
+  if (!cmp) return null;
+  if (cmp.estado === 'sin-copia') return `copia ${cmp.ruta}: NO EXISTE en el repositorio (revisar \`copia\`)`;
+  if (cmp.estado === 'sin-pdf') return `copia ${cmp.ruta}: sin PDF servido con que compararla`;
+  if (cmp.estado === 'igual') return `copia ${cmp.ruta}: MISMO DOCUMENTO (sha256 ${cmp.copia.slice(0, 16)}): basta cambiar la URL`;
+  return `copia ${cmp.ruta}: EDICION DISTINTA (la copia es sha256 ${cmp.copia.slice(0, 16)}): contrastar las cifras antes de cambiar la URL`;
+}
 
 // Cada entrada declara la fuente bloqueada, las candidatas a sustituirla y el CONTROL con el
 // que se distingue «me bloquean» de «estoy pidiendo una carpeta». `porQue` no es adorno: una
@@ -103,9 +131,11 @@ const CASOS = [
       // parametros, sirvio el texto de la Rev. 9. Las dos se miden: la corta es la que cabe en
       // `fuentes.js`, la larga es la que la pagina publica.
       { url: 'https://www.hpe.com/psnow/downloadDoc/a00109847enw.pdf?id=a00109847enw',
-        porQue: 'descarga de psnow en su forma corta (la que se pondria en fuentes.js)' },
+        porQue: 'descarga de psnow en su forma corta (la que se pondria en fuentes.js)',
+        copia: 'public/datasheets/edgeconnect-data-sheet.pdf' },
       { url: 'https://www.hpe.com/psnow/downloadDoc/HPE%20Networking%20EdgeConnect-a00109847enw.pdf?id=a00109847enw&contentDisposition=attachment',
-        porQue: 'descarga de psnow como la nombra la pagina psnow/doc/a00109847enw' },
+        porQue: 'descarga de psnow como la nombra la pagina psnow/doc/a00109847enw',
+        copia: 'public/datasheets/edgeconnect-data-sheet.pdf' },
     ],
     control: { url: 'https://www.hpe.com/us/en/aruba-networking.html',
       porQue: 'pagina del mismo dominio que scripts/descargar-datasheets.js usa como Referer' },
@@ -120,9 +150,11 @@ const CASOS = [
       // 2026-10-28: a00067607enw es la guia de pedido; el DATA SHEET de la serie en psnow es
       // a00067608enw («HPE Aruba Networking 9000 Series Gateway», Rev. 2: 9004, 9004-LTE, 9012).
       { url: 'https://www.hpe.com/psnow/downloadDoc/a00067608enw.pdf?id=a00067608enw',
-        porQue: 'data sheet de la serie 9000 en psnow (a00067608enw), descarga en forma corta' },
+        porQue: 'data sheet de la serie 9000 en psnow (a00067608enw), descarga en forma corta',
+        copia: 'public/datasheets/serie-9000-branch-gateways.pdf' },
       { url: 'https://www.hpe.com/psnow/downloadDoc/HPE%20Aruba%20Networking%209000%20Series%20Gateway-a00067608enw.pdf?id=a00067608enw&contentDisposition=attachment',
-        porQue: 'la misma descarga como la nombra la pagina psnow/doc/a00067608enw' },
+        porQue: 'la misma descarga como la nombra la pagina psnow/doc/a00067608enw',
+        copia: 'public/datasheets/serie-9000-branch-gateways.pdf' },
     ],
     control: { url: 'https://www.hpe.com/us/en/aruba-networking.html',
       porQue: 'pagina del mismo dominio de la candidata' },
@@ -162,7 +194,7 @@ async function pedir(url) {
       // no una pagina de error con codigo 200, que es como un chequeo se pone verde en falso.
       esPdf: buf.slice(0, 4).toString('latin1') === '%PDF',
       // La huella deja comparar lo servido con la copia de public/datasheets/ sin bajarlo aqui.
-      sha256: require('crypto').createHash('sha256').update(buf).digest('hex'),
+      sha256: crypto.createHash('sha256').update(buf).digest('hex'),
       urlFinal: r.url !== url ? r.url : null,
     };
   } catch (e) {
@@ -175,7 +207,7 @@ const linea = (r) => r.estado == null
   : `${r.estado}${r.ok ? ' OK' : ''} · ${r.bytes} B · ${r.esPdf ? `PDF real · sha256 ${r.sha256.slice(0, 16)}` : (r.tipo.split(';')[0] || 'sin tipo')}`
     + (r.urlFinal ? ` · redirige a ${r.urlFinal}` : '');
 
-(async () => {
+async function main() {
   const salida = [];
   for (const caso of CASOS) {
     const bloqueada = await pedir(caso.bloqueada);
@@ -188,7 +220,8 @@ const linea = (r) => r.estado == null
   if (JSON_OUT) {
     console.log(JSON.stringify(salida.map((s) => ({
       fabricante: s.caso.fabricante, bloqueada: s.bloqueada, control: s.control,
-      candidatas: s.candidatas.map((c) => ({ url: c.url, porQue: c.porQue, ...c.r })),
+      candidatas: s.candidatas.map((c) => ({ url: c.url, porQue: c.porQue, ...c.r,
+        copia: compararConCopia(c.r.esPdf ? c.r.sha256 : null, c.copia) })),
     })), null, 1));
     return;
   }
@@ -230,6 +263,8 @@ const linea = (r) => r.estado == null
       console.log(`     ${buena ? '[SIRVE]' : '[  no  ]'} ${c.url}`);
       console.log(`             ${linea(c.r)}`);
       console.log(`             ${c.porQue}`);
+      const cmp = lineaCopia(compararConCopia(c.r.esPdf ? c.r.sha256 : null, c.copia));
+      if (cmp) console.log(`             ${cmp}`);
     }
     console.log('');
   }
@@ -237,4 +272,8 @@ const linea = (r) => r.estado == null
     + `${resueltas} candidata(s) sirven como sustituto.`);
   console.log('Ninguna URL se escribe desde aqui: sustituirla en legacyData/fuentes.js es un commit');
   console.log('que hace una persona despues de abrir el documento.');
-})();
+}
+
+if (require.main === module) main();
+
+module.exports = { CASOS, compararConCopia, lineaCopia, huellaArchivo };
