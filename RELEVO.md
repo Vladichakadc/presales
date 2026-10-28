@@ -1,6 +1,6 @@
 # Relevo
 
-Última actualización: 2026-10-28 · septuagesimoprimera entrega
+Última actualización: 2026-10-28 · PR #39
 
 Informe para continuar el trabajo. Lo pidió el dueño del repositorio el 2026-10-27: «de aquí en
 adelante, un informe de pendientes y mejoras para que la cuenta **servicioiptv2025@gmail.com**
@@ -33,6 +33,9 @@ está en curso no va aquí: lo dice `npm run traspasos` (protocolo en `docs/tras
 
 ## Estado al cerrar esta entrega
 
+- **2026-10-28 · PR #39**: las entregas se nombran por fecha y número de PR, no por ordinal
+  (abre el PR antes del commit de cierre; `test/relevo.test.js` exige el mismo `PR #N` en la
+  cabecera de `PENDIENTES.md` y en la de este archivo).
 - **Septuagesimoprimera entrega**: la mejora propuesta, hecha: **un «no la trae» de PQC con su documento**.
   Un equipo puede declarar `pqcNo: {motivo, corto, fuente}` (solo con fuente, nunca junto a `pqc`):
   la ficha dice «no la trae» con el motivo, el Comparador «No — …», «Exigir PQC» lo aparta con ese
