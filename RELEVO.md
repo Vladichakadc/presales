@@ -1,6 +1,6 @@
 # Relevo
 
-Última actualización: 2026-10-28 · PR #39
+Última actualización: 2026-10-28 · PR #40
 
 Informe para continuar el trabajo. Lo pidió el dueño del repositorio el 2026-10-27: «de aquí en
 adelante, un informe de pendientes y mejoras para que la cuenta **servicioiptv2025@gmail.com**
@@ -33,6 +33,12 @@ está en curso no va aquí: lo dice `npm run traspasos` (protocolo en `docs/tras
 
 ## Estado al cerrar esta entrega
 
+- **2026-10-28 · PR #40**: la foto de producto también en el Excel (la mejora propuesta); en rojo,
+  y con su texto, lo que está o va a estar fuera de venta en todos los desplegables de equipo
+  (`FICHA.opcionCiclo`, una sola regla); y la fila de cada casilla de función marcada, resaltada
+  con el acento de la página (`public/controles.css`, la hoja común de los ocho dimensionadores).
+  **Criterio que conviene conservar**: el rojo del fin de venta es fijo (`--red` es la marca de
+  cada página) y nunca va solo, porque los desplegables nativos de macOS y del móvil no lo pintan.
 - **2026-10-28 · PR #39**: las entregas se nombran por fecha y número de PR, no por ordinal
   (abre el PR antes del commit de cierre; `test/relevo.test.js` exige el mismo `PR #N` en la
   cabecera de `PENDIENTES.md` y en la de este archivo).
@@ -177,14 +183,16 @@ existen los workflows de transporte. Huawei y HPE niegan además el navegador au
 
 ## Mejoras propuestas sin decidir
 
-- **La foto de producto también en el Excel** (propuesta al cerrar la sexagesimonovena entrega).
-  La hoja «Fotos del equipo» incrusta la frontal y la trasera; desde esta entrega la frontal de
-  cinco Cisco es el dibujo numerado y su foto a color solo sale en la pantalla (lo mismo pasa con
-  las 18 fotos de Juniper). Añadir en `hojaDeFotos` (`bom.js`) la `foto` como tercera imagen, con
-  su pie, cuando el dimensionador la pase en `meta.fotos`. Evita que el Excel que ve el cliente
-  pierda la imagen que reconoce. Cuesta una imagen más por hoja (peso del archivo) y tocar
-  `bom.js`, compartido, y los `meta.fotos` de Cisco y Juniper. Si se hace mal, el Excel no se
-  descarga (le pasó a Cisco); lo vería `e2e-cisco-excel-figuras`. Se decide por el dueño.
+- **El fin de venta también en el Excel que ve el cliente** (propuesta al cerrar el PR #40). En
+  pantalla el equipo fuera de venta o con fin de venta anunciado sale en rojo, pero el Excel del BOM
+  no lo dice: una propuesta puede llegar al cliente con un equipo cuyo último pedido es dentro de
+  dos meses sin una línea que lo avise. Añadir en la hoja «Supuestos» (`matrizSupuestos`, `bom.js`)
+  una fila «Ciclo de vida: fin de venta el <fecha> · sucesor <…> (boletín)» cuando el equipo la
+  tenga, leída de `FICHA.cicloOpcion` y del `eolAnnounced` del modelo, con su URL. Evita entregar
+  un equipo que no se podrá pedir cuando el cliente firme. Cuesta una fila en `bom.js`
+  (compartido por los siete) y pasar el ciclo en `meta.supuestos` desde cada página; si se hace
+  mal, la hoja «Supuestos» descuadra o el Excel no se descarga, y lo verían `bom-supuestos.test.js`
+  y las baterías de Excel. Se decide por el dueño.
 - **La fuente de la PQC, enlazada a `fuentes.js` y no escrita a mano** (propuesta al cerrar la
   septuagesimoprimera entrega). Hoy `pqc.fuente` y `pqcNo.fuente` son un texto libre en cada
   `legacyData/` («Boletín de fin de venta de los Cisco ASR1001-X y ASR1002-X»), y nada comprueba
@@ -198,7 +206,7 @@ existen los workflows de transporte. Huawei y HPE niegan además el navegador au
   la hoja «Supuestos» (`bom.js`, compartido), y la batería `e2e-pqc-supuestos.js`. Si se hace mal,
   la ficha pierde el nombre del documento o el Excel no se descarga; lo verían `pqc.test.js` y esa
   batería. Se decide por el dueño.
-- (Hecha en la septuagesimoprimera: el «no la trae» documentado, `pqcNo`. Hecha en la sexagesimoctava: la
+- (Hecha en el PR #40: la foto de producto en el Excel. Hecha en la septuagesimoprimera: el «no la trae» documentado, `pqcNo`. Hecha en la sexagesimoctava: la
   versión mínima de la PQC en la hoja «Supuestos».)
 
 ## Decisiones del dueño abiertas
