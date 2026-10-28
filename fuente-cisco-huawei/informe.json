@@ -1,0 +1,519 @@
+[
+  {
+    "archivo": "cisco-sr-familia.html",
+    "para": "CISCO",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://www.cisco.com/site/us/en/products/networking/sdwan-routers/8000-secure-routers/index.html",
+        "status": 200,
+        "bytes": 142414,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "cisco-sr8100-producto.html",
+    "para": "CISCO",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://www.cisco.com/c/en/us/products/routers/8100-series-secure-routers/index.html",
+        "status": 200,
+        "bytes": 172117,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "cisco-sr8200-producto.html",
+    "para": "CISCO",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://www.cisco.com/c/en/us/products/routers/8200-series-secure-routers/index.html",
+        "status": 200,
+        "bytes": 177314,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "cisco-sr8300-producto.html",
+    "para": "CISCO",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://www.cisco.com/c/en/us/products/routers/8300-series-secure-routers/index.html",
+        "status": 200,
+        "bytes": 161570,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "cisco-sr8400-producto.html",
+    "para": "CISCO",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://www.cisco.com/c/en/us/products/routers/8400-series-secure-routers/index.html",
+        "status": 200,
+        "bytes": 152605,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "cisco-c8300-soporte-serie.html",
+    "para": "CISCO",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://www.cisco.com/c/en/us/support/routers/catalyst-8300-series-edge-platforms/series.html",
+        "status": 200,
+        "bytes": 133219,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "cisco-isr1000-recursos.html",
+    "para": "CISCO",
+    "guardado": true,
+    "exploracion": true,
+    "intentos": [
+      {
+        "url": "https://cisco.com/site/us/en/products/networking/sdwan-routers/1000-series-integrated-services-routers-isr/resources.html",
+        "status": 200,
+        "bytes": 128003,
+        "guardado": true,
+        "verificado": false
+      }
+    ]
+  },
+  {
+    "archivo": "meraki-mx-familia.html",
+    "para": "CISCO",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://www.cisco.com/site/us/en/products/networking/sdwan-routers/meraki-security-appliances/index.html",
+        "status": 200,
+        "bytes": 120150,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "meraki-mx68-producto.html",
+    "para": "CISCO",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://www.cisco.com/site/us/en/products/networking/sdwan-routers/meraki-security-appliances/mx68.html",
+        "status": 200,
+        "bytes": 74391,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "meraki-mx67-producto.html",
+    "para": "CISCO",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://www.cisco.com/site/uk/en/products/networking/sdwan-routers/meraki-security-appliances/mx67.html",
+        "status": 200,
+        "bytes": 72848,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "meraki-c8355-g2-mx-producto.html",
+    "para": "CISCO",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://www.cisco.com/site/us/en/products/networking/sdwan-routers/meraki-security-appliances/mx8355g2.html",
+        "status": 200,
+        "bytes": 124285,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "cisco-fotos-img",
+    "para": "CISCO",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://www.cisco.com/content/dam/cisco-cdc/site/images/cq-template/8000-secure-routers-3200x1312.png",
+        "status": 200,
+        "bytes": 210295,
+        "guardado": true,
+        "como": "cisco-fotos-img/images__cq-template__8000-secure-routers-3200x1312.png"
+      },
+      {
+        "url": "https://www.cisco.com/content/dam/cisco-cdc/site/images/photography/lifestyle-photography/products/networking/featured_products_security-fused-into-the-network-750x422.jpg",
+        "status": 200,
+        "bytes": 61395,
+        "guardado": true,
+        "como": "cisco-fotos-img/products__networking__featured_products_security-fused-into-the-network-750x422.jpg"
+      },
+      {
+        "url": "https://www.cisco.com/content/dam/cisco-cdc/site/images/photography/lifestyle-photography/products/networking/featured_products_simplify-operations-750x422.jpg",
+        "status": 200,
+        "bytes": 82318,
+        "guardado": true,
+        "como": "cisco-fotos-img/products__networking__featured_products_simplify-operations-750x422.jpg"
+      },
+      {
+        "url": "https://www.cisco.com/content/dam/cisco-cdc/site/images/photography/lifestyle-photography/products/networking/featured_products_future-proof-your-network-750x422.jpg",
+        "status": 200,
+        "bytes": 62957,
+        "guardado": true,
+        "como": "cisco-fotos-img/products__networking__featured_products_future-proof-your-network-750x422.jpg"
+      },
+      {
+        "url": "https://www.cisco.com/content/dam/cisco-cdc/site/images/photography/product-photography/router-selector-tool-1176x735.jpg",
+        "status": 200,
+        "bytes": 88930,
+        "guardado": true,
+        "como": "cisco-fotos-img/photography__product-photography__router-selector-tool-1176x735.jpg"
+      },
+      {
+        "url": "https://www.cisco.com/content/dam/cisco-cdc/site/images/photography/lifestyle-photography/products/networking/media_split_secure_routers_branch_security-800x450.jpg",
+        "status": 200,
+        "bytes": 64632,
+        "guardado": true,
+        "como": "cisco-fotos-img/products__networking__media_split_secure_routers_branch_security-800x450.jpg"
+      },
+      {
+        "url": "https://www.cisco.com/content/dam/cisco-cdc/site/images/photography/lifestyle-photography/products/networking/media_split_post-quantum-cryptography-800x450.jpg",
+        "status": 200,
+        "bytes": 54412,
+        "guardado": true,
+        "como": "cisco-fotos-img/products__networking__media_split_post-quantum-cryptography-800x450.jpg"
+      },
+      {
+        "url": "https://www.cisco.com/content/dam/cisco-cdc/site/images/photography/products/networking/sdwan-routers/8000-secure-routers/c8130-g2-1600x900.jpg",
+        "status": 200,
+        "bytes": 66479,
+        "guardado": true,
+        "como": "cisco-fotos-img/sdwan-routers__8000-secure-routers__c8130-g2-1600x900.jpg"
+      },
+      {
+        "url": "https://www.cisco.com/content/dam/cisco-cdc/site/images/photography/products/networking/sdwan-routers/8000-secure-routers/ds-table-1-c8130-g2-2x.jpg",
+        "status": 200,
+        "bytes": 35721,
+        "guardado": true,
+        "como": "cisco-fotos-img/sdwan-routers__8000-secure-routers__ds-table-1-c8130-g2-2x.jpg"
+      },
+      {
+        "url": "https://www.cisco.com/content/dam/cisco-cdc/site/images/photography/products/networking/sdwan-routers/8000-secure-routers/ds-table-1-front-panel-c8130H-g2.png",
+        "status": 200,
+        "bytes": 64389,
+        "guardado": true,
+        "como": "cisco-fotos-img/sdwan-routers__8000-secure-routers__ds-table-1-front-panel-c8130H-g2.png"
+      },
+      {
+        "url": "https://www.cisco.com/content/dam/cisco-cdc/site/images/photography/products/networking/sdwan-routers/8000-secure-routers/ds-table-1-c8130-vai-g2-2x.png",
+        "status": 200,
+        "bytes": 24879,
+        "guardado": true,
+        "como": "cisco-fotos-img/sdwan-routers__8000-secure-routers__ds-table-1-c8130-vai-g2-2x.png"
+      },
+      {
+        "url": "https://www.cisco.com/content/dam/cisco-cdc/site/images/photography/products/networking/sdwan-routers/8000-secure-routers/ds-table%202-c8140-g2-2x.jpg",
+        "status": 200,
+        "bytes": 32566,
+        "guardado": true,
+        "como": "cisco-fotos-img/sdwan-routers__8000-secure-routers__ds-table_202-c8140-g2-2x.jpg"
+      },
+      {
+        "url": "https://www.cisco.com/content/dam/cisco-cdc/site/images/photography/products/networking/sdwan-routers/8000-secure-routers/ds-table%203-c8151-g2-2x.jpg",
+        "status": 200,
+        "bytes": 43648,
+        "guardado": true,
+        "como": "cisco-fotos-img/sdwan-routers__8000-secure-routers__ds-table_203-c8151-g2-2x.jpg"
+      },
+      {
+        "url": "https://www.cisco.com/content/dam/cisco-cdc/site/images/photography/products/networking/sdwan-routers/8000-secure-routers/ds-table-6-front-view-c8151h-c-g2.png",
+        "status": 200,
+        "bytes": 102985,
+        "guardado": true,
+        "como": "cisco-fotos-img/sdwan-routers__8000-secure-routers__ds-table-6-front-view-c8151h-c-g2.png"
+      },
+      {
+        "url": "https://www.cisco.com/content/dam/cisco-cdc/site/images/photography/products/networking/sdwan-routers/8000-secure-routers/ds-c8151-cvap-g2.png",
+        "status": 200,
+        "bytes": 21941,
+        "guardado": true,
+        "como": "cisco-fotos-img/sdwan-routers__8000-secure-routers__ds-c8151-cvap-g2.png"
+      },
+      {
+        "url": "https://www.cisco.com/content/dam/cisco-cdc/site/images/photography/products/networking/sdwan-routers/8000-secure-routers/ds-table%204-c8161-g2-2x.jpg",
+        "status": 200,
+        "bytes": 42233,
+        "guardado": true,
+        "como": "cisco-fotos-img/sdwan-routers__8000-secure-routers__ds-table_204-c8161-g2-2x.jpg"
+      },
+      {
+        "url": "https://www.cisco.com/content/dam/cisco-cdc/site/images/photography/products/networking/sdwan-routers/8000-secure-routers/8200-series-c8235-g2-1600x900.jpg",
+        "status": 200,
+        "bytes": 57109,
+        "guardado": true,
+        "como": "cisco-fotos-img/sdwan-routers__8000-secure-routers__8200-series-c8235-g2-1600x900.jpg"
+      },
+      {
+        "url": "https://www.cisco.com/content/dam/cisco-cdc/site/images/photography/products/networking/sdwan-routers/8000-secure-routers/ds-table-1-c8235-e-g2-2x.jpg",
+        "status": 200,
+        "bytes": 40498,
+        "guardado": true,
+        "como": "cisco-fotos-img/sdwan-routers__8000-secure-routers__ds-table-1-c8235-e-g2-2x.jpg"
+      },
+      {
+        "url": "https://www.cisco.com/content/dam/cisco-cdc/site/images/photography/products/networking/sdwan-routers/8000-secure-routers/ds-table-2-c8235-e-g2-2x.jpg",
+        "status": 200,
+        "bytes": 25328,
+        "guardado": true,
+        "como": "cisco-fotos-img/sdwan-routers__8000-secure-routers__ds-table-2-c8235-e-g2-2x.jpg"
+      },
+      {
+        "url": "https://www.cisco.com/content/dam/cisco-cdc/site/images/photography/products/networking/sdwan-routers/8000-secure-routers/ds-table-3-c8235-e-g2-2x.jpg",
+        "status": 200,
+        "bytes": 47082,
+        "guardado": true,
+        "como": "cisco-fotos-img/sdwan-routers__8000-secure-routers__ds-table-3-c8235-e-g2-2x.jpg"
+      },
+      {
+        "url": "https://www.cisco.com/content/dam/cisco-cdc/site/images/photography/products/networking/sdwan-routers/8000-secure-routers/ds-table-4-c8231-e-g2-2x.jpg",
+        "status": 200,
+        "bytes": 39622,
+        "guardado": true,
+        "como": "cisco-fotos-img/sdwan-routers__8000-secure-routers__ds-table-4-c8231-e-g2-2x.jpg"
+      },
+      {
+        "url": "https://www.cisco.com/content/dam/cisco-cdc/site/images/photography/products/networking/sdwan-routers/8000-secure-routers/8200-series-c8225-g2-front-view.png",
+        "status": 200,
+        "bytes": 23198,
+        "guardado": true,
+        "como": "cisco-fotos-img/sdwan-routers__8000-secure-routers__8200-series-c8225-g2-front-view.png"
+      },
+      {
+        "url": "https://www.cisco.com/content/dam/cisco-cdc/site/images/photography/products/networking/sdwan-routers/8000-secure-routers/8200-series-c8221L-g2-front-view.png",
+        "status": 200,
+        "bytes": 23968,
+        "guardado": true,
+        "como": "cisco-fotos-img/sdwan-routers__8000-secure-routers__8200-series-c8221L-g2-front-view.png"
+      },
+      {
+        "url": "https://www.cisco.com/content/dam/cisco-cdc/site/images/photography/products/networking/sdwan-routers/8000-secure-routers/8200-series-c8211L-g2-front-view.png",
+        "status": 200,
+        "bytes": 24555,
+        "guardado": true,
+        "como": "cisco-fotos-img/sdwan-routers__8000-secure-routers__8200-series-c8211L-g2-front-view.png"
+      },
+      {
+        "url": "https://www.cisco.com/content/dam/cisco-cdc/site/images/photography/products/networking/sdwan-routers/8000-secure-routers/8200-series-c8255-g2-ucsxe-front-panel.png",
+        "status": 200,
+        "bytes": 47283,
+        "guardado": true,
+        "como": "cisco-fotos-img/sdwan-routers__8000-secure-routers__8200-series-c8255-g2-ucsxe-front-panel.png"
+      },
+      {
+        "url": "https://www.cisco.com/content/dam/cisco-cdc/site/images/photography/products/networking/sdwan-routers/8000-secure-routers/8300-series-c8375-g2-1600x900.jpg",
+        "status": 200,
+        "bytes": 80473,
+        "guardado": true,
+        "como": "cisco-fotos-img/sdwan-routers__8000-secure-routers__8300-series-c8375-g2-1600x900.jpg"
+      },
+      {
+        "url": "https://www.cisco.com/content/dam/cisco-cdc/site/images/photography/products/networking/sdwan-routers/8000-secure-routers/ds-table-1-c8375-e-g2-2x.jpg",
+        "status": 200,
+        "bytes": 337548,
+        "guardado": true,
+        "como": "cisco-fotos-img/sdwan-routers__8000-secure-routers__ds-table-1-c8375-e-g2-2x.jpg"
+      },
+      {
+        "url": "https://www.cisco.com/content/dam/cisco-cdc/site/images/photography/products/networking/sdwan-routers/8000-secure-routers/ds-table-2-c8375-e-2x.jpg",
+        "status": 200,
+        "bytes": 368417,
+        "guardado": true,
+        "como": "cisco-fotos-img/sdwan-routers__8000-secure-routers__ds-table-2-c8375-e-2x.jpg"
+      },
+      {
+        "url": "https://www.cisco.com/content/dam/cisco-cdc/site/images/photography/products/networking/sdwan-routers/8000-secure-routers/ds-table-3-c8355-g2-2x.jpg",
+        "status": 200,
+        "bytes": 86970,
+        "guardado": true,
+        "como": "cisco-fotos-img/sdwan-routers__8000-secure-routers__ds-table-3-c8355-g2-2x.jpg"
+      },
+      {
+        "url": "https://www.cisco.com/content/dam/cisco-cdc/site/images/photography/products/networking/sdwan-routers/8000-secure-routers/ds-table-4-c8355-g2-2x.jpg",
+        "status": 200,
+        "bytes": 301448,
+        "guardado": true,
+        "como": "cisco-fotos-img/sdwan-routers__8000-secure-routers__ds-table-4-c8355-g2-2x.jpg"
+      },
+      {
+        "url": "https://www.cisco.com/content/dam/cisco-cdc/site/images/photography/products/networking/sdwan-routers/8000-secure-routers/8400-series-c8455-g2-1600x900.jpg",
+        "status": 200,
+        "bytes": 81584,
+        "guardado": true,
+        "como": "cisco-fotos-img/sdwan-routers__8000-secure-routers__8400-series-c8455-g2-1600x900.jpg"
+      },
+      {
+        "url": "https://www.cisco.com/content/dam/cisco-cdc/site/images/photography/product-photography/collateral/networking/ds-table1-8400-c8455-e-g2-1540x866.jpg",
+        "status": 200,
+        "bytes": 483550,
+        "guardado": true,
+        "como": "cisco-fotos-img/collateral__networking__ds-table1-8400-c8455-e-g2-1540x866.jpg"
+      },
+      {
+        "url": "https://www.cisco.com/content/dam/cisco-cdc/site/images/photography/products/networking/sdwan-routers/8000-secure-routers/ds-table2-c8475-e-g2-2x-1540x866.jpg",
+        "status": 200,
+        "bytes": 439527,
+        "guardado": true,
+        "como": "cisco-fotos-img/sdwan-routers__8000-secure-routers__ds-table2-c8475-e-g2-2x-1540x866.jpg"
+      },
+      {
+        "url": "https://www.cisco.com/c/dam/cdc/i/Feedback_OceanBlue.png",
+        "status": 200,
+        "bytes": 191,
+        "guardado": true,
+        "como": "cisco-fotos-img/cdc__i__Feedback_OceanBlue.png"
+      },
+      {
+        "url": "https://www.cisco.com/c/dam/assets/support/product-images/series/routers-catalyst-8300-series-edge-platforms.jpg",
+        "status": 200,
+        "bytes": 80378,
+        "guardado": true,
+        "como": "cisco-fotos-img/product-images__series__routers-catalyst-8300-series-edge-platforms.jpg"
+      },
+      {
+        "url": "https://www.cisco.com/c/dam/assets/support/product-images/series/routers-catalyst-8300-series-edge-platforms-alternate1.jpg",
+        "status": 200,
+        "bytes": 33356,
+        "guardado": true,
+        "como": "cisco-fotos-img/product-images__series__routers-catalyst-8300-series-edge-platforms-alternate1.jpg"
+      },
+      {
+        "url": "https://www.cisco.com/c/dam/assets/support/product-images/series/routers-catalyst-8300-series-edge-platforms-alternate2.jpg",
+        "status": 200,
+        "bytes": 66263,
+        "guardado": true,
+        "como": "cisco-fotos-img/product-images__series__routers-catalyst-8300-series-edge-platforms-alternate2.jpg"
+      },
+      {
+        "url": "https://www.cisco.com/content/dam/cisco-cdc/site/images/open-graph/products/networking/1000ISR-hero-ogimage-1200x630.jpg",
+        "status": 200,
+        "bytes": 30172,
+        "guardado": true,
+        "como": "cisco-fotos-img/products__networking__1000ISR-hero-ogimage-1200x630.jpg"
+      },
+      {
+        "url": "https://www.cisco.com/content/dam/cisco-cdc/site/images/heroes/products/networking/sdwan-routers/1000ISR-hero-desktop-resources-3200x762.jpg",
+        "status": 200,
+        "bytes": 55676,
+        "guardado": true,
+        "como": "cisco-fotos-img/networking__sdwan-routers__1000ISR-hero-desktop-resources-3200x762.jpg"
+      },
+      {
+        "url": "https://www.cisco.com/content/dam/cisco-cdc/site/images/open-graph/products/networking/sdwan-routers/meraki-secure-sdwan/meraki-mx-family-og-1200x630.jpg",
+        "status": 200,
+        "bytes": 45641,
+        "guardado": true,
+        "como": "cisco-fotos-img/sdwan-routers__meraki-secure-sdwan__meraki-mx-family-og-1200x630.jpg"
+      },
+      {
+        "url": "https://www.cisco.com/content/dam/cisco-cdc/site/images/heroes/products/networking/sdwan-routers/meraki-secure-sdwan/meraki-mx-2400x1028.jpg",
+        "status": 200,
+        "bytes": 50089,
+        "guardado": true,
+        "como": "cisco-fotos-img/sdwan-routers__meraki-secure-sdwan__meraki-mx-2400x1028.jpg"
+      },
+      {
+        "url": "https://www.cisco.com/content/dam/cisco-cdc/site/images/photography/product-photography/products/networking/sdwan-routers/meraki-secure-sdwan/meraki-mx-family-650x297.jpg",
+        "status": 200,
+        "bytes": 13250,
+        "guardado": true,
+        "como": "cisco-fotos-img/sdwan-routers__meraki-secure-sdwan__meraki-mx-family-650x297.jpg"
+      },
+      {
+        "url": "https://www.cisco.com/content/dam/cisco-cdc/site/images/photography/product-photography/products/networking/sdwan-routers/meraki-secure-sdwan/meraki-sase-integration-spotlight-800x450.png",
+        "status": 200,
+        "bytes": 28276,
+        "guardado": true,
+        "como": "cisco-fotos-img/sdwan-routers__meraki-secure-sdwan__meraki-sase-integration-spotlight-800x450.png"
+      },
+      {
+        "url": "https://www.cisco.com/content/dam/cisco-cdc/site/images/photography/product-photography/products/networking/sdwan-routers/meraki-secure-sdwan/dashboard-demo-mx-800x450.png",
+        "status": 200,
+        "bytes": 154328,
+        "guardado": true,
+        "como": "cisco-fotos-img/sdwan-routers__meraki-secure-sdwan__dashboard-demo-mx-800x450.png"
+      },
+      {
+        "url": "https://www.cisco.com/content/dam/cisco-cdc/site/images/photography/lifestyle-photography/meraki-mx-report-800x450.png",
+        "status": 200,
+        "bytes": 53042,
+        "guardado": true,
+        "como": "cisco-fotos-img/photography__lifestyle-photography__meraki-mx-report-800x450.png"
+      },
+      {
+        "url": "https://www.cisco.com/content/dam/cisco-cdc/site/images/photography/products/networking/sdwan-routers/meraki-security-appliances/mx68/MX68-security-sdwan-product-tile.png",
+        "status": 200,
+        "bytes": 91851,
+        "guardado": true,
+        "como": "cisco-fotos-img/meraki-security-appliances__mx68__MX68-security-sdwan-product-tile.png"
+      },
+      {
+        "url": "https://www.cisco.com/content/dam/cisco-cdc/site/images/photography/products/networking/sdwan-routers/meraki-security-appliances/mx68/detaildesk.9af32f3c.png",
+        "status": 404
+      },
+      {
+        "url": "https://www.cisco.com/content/dam/cisco-cdc/site/images/photography/products/networking/sdwan-routers/meraki-security-appliances/mx67/MX67-security-sdwan-product-tile.png",
+        "status": 200,
+        "bytes": 58970,
+        "guardado": true,
+        "como": "cisco-fotos-img/meraki-security-appliances__mx67__MX67-security-sdwan-product-tile.png"
+      },
+      {
+        "url": "https://www.cisco.com/content/dam/cisco-cdc/site/images/photography/products/networking/sdwan-routers/meraki-security-appliances/mx67/detaildesk.9af32f3c.png",
+        "status": 404
+      },
+      {
+        "url": "https://www.cisco.com/content/dam/cisco-cdc/site/images/photography/products/networking/sdwan-routers/meraki-security-appliances/mx8355g2/cisco-8355-g2-mx-.jpg",
+        "status": 200,
+        "bytes": 58911,
+        "guardado": true,
+        "como": "cisco-fotos-img/meraki-security-appliances__mx8355g2__cisco-8355-g2-mx-.jpg"
+      }
+    ]
+  }
+]
