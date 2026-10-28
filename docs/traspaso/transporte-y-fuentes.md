@@ -4,9 +4,9 @@
 - **Rama:** claude/elegant-pascal-7ymts7
 - **Cuenta:** vladichakadc, sesión 01TxCQ3W2sHYVmimAdMKht3j
 - **Estado:** en curso
-- **Actualizado:** 2026-10-28 17:30
+- **Actualizado:** 2026-10-28 17:45
 - **Archivos que toca:** scripts/transporte/, .github/workflows/traer-cisco-huawei.yml (el paso de descarga y la cabecera; ver *Decisiones* por claude/fotos-modelo-cisco), test/transporte-documentos.test.js, test/traer-exploracion.test.js, test/traer-pantalla-login.test.js, test/workflows-node-e.test.js, public/js/fortinet-reglas.js, public/js/fortinet-motor.js, test/fortinet-reglas.test.js, server/seed/legacyData/fortinet.js, server/seed/legacyData/fuentes.js
-- **Siguiente paso:** verificación con navegador (pantallas, contraste, e2e, puerta), PR y cierre (PENDIENTES, RELEVO, CLAUDE.md)
+- **Siguiente paso:** cuando se fusionen el PR #54 (transporte) y el PR #51 (página de Fortinet): fusionar main tomando SU versión de scripts/transporte/ y sus pruebas, añadir al final de su `documentos.js` las tres entradas de este tema, corregir en `dimensionador-fortinet-fortigate.js` «la licencia no se comparte en HA» (F3), verificación con navegador, PR y cierre
 
 ## Encargo del dueño
 
@@ -40,6 +40,15 @@ PR #45: la lista del transporte fuera del YAML.
 - Verificación con navegador, PR, cierre y despliegue.
 
 ## Decisiones y hallazgos
+
+- 2026-10-28 17:45 UTC: **el PR #54 (claude/fotos-modelo-cisco) hizo también la mejora del
+  transporte** (412 entradas, con la exploración del A800 renombrada en vez de borrada y la
+  posición de `huawei-img` corregida, y una corrida real que dio lo mismo que la de los ASR). Es la
+  misma mejora y está verificada: **se queda la suya**. Esta rama no vuelve a proponer la suya; al
+  fusionar main toma sus archivos y solo añade las tres entradas propias. Lo que queda de este tema
+  es Fortinet F3 y lo leído.
+- `dimensionador-fortinet-fortigate.js` lo declara el PR #51: el texto «la licencia no se comparte
+  en HA» (resumen y memoria) se corrige después de que se fusione, no antes.
 
 - 2026-10-28 17:30 UTC: `claude/fotos-modelo-cisco` (otra sesión, traspaso de las 09:55, después
   del de este tema) añade entradas al YAML de `traer-cisco-huawei.yml`. **Quien fusione segundo
