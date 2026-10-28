@@ -12,7 +12,8 @@ const assert = require('node:assert');
 const fs = require('node:fs');
 const path = require('node:path');
 
-const src = fs.readFileSync(path.join(__dirname, '..', '.github', 'workflows', 'traer-cisco-huawei.yml'), 'utf8');
+// El script vive en scripts/transporte/traer.js desde el 2026-10-28 (antes, dentro del YAML).
+const src = fs.readFileSync(path.join(__dirname, '..', 'scripts', 'transporte', 'traer.js'), 'utf8');
 
 function detector() {
   const m = src.match(/if \(doc\.tipo !== 'pdf' && \/(.+?)\/\.test\(buf\.subarray\(0, 8192\)/);
