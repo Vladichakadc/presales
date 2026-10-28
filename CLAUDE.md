@@ -384,7 +384,10 @@ Módulos compartidos:
   **declaran** al equipo en `modelos`, o las que lo nombran si no declaran, con su «Asociación»); el
   consolidado multi-sede no la lleva. Con «Exigir PQC» (`#reqPqc`), «Supuestos» trae además la
   sección de la PQC exigida: si el equipo la cumple, su mecanismo, **la versión mínima de software**
-  y la fuente, del `pqc` que cada página pasa en `meta.supuestos`. La hoja «Fotos del equipo» (`meta.fotos`: Aruba, Fortinet, Huawei,
+  y la fuente, del `pqc` que cada página pasa en `meta.supuestos`. **El ciclo de vida del equipo** (2026-10-28):
+  con `eol`, `eolAnnounced` o `legacy`, «Supuestos» trae su sección (último pedido, sucesor del boletín o
+  inferido —dicho como tal—, boletín) y la hoja BOM un aviso en rojo; sin dato no se dice nada
+  (`BOM.cicloDe`, `cicloDelEquipo`; `ciclo` en `meta.supuestos` de las siete páginas). La hoja «Fotos del equipo» (`meta.fotos`: Aruba, Fortinet, Huawei,
   Cisco y Juniper) escribe bajo cada figura su leyenda opt-in (`frontLeyenda`/`rearLeyenda`), como la ficha. Detrás, la foto de
   producto con su pie (`foto`/`fotoFuente`, Cisco y Juniper).
   Llevan leyenda las figuras con números: las de Cisco, las 36 de Juniper y el Aruba 7010 (decidido
