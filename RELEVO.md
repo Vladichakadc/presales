@@ -1,6 +1,6 @@
 # Relevo
 
-Última actualización: 2026-10-27 · sexagesimoctava entrega
+Última actualización: 2026-10-27 · sexagesimonovena entrega
 
 Informe para continuar el trabajo. Lo pidió el dueño del repositorio el 2026-10-27: «de aquí en
 adelante, un informe de pendientes y mejoras para que la cuenta **servicioiptv2025@gmail.com**
@@ -31,6 +31,12 @@ está en curso no va aquí: lo dice `npm run traspasos` (protocolo en `docs/tras
 
 ## Estado al cerrar esta entrega
 
+- **Sexagesimonovena entrega** (PR #35): las figuras de Cisco sin tabla, buscadas en sus
+  documentos. La frontal del Catalyst 8500-12X4QC, 8500-12X, 8500-20X6C, 8500L-8S4X y del ISR
+  1111X-8P era la foto de la ficha, sin números: ahora es el dibujo numerado de su guía, con su
+  tabla, y la foto sigue en una tercera pestaña «Foto». **Lo que no hay**: números en las figuras de
+  Meraki, versiones de más resolución en las guías (sus PDF traen los mismos ráster que el HTML) y
+  documento con las traseras que faltan; si Cisco publica una guía nueva, se trae por Actions.
 - **Sexagesimoctava entrega**: la mejora propuesta, hecha: con «Exigir PQC», la hoja «Supuestos» del
   Excel dice el requisito, si el equipo lo cumple, el mecanismo, **la versión mínima de software** y
   la fuente (`matrizSupuestos` en `bom.js`; las siete páginas pasan el `pqc` del equipo; batería
@@ -151,6 +157,14 @@ existen los workflows de transporte. Huawei y HPE niegan además el navegador au
 
 ## Mejoras propuestas sin decidir
 
+- **La foto de producto también en el Excel** (propuesta al cerrar la sexagesimonovena entrega).
+  La hoja «Fotos del equipo» incrusta la frontal y la trasera; desde esta entrega la frontal de
+  cinco Cisco es el dibujo numerado y su foto a color solo sale en la pantalla (lo mismo pasa con
+  las 18 fotos de Juniper). Añadir en `hojaDeFotos` (`bom.js`) la `foto` como tercera imagen, con
+  su pie, cuando el dimensionador la pase en `meta.fotos`. Evita que el Excel que ve el cliente
+  pierda la imagen que reconoce. Cuesta una imagen más por hoja (peso del archivo) y tocar
+  `bom.js`, compartido, y los `meta.fotos` de Cisco y Juniper. Si se hace mal, el Excel no se
+  descarga (le pasó a Cisco); lo vería `e2e-cisco-excel-figuras`. Se decide por el dueño.
 - **Decir «no la trae, y por qué» cuando un documento lo prueba** (propuesta al cerrar la
   sexagesimoctava entrega). Hoy el ASR 1001-X sale con «no consta en ningún documento oficial», pero
   su boletín de fin de venta dice que su última versión es la IOS XE 17.9, y la PPK llega en la

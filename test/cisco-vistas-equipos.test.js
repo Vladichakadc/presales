@@ -106,8 +106,26 @@ test('cada figura tiene su vista previa: con pérdida, de 1.200 px como mucho y 
   }
 });
 
+test('la foto de producto (tercera pestaña) es opcional, sin pérdida, sin reescalar y con su propio pie', () => {
+  const conFoto = entradas.filter(([, v]) => v.foto);
+  assert.ok(conFoto.length >= 5, `solo ${conFoto.length} equipos con foto: se perdió alguna`);
+  for (const [modelo, v] of conFoto) {
+    assert.match(v.foto, /^\/img\/equipos\/cs-[a-z0-9-]+-foto\.webp$/, `${modelo}: foto fuera del patrón cs-*-foto.webp`);
+    assert.notStrictEqual(v.foto, v.front, `${modelo}: la foto no puede ser la misma figura que la frontal`);
+    const buf = fs.readFileSync(path.join(RAIZ, 'public', v.foto));
+    assert.ok(buf.includes(Buffer.from('VP8L')) && !buf.includes(Buffer.from('VP8 ')), `${modelo}: la foto con pérdida`);
+    const m = (v.fotoFuente || '').match(/^Foto de producto de la ficha «[^»]+».*figura \d+ «[^»]+» \((\d+) × (\d+) px(?:, servida a (\d+) × (\d+)|, sin recortar)\)/);
+    assert.ok(m, `${modelo}: el pie de la foto no dice documento, figura, rótulo y tamaño («${v.fotoFuente}»)`);
+    const servida = m[3] ? [Number(m[3]), Number(m[4])] : [Number(m[1]), Number(m[2])];
+    assert.deepStrictEqual(lienzo(buf), servida, `${modelo}: la foto no mide lo que dice su pie`);
+    assert.strictEqual(v.fotoPrev, v.foto.replace(/\.webp$/, '.prev.webp'));
+    const prev = fs.readFileSync(path.join(RAIZ, 'public', v.fotoPrev));
+    assert.ok(prev.includes(Buffer.from('VP8 ')) && lienzoConPerdida(prev)[0] <= 1200, `${modelo}: la previa de la foto`);
+  }
+});
+
 test('no hay figuras huérfanas: todo cs-*.webp lo usa algún modelo', () => {
-  const usadas = new Set(entradas.flatMap(([, v]) => [v.front, v.rear, v.frontPrev, v.rearPrev].filter(Boolean))
+  const usadas = new Set(entradas.flatMap(([, v]) => [v.front, v.rear, v.foto, v.frontPrev, v.rearPrev, v.fotoPrev].filter(Boolean))
     .map((r) => path.basename(r)));
   const enDisco = fs.readdirSync(path.join(RAIZ, 'public/img/equipos')).filter((f) => f.startsWith('cs-') && f.endsWith('.webp'));
   const huerfanas = enDisco.filter((f) => !usadas.has(f));

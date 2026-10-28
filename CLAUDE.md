@@ -360,7 +360,8 @@ Módulos compartidos:
   «no consta»; el Comparador del portal lo da en una línea), licenciamiento, software,
   soporte, referencias de pedido (bajo demanda por modelo) y figuras con su página y rótulo literal
   (frontal, trasera y, opt-in `foto` + `fotoFuente`, una tercera pestaña con la foto de producto a
-  color y su propio pie; hoy solo Juniper).
+  color y su propio pie; Juniper y, desde el 2026-10-27, los Cisco cuya frontal es el dibujo
+  numerado de su guía: Catalyst 8500 y 8500L e ISR 1111X-8P).
   `escalon` (los siete lo declaran): junto al recomendado, el N+1 (menor métrica estrictamente mayor
   en la cifra del desplegable, nunca fuera de venta; `comparable` lo limita a la misma familia o base
   de medida) y el diferencial de precio solo con precio en los dos; no toca la selección. En la
