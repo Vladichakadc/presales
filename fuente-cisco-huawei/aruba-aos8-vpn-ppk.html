@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html xmlns:MadCap="http://www.madcapsoftware.com/Schemas/MadCap.xsd" lang="en-us" xml:lang="en-us" class="_Skins_top_nav" data-mc-search-type="Stem" data-mc-help-system-file-name="Web_Help_Index.xml" data-mc-path-to-help-system="../../../" data-mc-has-content-body="True" data-mc-target-type="WebHelp2" data-mc-runtime-file-type="Topic;Default" data-mc-preload-images="false" data-mc-in-preview-mode="false" data-mc-medium="non-print">
+    <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <meta name="msapplication-config" content="../../../Skins/Favicons/browserconfig.xml" />
+        <meta name="description" content="Configure a VPN using Postquantum Preshared Keys (PPK) to resist threats from quantum computers." />
+        <link rel="icon" sizes="16x16" href="../../../Skins/Favicons/hpe-elem1.png" />
+        <!-- Global site tag (gtag.js) - Google Analytics -->
+        <meta charset="utf-8" /><title>Configuring a VPN with Postquantum Preshared Keys</title>
+        <link href="../../../Skins/Default/Stylesheets/Slideshow.css" rel="stylesheet" type="text/css" data-mc-generated="True" />
+        <link href="../../../Skins/Default/Stylesheets/TextEffects.css" rel="stylesheet" type="text/css" data-mc-generated="True" />
+        <link href="../../../Skins/Default/Stylesheets/Topic.css" rel="stylesheet" type="text/css" data-mc-generated="True" />
+        <link href="../../../Skins/Default/Stylesheets/Components/Styles.css" rel="stylesheet" type="text/css" data-mc-generated="True" />
+        <link href="../../../Skins/Default/Stylesheets/Components/Tablet.css" rel="stylesheet" type="text/css" data-mc-generated="True" />
+        <link href="../../../Skins/Default/Stylesheets/Components/Mobile.css" rel="stylesheet" type="text/css" data-mc-generated="True" />
+        <link href="../../../Skins/Default/Stylesheets/Components/Print.css" rel="stylesheet" type="text/css" data-mc-generated="True" />
+        <link href="../../../Skins/Fluid/Stylesheets/foundation.6.2.3.css" rel="stylesheet" type="text/css" data-mc-generated="True" />
+        <link href="../../../Skins/Fluid/Stylesheets/Styles.css" rel="stylesheet" type="text/css" data-mc-generated="True" />
+        <link href="../../../Skins/Fluid/Stylesheets/Tablet.css" rel="stylesheet" type="text/css" data-mc-generated="True" />
+        <link href="../../../Skins/Fluid/Stylesheets/Mobile.css" rel="stylesheet" type="text/css" data-mc-generated="True" />
+        <link href="../../../Skins/Fluid/Stylesheets/Print.css" rel="stylesheet" type="text/css" data-mc-generated="True" />
+        <link href="../../Resources/Stylesheets/aruba_style_guide.css" rel="stylesheet" type="text/css" />
+        <style>/*&lt;meta /&gt;*/
+
+.button.topic-ratings-button
+{
+	-pie-background: transparent url('../../../Skins/Default/Stylesheets/Images/star-full.png') no-repeat center center;
+}
+
+.button.previous-topic-button
+{
+	-pie-background: linear-gradient(#ffffff, #ececec);
+}
+
+.button.next-topic-button
+{
+	-pie-background: linear-gradient(#ffffff, #ececec);
+}
+
+.button.separator-button
+{
+	-pie-background: linear-gradient(#ffffff, #ececec);
+}
+
+.needs-pie
+{
+	behavior: url('../../../Resources/Scripts/PIE-no-motw.htc');
+}
+
+</style>
+        <link rel="icon" sizes="16x16" href="../../../Skins/Favicons/hpe-elem1.png" />
+        <script src="../../../Resources/Scripts/jquery.min.js" type="text/javascript">
+        </script>
+        <script src="../../../Resources/Scripts/purify.min.js" type="text/javascript" defer="defer">
+        </script>
+        <script src="../../../Resources/Scripts/require.min.js" type="text/javascript" defer="defer">
+        </script>
+        <script src="../../../Resources/Scripts/require.config.js" type="text/javascript" defer="defer">
+        </script>
+        <script src="../../../Resources/Scripts/foundation.6.2.3_custom.js" type="text/javascript" defer="defer">
+        </script>
+        <script src="../../../Resources/Scripts/plugins.min.js" type="text/javascript" defer="defer">
+        </script>
+        <script src="../../../Resources/Scripts/MadCapAll.js" type="text/javascript" defer="defer">
+        </script>
+        <script async="" src="https://www.googletagmanager.com/gtag/js?id=UA-G-X0EL3SYC7B">
+        </script>
+        <script>/* <![CDATA[ */
+			window.dataLayer = window.dataLayer || [];
+			function gtag(){dataLayer.push(arguments);}
+			gtag('js', new Date());
+			
+			gtag('config', 'G-X0EL3SYC7B');
+		/* ]]> */</script>
+    </head>
+    <body>
+        <div class="foundation-wrap off-canvas-wrapper">
+            <div class="off-canvas-wrapper-inner" data-off-canvas-wrapper="">
+                <aside class="off-canvas position-left" role="navigation" id="offCanvas" data-off-canvas="" data-position="left" data-mc-ignore="true">
+                    <ul class="off-canvas-drilldown vertical menu off-canvas-list" data-drilldown="" data-mc-back-link="Back" data-mc-css-tree-node-expanded="is-drilldown-submenu-parent" data-mc-css-tree-node-collapsed="is-drilldown-submenu-parent" data-mc-css-sub-menu="vertical menu slide-in-left is-drilldown-submenu" data-mc-include-indicator="False" data-mc-include-icon="False" data-mc-include-parent-link="True" data-mc-include-back="True" data-mc-defer-expand-event="True" data-mc-expand-event="click.zf.drilldown" data-mc-toc="True">
+                    </ul>
+                </aside>
+                <div class="off-canvas-content inner-wrap" data-off-canvas-content="">
+                    <div>
+                        <nav class="title-bar tab-bar" role="banner" data-mc-ignore="true"><a class="skip-to-content fluid-skip showOnFocus" href="#">Skip To Main Content</a>
+                            <div class="middle title-bar-section outer-row clearfix">
+                                <div class="menu-icon-container relative clearfix">
+                                    <div class="central-account-wrapper">
+                                        <div class="central-dropdown"><a class="central-account-drop"><span class="central-account-image"></span><span class="central-account-text">Account</span></a>
+                                            <div class="central-dropdown-content"><a class="MCCentralLink central-dropdown-content-settings">Settings</a>
+                                                <hr class="central-separator" /><a class="MCCentralLink central-dropdown-content-logout">Logout</a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <button class="menu-icon" aria-label="Show Navigation Panel" data-toggle="offCanvas"><span></span>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="title-bar-layout outer-row">
+                                <div class="logo-wrapper"><a class="logo" href="../../home.htm" alt="Logo"></a>
+                                </div>
+                                <div class="navigation-wrapper nocontent">
+                                    <ul class="navigation clearfix" role="navigation" data-mc-css-tree-node-has-children="has-children" data-mc-css-sub-menu="sub-menu" data-mc-expand-event="mouseenter" data-mc-top-nav-menu="True" data-mc-max-depth="1" data-mc-include-icon="False" data-mc-include-indicator="False" data-mc-include-children="True" data-mc-include-siblings="True" data-mc-include-parent="True" data-mc-toc="True">
+                                        <li class="placeholder" style="visibility:hidden"><a>placeholder</a>
+                                        </li>
+                                    </ul>
+                                </div>
+                                <div class="central-account-wrapper">
+                                    <div class="central-dropdown"><a class="central-account-drop"><span class="central-account-image"></span><span class="central-account-text">Account</span></a>
+                                        <div class="central-dropdown-content"><a class="MCCentralLink central-dropdown-content-settings">Settings</a>
+                                            <hr class="central-separator" /><a class="MCCentralLink central-dropdown-content-logout">Logout</a>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="nav-search-wrapper">
+                                    <div class="nav-search row">
+                                        <form class="search" action="#">
+                                            <div class="search-bar search-bar-container needs-pie">
+                                                <input class="search-field needs-pie" type="search" aria-label="Search Field" placeholder="Search" />
+                                                <div class="search-filter-wrapper"><span class="invisible-label" id="search-filters-label">Filter: </span>
+                                                    <div class="search-filter" aria-haspopup="true" aria-controls="sf-content" aria-expanded="false" aria-label="Search Filter" title="All Files" role="button" tabindex="0">
+                                                    </div>
+                                                    <div class="search-filter-content" id="sf-content">
+                                                        <ul>
+                                                            <li>
+                                                                <button class="mc-dropdown-item" aria-labelledby="search-filters-label filterSelectorLabel-00001"><span id="filterSelectorLabel-00001">All Files</span>
+                                                                </button>
+                                                            </li>
+                                                        </ul>
+                                                    </div>
+                                                </div>
+                                                <div class="search-submit-wrapper" dir="ltr">
+                                                    <div class="search-submit" title="Search" role="button" tabindex="0"><span class="invisible-label">Submit Search</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </nav>
+                    </div>
+                    <div class="main-section">
+                        <div class="row outer-row sidenav-layout">
+                            <nav class="sidenav-wrapper">
+                                <div class="sidenav-container">
+                                    <ul class="off-canvas-accordion vertical menu sidenav" data-accordion-menu="" data-mc-css-tree-node-expanded="is-accordion-submenu-parent" data-mc-css-tree-node-collapsed="is-accordion-submenu-parent" data-mc-css-sub-menu="vertical menu accordion-menu is-accordion-submenu nested" data-mc-include-indicator="False" data-mc-include-icon="False" data-mc-include-parent-link="False" data-mc-include-back="False" data-mc-defer-expand-event="True" data-mc-expand-event="click.zf.accordionMenu" data-mc-toc="True" data-mc-side-nav-menu="True">
+                                    </ul>
+                                </div>
+                            </nav>
+                            <div class="body-container">
+                                <div data-mc-content-body="True">
+                                    <div id="contentBody">
+                                        <div class="row-collapse">
+                                            <div class="container">
+                                                <div class="sideContent">
+                                                    <div class="search">
+                                                        <form class="search" action="#">
+                                                            <div class="search-bar search-bar-container needs-pie _Skins_searchbar mc-component">
+                                                                <input class="search-field needs-pie" type="search" aria-label="Search Field" placeholder="Search" />
+                                                                <div class="search-filter-wrapper"><span class="invisible-label" id="search-filters-label">Filter: </span>
+                                                                    <div class="search-filter" aria-haspopup="true" aria-controls="sf-content" aria-expanded="false" aria-label="Search Filter" title="All Files" role="button" tabindex="0">
+                                                                    </div>
+                                                                    <div class="search-filter-content" id="sf-content">
+                                                                        <ul>
+                                                                            <li>
+                                                                                <button class="mc-dropdown-item" aria-labelledby="search-filters-label filterSelectorLabel-00001"><span id="filterSelectorLabel-00001">All Files</span>
+                                                                                </button>
+                                                                            </li>
+                                                                        </ul>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="search-submit-wrapper" dir="ltr">
+                                                                    <div class="search-submit" title="Search" role="button" tabindex="0"><span class="invisible-label">Submit Search</span>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </form> </div>
+                                                </div>
+                                                <div class="mainContent">
+                                                    <p style="float: none; text-align: left; color: #000000; width: auto; margin-left: 0px; margin-right: 10px; margin-bottom: 20px; padding: 2px; border-bottom: 1px solid #4BA684"><b>Legal Disclaimer</b>: The resource assets in this website may include abbreviated and/or legacy terminology for HPE Aruba Networking products. See <a href="http://www.arubanetworks.com/">www.arubanetworks.com</a> for current and complete HPE Aruba Networking product lines and names. </p>
+                                                    <div><span id="docnameother" class="mc-variable Variables.Doc_Title variable">ArubaOS 8.11.1.0</span> Help Center</div>
+                                                    <div class="right">
+                                                        <div class="buttons popup-container clearfix topicToolbarProxy _Skins_topic_toolbar mc-component nocontent" style="mc-topic-toolbar-items: Print Separator ToggleNavigationPane Separator NextTopic PreviousTopic;">
+                                                            <div class="button-group-container-left">
+                                                                <div class="button-group star-buttons loading feedback-topic-required">
+                                                                    <div class="button star-button topic-ratings-empty-button" data-state1-class="topic-ratings-empty-button" data-state2-class="topic-ratings-button" title="Click a star to rate this topic" data-state1-title="Click a star to rate this topic" data-state2-title="Click a star to rate this topic">
+                                                                        <div role="img" class="button-icon-wrapper" aria-label="Click a star to rate this topic" data-state1-alt="Click a star to rate this topic" data-state2-alt="Click a star to rate this topic">
+                                                                            <div class="button-icon"> </div>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div class="button star-button topic-ratings-empty-button" data-state1-class="topic-ratings-empty-button" data-state2-class="topic-ratings-button" title="Click a star to rate this topic" data-state1-title="Click a star to rate this topic" data-state2-title="Click a star to rate this topic">
+                                                                        <div role="img" class="button-icon-wrapper" aria-label="Click a star to rate this topic" data-state1-alt="Click a star to rate this topic" data-state2-alt="Click a star to rate this topic">
+                                                                            <div class="button-icon"> </div>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div class="button star-button topic-ratings-empty-button" data-state1-class="topic-ratings-empty-button" data-state2-class="topic-ratings-button" title="Click a star to rate this topic" data-state1-title="Click a star to rate this topic" data-state2-title="Click a star to rate this topic">
+                                                                        <div role="img" class="button-icon-wrapper" aria-label="Click a star to rate this topic" data-state1-alt="Click a star to rate this topic" data-state2-alt="Click a star to rate this topic">
+                                                                            <div class="button-icon"> </div>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div class="button star-button topic-ratings-empty-button" data-state1-class="topic-ratings-empty-button" data-state2-class="topic-ratings-button" title="Click a star to rate this topic" data-state1-title="Click a star to rate this topic" data-state2-title="Click a star to rate this topic">
+                                                                        <div role="img" class="button-icon-wrapper" aria-label="Click a star to rate this topic" data-state1-alt="Click a star to rate this topic" data-state2-alt="Click a star to rate this topic">
+                                                                            <div class="button-icon"> </div>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div class="button star-button topic-ratings-empty-button" data-state1-class="topic-ratings-empty-button" data-state2-class="topic-ratings-button" title="Click a star to rate this topic" data-state1-title="Click a star to rate this topic" data-state2-title="Click a star to rate this topic">
+                                                                        <div role="img" class="button-icon-wrapper" aria-label="Click a star to rate this topic" data-state1-alt="Click a star to rate this topic" data-state2-alt="Click a star to rate this topic">
+                                                                            <div class="button-icon"> </div>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                                <button class="button needs-pie previous-topic-button" title="Navigate previous" disabled="true">
+                                                                    <div>
+                                                                        <div role="img" class="button-icon-wrapper" aria-label="Navigate previous">
+                                                                            <div class="button-icon"> </div>
+                                                                        </div>
+                                                                    </div>
+                                                                </button>
+                                                                <button class="button needs-pie next-topic-button" title="Navigate next" disabled="true">
+                                                                    <div>
+                                                                        <div role="img" class="button-icon-wrapper" aria-label="Navigate next">
+                                                                            <div class="button-icon"> </div>
+                                                                        </div>
+                                                                    </div>
+                                                                </button>
+                                                                <div class="button-separator">
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div role="main" id="mc-main-content">
+                                                        <h1><a name="top"></a>Configuring a VPN with Postquantum Preshared Keys</h1>
+                                                        <p>Starting from <span class="mc-variable Variables.AOS-8 variable">AOS-8</span>.10.0.0, improvements have been made to the <a href="#" class="MCTextPopup MCTextPopupHotSpot MCTextPopup_Open MCTextPopupHotSpot_ #text">IKEv2<span class="MCTextPopupBody popupBody"><span class="MCTextPopupArrow"> </span>Internet Key Exchange version 2. IKEv2 uses the secure channel established in Phase 1 to negotiate Security Associations on behalf of services such as IPsec. IKEv2 uses pre-shared key and Digital Signature for authentication. See RFC 4306. </span></a> protocol, to resist threats from quantum computers using pre-shared keys. Each <a href="#" class="MCTextPopup MCTextPopupHotSpot MCTextPopup_Open MCTextPopupHotSpot_ #text">IKE<span class="MCTextPopupBody popupBody"><span class="MCTextPopupArrow"> </span>Internet Key Exchange. IKE is a key management protocol used with IPsec protocol to establish a secure communication channel. IKE provides additional feature, flexibility, and ease of configuration for IPsec standard.</span></a> peer has a list of Postquantum Preshared Keys (PPK) and their IDs used to establish quantum-secure key exchange algorithms and protocols. </p>
+                                                        <p>Any potential <a href="#" class="MCTextPopup MCTextPopupHotSpot MCTextPopup_Open MCTextPopupHotSpot_ #text">IKE<span class="MCTextPopupBody popupBody"><span class="MCTextPopupArrow"> </span>Internet Key Exchange. IKE is a key management protocol used with IPsec protocol to establish a secure communication channel. IKE provides additional feature, flexibility, and ease of configuration for IPsec standard.</span></a> initiator selects a specific PPK to be used with the corresponding responder. This specific PPK is independent of the pre-shared key that the <a href="#" class="MCTextPopup MCTextPopupHotSpot MCTextPopup_Open MCTextPopupHotSpot_ #text">IKEv2<span class="MCTextPopupBody popupBody"><span class="MCTextPopupArrow"> </span>Internet Key Exchange version 2. IKEv2 uses the secure channel established in Phase 1 to negotiate Security Associations on behalf of services such as IPsec. IKEv2 uses pre-shared key and Digital Signature for authentication. See RFC 4306. </span></a> protocol uses to perform authentication.</p>
+                                                        <div class="note">
+                                                            <p>The PPK value is not displayed in any of the logs and PPK is only limited to site-to-site VPNs.</p>
+                                                        </div>
+                                                        <p>The following <a href="#" class="MCTextPopup MCTextPopupHotSpot MCTextPopup_Open MCTextPopupHotSpot_ #text">CLI<span class="MCTextPopupBody popupBody"><span class="MCTextPopupArrow"> </span>Command-Line Interface. A console interface with a command line shell that allows users to execute text input as commands and convert these commands to appropriate functions.</span></a> command adds PPK to an <a href="#" class="MCTextPopup MCTextPopupHotSpot MCTextPopup_Open MCTextPopupHotSpot_ #text">IKEv2<span class="MCTextPopupBody popupBody"><span class="MCTextPopupArrow"> </span>Internet Key Exchange version 2. IKEv2 uses the secure channel established in Phase 1 to negotiate Security Associations on behalf of services such as IPsec. IKEv2 uses pre-shared key and Digital Signature for authentication. See RFC 4306. </span></a> <a href="#" class="MCTextPopup MCTextPopupHotSpot MCTextPopup_Open MCTextPopupHotSpot_ #text">SA<span class="MCTextPopupBody popupBody"><span class="MCTextPopupArrow"> </span>Security Association. SA is the establishment of shared security attributes between two network entities to support secure communication.</span></a>:</p>
+                                                        <div class="screen">
+                                                            <p class="CLI" xml:space="preserve">(host)[mynode] #crypto-local isakmp ppk-add</p>
+                                                            <p class="CLI" xml:space="preserve">ppk-id                  Configure ppk id</p>
+                                                            <p class="CLI" xml:space="preserve">&#160;</p>
+                                                            <p class="CLI" xml:space="preserve">(host) [mynode] #crypto-local isakmp ppk-add ppk-id demo</p>
+                                                            <p class="CLI" xml:space="preserve">ppk-value               Configure ppk value</p>
+                                                            <p class="CLI" xml:space="preserve">ppk-value-hex           Configure the PPK Value in hex characters [0-9,a-f,A-F]</p>
+                                                            <p class="CLI" xml:space="preserve">ppk-value-hex-tpi1      Configure first part of ppk value for two person integrity in hex characters [0-9,a-f,A-F]</p>
+                                                            <p class="CLI" xml:space="preserve">ppk-value-hex-tpi2      Configure second part of ppk value for two person integrity in hex characters [0-9,a-f,A-F]</p>
+                                                            <p class="CLI" xml:space="preserve">ppk-value-tpi1          Configure first part of ppk value for two person integrity</p>
+                                                            <p class="CLI" xml:space="preserve">ppk-value-tpi2          Configure second part of ppk value for two person integrity</p>
+                                                            <p class="CLI" xml:space="preserve">&#160;</p>
+                                                            <p class="CLI" xml:space="preserve">(host) [mynode] #crypto-local isakmp ppk-add ppk-id demo ppk-value</p>
+                                                            <p class="CLI" xml:space="preserve">&lt;ppk_value&gt;             Configure ppk value. Must be between 3-256 characters.</p>
+                                                            <p class="CLI" xml:space="preserve">&#160;</p>
+                                                            <p class="CLI">(host) [mynode] #crypto-local isakmp ppk-add ppk-id demo ppk-value demovalue peer-</p>
+                                                            <p class="CLI">peer-any                Configure PPK for any Peer</p>
+                                                            <p class="CLI">peer-fqdn               Configure peer-fqdn</p>
+                                                            <p class="CLI">peer-ip                 Configure PPK for peer IP</p>
+                                                            <p class="CLI">peer-ipv6               Configure PPK for peer IPv6</p>
+                                                            <p class="CLI">peer-mac                Configure PPK for peer MAC</p>
+                                                        </div>
+                                                        <div class="note">
+                                                            <p>The PPK value can be configured in hex and <a href="#" class="MCTextPopup MCTextPopupHotSpot MCTextPopup_Open MCTextPopupHotSpot_ #text">ASCII<span class="MCTextPopupBody popupBody"><span class="MCTextPopupArrow"> </span>American Standard Code for Information Interchange. An ASCII code is a numerical representation of a character or an action.</span></a> characters. The value is configured using Two-Person Integrity (TPI) ensuring that no single user has sole access to the plaintext PPK value. </p>
+                                                        </div>
+                                                        <p>The following <a href="#" class="MCTextPopup MCTextPopupHotSpot MCTextPopup_Open MCTextPopupHotSpot_ #text">CLI<span class="MCTextPopupBody popupBody"><span class="MCTextPopupArrow"> </span>Command-Line Interface. A console interface with a command line shell that allows users to execute text input as commands and convert these commands to appropriate functions.</span></a> command displays PPK information: </p>
+                                                        <div class="screen">
+                                                            <p>(host) [mynode] #show crypto-local isakmp ppk</p>
+                                                            <p>Type Flags: N = NO TPI, NH = NO TPI HEX, F = First Half, S = Second Half, T = TPI configured</p>
+                                                            <p>FH = First-half Hex, SH = Second-half Hex, TH = TPI Hex configured</p>
+                                                            <p>TYPE      Peer ID           PPK ID</p>
+                                                            <p>----      -------           ------</p>
+                                                            <p>N         PEER-ANY           demo1</p>
+                                                            <p>N         1.1.1.1            demo2</p>
+                                                            <p>NH        2.2.2.2            demo3</p>
+                                                            <p>NH        2.2.2.3            demo4</p>
+                                                            <p>T         4.4.4.4            demo5</p>
+                                                            <p>T         4.4.4.1            demo6</p>
+                                                            <p>TH        PEER-ANY           demo7</p>
+                                                            <p>TH        PEER-ANY           demo8</p>
+                                                            <p>N         5.5.5.5            demo9</p>
+                                                            <p>T         6.6.6.6            demo10</p>
+                                                            <p>T         7.7.7.7            demo11</p>
+                                                            <p>N         10.17.61.62        demo12</p>
+                                                            <p>Total PPKs configured: 12</p>
+                                                        </div>
+                                                        <div class="note">
+                                                            <p>The PPK ID is case-sensitive.</p>
+                                                        </div>
+                                                        <p>The following <a href="#" class="MCTextPopup MCTextPopupHotSpot MCTextPopup_Open MCTextPopupHotSpot_ #text">CLI<span class="MCTextPopupBody popupBody"><span class="MCTextPopupArrow"> </span>Command-Line Interface. A console interface with a command line shell that allows users to execute text input as commands and convert these commands to appropriate functions.</span></a> command confirms if PPK is enabled in an <a href="#" class="MCTextPopup MCTextPopupHotSpot MCTextPopup_Open MCTextPopupHotSpot_ #text">IKEv2<span class="MCTextPopupBody popupBody"><span class="MCTextPopupArrow"> </span>Internet Key Exchange version 2. IKEv2 uses the secure channel established in Phase 1 to negotiate Security Associations on behalf of services such as IPsec. IKEv2 uses pre-shared key and Digital Signature for authentication. See RFC 4306. </span></a> <a href="#" class="MCTextPopup MCTextPopupHotSpot MCTextPopup_Open MCTextPopupHotSpot_ #text">SA<span class="MCTextPopupBody popupBody"><span class="MCTextPopupArrow"> </span>Security Association. SA is the establishment of shared security attributes between two network entities to support secure communication.</span></a>:</p>
+                                                        <div class="screen">
+                                                            <p>(host) [mynode] #show crypto isakmp sa</p>
+                                                            <p><a href="#" class="MCTextPopup MCTextPopupHotSpot MCTextPopup_Open MCTextPopupHotSpot_ #text">ISAKMP<span class="MCTextPopupBody popupBody"><span class="MCTextPopupArrow"> </span>Internet Security Association and Key Management Protocol. ISAKMP is used for establishing Security Associations and cryptographic keys in an Internet environment.</span></a> <a href="#" class="MCTextPopup MCTextPopupHotSpot MCTextPopup_Open MCTextPopupHotSpot_ #text">SA<span class="MCTextPopupBody popupBody"><span class="MCTextPopupArrow"> </span>Security Association. SA is the establishment of shared security attributes between two network entities to support secure communication.</span></a> Active Session Information</p>
+                                                            <p>------------------------------------</p>
+                                                            <p>Initiator IP     Responder IP        Flags  Start Time  Private IP        Peer ID</p>
+                                                            <p>------------     ------------        -----  ----------  ----------      -------------</p>
+                                                            <p>10.17.61.58       10.17.61.62         i-v2-p-P    Sep 16 23:59:05 -   IPV4_ADDR:10.17.61.62</p>
+                                                            <p>Flags: i = Initiator; r = Responder</p>
+                                                            <p>m = Main Mode; a = Agressive Mode; v2 = <a href="#" class="MCTextPopup MCTextPopupHotSpot MCTextPopup_Open MCTextPopupHotSpot_ #text">IKEv2<span class="MCTextPopupBody popupBody"><span class="MCTextPopupArrow"> </span>Internet Key Exchange version 2. IKEv2 uses the secure channel established in Phase 1 to negotiate Security Associations on behalf of services such as IPsec. IKEv2 uses pre-shared key and Digital Signature for authentication. See RFC 4306. </span></a>; P = exchange PPK</p>
+                                                            <p>p = Pre-shared key; c = Certificate/<a href="#" class="MCTextPopup MCTextPopupHotSpot MCTextPopup_Open MCTextPopupHotSpot_ #text">RSA<span class="MCTextPopupBody popupBody"><span class="MCTextPopupArrow"> </span>Rivest, Shamir, Adleman. RSA is a cryptosystem for public-key encryption, and is widely used for securing sensitive data, particularly when being sent over an insecure network such as the Internet.</span></a> Signature; e =  <a href="#" class="MCTextPopup MCTextPopupHotSpot MCTextPopup_Open MCTextPopupHotSpot_ #text">ECDSA<span class="MCTextPopupBody popupBody"><span class="MCTextPopupArrow"> </span>Elliptic Curve Digital Signature Algorithm.  ECDSA is a cryptographic algorithm that supports the use of public or private key pairs for encrypting and decrypting information.</span></a> Signature</p>
+                                                            <p>x = <a href="#" class="MCTextPopup MCTextPopupHotSpot MCTextPopup_Open MCTextPopupHotSpot_ #text">XAuth<span class="MCTextPopupBody popupBody"><span class="MCTextPopupArrow"> </span>Extended Authentication. XAuth provides a mechanism for requesting individual authentication information from the user, and a local user database or an external authentication server.  It provides a method for storing the authentication information centrally in the local network.</span></a> Enabled; y = Mode-Config Enabled; E = <a href="#" class="MCTextPopup MCTextPopupHotSpot MCTextPopup_Open MCTextPopupHotSpot_ #text">EAP<span class="MCTextPopupBody popupBody"><span class="MCTextPopupArrow"> </span>Extensible Authentication Protocol. An authentication protocol for wireless networks that extends the methods used by the PPP, a protocol often used when connecting a computer to the Internet. EAP can support multiple authentication mechanisms, such as token cards, smart cards, certificates, one-time&#160;passwords, and public key encryption authentication.&#160;</span></a> Enabled</p>
+                                                            <p>3 = 3rd party AP; C = <a href="#" class="MCTextPopup MCTextPopupHotSpot MCTextPopup_Open MCTextPopupHotSpot_ #text">Campus AP<span class="MCTextPopupBody popupBody"><span class="MCTextPopupArrow"> </span>Campus APs are used in private networks where APs are connected to Ethernet LANs and terminate directly on controllers. Campus APs are deployed as part of the indoor campus solution in enterprise office buildings, warehouses, hospitals, universities, and so on.</span></a>; R = RAP;  Ru = Custom Certificate RAP; I = IAP</p>
+                                                            <p>V = <a href="#" class="MCTextPopup MCTextPopupHotSpot MCTextPopup_Open MCTextPopupHotSpot_ #text">VIA<span class="MCTextPopupBody popupBody"><span class="MCTextPopupArrow"> </span>Virtual Intranet Access. VIA provides secure remote network connectivity for Android, Apple iOS, Mac OS X, and Windows mobile devices and laptops. It automatically scans and selects the best secure connection to the corporate network.</span></a>; S = <a href="#" class="MCTextPopup MCTextPopupHotSpot MCTextPopup_Open MCTextPopupHotSpot_ #text">VIA<span class="MCTextPopupBody popupBody"><span class="MCTextPopupArrow"> </span>Virtual Intranet Access. VIA provides secure remote network connectivity for Android, Apple iOS, Mac OS X, and Windows mobile devices and laptops. It automatically scans and selects the best secure connection to the corporate network.</span></a> over <a href="#" class="MCTextPopup MCTextPopupHotSpot MCTextPopup_Open MCTextPopupHotSpot_ #text">TCP<span class="MCTextPopupBody popupBody"><span class="MCTextPopupArrow"> </span>Transmission Control Protocol. TCP is a communication protocol that defines the standards for establishing and maintaining network connection for applications to exchange data.  </span></a>; l = uplink load-balance</p>
+                                                            <p>Total <a href="#" class="MCTextPopup MCTextPopupHotSpot MCTextPopup_Open MCTextPopupHotSpot_ #text">ISAKMP<span class="MCTextPopupBody popupBody"><span class="MCTextPopupArrow"> </span>Internet Security Association and Key Management Protocol. ISAKMP is used for establishing Security Associations and cryptographic keys in an Internet environment.</span></a> SAs: 1		</p>
+                                                        </div>
+                                                        <p>&#160;</p>
+                                                        <p>Starting with AOS-8.13.0.0 IPSec tunnels can be set to require PPK configuration on the initiator and responder.</p>
+                                                        <p>This feature can be enabled by running the <b>crypto-local isakmp ppk-mandatory</b> command on the responder. When <b>ppk-mandatory</b> is enabled, both the responder and initiator are expected to have the PPK configured. Otherwise, the tunnel will not come up.  The <b>ppk-mandatory</b> parameter will not have any effect if it is enabled on the initiator,  it is applicable only on the responder. Supported deployments:</p>
+                                                        <ul style="list-style-type: square;">
+                                                            <li><a href="#" class="MCTextPopup MCTextPopupHotSpot MCTextPopup_Open MCTextPopupHotSpot_ #text">IKEv2<span class="MCTextPopupBody popupBody"><span class="MCTextPopupArrow"> </span>Internet Key Exchange version 2. IKEv2 uses the secure channel established in Phase 1 to negotiate Security Associations on behalf of services such as IPsec. IKEv2 uses pre-shared key and Digital Signature for authentication. See RFC 4306. </span></a> site-to-site tunnels<ul style="list-style-type: square;"><li>Using <b>Peer-ip</b> on both ends: Tunnel is established</li><li>Using <b>Peer-any</b> on both ends: Tunnel is not established</li><li>Using <b>Peer-ip</b> on initiator and Peer-any on responder: Tunnel is established</li></ul></li>
+                                                            <li><a href="#" class="MCTextPopup MCTextPopupHotSpot MCTextPopup_Open MCTextPopupHotSpot_ #text">IKEv2<span class="MCTextPopupBody popupBody"><span class="MCTextPopupArrow"> </span>Internet Key Exchange version 2. IKEv2 uses the secure channel established in Phase 1 to negotiate Security Associations on behalf of services such as IPsec. IKEv2 uses pre-shared key and Digital Signature for authentication. See RFC 4306. </span></a> <a href="#" class="MCTextPopup MCTextPopupHotSpot MCTextPopup_Open MCTextPopupHotSpot_ #text">VIA<span class="MCTextPopupBody popupBody"><span class="MCTextPopupArrow"> </span>Virtual Intranet Access. VIA provides secure remote network connectivity for Android, Apple iOS, Mac OS X, and Windows mobile devices and laptops. It automatically scans and selects the best secure connection to the corporate network.</span></a> client terminated on <a href="#" class="MCTextPopup MCTextPopupHotSpot MCTextPopup_Open MCTextPopupHotSpot_ #text">gateway<span class="MCTextPopupBody popupBody"><span class="MCTextPopupArrow"> </span>Gateway is a network node that allows traffic to flow in and out of the network.</span></a>:<ul style="list-style-type: square;"><li>Using <b>Peer-ip</b> on both ends: Tunnel is established</li><li>Using <b>Peer-any</b> on <a href="#" class="MCTextPopup MCTextPopupHotSpot MCTextPopup_Open MCTextPopupHotSpot_ #text">gateway<span class="MCTextPopupBody popupBody"><span class="MCTextPopupArrow"> </span>Gateway is a network node that allows traffic to flow in and out of the network.</span></a> with PPK configured on the <a href="#" class="MCTextPopup MCTextPopupHotSpot MCTextPopup_Open MCTextPopupHotSpot_ #text">VIA<span class="MCTextPopupBody popupBody"><span class="MCTextPopupArrow"> </span>Virtual Intranet Access. VIA provides secure remote network connectivity for Android, Apple iOS, Mac OS X, and Windows mobile devices and laptops. It automatically scans and selects the best secure connection to the corporate network.</span></a> client: Tunnel is established.</li></ul></li>
+                                                        </ul>
+                                                        <p>The following command shows enabling the <b>ppk-mandatory</b> knob on the responder.</p>
+                                                        <div class="screen">
+                                                            <p>(<a href="#" class="MCTextPopup MCTextPopupHotSpot MCTextPopup_Open MCTextPopupHotSpot_ #text">SA<span class="MCTextPopupBody popupBody"><span class="MCTextPopupArrow"> </span>Security Association. SA is the establishment of shared security attributes between two network entities to support secure communication.</span></a>_42_110) [mynode] (config) #crypto-local isakmp ppk-mandatory</p>
+                                                            <p>(<a href="#" class="MCTextPopup MCTextPopupHotSpot MCTextPopup_Open MCTextPopupHotSpot_ #text">SA<span class="MCTextPopupBody popupBody"><span class="MCTextPopupArrow"> </span>Security Association. SA is the establishment of shared security attributes between two network entities to support secure communication.</span></a>_42_110) ^[mynode] (config) #write mem</p>
+                                                            <p>Saving Configuration...</p>
+                                                            <p>Configuration Saved.</p>
+                                                        </div>
+                                                        <p>The following command shows disabling the <b>ppk-mandatory</b> knob on the responder.</p>
+                                                        <div class="screen">
+                                                            <p>(<a href="#" class="MCTextPopup MCTextPopupHotSpot MCTextPopup_Open MCTextPopupHotSpot_ #text">SA<span class="MCTextPopupBody popupBody"><span class="MCTextPopupArrow"> </span>Security Association. SA is the establishment of shared security attributes between two network entities to support secure communication.</span></a>_42_110) [mynode] (config) #no crypto-local isakmp ppk-mandatory</p>
+                                                            <p>(<a href="#" class="MCTextPopup MCTextPopupHotSpot MCTextPopup_Open MCTextPopupHotSpot_ #text">SA<span class="MCTextPopupBody popupBody"><span class="MCTextPopupArrow"> </span>Security Association. SA is the establishment of shared security attributes between two network entities to support secure communication.</span></a>_42_110) ^[mynode] (config) #write mem</p>
+                                                            <p>Saving Configuration...</p>
+                                                            <p>Configuration Saved.</p>
+                                                        </div>
+                                                        <p>The <b>show crypto-local isakmp ppk</b> command  displays the status of the <b>ppk-mandatory</b> knob as <b>Enabled</b> or <b>Disabled</b>.</p>
+                                                        <div class="screen">
+                                                            <p>(MD_42_105) *#show crypto-local isakmp ppk</p>
+                                                            <p>Type Flags: N = NO TPI, NH = NO TPI HEX, F = First Half, S = Second Half, T = TPI configured</p>
+                                                            <p>FH = First-half Hex, SH = Second-half Hex, TH = TPI Hex configured</p>
+                                                            <p>&#160;</p>
+                                                            <p>TYPE    Peer ID             PPK ID</p>
+                                                            <p>----    -------             ------</p>
+                                                            <p>N       10.96.42.106        abcd</p>
+                                                            <p>&#160;</p>
+                                                            <p>Total PPKs configured: 1</p>
+                                                            <p>&#160;</p>
+                                                            <p>PPK Mandatory Knob : Enabled</p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <!--End of Modal -->
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!--Script for tab view-->
+                                    <script>/*<![CDATA[*/function openTopic(evt, blkName) {
+			// Declare all variables
+			var i, tabcontent, tablinks;
+
+			// Get all elements with class="tabcontent" and hide them
+			tabcontent = document.getElementsByClassName("tabcontent");
+			for (i = 0; i < tabcontent.length; i++) {
+			tabcontent[i].style.display = "none";
+			}
+
+			// Get all elements with class="tablinks" and remove the class "active"
+			tablinks = document.getElementsByClassName("tablinks");
+			for (i = 0; i < tablinks.length; i++) {
+			tablinks[i].className = tablinks[i].className.replace(" active", "");
+			}
+
+			// Show the current tab, and add an "active" class to the button that opened the tab
+			document.getElementById(cityName).style.display = "block";
+			evt.currentTarget.className += " active";
+			}
+
+			// --------------   Smooth Scroll for NLP Search Starts ------------ */                              
+			var title = window.location.href.split('scrollTo=')[1].replace(/%20/g," ")
+			console.log("Search title : " + title);
+			if(title) {                            
+			$([document.documentElement, document.body]).animate({
+			scrollTop: $("a:contains("+title+")").offset().top -80  
+			}, 1000);
+			}
+
+			// --------------   Smooth Scroll for NLP Search Ends ------------ 
+		/*]]>*/</script>
+                                    <script type="text/javascript">/*<![CDATA[*/	$(document).ready(function(){
+
+			/* If current page has a ?Highlight=xxx parameter, then record it as a search result event */
+			if (location.search.indexOf('?Highlight=') > -1) {
+			ga('send', 'event', 'Search', 'SearchResult', location.href);
+			}
+
+			});
+		/*]]>*/</script>
+                                    <script type="text/javascript">/*<![CDATA[*/$( document ).ready(function() {
+			$('nav.tab-bar').appendTo("#menu_container");
+		});/*]]>*/</script>
+                                    <script type="text/javascript">/*<![CDATA[*/$(document).ready(function(){
+			$("#header").prependTo("section.inner-wrap");
+		});/*]]>*/</script>
+                                    <script>/*<![CDATA[*/	$( "#yes-btn" ).click(function() {
+			$( "div.feedback_yes" ).fadeIn( 300 ).delay( 3000 ).fadeOut( 1000 );
+			});
+
+			$( "#no-btn" ).click(function() {
+			$( "div.feedback_no" ).fadeIn( 300 ).delay( 3000 ).fadeOut( 1200 );
+			});	
+		/*]]>*/</script>
+                                    <script type="text/javascript">/*<![CDATA[*/
+			
+			window.onload = function() { 	var a = document.getElementById("feedback");  var dc = document.getElementById("docnameother").innerHTML;	a.onclick = function() {
+			window.location="mailto:hpearubanetworkingdocfeedback@hpe.com?subject=Feedback on AOS-8.x Help Center";
+			return false;
+			}
+			}	/*]]>*/</script>
+                                    <script type="text/javascript">/*<![CDATA[*/<script>
+var acc = document.getElementsByClassName("accordion");
+var i;
+
+for (i = 0; i < acc.length; i++) {
+  acc[i].addEventListener("click", function() {
+    this.classList.toggle("active");
+    var panel = this.nextElementSibling;
+    if (panel.style.maxHeight){
+      panel.style.maxHeight = null;
+    } else {
+      panel.style.maxHeight = panel.scrollHeight + "px";
+    } 
+  });
+}
+</script>/*]]>*/</script>
+                                    <script type="text/javascript">/* <![CDATA[ */
+
+			/* Optional: Temporarily hide the "tabber" class so it does not "flash"
+			on the page as plain HTML. After tabber runs, the class is changed
+			to "tabberlive" and it will appear. */
+
+			document.write('<style type="text/css">.tabber{display:none;}</style>');
+		/* ]]> */</script>
+                                    <div class="feedback">
+                                        <div class="ftext"><a id="feedback" href="#" style="color: #ffffff;">Send Feedback</a>
+                                        </div>
+                                        <div class="fimg">
+                                            <img src="../../Resources/Images/mail-white_40x30.png" style="width: 40;height: 30;" />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div><a data-close="true"></a>
+                </div>
+            </div>
+        </div>
+    </body>
+    <footer>
+        <div class="footer">
+            <p class="footer a" style="text-align: center; margin-top: 0pt; margin-bottom: 0pt;  margin-left: 40px;  padding:5px;"><span style="font-size: 9pt; color: #646569;">© Copyright <span class="mc-variable Variables.Current_Year variable">2025</span> Hewlett Packard Enterprise Development. All Rights Reserved.</span>
+            </p>
+        </div>
+    </footer>
+</html>

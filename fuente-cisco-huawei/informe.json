@@ -1,0 +1,32 @@
+[
+  {
+    "archivo": "aruba-aos8-vpn-ppk.html",
+    "para": "ARUBA",
+    "guardado": true,
+    "exploracion": true,
+    "intentos": [
+      {
+        "url": "https://arubanetworking.hpe.com/techdocs/ArubaOS/AOS_8x_WebHelp/Content/arubaos-solutions/vpn/vpn-ppk.htm",
+        "status": 200,
+        "bytes": 54520,
+        "guardado": true,
+        "verificado": false
+      }
+    ]
+  },
+  {
+    "archivo": "juniper-ssr100-ds-en.pdf",
+    "para": "JUNIPER",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://www.hpe.com/psnow/downloadDoc/a00150824enw.pdf?id=a00150824enw",
+        "status": 200,
+        "bytes": 4280442,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  }
+]
