@@ -1398,6 +1398,105 @@ jobs:
               { archivo: 'nokia-7250ixr-e-ds.pdf', tipo: 'pdf', para: 'NOKIA', urls: [
                 'https://www.nokia.com/asset/f/206825/', 'https://www.nokia.com/asset/206825/',
               ] },
+              // PQC que sigue en «no consta» (2026-10-28, tema pqc-fuente-y-fuentes-oficiales), solo
+              // documentos oficiales:
+              // · MikroTik: el changelog de cada version posterior a la 7.21 (la que trae la PPK). Si
+              //   uno nombra el RB1100AHx4, el hEX PoE lite o el PowerBox Pro, ese equipo corre esa
+              //   version. Las versiones que no existan fallan sin cortar la corrida.
+              { archivo: 'mikrotik-changelog-7.21.1.txt', tipo: 'texto', para: 'MIKROTIK', debeContener: "What's new", urls: [
+                'https://download.mikrotik.com/routeros/7.21.1/CHANGELOG',
+                'https://upgrade.mikrotik.com/routeros/7.21.1/CHANGELOG',
+              ] },
+              { archivo: 'mikrotik-changelog-7.21.2.txt', tipo: 'texto', para: 'MIKROTIK', debeContener: "What's new", urls: [
+                'https://download.mikrotik.com/routeros/7.21.2/CHANGELOG',
+                'https://upgrade.mikrotik.com/routeros/7.21.2/CHANGELOG',
+              ] },
+              { archivo: 'mikrotik-changelog-7.21.3.txt', tipo: 'texto', para: 'MIKROTIK', debeContener: "What's new", urls: [
+                'https://download.mikrotik.com/routeros/7.21.3/CHANGELOG',
+                'https://upgrade.mikrotik.com/routeros/7.21.3/CHANGELOG',
+              ] },
+              { archivo: 'mikrotik-changelog-7.21.4.txt', tipo: 'texto', para: 'MIKROTIK', debeContener: "What's new", urls: [
+                'https://download.mikrotik.com/routeros/7.21.4/CHANGELOG',
+                'https://upgrade.mikrotik.com/routeros/7.21.4/CHANGELOG',
+              ] },
+              { archivo: 'mikrotik-changelog-7.21.5.txt', tipo: 'texto', para: 'MIKROTIK', debeContener: "What's new", urls: [
+                'https://download.mikrotik.com/routeros/7.21.5/CHANGELOG',
+                'https://upgrade.mikrotik.com/routeros/7.21.5/CHANGELOG',
+              ] },
+              { archivo: 'mikrotik-changelog-7.21.6.txt', tipo: 'texto', para: 'MIKROTIK', debeContener: "What's new", urls: [
+                'https://download.mikrotik.com/routeros/7.21.6/CHANGELOG',
+                'https://upgrade.mikrotik.com/routeros/7.21.6/CHANGELOG',
+              ] },
+              { archivo: 'mikrotik-changelog-7.22.txt', tipo: 'texto', para: 'MIKROTIK', debeContener: "What's new", urls: [
+                'https://download.mikrotik.com/routeros/7.22/CHANGELOG',
+                'https://upgrade.mikrotik.com/routeros/7.22/CHANGELOG',
+              ] },
+              { archivo: 'mikrotik-changelog-7.22.1.txt', tipo: 'texto', para: 'MIKROTIK', debeContener: "What's new", urls: [
+                'https://download.mikrotik.com/routeros/7.22.1/CHANGELOG',
+                'https://upgrade.mikrotik.com/routeros/7.22.1/CHANGELOG',
+              ] },
+              { archivo: 'mikrotik-changelog-7.22.2.txt', tipo: 'texto', para: 'MIKROTIK', debeContener: "What's new", urls: [
+                'https://download.mikrotik.com/routeros/7.22.2/CHANGELOG',
+                'https://upgrade.mikrotik.com/routeros/7.22.2/CHANGELOG',
+              ] },
+              { archivo: 'mikrotik-changelog-7.22.3.txt', tipo: 'texto', para: 'MIKROTIK', debeContener: "What's new", urls: [
+                'https://download.mikrotik.com/routeros/7.22.3/CHANGELOG',
+                'https://upgrade.mikrotik.com/routeros/7.22.3/CHANGELOG',
+              ] },
+              { archivo: 'mikrotik-changelog-7.22.4.txt', tipo: 'texto', para: 'MIKROTIK', debeContener: "What's new", urls: [
+                'https://download.mikrotik.com/routeros/7.22.4/CHANGELOG',
+                'https://upgrade.mikrotik.com/routeros/7.22.4/CHANGELOG',
+              ] },
+              { archivo: 'mikrotik-changelog-7.23.txt', tipo: 'texto', para: 'MIKROTIK', debeContener: "What's new", urls: [
+                'https://download.mikrotik.com/routeros/7.23/CHANGELOG',
+                'https://upgrade.mikrotik.com/routeros/7.23/CHANGELOG',
+              ] },
+              { archivo: 'mikrotik-changelog-7.23.1.txt', tipo: 'texto', para: 'MIKROTIK', debeContener: "What's new", urls: [
+                'https://download.mikrotik.com/routeros/7.23.1/CHANGELOG',
+                'https://upgrade.mikrotik.com/routeros/7.23.1/CHANGELOG',
+              ] },
+              { archivo: 'mikrotik-changelog-7.23.2.txt', tipo: 'texto', para: 'MIKROTIK', debeContener: "What's new", urls: [
+                'https://download.mikrotik.com/routeros/7.23.2/CHANGELOG',
+                'https://upgrade.mikrotik.com/routeros/7.23.2/CHANGELOG',
+              ] },
+              { archivo: 'mikrotik-routeros-estable.txt', tipo: 'texto', para: 'MIKROTIK', debeContener: '7.', urls: [
+                'https://upgrade.mikrotik.com/routeros/NEWESTa7.stable',
+              ] },
+              // · Juniper: las notas de Junos OS 25.4R1 (su seccion «Post-Quantum Cryptography»); el
+              //   Feature Explorer (juniper-fe-7502.html) no lista el SRX4100 ni los SRX de sucursal.
+              { archivo: 'juniper-junos-25.4r1-rn.pdf', tipo: 'pdf', para: 'JUNIPER', urls: [
+                'https://www.juniper.net/documentation/us/en/software/junos/release-notes/25.4/junos-release-notes-25.4r1/junos-release-notes-25.4r1.pdf',
+              ] },
+              { archivo: 'juniper-fe-7502-2.html', tipo: 'html', para: 'JUNIPER', exploracion: true, urls: [
+                'https://apps.juniper.net/feature-explorer/feature/7502',
+              ] },
+              // · Nokia: la ficha de la serie 7220 IXR-D para SR Linux (D1, D2L, D3L y D5 del catalogo).
+              { archivo: 'nokia-7220ixr-d-ds.pdf', tipo: 'pdf', para: 'NOKIA', urls: [
+                'https://www.nokia.com/asset/f/207599/', 'https://www.nokia.com/asset/207599/',
+              ] },
+              // · Cisco: el roadmap de comunicaciones quantum-safe del Trust Center (Meraki MX y MX OS).
+              { archivo: 'cisco-quantum-safe-roadmap.pdf', tipo: 'pdf', para: 'CISCO', urls: [
+                'https://www.cisco.com/c/dam/en_us/about/doing_business/trust-center/docs/quantum-safe-communications-roadmap.pdf',
+              ] },
+              // · Aruba: las novedades de cada AOS 10 de los gateways 9000/9100/9200.
+              { archivo: 'aruba-aos10-novedades-10.8.1.0.html', tipo: 'html', para: 'ARUBA', exploracion: true, urls: [
+                'https://arubanetworking.hpe.com/techdocs/new-central/content/aos10x/whats-new-aos10.8.1.0.htm',
+              ] },
+              { archivo: 'aruba-aos10-novedades-10.8.0.0.html', tipo: 'html', para: 'ARUBA', exploracion: true, urls: [
+                'https://arubanetworking.hpe.com/techdocs/new-central/content/aos10x/whats-new-aos10.8.0.0.htm',
+              ] },
+              { archivo: 'aruba-aos10-novedades-10.7.2.0.html', tipo: 'html', para: 'ARUBA', exploracion: true, urls: [
+                'https://arubanetworking.hpe.com/techdocs/new-central/content/aos10x/whats-new-aos10.7.2.0.htm',
+              ] },
+              { archivo: 'aruba-aos10-novedades-10.7.1.0.html', tipo: 'html', para: 'ARUBA', exploracion: true, urls: [
+                'https://arubanetworking.hpe.com/techdocs/new-central/content/aos10x/whats-new-aos10.7.1.0.htm',
+              ] },
+              { archivo: 'aruba-aos10-novedades-10.7.0.0.html', tipo: 'html', para: 'ARUBA', exploracion: true, urls: [
+                'https://arubanetworking.hpe.com/techdocs/new-central/content/aos10x/whats-new-aos10.7.0.0.htm',
+              ] },
+              { archivo: 'aruba-aos10-novedades-10.6.0.0.html', tipo: 'html', para: 'ARUBA', exploracion: true, urls: [
+                'https://arubanetworking.hpe.com/techdocs/new-central/content/aos10x/whats-new-aos10.6.0.0.htm',
+              ] },
               { archivo: 'cisco-hig3-img', tipo: 'imagenes', para: 'CISCO', urls: [],
                 descubrirPiezas: { de: ['cisco-isr1100-hig-overview.html', 'cisco-sr8200-hig-overview.html'],
                   base: 'https://www.cisco.com/', dominios: ['cisco.com'], relativas: true,
