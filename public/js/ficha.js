@@ -357,6 +357,32 @@
     if (m.eolAnnounced) return { t: 'fin de venta anunciado', fuera: false };
     return null;
   }
+  // El ciclo de vida en el desplegable de equipos (petición del dueño, 2026-10-27: «resalta en
+  // rojo en el combo cuando los equipos están o van a estar fuera de venta»). Una sola regla para
+  // el desplegable de la ficha y para los selectores propios de cada página: fuera de venta (rango
+  // 2: `eol` o `lastOrder` vencido) y fin de venta anunciado (`eolAnnounced` aún vigente) salen en
+  // rojo. El color no va solo: la opción lleva además el texto («fuera de venta», «fin de venta el
+  // <fecha>»), que es lo único que ve quien no distingue el rojo o usa un desplegable nativo que no
+  // pinta colores (macOS, móvil). La línea anterior (`legacy`) no es fin de venta: no va en rojo.
+  // `fuera` (opcional) deja a la página sumar su propia regla de no proponible (Fortinet: sin SKU
+  // de hardware en la lista firmada).
+  function cicloOpcion(m, extra) {
+    if (!m) return null;
+    const fuera = rango(m) === 2 || !!(extra && extra.fuera);
+    if (fuera) return { ciclo: 'fuera', t: (marca(m) && marca(m).fuera) ? marca(m).t : 'fuera de venta' };
+    if (m.eolAnnounced) {
+      const f = m.eolAnnounced.lastOrder;
+      return { ciclo: 'anunciado', t: f ? `fin de venta el ${f}` : 'fin de venta anunciado' };
+    }
+    return null;
+  }
+  // Atributos y sufijo listos para una `<option>`: la clase la colorea (hoja controles.css) y el
+  // `data-ciclo` deja al `<select>` teñirse cuando la elegida es una de ellas (`:has`).
+  function opcionCiclo(m, extra) {
+    const c = cicloOpcion(m, extra);
+    if (!c) return { attr: '', sufijo: '', ciclo: null };
+    return { attr: ` class="opt-ciclo opt-ciclo-${c.ciclo}" data-ciclo="${c.ciclo}"`, sufijo: `  ·  ${c.t}`, ciclo: c.ciclo };
+  }
   function avisoDe(m) {
     const mk = marca(m);
     if (!mk) return '';
@@ -628,8 +654,11 @@
     const opciones = lista.map((m, i) => {
       const txt = cfg.etiqueta ? cfg.etiqueta(m, i) : m.id;
       const mk = marca(m);
-      return `<option value="${esc(m.id)}"${m.id === sel.id ? ' selected' : ''}>`
-        + `${esc(txt)}${mk ? '  ·  ' + mk.t : ''}${m.id === recomendado ? '  ·  recomendado' : ''}</option>`;
+      const oc = opcionCiclo(m);
+      // En rojo lo que está o va a estar fuera de venta; la línea anterior conserva su marca en texto.
+      const txtMarca = oc.ciclo ? oc.sufijo : (mk ? '  ·  ' + mk.t : '');
+      return `<option value="${esc(m.id)}"${oc.attr}${m.id === sel.id ? ' selected' : ''}>`
+        + `${esc(txt)}${esc(txtMarca)}${m.id === recomendado ? '  ·  recomendado' : ''}</option>`;
     }).join('');
     const mkSel = marca(sel);
 
@@ -1224,6 +1253,8 @@
     rango,
     recomendable,
     marca,
+    cicloOpcion,
+    opcionCiclo,
     cicloDeVida,
     cicloHtml,
     seccionPuertos,

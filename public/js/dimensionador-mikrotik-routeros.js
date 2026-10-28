@@ -473,7 +473,7 @@ function populateSelects(){
     return ca-cb||a[0].localeCompare(b[0]);
   });
   $('pickModel').innerHTML=ordenados.map(([g,ms])=>
-    `<optgroup label="${esc(g)}">`+ms.map(m=>`<option value="${esc(m.id)}">${esc(m.id)} — ${esc(m.seg)}${m.eol?' (EOL)':m.legacy?' (línea anterior)':''}</option>`).join('')+`</optgroup>`
+    `<optgroup label="${esc(g)}">`+ms.map(m=>{const oc=FICHA.opcionCiclo(m);return `<option value="${esc(m.id)}"${oc.attr}>${esc(m.id)} — ${esc(m.seg)}${oc.ciclo?esc(oc.sufijo):m.legacy?' (línea anterior)':''}</option>`;}).join('')+`</optgroup>`
   ).join('');
   $('supportTier').innerHTML=Object.entries(SUPPORT).filter(([c])=>c!=='training')
     .map(([c,t])=>`<option value="${c}">${esc(t.n)}</option>`).join('');

@@ -520,7 +520,7 @@ function populatePickModel(){
     for (const [, arr] of ordenadas) arr.sort((a, b) => capDe(a) - capDe(b));
     ordenadas.sort((a, b) => Math.min(...a[1].map(capDe)) - Math.min(...b[1].map(capDe)));
     return ordenadas.map(([g, arr]) =>
-      `<optgroup label="${g}">${arr.map(m => `<option value="${m.id}">${m.id} — ${m.fam}</option>`).join('')}</optgroup>`).join('');
+      `<optgroup label="${g}">${arr.map(m => { const oc = FICHA.opcionCiclo(m); return `<option value="${m.id}"${oc.attr}>${m.id} — ${m.fam}${oc.sufijo}</option>`; }).join('')}</optgroup>`).join('');
   })();
 }
 

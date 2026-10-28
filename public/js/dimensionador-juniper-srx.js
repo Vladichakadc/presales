@@ -209,7 +209,7 @@ function sincronizarConBom(m) {
   for (const [, ms] of ordenados) ms.sort((a, b) => capDe(a) - capDe(b));
   ordenados.sort((a, b) => Math.min(...a[1].map(capDe)) - Math.min(...b[1].map(capDe)));
   sel.innerHTML = ordenados.map(([g, ms]) =>
-    `<optgroup label="${esc(g)}">` + ms.map((x) => `<option value="${esc(x.id)}">${esc(x.id)} — ${esc(x.seg)}</option>`).join('') + `</optgroup>`
+    `<optgroup label="${esc(g)}">` + ms.map((x) => { const oc = FICHA.opcionCiclo(x); return `<option value="${esc(x.id)}"${oc.attr}>${esc(x.id)} — ${esc(x.seg)}${esc(oc.sufijo)}</option>`; }).join('') + `</optgroup>`
   ).join('');
   // Al reconstruir la lista se pierde el valor: se repone si ese equipo sigue existiendo en
   // la plataforma actual, para no tirar una eleccion manual al mover cualquier parametro.

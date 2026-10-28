@@ -971,7 +971,7 @@ $('consolidadoCerrar').addEventListener('click', () => { $('modalConsolidado').h
     for(const [, arr] of ordenadas) arr.sort((a, b) => capDe(a) - capDe(b));
     ordenadas.sort((a, b) => Math.min(...a[1].map(capDe)) - Math.min(...b[1].map(capDe)));
     return ordenadas.map(([g, arr]) =>
-      `<optgroup label="${esc(g)}">${arr.map(m => `<option value="${esc(m.id)}">${esc(m.id)} — ${esc(m.fam)}</option>`).join('')}</optgroup>`).join('');
+      `<optgroup label="${esc(g)}">${arr.map(m => { const oc = FICHA.opcionCiclo(m); return `<option value="${esc(m.id)}"${oc.attr}>${esc(m.id)} — ${esc(m.fam)}${esc(oc.sufijo)}</option>`; }).join('')}</optgroup>`).join('');
   })();
 
   $('opticsAll').innerHTML = Object.keys(OPTICS).map(k => `

@@ -2698,9 +2698,10 @@ function poblarPickModel(cumplen, recomendado){
       // de ficha.js, que distingue «fuera de venta» (eol declarado) de «fin de venta
       // vencido» (la fecha de último pedido ya pasó) — antes ambos decían «fin de
       // venta», que con la fecha en pasado subestimaba la condición.
-      const mc=FICHA.marca?FICHA.marca(m):null;
-      const marca=mc&&mc.fuera?' · '+mc.t:m.id===recomendado?' · recomendado':(ids.has(m.id)?' · cumple':'');
-      return `<option value="${esc(m.id)}">${esc(m.id)} — ${esc(m.seg)}${marca}</option>`;
+      // 2026-10-27: en rojo lo que está o va a estar fuera de venta (FICHA.opcionCiclo, la regla común).
+      const oc=FICHA.opcionCiclo(m);
+      const marca=oc.ciclo?oc.sufijo:m.id===recomendado?' · recomendado':(ids.has(m.id)?' · cumple':'');
+      return `<option value="${esc(m.id)}"${oc.attr}>${esc(m.id)} — ${esc(m.seg)}${esc(marca)}</option>`;
     }).join('')+'</optgroup>').join('');
   if(actual&&[...sel.options].some(o=>o.value===actual)) sel.value=actual;
   // El chooser de ópticas se repinta con el combo YA poblado (2026-09-17): lee el modelo
