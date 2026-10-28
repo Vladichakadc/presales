@@ -124,3 +124,40 @@ test('borrar quita el perfil pedido, no el de al lado', () => {
   // y `deepStrictEqual` lo rechaza por identidad de prototipo aunque el contenido coincida.
   assert.deepStrictEqual([...g.BOM.perfiles().map((p) => p.nombre)], ['Uno', 'Tres']);
 });
+
+// EL CICLO DE VIDA EN EL CONSOLIDADO (2026-10-28, mejora propuesta al cerrar el PR #41). El BOM de
+// varias sedes no lleva «Supuestos»: cada perfil guarda el ciclo de su equipo y el consolidado
+// avisa, en pantalla y en el Excel. Un perfil guardado antes no trae el dato: «sin dato», nunca
+// «vigente».
+test('el consolidado avisa del fin de venta de cada perfil y dice cuáles no traen el dato', () => {
+  const g = cargar('public/js/bom.js');
+  const B = g.BOM;
+  const HOY = Date.parse('2026-10-28');
+  const c8300 = B.cicloDe({ eolAnnounced: { pid: 'C8300-1N1S-6T', lastOrder: '2027-01-31', sucesor: 'Cisco Secure Router C8375-E-G2', url: 'https://www.cisco.com/x-eol.html' } });
+  const lista = [
+    { ...perfil('Sucursal', 'cisco', 50, []), modelo: 'Catalyst 8300-1N1S-6T', ciclo: c8300 },
+    { ...perfil('Hub', 'cisco', 2, []), modelo: 'Cisco Secure Router C8475-G2', ciclo: null },
+    { ...perfil('Tienda vieja', 'aruba', 10, []), modelo: 'EC-10104' },
+  ];
+  const { avisos, sinDato } = B.cicloDePerfiles(lista, HOY);
+  assert.strictEqual(avisos.length, 1, 'solo el perfil con fin de venta avisa; el vigente sin dato de ciclo, no');
+  assert.match(avisos[0].texto, /^Perfil «Sucursal» \(50 sede\(s\), Catalyst 8300-1N1S-6T\): el equipo tiene fin de venta anunciado \(último pedido el 2027-01-31\); sucesor según el boletín: Cisco Secure Router C8375-E-G2; boletín: https:\/\/www\.cisco\.com\/x-eol\.html\.$/);
+  assert.strictEqual(JSON.stringify(sinDato.map((p) => p.nombre)), '["Tienda vieja"]', 'el perfil guardado antes lo dice, no se da por vigente');
+  const html = B.avisoCicloConsolidado(lista);
+  assert.match(html, /Ciclo de vida del despliegue/);
+  assert.match(html, /Sin dato de ciclo de vida en el perfil «Tienda vieja»/);
+  assert.strictEqual(B.avisoCicloConsolidado([{ ...perfil('Hub', 'cisco', 2, []), ciclo: null }]), '', 'sin nada que decir, nada');
+});
+
+test('las cinco páginas con perfiles guardan el ciclo y lo llevan al consolidado', () => {
+  const fs = require('fs');
+  const path = require('path');
+  for (const p of ['aruba-edgeconnect', 'cisco-catalyst8k', 'fortinet-fortigate', 'huawei-netengine', 'mikrotik-routeros']) {
+    const js = fs.readFileSync(path.join(__dirname, '..', 'public', 'js', `dimensionador-${p}.js`), 'utf8');
+    assert.match(js, /BOM\.guardarPerfil\(\{[^}]*ciclo: ?BOM\.cicloDe\(/, `${p}: el perfil no guarda el ciclo de su equipo`);
+    assert.match(js, /sinRefs: ?true,\s*perfiles: ?l,/, `${p}: el consolidado no pasa los perfiles al Excel`);
+    assert.match(js, /BOM\.avisoCicloConsolidado\(/, `${p}: el consolidado en pantalla no avisa`);
+  }
+  const bom = fs.readFileSync(path.join(__dirname, '..', 'public', 'js', 'bom.js'), 'utf8');
+  assert.match(bom, /if \(m\.sinRefs && Array\.isArray\(m\.perfiles\)\)/, 'el Excel del consolidado no escribe el ciclo');
+});

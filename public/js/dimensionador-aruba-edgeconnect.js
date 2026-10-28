@@ -893,7 +893,7 @@ $('btnGuardarPerfil').addEventListener('click',()=>{
   if(!nombre||!sedes){ $('nombrePerfil').focus(); return; }
   const m=MODELS.find(x=>x.id===$('pickModel').value);
   if(!m||!bomFilas.length) return;
-  BOM.guardarPerfil({nombre, sedes, modelo:m.id, vendor:VENDOR,
+  BOM.guardarPerfil({nombre, sedes, modelo:m.id, vendor:VENDOR, ciclo:BOM.cicloDe(m),
     fecha:new Date().toISOString().slice(0,10),
     version:2, campos:capturarCampos(), filas:JSON.parse(JSON.stringify(bomFilas))});
   $('nombrePerfil').value=''; $('perfilSedes').value='';
@@ -972,7 +972,7 @@ function consolidarPerfiles(){
   const meta={
     titulo:`BOM global consolidado — ${l.length} perfil(es), ${totalSedes} sedes`,
     subtitulo:l.map(p=>`${p.nombre} ×${p.sedes} (${p.modelo})`).join(' · '),
-    archivo:multi?'BOM_global_multifabricante':'BOM_global_aruba', sinRefs:true,
+    archivo:multi?'BOM_global_multifabricante':'BOM_global_aruba', sinRefs:true, perfiles:l,
     notas:[
       'REGLAS DE CONSOLIDACION (SPEC parte B, M6):',
       '  Equipo, suscripciones y soporte: cantidad por sede x numero de sedes del perfil.',
@@ -1023,7 +1023,7 @@ $('btnConsolidar').addEventListener('click',()=>{
         :'Ningún headend del catálogo llega a esa cifra: hay que repartir en varios VPNC o regiones SD-WAN. ')
       +'El throughput cifrado agregado y el crecimiento también cuentan: es un mínimo, no el diseño del datacenter.</p>'
     :'';
-  $('consolidadoTabla').innerHTML=aviso+avisoVpnc+BOM.renderTabla(filas,{dto:dtoActual(), sinRefs:true});
+  $('consolidadoTabla').innerHTML=BOM.avisoCicloConsolidado(meta.perfiles)+aviso+avisoVpnc+BOM.renderTabla(filas,{dto:dtoActual(), sinRefs:true});
   $('modalConsolidado').hidden=false;
   $('xlsConsolidadoBtn').onclick=()=>BOM.exportarExcel(filas,meta);
 });

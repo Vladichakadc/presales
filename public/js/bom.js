@@ -37,6 +37,8 @@
 .bom-quitar{margin-left:6px;border:1px solid var(--rule);background:var(--card);color:var(--steel);border-radius:3px;cursor:pointer;font-size:12px;line-height:1;padding:1px 5px}
 .bom-quitar:hover{border-color:var(--red);color:var(--red-txt,var(--red))}
 .bom-aviso{font-size:11.5px;color:var(--amber);margin:10px 0 0;line-height:1.45}
+.bom-aviso-ciclo{color:#B42318;border-left:3px solid #B42318;padding:4px 0 4px 10px}
+.bom-aviso-ciclo ul{margin:4px 0;padding-left:18px}
 .bom-ctx{font-size:12.5px;color:var(--steel);margin:0 0 10px;padding-bottom:8px;border-bottom:1px solid var(--rule)}
 .bom-pend{display:inline-block;font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.06em;text-transform:uppercase;padding:1px 5px;border-radius:2px;border:1px solid var(--amber);color:var(--amber);margin-left:6px;vertical-align:1px;white-space:nowrap}
 .bom-cant-calc{border-style:dashed}
@@ -752,6 +754,43 @@
     return { filas, linea: linea || null };
   }
 
+  // El ciclo de vida de un despliegue multi-sede (2026-10-28, mejora propuesta al cerrar el PR #41).
+  // El BOM consolidado no lleva hoja «Supuestos», y con ella se iba el aviso de fin de venta: un
+  // despliegue de 50 sedes con un equipo cuyo último pedido es en enero salía sin una línea que lo
+  // dijera, y es el pedido grande el que más sufre el corte. Cada perfil guarda el `ciclo` de su
+  // equipo al crearse (`BOM.cicloDe`); uno guardado antes no lo trae, y eso se dice: «sin dato»,
+  // nunca «vigente». Puro: la fecha de hoy entra por parámetro.
+  function cicloDePerfiles(lista, hoy) {
+    const avisos = [];
+    const sinDato = [];
+    for (const p of (lista || [])) {
+      if (!p || !Object.prototype.hasOwnProperty.call(p, 'ciclo')) { if (p) sinDato.push(p); continue; }
+      const c = cicloDelEquipo(p.ciclo, hoy);
+      if (!c || !c.linea) continue;
+      const a = (p.ciclo && p.ciclo.eolAnnounced) || {};
+      const sucesor = a.sucesor ? `sucesor según el boletín: ${a.sucesor}`
+        : p.ciclo.sucesor ? `sucesor natural: ${p.ciclo.sucesor} (inferencia por capacidad, sin documento oficial)` : '';
+      avisos.push({ perfil: p.nombre, modelo: p.modelo, sedes: p.sedes, vendor: p.vendor,
+        texto: `Perfil «${p.nombre}» (${p.sedes} sede(s), ${p.modelo}): ${c.linea}${sucesor ? `; ${sucesor}` : ''}${a.url ? `; boletín: ${a.url}` : ''}.` });
+    }
+    return { avisos, sinDato };
+  }
+  // El mismo aviso para el modal del consolidado en pantalla.
+  function avisoCicloConsolidado(lista) {
+    const { avisos, sinDato } = cicloDePerfiles(lista);
+    let html = '';
+    if (avisos.length) {
+      html += '<div class="bom-aviso bom-aviso-ciclo" role="note"><b>Ciclo de vida del despliegue:</b><ul>'
+        + avisos.map((x) => `<li>${esc(x.texto)}</li>`).join('') + '</ul>'
+        + 'Confirmar la disponibilidad con el fabricante o el mayorista antes de comprometer un despliegue por fases.</div>';
+    }
+    if (sinDato.length) {
+      html += `<p class="bom-aviso">Sin dato de ciclo de vida en ${sinDato.length === 1 ? 'el perfil' : 'los perfiles'} `
+        + `${sinDato.map((p) => `«${esc(p.nombre)}»`).join(', ')}: ${sinDato.length === 1 ? 'se guardó' : 'se guardaron'} antes de que los perfiles lo registraran. Guárdalo de nuevo para comprobarlo.</p>`;
+    }
+    return html;
+  }
+
   function matrizSupuestos(meta, entorno) {
     const m = meta || {};
     const s = m.supuestos || {};
@@ -1002,6 +1041,19 @@
         if (typeof cel.value === 'number') cel.numFmt = '#,##0.00';
       }
     });
+
+    // El consolidado multi-sede no lleva «Supuestos»: el ciclo de vida de cada perfil va aquí, en la
+    // misma hoja BOM (la página pasa la lista de perfiles que consolidó en `meta.perfiles`).
+    if (m.sinRefs && Array.isArray(m.perfiles)) {
+      const { avisos, sinDato } = cicloDePerfiles(m.perfiles);
+      if (avisos.length || sinDato.length) {
+        hoja.addRow([]);
+        hoja.addRow(['', 'CICLO DE VIDA DE LOS EQUIPOS DEL DESPLIEGUE']).font = { bold: true };
+        for (const x of avisos) hoja.addRow(['', `Atención — ${x.texto}`]).font = { bold: true, color: { argb: 'FFB42318' } };
+        if (avisos.length) hoja.addRow(['', 'Confirmar la disponibilidad con el fabricante o el mayorista antes de comprometer un despliegue por fases.']);
+        if (sinDato.length) hoja.addRow(['', `Sin dato de ciclo de vida: ${sinDato.map((p) => `«${p.nombre}» (${p.modelo || 'sin modelo'})`).join(', ')}; guardado antes de que los perfiles lo registraran.`]);
+      }
+    }
 
     // Hoja «Supuestos» (2026-10-19), segunda: el escenario de UNA pantalla. El BOM global
     // consolidado (`sinRefs`) mezcla perfiles de varias, así que no la lleva.
@@ -1381,7 +1433,7 @@
     });
   }
 
-  global.BOM = { renderTabla, exportarExcel, comoTexto, matrizExcel, matrizSupuestos, cicloDe, cicloDelEquipo, fuentesDelEquipo, money, esc, claveFila,
+  global.BOM = { renderTabla, exportarExcel, comoTexto, matrizExcel, matrizSupuestos, cicloDe, cicloDelEquipo, cicloDePerfiles, avisoCicloConsolidado, fuentesDelEquipo, money, esc, claveFila,
     enviarACotizador, recogerEntrada, montarBotonCotizador, normalizar,
     sincronizar, soltarManual, avisoDesvio, fijarRepintado,
     agregarRef, quitarRef, cantidadRef, refsExtra, fijarVendor,

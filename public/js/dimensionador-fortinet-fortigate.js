@@ -1698,7 +1698,7 @@ $('btnGuardarPerfil').addEventListener('click', () => conBoton($('btnGuardarPerf
   if (!nombre || !sedes) { $('perfilMsg').textContent = 'Pon un nombre y el número de sedes idénticas.'; $('nombrePerfil').focus(); return; }
   const v = await confirmar('perfil');
   if (!v.ok) return;
-  BOM.guardarPerfil({ nombre, sedes, modelo: RES.seleccion.id, vendor: VENDOR, fecha: new Date().toISOString().slice(0, 10),
+  BOM.guardarPerfil({ nombre, sedes, modelo: RES.seleccion.id, vendor: VENDOR, ciclo: BOM.cicloDe(MODELS.find((x) => x.id === RES.seleccion.id)), fecha: new Date().toISOString().slice(0, 10),
     version: 2, huella: RES.scenarioHash, puerta: RES.quoteGate, campos: capturarCampos(), filas: JSON.parse(JSON.stringify(bomFilas)) });
   $('nombrePerfil').value = '';
   $('perfilSedes').value = '';
@@ -1739,6 +1739,7 @@ function consolidarPerfiles() {
     subtitulo: l.map((x) => `${x.nombre} ×${x.sedes} (${x.modelo})`).join(' · '),
     archivo: multi ? 'BOM_global_multifabricante' : 'BOM_global_fortinet',
     sinRefs: true,
+    perfiles: l,
     notas: ['REGLAS DE CONSOLIDACION (FortiGate):',
       '  Equipo, licencias y soporte: cantidad por sede x sedes del perfil. En HA cada nodo lleva su propia suscripcion.',
       '  Precios: los vigentes el dia en que se guardo cada perfil; cada perfil lleva la huella de su escenario.'],
@@ -1758,7 +1759,7 @@ $('btnConsolidar').addEventListener('click', () => conBoton($('btnConsolidar'), 
   const { filas, meta, totalSedes, fabricantes } = consolidarPerfiles();
   if (!totalSedes) return;
   $('consolidadoSub').textContent = `${meta.subtitulo} — ${totalSedes} sedes en total`;
-  $('consolidadoTabla').innerHTML = (fabricantes.length > 1 ? `<p class="bom-aviso">Consolidado <b>multi-fabricante</b> (${esc(fabricantes.join(', '))}).</p>` : '')
+  $('consolidadoTabla').innerHTML = BOM.avisoCicloConsolidado(meta.perfiles) + (fabricantes.length > 1 ? `<p class="bom-aviso">Consolidado <b>multi-fabricante</b> (${esc(fabricantes.join(', '))}).</p>` : '')
     + BOM.renderTabla(filas, { dto: dtoActual(), sinRefs: true });
   $('modalConsolidado').hidden = false;
   $('xlsConsolidadoBtn').onclick = () => BOM.exportarExcel(filas, meta);
