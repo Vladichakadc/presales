@@ -6,7 +6,7 @@
 - **Estado:** en curso
 - **Actualizado:** 2026-10-28 16:30
 - **Archivos que toca:** public/js/bom.js, public/js/dimensionador-aruba-edgeconnect.js, public/js/dimensionador-cisco-catalyst8k.js, public/js/dimensionador-fortinet-fortigate.js, public/js/dimensionador-huawei-netengine.js, public/js/dimensionador-juniper-srx.js, public/js/dimensionador-mikrotik-routeros.js, public/js/dimensionador-nokia-7750sr.js, public/dimensionador-aruba-edgeconnect.html, test/bom-perfiles.test.js, test/e2e/
-- **Siguiente paso:** batería e2e del panel común (Huawei, MikroTik, Aruba, Cisco) y verificación completa en modo producción
+- **Siguiente paso:** verificación en modo producción (pantallas, contraste de huawei, cisco, aruba, mikrotik, nokia-sr y juniper si existe; e2e completa; puerta), PR y cierre
 
 ## Encargo del dueño
 
@@ -25,7 +25,7 @@ RELEVO.md, «el panel de perfiles, un solo módulo».
 
 ## Falta
 
-- Batería e2e; verificar, auditar, pantallas, contraste, e2e, puerta; PR y cierre.
+- verificar (1221/1221) y auditar en verde; faltan, auditar, pantallas, contraste, e2e, puerta; PR y cierre.
 
 ## Decisiones y hallazgos
 

@@ -41,6 +41,8 @@ abajo).
 | `e2e-accesibilidad.js` | axe-core (WCAG 2.1 A/AA) en 17 estados de pantalla y reflujo a 640 px (200 % de zoom). No sustituye la prueba con un lector de pantalla real. |
 | `e2e-asentar.js` | El contrato de `asentar()`, sobre una página sintética: espera a un temporizador corto y a una petición lenta, no a uno largo, no se cuelga con una imagen diferida fuera de la vista y falla si la página no lleva rastreador. Comprobado saboteando el rastreador dos veces. |
 | `e2e-entradas-limite.js` | Entradas límite en los nueve dimensionadores (2026-10-01): caudal y sedes negativos se leen como ninguno o como una sede, el formulario vacío de Nokia 7750 SR no recomienda, ningún «null/undefined/NaN» en las pestañas que lee el usuario (salvo «Fuentes», que cita campos a propósito), y un enlace con cada modo en la URL abre sin excepciones. Nació de un recorrido con valores límite que encontró seis errores que ninguna otra batería veía. |
+| `e2e-perfiles-juniper-nokia.js` | Perfiles multi-sede en Juniper (SRX elegido a mano y SSR) y Nokia 7750: cargar repone el escenario, la lista es de cada página y el consolidado y su Excel juntan los dos fabricantes con el ciclo de vida puesto al día. |
+| `e2e-perfiles-modulo.js` | El panel de perfiles común (`BOM.montarPerfiles`, 2026-10-28) en Huawei, MikroTik, Cisco y Aruba: guardar dice qué falta y qué guardó, la lista es de la página, la ventana del consolidado es un diálogo con nombre que recibe el foco, Escape la cierra devolviendo el foco y pinchar fuera también. |
 
 ## Dónde corre
 
