@@ -7,7 +7,7 @@
 - **Tema:** Aviso cuando la cabeza de main lleva más de 90 min sin desplegarse en Railway (mejora aprobada)
 - **Rama:** claude/vigilia-despliegue
 - **Cuenta:** servicioiptv2025, sesión 01V8T7S92WvujFK1KCusavSu
-- **Estado:** en curso
+- **Estado:** módulo, prueba y workflow hechos y empujados; falta lanzarlo a mano en la rama y el cierre.
 - **Actualizado:** 2026-10-28 21:20
 - **Archivos que toca:** scripts/vigilia-despliegue.js, .github/workflows/vigilia-despliegue.yml, test/vigilia-despliegue.test.js, test/workflows-permisos.test.js
 - **Siguiente paso:** módulo, workflow y pruebas; lanzarlo a mano en la rama y leer su decisión.
