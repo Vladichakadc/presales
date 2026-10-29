@@ -396,7 +396,8 @@ Módulos compartidos:
   `BOM.sincronizar()` repinta siempre (también sin candidato). Referencias añadidas a mano en una
   sola clave para los siete, `fabricante|sku`. Simulador de precio neto, TCO sobre las filas (qué
   es OPEX lo declara la página), perfiles multi-sede de todos los fabricantes en una clave (siete
-  páginas; no la 7220 IXR ni Starlink; el `vendor` del perfil es la clave de la ruta de catálogo de su
+  páginas, con un solo panel: `BOM.montarPerfiles(opciones)` monta lista, guardar, cargar, consolidar
+  y la ventana, y cada página solo declara lo suyo; los ids del marcado son el contrato; no la 7220 IXR ni Starlink; el `vendor` del perfil es la clave de la ruta de catálogo de su
   página —`nokia-sr` en el 7750— y `NOMBRE_FABRICANTE` la traduce al enseñarla), y el
   traspaso al cotizador: el equipo viaja como nombre (su precio lo pone `CATALOG`) y el resto del
   BOM como referencias; falla cerrado si la fila del equipo no casa. El Excel (ExcelJS) lleva
