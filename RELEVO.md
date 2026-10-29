@@ -1,6 +1,6 @@
 # Relevo
 
-Última actualización: 2026-10-29 · PR #64
+Última actualización: 2026-10-29 · PR #65
 
 Informe para continuar el trabajo. Lo pidió el dueño del repositorio el 2026-10-27: «de aquí en
 adelante, un informe de pendientes y mejoras para que la cuenta **servicioiptv2025@gmail.com**
@@ -33,6 +33,7 @@ está en curso no va aquí: lo dice `npm run traspasos` (protocolo en `docs/tras
 
 ## Estado al cerrar esta entrega
 
+- **2026-10-29 · PR #65**: la revisión de los pendientes que esperan documento, registrada uno por uno en *Esperan un documento oficial* (qué se buscó, qué se encontró, qué lo cierra). Ninguno se cierra sin su documento.
 - **2026-10-29 · PR #64**: la cadencia de la vigilia del despliegue, medida: una corrida programada en
   ~8 h donde se esperaban ~16. El aviso llega, pero puede llegar tarde. Se vuelve a medir el
   2026-11-05 (ver *Vigilar* en `PENDIENTES.md`). La PQC de los SRX se contrastó con el Feature
@@ -258,6 +259,18 @@ traspaso (el #37, de otra sesión, se fusionó mientras se cerraba esta).
 1. **Mejoras propuestas**: las de abajo, cuando el dueño las apruebe (no se hacen solas).
 
 ### Esperan un documento oficial (se cierran trayéndolo por Actions)
+
+**Revisión del 2026-10-29 (PR #65), uno por uno.** Ninguno se cierra: cada uno necesita un documento que hoy no existe o que esta sesión no alcanza, y marcarlo cerrado sin él inventaría el dato.
+
+| Pendiente | Qué se buscó el 2026-10-29 | Qué se encontró | Por qué sigue abierto · lo que lo cierra |
+|---|---|---|---|
+| PQC del SRX4100 y los SRX de sucursal (300/320/340/345/380) | Feature Explorer de Juniper, función 7502, y «Get started with PQC» de Junos | La tabla oficial nombra SRX1500, 1600, 2300, 4200, 4300 y 4700 con su versión: casa con el catálogo. Los demás no salen | No salir no es «no la trae». Lo cierra que la tabla los añada (entran como `pqc`) o un documento que diga que no (`pqcNo`) |
+| PQC de los gateways Aruba 9004-LTE, 9106 y 9114 | Novedades de AOS 8 y gateways soportados de Central | Ninguna de las dos los nombra para la PPK | Lo cierran las notas de una versión de AOS-8 que los nombre, o la referencia de CLI de AOS-10 con `ppk-mandatory` en el gateway |
+| PQC de los Meraki MX y G2-MX | Búsqueda de PPK / RFC 8784 en Meraki | Solo la norma y sus borradores en el IETF; el roadmap quantum-safe de Cisco (ago-2026) cita el TLS del Dashboard | Lo cierra una página de Meraki que dé PPK o ML-KEM en Auto VPN o en la VPN de terceros |
+| PQC de los Nokia 7250 IXR y 7220 IXR | Sin documento nuevo desde el PR #49 | Sus fichas R26 no llaman quantum-safe a su MACsec (7250) ni nombran MACsec (7220) | Lo cierra una ficha o guía de Nokia que lo diga |
+| PQC y ciclo de vida de Huawei | No se buscó: Info-Finder pide sesión | — | Lo cierra la cuenta Huawei del dueño |
+| Datos sueltos de Cisco (ficha del Secure Firewall dedicado, precio de Secure Access, velocidad mínima del mGig de los C8111/C8121-G2-MX, módulos del ASR, breakout 4x10G) | Sin documento nuevo | — | Cada uno, su documento por el transporte; el precio de Secure Access, CCW (sin acceso desde la sesión) |
+
 
 - **Criptografía post-cuántica sin documento**: Huawei (pide la cuenta); de los gateways AOS de
   Aruba, el 9004-LTE, el 9106 y el 9114 (los demás la traen con AOS-8 desde el PR #49; con AOS-10
