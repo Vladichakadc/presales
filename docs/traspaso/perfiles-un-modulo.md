@@ -3,10 +3,10 @@
 - **Tema:** el panel de perfiles multi-sede de las siete páginas, en un solo módulo (`BOM.montarPerfiles`)
 - **Rama:** claude/perfiles-un-modulo
 - **Cuenta:** vladichakadc@gmail.com (sesión 016ruRWCH48mtdRjcg83pvKa)
-- **Estado:** en curso
-- **Actualizado:** 2026-10-28 16:30
+- **Estado:** cerrado sin fusionar: duplicado del PR #62 (claude/panel-perfiles-modulo), declarado antes
+- **Actualizado:** 2026-10-28 21:45
 - **Archivos que toca:** public/js/bom.js, public/js/dimensionador-aruba-edgeconnect.js, public/js/dimensionador-cisco-catalyst8k.js, public/js/dimensionador-fortinet-fortigate.js, public/js/dimensionador-huawei-netengine.js, public/js/dimensionador-juniper-srx.js, public/js/dimensionador-mikrotik-routeros.js, public/js/dimensionador-nokia-7750sr.js, public/dimensionador-aruba-edgeconnect.html, test/bom-perfiles.test.js, test/e2e/
-- **Siguiente paso:** verificación en modo producción (pantallas, contraste de huawei, cisco, aruba, mikrotik, nokia-sr y juniper si existe; e2e completa; puerta), PR y cierre
+- **Siguiente paso:** ninguno en esta rama. Si el dueño lo quiere, `test/e2e/e2e-perfiles-modulo.js` (Huawei, MikroTik, Cisco y Aruba en Chromium) se puede llevar al PR #62 tras su fusión
 
 ## Encargo del dueño
 
@@ -35,3 +35,11 @@ RELEVO.md, «el panel de perfiles, un solo módulo».
 ## Verificación
 
 - `node --test test/bom-perfiles.test.js`: 18/18. Lint limpio en lo tocado.
+
+## Cierre
+
+- El mismo tema lo declaró antes otra sesión (rama `claude/panel-perfiles-modulo`, PR #62, commit de
+  las 21:22 contra el primero de esta rama a las 21:25). Por la regla de traspaso no se toma un tema
+  ajeno: esta rama no se fusiona. Lo que esta tiene y la otra no, por si se quiere llevar: la batería
+  `e2e-perfiles-modulo.js` y la prueba que rechaza en una página cualquier oyente propio de la
+  ventana (`'modalConsolidado').hidden = …`, `$('consolidadoCerrar')`).
