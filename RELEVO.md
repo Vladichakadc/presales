@@ -1,6 +1,6 @@
 # Relevo
 
-Última actualización: 2026-10-28 · PR #56
+Última actualización: 2026-10-28 · PR #59
 
 Informe para continuar el trabajo. Lo pidió el dueño del repositorio el 2026-10-27: «de aquí en
 adelante, un informe de pendientes y mejoras para que la cuenta **servicioiptv2025@gmail.com**
@@ -33,6 +33,15 @@ está en curso no va aquí: lo dice `npm run traspasos` (protocolo en `docs/tras
 
 ## Estado al cerrar esta entrega
 
+- **2026-10-28 · PR #59**: **la vigilia del despliegue** (la mejora propuesta al cerrar el PR #56).
+  `vigilia-despliegue.yml` mira cada media hora la cabeza de `main`, su CI y sus despliegues de
+  producción; si pasan 90 min sin ningún despliegue en `success`, abre un issue con la etiqueta
+  `despliegue-en-espera` y la causa que se ve desde GitHub (`ci-rojo`, `ci-sin-terminar`,
+  `en-cola`, `sin-despliegue`), y lo cierra solo cuando la cabeza queda desplegada. La decisión vive
+  en `scripts/vigilia-despliegue.js`, con su prueba sin red. **Criterio que conviene conservar**: la
+  sonda avisa de lo que falla y la vigilia de lo que no llega; un despliegue fallido no lo repite la
+  vigilia. Con el issue abierto, el remedio de siempre: mirar Railway (`list-deployments`) y, si no
+  ve el commit, un commit vacío en `main` o «Redeploy».
 - **2026-10-28 · PR #56**: **Fortinet F3, cerrado con documento oficial.** La guía de FortiOS 7.6.6
   («Single FortiGuard license for FortiGate A-P HA cluster») da la licencia FortiGuard única en
   activo-pasivo a las series 40F, 60F, 70F, 80F y 100F: los 8 FortiGate del catálogo llevan
@@ -177,7 +186,8 @@ está en curso no va aquí: lo dice `npm run traspasos` (protocolo en `docs/tras
   Por el camino se arregló que **el Excel de Cisco no se descargaba** (la hoja «Supuestos» recibía
   un texto donde espera pares).
 - **Producción**: `main` lleva esta entrega (ver `git log`); Railway despliega cuando CI pasa y la
-  sonda (`sonda-produccion.yml`) abre un issue con la etiqueta `despliegue` si algo falla.
+  sonda (`sonda-produccion.yml`) abre un issue con la etiqueta `despliegue` si algo falla; si el
+  despliegue ni llega, la vigilia (`vigilia-despliegue.yml`) abre uno con `despliegue-en-espera`.
 - **Sexagesimoprimera entrega**: las figuras del dimensionador Cisco dicen qué es cada número. 67 caras de 38
   modelos traen la leyenda de su ficha o guía de hardware (número, rótulo literal y traducción);
   la lupa la pinta bajo la figura y la cambia con la cara, y la tarjeta la ofrece plegada
@@ -306,7 +316,7 @@ existen los workflows de transporte. Huawei y HPE niegan además el navegador au
   función principal de `traer.js` con `fetch` y el directorio inyectables, y una prueba con unas diez
   respuestas fabricadas; si se hace mal, el workflow deja de correr el script al cargarlo: se prueba
   con una corrida real antes de fusionar, como en el PR #54. Se decide por el dueño.
-- (Hecha en el PR #55: los perfiles multi-sede en Juniper y Nokia 7750. Hecha en el PR #54: la foto desde la página de cada modelo, hasta donde Cisco la publica, y el transporte fuera del YAML. Hecha en el PR #50: los perfiles de otros fabricantes al día al consolidar. Hecha en el PR #46: el ciclo del perfil al día al consolidar. Hecha en el PR #45: la fuente de la PQC enlazada a `fuentes.js`. Hecha en el PR #44: el ciclo en el consolidado multi-sede. Hecha en el PR #41: el fin de venta en el Excel. Hecha en el PR #40: la foto de producto en el Excel. Hecha en la septuagesimoprimera: el «no la trae» documentado, `pqcNo`. Hecha en la sexagesimoctava: la
+- (Hecha en el PR #59: la vigilia del despliegue. Hecha en el PR #55: los perfiles multi-sede en Juniper y Nokia 7750. Hecha en el PR #54: la foto desde la página de cada modelo, hasta donde Cisco la publica, y el transporte fuera del YAML. Hecha en el PR #50: los perfiles de otros fabricantes al día al consolidar. Hecha en el PR #46: el ciclo del perfil al día al consolidar. Hecha en el PR #45: la fuente de la PQC enlazada a `fuentes.js`. Hecha en el PR #44: el ciclo en el consolidado multi-sede. Hecha en el PR #41: el fin de venta en el Excel. Hecha en el PR #40: la foto de producto en el Excel. Hecha en la septuagesimoprimera: el «no la trae» documentado, `pqcNo`. Hecha en la sexagesimoctava: la
   versión mínima de la PQC en la hoja «Supuestos».)
 
 ## Decisiones del dueño abiertas

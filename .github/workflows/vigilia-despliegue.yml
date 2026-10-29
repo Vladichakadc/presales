@@ -79,7 +79,12 @@ jobs:
             core.info(`Aviso: ${p}${abierto ? ` (#${abierto.number})` : ''}.`);
             if (p === 'abrir') {
               const r = await github.rest.issues.create({ owner, repo, title: V.tituloIssue(d), body: V.cuerpoIssue(d, urls), labels: [V.ETIQUETA] });
-              core.info(`Abierto el aviso #${r.data.number}.`);
+              // Como en la sonda: GitHub descarta en silencio una etiqueta que no deja poner al crear,
+              // y sin ella la siguiente corrida no encontraria el aviso ni lo cerraria.
+              if (!r.data.labels.some((l) => (typeof l === 'string' ? l : l.name) === V.ETIQUETA)) {
+                await github.rest.issues.addLabels({ owner, repo, issue_number: r.data.number, labels: [V.ETIQUETA] });
+              }
+              core.warning(`${V.tituloIssue(d)}: aviso #${r.data.number}.`);
             } else if (p === 'comentar') {
               await github.rest.issues.createComment({ owner, repo, issue_number: abierto.number, body: V.comentarioNuevaCabeza(d, urls) });
               await github.rest.issues.update({ owner, repo, issue_number: abierto.number, title: V.tituloIssue(d) });
