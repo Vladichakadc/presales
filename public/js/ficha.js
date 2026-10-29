@@ -393,14 +393,26 @@
   function avisoDe(m) {
     const mk = marca(m);
     if (!mk) return '';
-    if (m.eol) return 'Equipo <b>fuera de venta</b>. Se muestra como referencia para ampliar o reemplazar un parque ya instalado; no se propone para un diseño nuevo y por eso nunca sale recomendado.';
+    // Con la fecha vencida, el aviso con fechas manda aunque el modelo traiga además `eol`
+    // (Fortinet, 2026-10-29: la página marca `eol` a los que no tienen SKU de hardware, y así
+    // la ficha decía «fuera de venta» sin la fecha que el catálogo sí trae).
+    if (m.eol && !eosVencido(m)) return 'Equipo <b>fuera de venta</b>. Se muestra como referencia para ampliar o reemplazar un parque ya instalado; no se propone para un diseño nuevo y por eso nunca sale recomendado.' + notaConfirmar(m);
     if (eosVencido(m)) return `Su <b>fecha de último pedido (${esc(m.eolAnnounced.lastOrder)}) ya pasó</b>: a efectos de un diseño nuevo está fuera de venta. Queda como referencia para el parque instalado.`
       // endOfSupport es opt-in (2026-09-13, Aruba EC-XL): si el catálogo declara hasta
       // cuándo hay soporte, la ficha lo dice — es el dato que salva la renovación del
       // parque ya instalado. Los modelos sin el campo no cambian.
-      + (m.eolAnnounced.endOfSupport ? ` El parque instalado conserva soporte del fabricante hasta el <b>${esc(m.eolAnnounced.endOfSupport)}</b>.` : '');
+      + (m.eolAnnounced.endOfSupport ? ` El parque instalado conserva soporte del fabricante hasta el <b>${esc(m.eolAnnounced.endOfSupport)}</b>.` : '')
+      + notaConfirmar(m);
     if (m.legacy) return 'Pertenece a la <b>línea anterior</b>. Sigue en canal y es la respuesta natural para ampliar un parque instalado, pero solo se recomienda si ningún equipo de la generación actual cumple.';
-    return `<b>Fin de venta anunciado</b> — último día de pedido: <b>${esc(m.eolAnnounced.lastOrder)}</b>. Hasta esa fecha se pide con normalidad; después dejará de proponerse solo.`;
+    return `<b>Fin de venta anunciado</b> — último día de pedido: <b>${esc(m.eolAnnounced.lastOrder)}</b>. Hasta esa fecha se pide con normalidad; después dejará de proponerse solo.`
+      + (m.eolAnnounced.endOfSupport ? ` Soporte del fabricante hasta el <b>${esc(m.eolAnnounced.endOfSupport)}</b>.` : '')
+      + notaConfirmar(m);
+  }
+  // `confirmar` (opt-in, Fortinet 2026-10-29): el dato no sale del boletín oficial sino de una
+  // transcripción, y la ficha lo dice junto a la fecha en vez de presentarlo como boletín.
+  function notaConfirmar(m) {
+    const t = m && m.eolAnnounced && m.eolAnnounced.confirmar;
+    return t ? ` <span class="hint">${esc(t)}</span>` : '';
   }
 
   // Estado por contenedor: permite varias fichas en una pagina sin que se pisen.
@@ -1145,6 +1157,7 @@
     if (eos && eos.lastOrder) {
       return { estado: 'anunciado', ...CICLO.anunciado,
         detalle: 'se pide con normalidad hasta el ' + eos.lastOrder
+          + (eos.endOfSupport ? ' · soporte del fabricante hasta el ' + eos.endOfSupport : '')
           + (eos.sucesor ? ' · sucesor: ' + eos.sucesor : '') };
     }
     if (m.legacy) {
@@ -1300,6 +1313,8 @@
     cicloOpcion,
     opcionCiclo,
     cicloDeVida,
+    // El aviso del equipo elegido, expuesto para probar lo que dice (2026-10-29).
+    avisoDe,
     cicloHtml,
     seccionPuertos,
     // La pagina lo llama una vez, con el `cicloVida` que le devuelve /api/dimensionador/<v>.
