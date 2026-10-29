@@ -198,8 +198,10 @@ en un issue, para no saltar un despliegue que espera.
 `Presales corriendo en`, el healthcheck `/salud` superado (Railway lo usa como healthcheck; responde
 503 con la base vacía) y la sonda: `sonda-produccion.yml` escucha el `deployment_status` que Railway
 publica en GitHub, corre `/salud`, `/login` y `npm run puerta` contra el dominio real, y abre o
-cierra un issue con la etiqueta `despliegue`. Si Railway dejara de publicar esos estados, el aviso
-callaría.
+cierra un issue con la etiqueta `despliegue`. Lo que nunca termina lo vigila
+`vigilia-despliegue.yml` (cada media hora, `scripts/vigilia-despliegue.js`): si la cabeza de `main`
+lleva 90 min sin un despliegue en `success`, abre un issue `despliegue-en-espera` con la causa (CI en
+rojo o sin terminar, en cola, sin despliegue) y lo cierra al desplegarse; un fallido es de la sonda.
 
 **Agujeros conocidos de la red:**
 - Un push de bot (`GITHUB_TOKEN`) no dispara workflows: los workflows que escriben llevan su
@@ -490,11 +492,16 @@ Módulos compartidos:
   cargar; sus filas de vecinos OSPF (los declarados a mano) y de VRF no se usan, y no publica
   rutas aprendidas. El BOM sale solo del modelo validado; la puerta READY/WARNING/DRAFT/BLOCKED bloquea
   Excel, copiar y enviar con un P0, un SKU sin casar o la lista vencida, y el override exige motivo.
+  Si el override solo choca con `CICLO_VIDA` (cumple el escenario), su caja ofrece declarar ampliación o
+  renovación en un clic (`motivo-ciclo`), que lleva a la justificación sin escribirla.
   Un SKU nunca se busca con el marcador `-DD`. Figuras desde la página «Hardware» de cada ficha.
   **HA y FortiGuard** (F3, 2026-10-28): una suscripción por nodo, salvo en activo-pasivo de las
   series que la guía de FortiOS 7.6.6 nombra (`haLicenciaUnica`: 40F, 60F, 70F, 80F, 100F y
-  variantes, con su SKU de HA y su heartbeat), que admiten una sola; el BOM sigue por nodo y la
-  página lo dice con `licenciaHa()`, porque los avisos `info` del motor no llegan a la página.
+  variantes, con su SKU de HA y su heartbeat), que admiten una sola. Con la casilla «Licencia FortiGuard
+  única del par» (`comercial.haLicenciaUnica`, solo existe si es `true`: la huella no cambia) el BOM la
+  cotiza —2 × SKU de HA con `precioHa` y un bundle, sin el combinado— si todo lo que pide la guía está; si
+  no, sigue por nodo con su motivo. Los SKU a la carta no se registran al vSN: siguen por unidad y avisan.
+  La página lo dice con `licenciaHa()` y `unicaCotizada()`.
 - **Aruba** (`dimensionador-aruba-edgeconnect.js`, `aruba-reglas.js`, `motor-ingenieria.js`). El
   caudal es el **Multi-Underlay Builder** (filas `{tipo, medio, down, up, rol}`; un respaldo ocupa
   puerto pero no suma); `migrarEstadoV1()` traduce los enlaces viejos. **Cada enlace va a un puerto

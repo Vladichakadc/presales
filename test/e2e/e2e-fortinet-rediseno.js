@@ -295,6 +295,25 @@ const CU01 = new URLSearchParams({
     t.ok(await page.$eval('#verdict .ficha-sel-pill', (x) => !!x.offsetParent).catch(() => false)
       && await page.$eval('#verdict-sel', (x) => getComputedStyle(x).boxShadow !== 'none'),
       'T21: elegido, el desplegable lleva la pastilla «Fuera de venta» y la barra roja');
+    // Mejora del 2026-10-28: si solo lo aparta el ciclo de vida, la caja ofrece declarar la
+    // operación en un clic, y lleva a la justificación, que el motor sigue exigiendo.
+    const btnAmp = page.locator('#overrideAviso [data-corregir*="motivo-ciclo"][data-corregir*="ampliacion"]');
+    t.ok(await btnAmp.count() === 1 && /cumple este escenario, pero está fuera de venta/.test(await texto('#overrideAviso')),
+      'T21: la caja dice que cumple pero está fuera de venta, y ofrece «Es una ampliación»');
+    await btnAmp.click();
+    await asentar(page);
+    const trasClic = await page.evaluate(() => ({ motivo: document.getElementById('motivoCompra').value,
+      foco: document.activeElement && document.activeElement.id, sel: (document.getElementById('verdict-sel') || {}).value }));
+    t.ok(trasClic.motivo === 'ampliacion' && trasClic.foco === 'justificacionEol' && trasClic.sel === fueraNueva[0].v,
+      `T21: pasa a ampliación, conserva el ${fueraNueva[0].v} y lleva a la justificación (${JSON.stringify(trasClic)})`);
+    t.ok(/Bloqueada/i.test((await estado()).gate), 'T21: sin justificación, la cotización sigue bloqueada');
+    await page.fill('#justificacionEol', 'Ampliación de un clúster existente con el mismo modelo');
+    await page.dispatchEvent('#justificacionEol', 'input');
+    await asentar(page);
+    t.ok(await page.$eval('#overrideAviso', (x) => x.hidden) && !/Falta justificación/.test(await texto('#resBloqueos')),
+      'T21: con la justificación escrita, el equipo queda validado: sin caja de override ni falta de justificación');
+    await page.selectOption('#motivoCompra', 'nueva');
+    await asentar(page);
     await abrir(CU01);
     t.ok((await estado()).reco === recAntes, 'T21: al reabrir el escenario, vuelve el recomendado vigente');
   }
@@ -310,6 +329,27 @@ const CU01 = new URLSearchParams({
   await page.dispatchEvent('#justificacionEol', 'input');
   await asentar(page);
   t.ok(!/Falta justificación/.test(await texto('#resBloqueos')), 'T21: con la justificación, ese bloqueo desaparece');
+
+  /* ── HA-UNICA · LICENCIA FORTIGUARD ÚNICA DEL PAR (2026-10-28) ───────────────────── */
+  // Mejora propuesta al cerrar el PR #56: con la casilla, un par 60F activo-pasivo se cotiza con
+  // dos SKU de HA y un solo bundle. Sin ella, el BOM sigue por nodo (lo cubre la prueba del motor).
+  const HA60 = new URLSearchParams({
+    wanLinksData: JSON.stringify({ v: 2, wanLinks: [{ id: 1, tipo: 'DIA', down: 100, overlay: false }] }),
+    users: '20', chkAv: '1', chkHa: '1', haModo: 'ha-ap', pickModel: 'FortiGate 60F', chkHaLicUnica: '1',
+  }).toString();
+  await abrir(HA60);
+  const casillaVisible = await page.$eval('#fldHaLicUnica', (x) => !x.hidden);
+  const filasHa = await page.$$eval('#bomTabla tbody tr', (trs) => trs.map((tr) => tr.textContent.replace(/\s+/g, ' ')));
+  const lineaHa = filasHa.find((t) => /FG-60F-HA/.test(t)) || '';
+  t.ok(casillaVisible && /FG-60F-HA/.test(lineaHa) && !filasHa.some((t2) => /FG-60F-BDL/.test(t2)),
+    `HA-UNICA: con la casilla, el BOM lleva FG-60F-HA y no el SKU combinado (${lineaHa.slice(0, 80)})`);
+  t.ok(/FG-60F-HA/.test(await texto('#haLicUnicaHint')) && /número de serie virtual/.test(await texto('#haLicUnicaHint')),
+    'HA-UNICA: la casilla dice, para el 60F, su SKU de HA y el número de serie virtual');
+  await page.uncheck('#chkHaLicUnica');
+  await asentar(page);
+  const filasNodo = await page.$$eval('#bomTabla tbody tr', (trs) => trs.map((tr) => tr.textContent));
+  t.ok(filasNodo.some((t2) => /FG-60F-BDL/.test(t2)) && !filasNodo.some((t2) => /FG-60F-HA/.test(t2)),
+    'HA-UNICA: desmarcada, vuelve la suscripción por nodo con el SKU combinado');
 
   /* ── T22 · VDOM POR ENCIMA DE LOS INCLUIDOS ──────────────────────────────────────── */
   await abrir(CU01);
