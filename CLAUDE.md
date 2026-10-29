@@ -198,8 +198,10 @@ en un issue, para no saltar un despliegue que espera.
 `Presales corriendo en`, el healthcheck `/salud` superado (Railway lo usa como healthcheck; responde
 503 con la base vacía) y la sonda: `sonda-produccion.yml` escucha el `deployment_status` que Railway
 publica en GitHub, corre `/salud`, `/login` y `npm run puerta` contra el dominio real, y abre o
-cierra un issue con la etiqueta `despliegue`. Si Railway dejara de publicar esos estados, el aviso
-callaría.
+cierra un issue con la etiqueta `despliegue`. Lo que nunca termina lo vigila
+`vigilia-despliegue.yml` (cada media hora, `scripts/vigilia-despliegue.js`): si la cabeza de `main`
+lleva 90 min sin un despliegue en `success`, abre un issue `despliegue-en-espera` con la causa (CI en
+rojo o sin terminar, en cola, sin despliegue) y lo cierra al desplegarse; un fallido es de la sonda.
 
 **Agujeros conocidos de la red:**
 - Un push de bot (`GITHUB_TOKEN`) no dispara workflows: los workflows que escriben llevan su
