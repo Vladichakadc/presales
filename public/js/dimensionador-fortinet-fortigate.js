@@ -140,6 +140,7 @@ const UI = [
   ['comercial.saseEdicion', 'saseEdicion', 'txt'],
   ['comercial.serieInstalada', 'serieInstalada', 'txt'],
   ['comercial.justificacionEol', 'justificacionEol', 'txt'],
+  ['comercial.haLicenciaUnica', 'chkHaLicUnica', 'chk'],
 ];
 const PUERTOS_ID = M.TIPOS_PUERTO.map((t) => [t.k, `pt_${t.k}`]);
 // Campo del motor → control que lo edita. Lo usan los errores, los obligatorios y las
@@ -178,7 +179,7 @@ const AFECTA_N = {
    que es el unico selector; los enlaces viejos que lo traen se leen al arrancar (ver
    `restaurarSeleccionDeUrl`). `qty` sale tambien: se deriva de la alta disponibilidad. */
 const CAMPOS_ESCENARIO = ['nombreCliente', 'refProyecto', 'wanLinksData',
-  'segSeg', 'rolSeg', 'fortiOS', 'modoInspeccion', 'chkHa', 'haModo',
+  'segSeg', 'rolSeg', 'fortiOS', 'modoInspeccion', 'chkHa', 'haModo', 'chkHaLicUnica',
   'profileSeg', 'chkAv', 'chkWeb', 'chkIotDlp', 'chkSsl', 'pctCifrado', 'pctTlsExento',
   'chkSandbox', 'sandboxModo', 'sandboxModalidad',
   'interVlan', 'chkNoConcurrente', 'sites', 'hubs', 'conc',
@@ -595,7 +596,7 @@ for (const id of NUMERICOS) { const n = $(id); if (n) n.addEventListener('input'
 const INMEDIATOS = ['fortiOS', 'modoInspeccion', 'chkHa', 'haModo', 'chkAv', 'chkWeb', 'chkIotDlp', 'chkSsl', 'pctCifrado',
   'pctTlsExento', 'chkSandbox', 'sandboxModo', 'sandboxModalidad', 'chkNoConcurrente', 'chkRemoto', 'vpnTipo', 'chkMfa',
   'chkPsuRed', 'reqPqc', 'registroDestino', 'techoUtil', 'motivoCompra', 'termYears', 'licBundle', 'careLevel',
-  'chkSdwanMon', 'chkSdwanOrq', 'chkSdwanSase', 'saseEdicion', 'chkEms', 'emsDespliegue', 'chkConverter'];
+  'chkHaLicUnica', 'chkSdwanMon', 'chkSdwanOrq', 'chkSdwanSase', 'saseEdicion', 'chkEms', 'emsDespliegue', 'chkConverter'];
 for (const id of INMEDIATOS) { const n = $(id); if (n) n.addEventListener(n.tagName === 'SELECT' ? 'change' : 'input', () => programar(true, id)); }
 // Los selects tambien disparan `input` en los navegadores actuales; con `change` basta y
 // evita evaluar dos veces.
@@ -724,9 +725,19 @@ function aplicarReglas(r) {
    `m.haLicenciaUnica` (40F, 60F, 70F, 80F, 100F y sus variantes). El BOM sigue cotizando una por
    nodo, porque pasar al SKU de HA es una decisión comercial, y el motor lo dice en el aviso
    `ha-licencia-unica`; aquí se dice lo mismo donde la página habla de las suscripciones del HA. */
-function licenciaHa(m, modo) {
+// ¿El BOM que se enseña cotiza la licencia única para ESTE equipo? Solo el validado lleva BOM: para
+// otro candidato de la ficha, la respuesta es no aunque se haya pedido.
+function unicaCotizada(m) {
+  return !!(m && RES && RES.seleccion && RES.seleccion.id === m.id && RES.bom
+    && (RES.bom.filas || []).some((f) => f.haUnica));
+}
+function licenciaHa(m, modo, cotizada = unicaCotizada(m)) {
   if (modo === 'standalone') return null;
   const u = m && m.haLicenciaUnica;
+  if (u && modo === 'ha-ap' && cotizada) {
+    return { unica: true, texto: `una sola suscripción para el par: ${u.skuHa} × 2 y un bundle registrado a su número de `
+      + 'serie virtual (licencia única de la guía de FortiOS 7.6.6)' };
+  }
   if (u && modo === 'ha-ap') {
     return { unica: true, texto: `este BOM cotiza una suscripción por nodo, pero la serie ${u.serie} admite una sola `
       + `para el par en activo-pasivo, con dos unidades del SKU de HA (${u.skuHa || 'que la lista firmada no trae para '
@@ -744,8 +755,21 @@ function pintarControles(r) {
   const nodos = s.disponibilidad.modo === 'standalone' ? 1 : 2;
   $('qty').value = String(nodos);
   $('qtyHint').innerHTML = nodos === 2
-    ? `<b>2 nodos</b> por el clúster ${s.disponibilidad.modo === 'ha-aa' ? 'activo-activo' : 'activo-pasivo'}: la cantidad no se puede bajar, y cada nodo lleva su FortiCare. FortiGuard: ${esc(licenciaHa(r.seleccion ? r.seleccion.modelo : null, s.disponibilidad.modo).texto)}.`
+    ? `<b>2 nodos</b> por el clúster ${s.disponibilidad.modo === 'ha-aa' ? 'activo-activo' : 'activo-pasivo'}: la cantidad no se puede bajar${unicaCotizada(r.seleccion ? r.seleccion.modelo : null) ? '' : ', y cada nodo lleva su FortiCare'}. FortiGuard: ${esc(licenciaHa(r.seleccion ? r.seleccion.modelo : null, s.disponibilidad.modo).texto)}.`
     : 'Se deriva de la alta disponibilidad: 1 nodo, o 2 en clúster. Varias sedes se cotizan con los perfiles multi-sede de la lista de materiales.';
+  // La licencia única del par: dice, para el equipo validado, si aplica y con qué SKU, o por qué no.
+  const mHa = r.seleccion ? r.seleccion.modelo : null;
+  const uHa = mHa && mHa.haLicenciaUnica;
+  const hintHa = $('haLicUnicaHint');
+  if (hintHa && mHa) {
+    hintHa.innerHTML = !uHa
+      ? `<b>No aplica al ${esc(mHa.id)}</b>: la guía de FortiOS 7.6.6 solo la da a las series 40F, 60F, 70F, 80F y 100F y sus variantes.`
+      : !uHa.skuHa
+        ? `<b>No aplica al ${esc(mHa.id)}</b>: la lista firmada no trae su SKU de HA. Si se marca, el BOM sigue por nodo y lo dice.`
+        : `${esc(mHa.id)}: <b>2 × ${esc(uHa.skuHa)}</b>${uHa.precioHa != null ? ` (${money(uHa.precioHa)} cada una en la lista firmada)` : ''} `
+          + `y un solo bundle, registrado al número de serie virtual del par. Heartbeat de la serie: ${esc(uHa.heartbeat)}. `
+          + 'Los SKU a la carta no se registran al número de serie virtual (guía de FortiOS 7.6.6).';
+  }
   // FortiOS decide si SSL-VPN existe (T06): con 7.6.3+ la opcion se deshabilita y se dice.
   const opSsl = $('vpnTipo').querySelector('option[value=sslvpn]');
   const retirado = s.software.fortiOS === '7.6.3+';
@@ -1511,7 +1535,8 @@ function pintarBom() {
   const dto = dtoActual();
   $('bomTabla').innerHTML = BOM.renderTabla(filas, {
     dto,
-    aviso: r.bom.nodos > 1 ? `Clúster HA: cada nodo lleva su propio contrato FortiCare. FortiGuard: ${licenciaHa(r.seleccion ? r.seleccion.modelo : null, r.snapshot.disponibilidad.modo).texto}.` : null,
+    aviso: r.bom.nodos > 1 ? `Clúster HA: ${unicaCotizada(r.seleccion ? r.seleccion.modelo : null)
+      ? 'el FortiCare Premium va en el bundle único del par' : 'cada nodo lleva su propio contrato FortiCare'}. FortiGuard: ${licenciaHa(r.seleccion ? r.seleccion.modelo : null, r.snapshot.disponibilidad.modo).texto}.` : null,
   });
   const fin = BOM.tco(filas, { opex: OPEX_FORTINET, anios });
   const hayPrecios = fin.capex > 0 || fin.opexTermino > 0;

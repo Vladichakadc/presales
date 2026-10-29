@@ -1,6 +1,6 @@
 # Relevo
 
-Última actualización: 2026-10-28 · PR #59
+Última actualización: 2026-10-28 · PR #60
 
 Informe para continuar el trabajo. Lo pidió el dueño del repositorio el 2026-10-27: «de aquí en
 adelante, un informe de pendientes y mejoras para que la cuenta **servicioiptv2025@gmail.com**
@@ -33,6 +33,9 @@ está en curso no va aquí: lo dice `npm run traspasos` (protocolo en `docs/tras
 
 ## Estado al cerrar esta entrega
 
+- **2026-10-28 · PR #60**: en Fortinet, la casilla «Licencia FortiGuard única del par» cotiza un par
+  activo-pasivo de las series de la guía con dos SKU de HA y un solo bundle, y dice el ahorro; si algo
+  falta (70F y 100F no tienen SKU de HA en la lista firmada), sigue por nodo y dice por qué.
 - **2026-10-28 · PR #59**: **la vigilia del despliegue** (la mejora propuesta al cerrar el PR #56).
   `vigilia-despliegue.yml` mira cada media hora la cabeza de `main`, su CI y sus despliegues de
   producción; si pasan 90 min sin ningún despliegue en `success`, abre un issue con la etiqueta
@@ -283,16 +286,6 @@ existen los workflows de transporte. Huawei y HPE niegan además el navegador au
 
 ## Mejoras propuestas sin decidir
 
-- **La licencia FortiGuard única, como alternativa elegible en el BOM** (propuesta al cerrar el PR
-  #56). Con un clúster activo-pasivo de una serie de la guía, el BOM cotiza dos suscripciones; la
-  guía permite una, con dos unidades del SKU de HA (`FG-61F-HA`, por ejemplo, en la lista firmada a
-  US$1.309, lo mismo que la unidad normal). Una casilla «Licencia única del par» en el paso de alta
-  disponibilidad cambiaría las líneas: dos SKU de HA en vez de dos de hardware y un bundle en vez de
-  dos, con el ahorro dicho en pantalla. Evita que una propuesta en activo-pasivo salga con una
-  suscripción de más, que es la diferencia que más pesa en un clúster pequeño. Cuesta una casilla, su
-  rama en `lineasComerciales` (que ya conoce `haLicenciaUnica` y el SKU de HA) y sus pruebas; si se
-  hace mal, cotiza una sola suscripción en activo-activo o en un modelo sin SKU de HA (70F, 100F),
-  y eso lo frenaría el motor (la regla ya distingue los tres casos). Se decide por el dueño.
 - **El panel de perfiles, un solo módulo** (propuesta al cerrar el PR #55). Las siete páginas con
   perfiles llevan cada una su copia del mismo bloque (unas 80 líneas: capturar y aplicar campos, la
   lista, guardar, cargar, consolidar y la ventana), y ya han divergido en lo pequeño (Escape y
@@ -303,7 +296,7 @@ existen los workflows de transporte. Huawei y HPE niegan además el navegador au
   Cuesta tocar las siete páginas y sus pruebas, que hoy buscan el patrón en cada una; si se hace
   mal, «Guardar» o «Cargar» dejan de funcionar en alguna, y lo verían `bom-perfiles.test.js`,
   `e2e-ciclo-excel.js` y `e2e-perfiles-juniper-nokia.js`. Se decide por el dueño.
-- (Hecha en el PR #59: la vigilia del despliegue. Hecha en el PR #58: del override por ciclo de vida a ampliación o renovación en un clic. Hecha en el PR #57: el transporte probado sin red. Hecha en el PR #55: los perfiles multi-sede en Juniper y Nokia 7750. Hecha en el PR #54: la foto desde la página de cada modelo, hasta donde Cisco la publica, y el transporte fuera del YAML. Hecha en el PR #50: los perfiles de otros fabricantes al día al consolidar. Hecha en el PR #46: el ciclo del perfil al día al consolidar. Hecha en el PR #45: la fuente de la PQC enlazada a `fuentes.js`. Hecha en el PR #44: el ciclo en el consolidado multi-sede. Hecha en el PR #41: el fin de venta en el Excel. Hecha en el PR #40: la foto de producto en el Excel. Hecha en la septuagesimoprimera: el «no la trae» documentado, `pqcNo`. Hecha en la sexagesimoctava: la
+- (Hecha en el PR #60: la licencia FortiGuard única del par en el BOM. Hecha en el PR #59: la vigilia del despliegue. Hecha en el PR #58: del override por ciclo de vida a ampliación o renovación en un clic. Hecha en el PR #57: el transporte probado sin red. Hecha en el PR #55: los perfiles multi-sede en Juniper y Nokia 7750. Hecha en el PR #54: la foto desde la página de cada modelo, hasta donde Cisco la publica, y el transporte fuera del YAML. Hecha en el PR #50: los perfiles de otros fabricantes al día al consolidar. Hecha en el PR #46: el ciclo del perfil al día al consolidar. Hecha en el PR #45: la fuente de la PQC enlazada a `fuentes.js`. Hecha en el PR #44: el ciclo en el consolidado multi-sede. Hecha en el PR #41: el fin de venta en el Excel. Hecha en el PR #40: la foto de producto en el Excel. Hecha en la septuagesimoprimera: el «no la trae» documentado, `pqcNo`. Hecha en la sexagesimoctava: la
   versión mínima de la PQC en la hoja «Supuestos».)
 
 ## Decisiones del dueño abiertas

@@ -180,6 +180,10 @@
       sandbox: E(['ninguno', 'incluido', 'ai', 'dedicado']), sandboxModalidad: E(['', 'appliance', 'vm', 'cloud']),
       saseUsuarios: I(0, 1e7), saseEdicion: E(['', 'standard', 'advanced', 'comprehensive']),
       serieInstalada: TX(120), justificacionEol: TX(500),
+      // Licencia FortiGuard única del par activo-pasivo (2026-10-28). Sin valor por defecto a
+      // propósito: solo existe cuando vale `true` (ver `normalizar`), y así la huella de los
+      // escenarios guardados antes no cambia.
+      haLicenciaUnica: B,
     },
     seleccion: { manual: { t: 'idModelo' } },
   };
@@ -203,7 +207,7 @@
       serieInstalada: '', justificacionEol: '' },
     seleccion: { manual: null },
   };
-  const clonar = (o) => JSON.parse(JSON.stringify(o));
+  const clonar = (o) => (o === undefined ? undefined : JSON.parse(JSON.stringify(o)));
 
   function validarHoja(def, v, ruta, errores) {
     const err = (codigo, detalle) => { errores.push({ codigo, campo: ruta, mensaje: detalle }); return undefined; };
@@ -323,6 +327,10 @@
       requerido: (s) => s.seguridad.funciones.includes('chkSandbox') && s.comercial.sandbox === 'dedicado', afecta: ['bom'] },
     { campo: 'comercial.serieInstalada', visible: (s) => ['renovacion', 'coterm'].includes(s.comercial.motivo),
       requerido: (s) => ['renovacion', 'coterm'].includes(s.comercial.motivo), afecta: ['bom'] },
+    // La licencia FortiGuard única solo existe en activo-pasivo y cuando se compran los equipos
+    // (dos unidades del SKU de HA): en una renovación o un co-term la guía no la cubre.
+    { campo: 'comercial.haLicenciaUnica', visible: (s) => s.disponibilidad.modo === 'ha-ap'
+      && !['renovacion', 'coterm'].includes(s.comercial.motivo), afecta: ['bom'] },
     { campo: 'comercial.justificacionEol', visible: (s, ctx) => s.comercial.motivo !== 'nueva' && !!(ctx && ctx.manualEsEol),
       requerido: (s, ctx) => s.comercial.motivo !== 'nueva' && !!(ctx && ctx.manualEsEol), afecta: ['puerta'] },
   ];
@@ -339,6 +347,8 @@
   function normalizar(entrada, catalogo) {
     const errores = [];
     const s = validarRama(ESQ, entrada, POR_DEFECTO, '', errores);
+    // Un campo opcional que no se pidió no entra en la huella: `false` y «no está» son lo mismo.
+    if (s.comercial.haLicenciaUnica !== true) delete s.comercial.haLicenciaUnica;
     // FortiSandbox como FUNCION y el sandbox como LINEA son el mismo pedido: sin la funcion
     // marcada no hay linea, y con ella marcada sin modo elegido se asume la cobertura del
     // bundle, que es lo que la pagina hacia hasta ahora (no anadia linea).
@@ -752,7 +762,8 @@
     const com = R.lineasComerciales({
       modelo: m, bundles: cat.bundles || {}, care: cat.care || {},
       bundle: c.bundle, care_elegido: c.soporte, careKey,
-      qty: nodos, haModo: s.disponibilidad.modo, anios: c.anios, terminos: cat.terminos,
+      qty: nodos, haModo: s.disponibilidad.modo, haLicenciaUnica: c.haLicenciaUnica === true,
+      anios: c.anios, terminos: cat.terminos,
       converter: c.converter,
       serviciosSdwan: conSdwan(s) ? (cat.serviciosSdwan || []).filter((sv) => c.sdwan.includes(sv.id)) : [],
       endpointsEms: c.emsActivo ? c.emsEndpoints : 0, emsDespliegue: c.emsDespliegue, ems: cat.ems,
