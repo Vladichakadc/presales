@@ -1522,12 +1522,14 @@
     }
     const modal = $('modalConsolidado');
     const btnCons = $('btnConsolidar');
-    // La ventana se anuncia como dialogo, con su titulo, en las siete.
-    if (modal) {
-      modal.setAttribute('role', 'dialog');
-      modal.setAttribute('aria-modal', 'true');
-      const tit = modal.querySelector('h2, h3');
-      if (tit) { if (!tit.id) tit.id = 'consolidadoTit'; modal.setAttribute('aria-labelledby', tit.id); }
+    // La ventana se anuncia como dialogo, con su titulo, en las siete. Donde la caja interior ya
+    // lo es (su HTML lo declara), no se pone otro encima: dos dialogos anidados se leen dos veces.
+    const dialogo = modal && (modal.querySelector('[role="dialog"]') || modal);
+    if (dialogo) {
+      dialogo.setAttribute('role', 'dialog');
+      dialogo.setAttribute('aria-modal', 'true');
+      const tit = dialogo.querySelector('h2, h3');
+      if (tit && !dialogo.getAttribute('aria-labelledby')) { if (!tit.id) tit.id = 'consolidadoTit'; dialogo.setAttribute('aria-labelledby', tit.id); }
     }
     // La linea de mensajes (guardado, cargado, falta un dato) existe en todas.
     let msg = $('perfilMsg');

@@ -6,7 +6,7 @@
 - **Estado:** en curso
 - **Actualizado:** 2026-10-29 05:50
 - **Archivos que toca:** public/js/bom.js, public/js/dimensionador-aruba-edgeconnect.js, public/js/dimensionador-cisco-catalyst8k.js, public/js/dimensionador-fortinet-fortigate.js, public/js/dimensionador-huawei-netengine.js, public/js/dimensionador-mikrotik-routeros.js, public/js/dimensionador-juniper-srx.js, public/js/dimensionador-nokia-7750sr.js, test/bom-perfiles.test.js, test/bom-panel-perfiles.test.js
-- **Siguiente paso:** rebase sobre `main` (PR #59 y #60 tocaron Fortinet), revisar el diff, CI y cierre del PR #62.
+- **Siguiente paso:** CI del PR #62 con `main` fusionada; si verde, commit de cierre (PENDIENTES, RELEVO, CLAUDE.md, fuera este traspaso) y fusión.
 
 ## Encargo del dueño
 
@@ -21,6 +21,11 @@
 ## Falta
 
 - CI y cierre.
+
+## Retomado (2026-10-29)
+
+- `main` fusionada en la rama (con los PR #59 y #60; sin conflictos). Revisión del módulo: escapa todo lo que pinta; un fallo de accesibilidad corregido: en MikroTik la caja interior ya es `role="dialog"` y el módulo ponía otro en la capa de fuera (dos diálogos anidados). Ahora lo pone en la caja que ya lo es, o en la ventana si no hay ninguna; prueba nueva en `bom-panel-perfiles.test.js`.
+- `node --test`: los mismos 63 fallos de entorno que `main`, ninguno nuevo; lint limpio.
 
 ## Decisiones y hallazgos
 

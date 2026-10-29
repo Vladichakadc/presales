@@ -166,3 +166,18 @@ test('las siete páginas montan BOM.montarPerfiles y no conservan su propia copi
     }
   }
 });
+
+test('montar: donde la caja interior ya es el diálogo (MikroTik), no se anida otro encima', () => {
+  const g = cargar('public/js/bom.js');
+  const caja = nodo('caja');
+  caja.attrs = { role: 'dialog', 'aria-modal': 'true', 'aria-labelledby': 'consolidadoTitulo' };
+  montar(g, { vendor: 'mikrotik', capturar: () => ({}), aplicar: () => {}, equipo: () => null });
+  // Se monta otra vez con la caja dentro de la ventana, como en su HTML.
+  const m = dom.nodos.modalConsolidado;
+  m.attrs = {};
+  m.querySelector = (sel) => (sel === '[role="dialog"]' ? caja : sel === 'h2, h3' ? dom.tit : null);
+  g.BOM.montarPerfiles({ vendor: 'mikrotik', capturar: () => ({}), aplicar: () => {}, equipo: () => null });
+  assert.strictEqual(m.attrs.role, undefined, 'la capa de fuera no se anuncia como diálogo');
+  assert.strictEqual(caja.attrs.role, 'dialog');
+  assert.strictEqual(caja.attrs['aria-labelledby'], 'consolidadoTitulo', 'conserva el título que su HTML declara');
+});
