@@ -470,6 +470,40 @@
     const bundle = excluyeBundle ? null : bundles[bundleCod];
     const licTier = (lic && !excluyeBundle) ? lic[bundleCod] : null;
 
+    /* LICENCIA FORTIGUARD UNICA DEL PAR (F3; mejora aprobada por el dueño el 2026-10-29). La
+       guia de FortiOS 7.6.6 («Single FortiGuard license for FortiGate A-P HA cluster») deja
+       comprar DOS unidades con el SKU de HA y UN SOLO pedido de Enterprise Protection, UTP o ATP,
+       registrado al numero de serie virtual del par (vSN), y añade: «A la carte SKUs are not
+       supported, and cannot be registered to the vSN». Se aplica solo si se pide y se cumple
+       todo; si no, se dice por que y el BOM sigue con una suscripcion por nodo. */
+    const unica = m.haLicenciaUnica || null;
+    const aLaCarta = [
+      careCod === 'fcelite' && 'la mejora a FortiCare Elite',
+      (e.serviciosSdwan || []).length && 'el SD-WAN Service',
+      e.sandbox === 'ai' && 'el sandbox del FortiGate',
+      e.registro === 'nube' && 'el registro en la nube',
+      e.converter && !(bundle && (bundle.incluye || []).includes('forticonverter')) && 'el FortiConverter',
+    ].filter(Boolean);
+    let parUnico = false;
+    if (e.licenciaUnica) {
+      const porQueNo = qty !== 2 || e.haModo !== 'ha-ap' ? 'solo vale en un clúster activo-pasivo de dos unidades'
+        : !unica ? `la guía de FortiOS 7.6.6 no la da a ${m.id} (solo a las series 40F, 60F, 70F, 80F y 100F y sus variantes)`
+        : !unica.skuHa ? `la lista firmada no trae el SKU de HA de ${m.id}`
+        : !bundle ? 'pide uno de los bundles Enterprise Protection, UTP o ATP'
+        : aLaCarta.length ? `${aLaCarta.join(', ')} ${aLaCarta.length > 1 ? 'son SKU' : 'es un SKU'} a la carta, y la guía no deja `
+          + 'registrarlos al número de serie virtual del par'
+        : null;
+      if (porQueNo) {
+        avisar({ codigo: 'ha-licencia-unica-no',
+          mensaje: `Licencia FortiGuard única del par pedida, pero no se aplica: ${porQueNo}. `
+            + 'El BOM sigue con una suscripción por nodo.' });
+      } else {
+        parUnico = true;
+      }
+    }
+    const qtyBundle = parUnico ? 1 : qty;
+    const notaVsn = parUnico ? ' · una sola suscripción para el par, registrada a su número de serie virtual (vSN)' : '';
+
     /* CONSTRUCCION BDL (compra nueva). La price list publica el equipo y su primer bundle en
        UN SKU combinado (FG-90G-BDL-809-36 = equipo + Enterprise + FortiCare Premium, 3 anos),
        y es la construccion que Fortinet preve para la primera compra: una linea en vez de dos.
@@ -478,7 +512,8 @@
        aporta es que se pide con un solo codigo y no se puede olvidar el bundle. Solo existe
        para Enterprise y UTP -ATP no tiene combinado- y solo en compra nueva. */
     const bdlTier = (e.construccion === 'bdl' && !sinEquipo && lic && bundle) ? lic[`${bundleCod}Bdl`] : null;
-    const usaBdl = !!(bdlTier && bdlTier.sku && m.hwSku);
+    // Con la licencia unica del par no hay SKU combinado: llevaria un bundle por unidad.
+    const usaBdl = !parUnico && !!(bdlTier && bdlTier.sku && m.hwSku);
 
     // ── Equipo ────────────────────────────────────────────────────────────────────────
     if (usaBdl) {
@@ -489,6 +524,15 @@
       avisar({ codigo: 'bdl',
         mensaje: `Compra nueva: el equipo y ${bundle.n} van en el SKU combinado ${s.sku} (incluye FortiCare Premium), `
           + 'que es la construcción que la price list publica para la primera compra. Una línea en vez de dos.' });
+    } else if (parUnico && !sinEquipo) {
+      filas.push({ cat: 'Equipo', desc: `${m.id} — unidad del par HA`, sku: unica.skuHa, qty,
+        unit: unica.precioHa != null ? unica.precioHa : null,
+        nota: `SKU de HA de la lista firmada («HA Pair HW»): al registrarlas en FortiCare, las dos unidades forman el `
+          + `número de serie virtual (vSN) del par · ${m.seg} · ${m.ifaces}` });
+      if (unica.precioHa == null) {
+        bloquear({ codigo: 'sin-precio-ha',
+          mensaje: `${unica.skuHa}: la lista firmada trae el SKU de HA pero no su precio. Pedirlo al distribuidor.` });
+      }
     } else if (!sinEquipo) {
       filas.push({ cat: 'Equipo', desc: m.id, sku: m.hwSku || null, qty,
         unit: m.elpN != null ? m.elpN : null,
@@ -510,13 +554,13 @@
     } else if (!licTier) {
       bloquear({ codigo: 'sin-sku-bundle',
         mensaje: `${bundle ? bundle.n : bundleCod} no tiene SKU vigente para ${m.id} en el price list.` });
-      filas.push({ cat: 'Licencias FortiGuard', desc: bundle ? bundle.n : bundleCod, sku: null, qty, unit: null,
-        nota: `${termino} · sin SKU vigente para este modelo` });
+      filas.push({ cat: 'Licencias FortiGuard', desc: bundle ? bundle.n : bundleCod, sku: null, qty: qtyBundle, unit: null,
+        nota: `${termino} · sin SKU vigente para este modelo${notaVsn}` });
     } else {
       const s = skuTermino(licTier.sku, anios, terminos);
       if (!s.exacto) bloquear({ codigo: 'sku-dd', mensaje: `Bundle FortiGuard: ${s.motivo}.` });
-      filas.push({ cat: 'Licencias FortiGuard', desc: bundle.n, sku: s.sku, qty, unit: precio(licTier),
-        nota: `${termino} · ${bundle.svcs}` });
+      filas.push({ cat: 'Licencias FortiGuard', desc: bundle.n, sku: s.sku, qty: qtyBundle, unit: precio(licTier),
+        nota: `${termino} · ${bundle.svcs}${notaVsn}` });
     }
 
     // ── Soporte FortiCare ─────────────────────────────────────────────────────────────
@@ -824,14 +868,18 @@
     // activo-pasivo la da, por modelo, la guia de FortiOS 7.6.6 (`m.haLicenciaUnica`, F3 cerrado
     // el 2026-10-28): se DICE con su SKU de HA y su heartbeat, pero el BOM sigue con una
     // licencia por nodo, porque pasar al SKU de HA es una decision comercial que pide ese SKU.
-    const unica = m.haLicenciaUnica || null;
     if (qty > 1 && unica && e.haModo === 'ha-ap') {
       avisar({ codigo: 'ha-licencia-unica',
-        mensaje: `Clúster activo-pasivo de ${m.id}: según la guía de FortiOS 7.6.6, la serie ${unica.serie} puede `
-          + `compartir una sola suscripción FortiGuard entre los dos nodos. Se piden dos unidades del SKU de HA `
-          + `(${unica.skuHa ? unica.skuHa + ', en la lista firmada' : 'que la lista firmada no trae para este modelo: consultar'}) `
-          + `y un solo ${unica.servicios}, registrado al número de serie virtual del par (logical-sn). `
-          + `Este BOM sigue cotizando una suscripción por nodo: cambiarla es pedir ese SKU. Heartbeat de la serie: ${unica.heartbeat}.` });
+        mensaje: parUnico
+          ? `Licencia FortiGuard única del par aplicada (guía de FortiOS 7.6.6, serie ${unica.serie}): dos unidades de `
+            + `${unica.skuHa} y un solo ${bundle.n}, registrado al número de serie virtual del par (logical-sn). `
+            + `Heartbeat de la serie: ${unica.heartbeat}.`
+          : `Clúster activo-pasivo de ${m.id}: según la guía de FortiOS 7.6.6, la serie ${unica.serie} puede `
+            + `compartir una sola suscripción FortiGuard entre los dos nodos. Se piden dos unidades del SKU de HA `
+            + `(${unica.skuHa ? unica.skuHa + ', en la lista firmada' : 'que la lista firmada no trae para este modelo: consultar'}) `
+            + `y un solo ${unica.servicios}, registrado al número de serie virtual del par (logical-sn). `
+            + 'Este BOM sigue cotizando una suscripción por nodo; «Licencia única del par» la cotiza así. '
+            + `Heartbeat de la serie: ${unica.heartbeat}.` });
     } else if (qty > 1) {
       avisar({ codigo: 'ha-licencia-por-nodo',
         mensaje: `Clúster de ${qty} unidades: cada nodo lleva su propia suscripción FortiGuard y su propio FortiCare. `
@@ -847,7 +895,7 @@
           + `única fuente de precios de este catálogo, no trae en lo extraído el precio de ${fueraDeLista.join(', ')}. `
           + 'El de la edición de agosto ya no se usa. Pedirlo al distribuidor antes de cotizar en firme.' });
     }
-    return { filas, avisos, bloqueos, soporteIncluido: incluyeSoporte || usaBdl, bdl: usaBdl };
+    return { filas, avisos, bloqueos, soporteIncluido: incluyeSoporte || usaBdl, bdl: usaBdl, parUnico };
   }
 
   /* ── 8 y 9 · LA PUERTA DE COTIZACION Y LA HUELLA YA NO VIVEN AQUI ──────────────────────

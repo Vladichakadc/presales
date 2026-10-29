@@ -23,7 +23,7 @@ const modelo = (id) => fortinet.MODELS.find((m) => m.id === id);
 
 // La función de la página, ejecutada tal cual está escrita (no una copia de su lógica).
 function licenciaHa() {
-  const fn = /function licenciaHa\(m, modo\) \{[\s\S]*?\n\}\n/.exec(JS);
+  const fn = /function licenciaHa\(m, modo, bom\) \{[\s\S]*?\n\}\n/.exec(JS);
   assert.ok(fn, 'la página ya no tiene licenciaHa');
   const ctx = {};
   vm.runInNewContext(`${fn[0]}this.f = licenciaHa;`, ctx);
@@ -41,6 +41,12 @@ test('activo-pasivo en una serie de la guía: el BOM sigue por nodo y se dice la
   assert.match(ap.texto, /FortiOS 7\.6\.6/);
   // El 70F está en la guía, pero la lista firmada no trae su SKU de HA: se dice, no se inventa.
   assert.match(f(modelo('FortiGate 70F'), 'ha-ap').texto, /que la lista firmada no trae para este modelo: consultar/);
+  // Con la licencia única aplicada por el motor (`bom.licenciaUnica`), la página dice una sola
+  // suscripción; solo cuenta para el modelo del BOM, no para otro que se mire en la ficha.
+  const aplicada = f(modelo('FortiGate 61F'), 'ha-ap', { modelo: 'FortiGate 61F', licenciaUnica: true });
+  assert.strictEqual(aplicada.aplicada, true);
+  assert.match(aplicada.texto, /una sola suscripción para el par .*FG-61F-HA/);
+  assert.strictEqual(f(modelo('FortiGate 81F'), 'ha-ap', { modelo: 'FortiGate 61F', licenciaUnica: true }).aplicada, undefined);
 });
 
 test('activo-activo, o un modelo que la guía no nombra: una suscripción por nodo, con su motivo', () => {
@@ -84,4 +90,87 @@ test('haLicenciaUnica llega al navegador: la proyección de /api/dimensionador/f
   assert.ok(u, 'el 61F llega sin haLicenciaUnica');
   assert.strictEqual(u.serie, '60F');
   assert.strictEqual(u.skuHa, 'FG-61F-HA');
+});
+
+/* ── La licencia única, como alternativa elegible en el BOM (mejora aprobada el 2026-10-29) ──
+   «When a customer purchases two units with the HA SKU (such as 2 x FG-40F-HA), they can further
+   purchase a single order of the following subscriptions: Enterprise Protection, Unified Threat
+   Protection (UTP), Advanced Threat Protection (ATP) […] A la carte SKUs are not supported, and
+   cannot be registered to the vSN» (FortiOS 7.6.6 Administration Guide). */
+const R = require('../public/js/fortinet-reglas.js');
+const M = require('../public/js/fortinet-motor.js');
+const SKUS = require('../server/seed/legacyData/fortinetSkus.js');
+
+const comercial = (over) => R.lineasComerciales(Object.assign({
+  modelo: modelo('FortiGate 61F'), bundles: fortinet.BUNDLES, care: fortinet.CARE, bundle: 'ent',
+  care_elegido: 'fcpre', careKey: 'premium', qty: 2, haModo: 'ha-ap', licenciaUnica: true, anios: 3,
+  terminos: fortinet.TERMINOS, converter: false, serviciosSdwan: [], ems: fortinet.EMS_LICENCIAS,
+  sase: fortinet.SASE_USUARIOS, construccion: 'bdl',
+}, over));
+
+test('licencia única pedida y aplicable: dos SKU de HA con su precio, un solo bundle y sin SKU combinado', () => {
+  const r = comercial({});
+  assert.strictEqual(r.parUnico, true);
+  const equipo = r.filas.find((f) => f.cat === 'Equipo');
+  assert.strictEqual(equipo.sku, 'FG-61F-HA');
+  assert.strictEqual(equipo.qty, 2);
+  assert.strictEqual(equipo.unit, SKUS['FortiGate 61F'].find((x) => x.sku === 'FG-61F-HA').p, 'el precio es el de la lista firmada');
+  assert.ok(!equipo.bdl, 'el SKU combinado llevaría un bundle por unidad: no se usa');
+  const bundle = r.filas.find((f) => f.cat === 'Licencias FortiGuard');
+  assert.strictEqual(bundle.qty, 1);
+  assert.match(bundle.nota, /número de serie virtual \(vSN\)/);
+  assert.ok(!r.filas.some((f) => f.cat === 'Soporte'), 'el FortiCare Premium va dentro del bundle');
+  assert.match(r.avisos.find((a) => a.codigo === 'ha-licencia-unica').mensaje, /aplicada .*dos unidades de FG-61F-HA y un solo Enterprise Protection/);
+  assert.ok(!r.avisos.some((a) => a.codigo === 'ha-licencia-unica-no'));
+});
+
+test('licencia única pedida y no aplicable: se dice por qué y el BOM sigue con una suscripción por nodo', () => {
+  const casos = [
+    [{ haModo: 'ha-aa' }, /solo vale en un clúster activo-pasivo de dos unidades/],
+    [{ modelo: modelo('FortiGate 90G') }, /no la da a FortiGate 90G/],
+    [{ modelo: modelo('FortiGate 70F') }, /la lista firmada no trae el SKU de HA de FortiGate 70F/],
+    [{ bundle: 'none' }, /pide uno de los bundles Enterprise Protection, UTP o ATP/],
+    [{ care_elegido: 'fcelite', careKey: 'elite' }, /la mejora a FortiCare Elite es un SKU a la carta/],
+    [{ serviciosSdwan: [fortinet.SERVICIOS_SDWAN[0]] }, /el SD-WAN Service es un SKU a la carta/],
+    [{ sandbox: 'ai', registro: 'nube' }, /el sandbox del FortiGate, el registro en la nube son SKU a la carta/],
+    [{ bundle: 'utp', converter: true }, /el FortiConverter es un SKU a la carta/],
+  ];
+  for (const [over, motivo] of casos) {
+    const r = comercial(over);
+    assert.strictEqual(r.parUnico, false, JSON.stringify(over));
+    const no = r.avisos.find((a) => a.codigo === 'ha-licencia-unica-no');
+    assert.ok(no && no.nivel === 'warning', `${JSON.stringify(over)}: sin aviso visible`);
+    assert.match(no.mensaje, motivo);
+    assert.match(no.mensaje, /El BOM sigue con una suscripción por nodo/);
+    const bundle = r.filas.find((f) => f.cat === 'Licencias FortiGuard');
+    if (bundle) assert.strictEqual(bundle.qty, 2, `${JSON.stringify(over)}: el bundle sigue por nodo`);
+    assert.ok(!r.filas.some((f) => f.sku && /-HA$/.test(f.sku)), `${JSON.stringify(over)}: sin SKU de HA`);
+  }
+  // Con Enterprise, el FortiConverter va dentro del bundle: no es una línea a la carta y no impide nada.
+  assert.strictEqual(comercial({ converter: true }).parUnico, true);
+});
+
+test('el escenario lo lleva hasta el BOM, y fuera de activo-pasivo el campo no cuenta', () => {
+  const CAT = {
+    models: fortinet.MODELS.map((m) => ({ ...m, eol: !m.hwSku,
+      elpN: ((SKUS[m.id] || []).find((x) => x.sku === m.hwSku) || {}).p ?? null })),
+    bundles: fortinet.BUNDLES, care: fortinet.CARE, funciones: fortinet.FUNCIONES,
+    serviciosSdwan: fortinet.SERVICIOS_SDWAN, terminos: fortinet.TERMINOS, fortios: fortinet.FORTIOS,
+    ems: fortinet.EMS_LICENCIAS, sase: fortinet.SASE_USUARIOS, datasetVersion: 'fortinet@prueba',
+  };
+  const esc = (modo) => ({
+    topologia: { rol: 'spoke', hubs: 1, enlaces: [{ id: 1, tipo: 'DIA', down: 50, overlay: true }] },
+    escala: { usuarios: 20 },
+    disponibilidad: { modo, licenciaUnica: true },
+    seleccion: { manual: 'FortiGate 61F' },
+  });
+  const ap = M.evaluar(esc('ha-ap'), CAT, { hoy: '2026-10-29T00:00:00Z' });
+  assert.deepStrictEqual(ap.errores || [], []);
+  assert.strictEqual(ap.bom.modelo, 'FortiGate 61F');
+  assert.strictEqual(ap.bom.licenciaUnica, true);
+  assert.strictEqual(ap.bom.filas.find((f) => f.cat === 'Licencias FortiGuard').qty, 1);
+  // En activo-activo el campo no aplica: el motor lo lleva a su valor neutro y no avisa de nada.
+  const aa = M.evaluar(esc('ha-aa'), CAT, { hoy: '2026-10-29T00:00:00Z' });
+  assert.strictEqual(aa.bom.licenciaUnica, false);
+  assert.ok(!aa.bom.avisos.some((a) => a.codigo === 'ha-licencia-unica-no'));
 });

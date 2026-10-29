@@ -170,7 +170,7 @@
       poeW: N(0, 1e6), psuRedundante: B,
       registro: E(['ninguno', 'local', 'nube', 'faz', 'syslog']), registroGbDia: N(0, 1e7), registroDias: I(0, 3650),
     },
-    disponibilidad: { modo: E(['standalone', 'ha-ap', 'ha-aa']) },
+    disponibilidad: { modo: E(['standalone', 'ha-ap', 'ha-aa']), licenciaUnica: B },
     politica: { crecimientoPct: N(0, 1000), techoPct: N(10, 100) },
     comercial: {
       motivo: E(['nueva', 'renovacion', 'ampliacion', 'coterm']), anios: E([1, 3, 5]),
@@ -195,7 +195,7 @@
       vdoms: 0, fortiAps: 0, fortiSwitches: 0, bgpPeers: 0 },
     fisico: { puertos: Object.fromEntries(TIPOS_PUERTO.map((p) => [p.k, 0])), poeW: 0, psuRedundante: false,
       registro: 'ninguno', registroGbDia: 0, registroDias: 0 },
-    disponibilidad: { modo: 'standalone' },
+    disponibilidad: { modo: 'standalone', licenciaUnica: false },
     politica: { crecimientoPct: 30, techoPct: 100 },
     comercial: { motivo: 'nueva', anios: 3, bundle: 'ent', soporte: 'fcpre', converter: false, sdwan: [],
       emsActivo: false, emsEndpoints: 0, emsDespliegue: '', sandbox: 'ninguno', sandboxModalidad: '', saseUsuarios: 0,
@@ -298,6 +298,8 @@
     { campo: 'topologia.spokes', visible: (s) => s.topologia.rol === 'hub', afecta: ['caudal', 'tunGw'] },
     { campo: 'topologia.simultaneidadPct', visible: (s) => s.topologia.rol === 'hub', afecta: ['caudal'] },
     { campo: 'comercial.sdwan', visible: conSdwan, afecta: ['bom'] },
+    // La licencia FortiGuard única del par (guía de FortiOS 7.6.6) solo existe en activo-pasivo.
+    { campo: 'disponibilidad.licenciaUnica', visible: (s) => s.disponibilidad.modo === 'ha-ap', afecta: ['bom'] },
     { campo: 'comercial.saseUsuarios', visible: (s) => conSdwan(s) && s.comercial.sdwan.includes('sdwanSase'),
       requerido: (s) => conSdwan(s) && s.comercial.sdwan.includes('sdwanSase'), afecta: ['bom'] },
     // La edicion decide el SKU de FortiSASE (Standard, Advanced o Comprehensive, por banda de
@@ -752,7 +754,7 @@
     const com = R.lineasComerciales({
       modelo: m, bundles: cat.bundles || {}, care: cat.care || {},
       bundle: c.bundle, care_elegido: c.soporte, careKey,
-      qty: nodos, haModo: s.disponibilidad.modo, anios: c.anios, terminos: cat.terminos,
+      qty: nodos, haModo: s.disponibilidad.modo, licenciaUnica: s.disponibilidad.licenciaUnica, anios: c.anios, terminos: cat.terminos,
       converter: c.converter,
       serviciosSdwan: conSdwan(s) ? (cat.serviciosSdwan || []).filter((sv) => c.sdwan.includes(sv.id)) : [],
       endpointsEms: c.emsActivo ? c.emsEndpoints : 0, emsDespliegue: c.emsDespliegue, ems: cat.ems,
@@ -779,7 +781,7 @@
     // (dato requerido, bloquea la puerta). Un segundo bloqueo aqui repetia el mismo motivo con
     // otras palabras en la misma lista.
     return { modelo: m.id, nodos, construccion: com.bdl ? 'bdl' : 'separado', filas: com.filas, avisos, bloqueos,
-      soporteIncluido: com.soporteIncluido };
+      soporteIncluido: com.soporteIncluido, licenciaUnica: !!com.parUnico };
   }
 
   /* ── 9 · PUERTA DE COTIZACION Y CONFIANZA ─────────────────────────────────────────────

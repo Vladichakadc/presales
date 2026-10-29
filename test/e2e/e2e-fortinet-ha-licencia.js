@@ -58,11 +58,38 @@ const SUCURSAL = new URLSearchParams({
   const qtys = await page.$$eval('#bomTabla tbody tr', (trs) => trs.map((tr) => (tr.children[2] || {}).textContent || '').filter(Boolean));
   t.ok(qtys.length && qtys.every((q) => /^\s*2\s*$/.test(q) || !/\d/.test(q)), `el BOM sigue con 2 de cada línea (${qtys.join(', ')})`);
 
+  /* La licencia única elegible (mejora aprobada el 2026-10-29): marcarla cambia el BOM. */
+  // Celda a celda: `innerText` de la fila pega las celdas sin separador («…-361$2,373»).
+  const filasBom = () => page.$$eval('#bomTabla tbody tr', (trs) => trs.map((tr) => [...tr.children]
+    .map((td) => td.innerText.replace(/\s+/g, ' ').trim()).join(' | ')));
+  t.ok(await page.isVisible('#chkLicUnica'), 'en activo-pasivo aparece «Licencia FortiGuard única del par»');
+  await page.check('#chkLicUnica');
+  await asentar(page);
+  let filas = await filasBom();
+  const filaHa = filas.find((f) => /FG-61F-HA/.test(f)) || '';
+  const filaBundle = filas.find((f) => /Enterprise Protection/.test(f)) || '';
+  t.ok(/ \| 2 \| /.test(filaHa), `marcada: el equipo va con dos unidades del SKU de HA (${filaHa.slice(0, 80)})`);
+  t.ok(/vSN/.test(filaBundle) && / \| 1 \| /.test(filaBundle), `y un solo bundle, registrado al vSN (${filaBundle.slice(-60)})`);
+  const qtyUnica = await texto('#qtyHint');
+  t.ok(/una sola suscripción para el par/.test(qtyUnica), 'la cantidad dice la suscripción única aplicada');
+  // Un servicio a la carta (la mejora a Elite) no se registra al vSN: vuelve a una por nodo, avisando.
+  await page.selectOption('#careLevel', 'fcelite');
+  await asentar(page);
+  filas = await filasBom();
+  const gate = await texto('#gateLista').catch(() => '');
+  const todo = await page.evaluate(() => document.body.innerText.replace(/\s+/g, ' '));
+  t.ok(!filas.some((f) => /FG-61F-HA/.test(f)), 'con Elite pedido, el BOM deja el SKU de HA');
+  t.ok(/no se aplica: la mejora a FortiCare Elite es un SKU a la carta/.test(todo + gate), 'y dice por qué no se aplica');
+  await page.selectOption('#careLevel', 'fcpre');
+  await page.uncheck('#chkLicUnica');
+  await asentar(page);
+
   await page.selectOption('#haModo', 'ha-aa');
   await asentar(page);
   const aa = await texto('#qtyHint');
   t.ok(/solo vale en activo-pasivo/.test(aa) && !/admite una sola/.test(aa),
     'en activo-activo vuelve a una por nodo y dice por qué');
+  t.ok(!(await page.isVisible('#chkLicUnica')), 'y la casilla de la licencia única se oculta');
 
   t.ok(errores.length === 0, `sin excepciones de página (${errores.join(' | ') || 'ninguna'})`);
   await browser.close();
