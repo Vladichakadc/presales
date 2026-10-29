@@ -45,7 +45,9 @@ test('toda entrada HTML de un transporte declara su texto exigido o que es una e
 test('traer-cisco-huawei se niega a correr con una entrada sin declarar, e informa EXPL aparte de OK', () => {
   const src = TRAER;
   assert.match(src, /d\.tipo === 'html' && !d\.debeContener && !d\.exploracion/);
-  assert.match(src, /process\.exit\(1\); \}\n\s*const SOLO/, 'la comprobacion corre antes de pedir nada');
+  // Que valida antes de pedir nada se comprueba ejecutándolo (test/transporte-traer.test.js): `traer()`
+  // rechaza la lista con `validar()` antes del primer `fetch`.
+  assert.match(src, /const motivo = validar\(docs, solo\);\n\s*if \(motivo\) throw new Error\(motivo\);/, 'la comprobacion corre antes de pedir nada');
   const re = /d\.guardado \? \(d\.exploracion \? 'EXPL ' : 'OK   '\) : 'FALLA'/g;
   assert.strictEqual((src.match(re) || []).length, 1, 'el registro de la corrida dice EXPL');
   assert.strictEqual((leer('traer-cisco-huawei.yml').match(re) || []).length, 1, 'el resumen de la corrida dice EXPL');
