@@ -1,6 +1,6 @@
 # Relevo
 
-Última actualización: 2026-10-28 · PR #60
+Última actualización: 2026-10-29 · PR #64
 
 Informe para continuar el trabajo. Lo pidió el dueño del repositorio el 2026-10-27: «de aquí en
 adelante, un informe de pendientes y mejoras para que la cuenta **servicioiptv2025@gmail.com**
@@ -33,6 +33,10 @@ está en curso no va aquí: lo dice `npm run traspasos` (protocolo en `docs/tras
 
 ## Estado al cerrar esta entrega
 
+- **2026-10-29 · PR #64**: la cadencia de la vigilia del despliegue, medida: una corrida programada en
+  ~8 h donde se esperaban ~16. El aviso llega, pero puede llegar tarde. Se vuelve a medir el
+  2026-11-05 (ver *Vigilar* en `PENDIENTES.md`). La PQC de los SRX se contrastó con el Feature
+  Explorer de Juniper: casa con el catálogo, y el SRX4100 y los de sucursal siguen «no consta».
 - **2026-10-28 · PR #60**: en Fortinet, la casilla «Licencia FortiGuard única del par» cotiza un par
   activo-pasivo de las series de la guía con dos SKU de HA y un solo bundle, y dice el ahorro; si algo
   falta (70F y 100F no tienen SKU de HA en la lista firmada), sigue por nodo y dice por qué.
@@ -286,6 +290,12 @@ existen los workflows de transporte. Huawei y HPE niegan además el navegador au
 
 ## Mejoras propuestas sin decidir
 
+- **Un reloj para la vigilia que no sea el de GitHub** (propuesta al cerrar el PR #64, solo si la
+  medición del 2026-11-05 confirma que faltan más de la mitad de las corridas). Una tarea programada
+  de Claude (fuera de Actions) que cada hora lance `vigilia-despliegue.yml` por `workflow_dispatch`.
+  Evita que un despliegue atascado se avise horas tarde. Cuesta una tarea programada por hora y su
+  aprobación; si se hace mal, solo duplica corridas, que el diseño de un aviso por commit ya tolera.
+  Se decide por el dueño.
 - **El panel de perfiles, un solo módulo** (propuesta al cerrar el PR #55). Las siete páginas con
   perfiles llevan cada una su copia del mismo bloque (unas 80 líneas: capturar y aplicar campos, la
   lista, guardar, cargar, consolidar y la ventana), y ya han divergido en lo pequeño (Escape y
