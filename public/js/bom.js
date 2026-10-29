@@ -1481,6 +1481,173 @@
     return b;
   }
 
+  /* ── EL PANEL DE PERFILES MULTI-SEDE, UNA SOLA VEZ (2026-10-28) ───────────────────────────
+     Mejora propuesta al cerrar el PR #55 y ejecutada por encargo del dueño («ejecuta las mejoras
+     propuestas»). Las siete paginas con perfiles llevaban cada una su copia del mismo bloque (unas
+     80 lineas: capturar y aplicar campos, la lista, guardar, cargar, consolidar y la ventana), y ya
+     habian divergido en lo pequeño: Escape y `role="dialog"` solo en dos, el aviso al guardar en
+     seis, cerrar pulsando fuera en tres. Y cada mejora del consolidado (el ciclo de vida en los PR
+     #44, #46 y #50) se escribio siete veces. Aqui va lo comun, con la mejor variante de cada
+     detalle; lo propio de cada fabricante entra por opciones:
+       vendor                 clave del fabricante (la de su ruta de catalogo: `nokia-sr` en el 7750)
+       capturar()             los campos del escenario a guardar
+       aplicar(campos, p)     los pone en la pantalla y la repinta (los ids son de ESTA pagina)
+       equipo()               { id, modelo, filas, extra? } o { error }; puede ser asincrona
+       modeloPorId(id)        busca en el catalogo de la pagina, para poner al dia el ciclo
+       version                version del formato de `campos` (por defecto 1)
+       reglas                 { agregadas, unicas, notaAgregada, notaUnica } de `consolidar`
+       notas                  las reglas de consolidacion del fabricante, para el Excel
+       notaMulti(fabs)        la nota del Excel con varios fabricantes (por defecto, la lista)
+       avisoMulti(fabs)       el aviso en pantalla con varios fabricantes (por defecto, la lista)
+       extra(l, meta)         HTML propio sobre la tabla del consolidado (puede añadir notas)
+       contexto()             { cliente, referencia } del escenario, para encabezar el consolidado
+       dto()                  { valor, etiqueta } del simulador de descuento
+       antes(accion)          confirmacion asincrona ('perfil' o 'consolidar'); false no sigue
+       envolver(boton, fn)    envuelve la accion del boton (Fortinet: `conBoton`)
+       alPintar()             estado de los botones si la pagina lo decide (Fortinet: la puerta)
+     Los ids del marcado son el contrato, los mismos en las siete paginas: #nombrePerfil,
+     #perfilSedes, #btnGuardarPerfil, #listaPerfiles, #btnConsolidar, #modalConsolidado,
+     #consolidadoSub, #consolidadoTabla, #xlsConsolidadoBtn y #consolidadoCerrar. Lo que falta en
+     una pagina (#perfilMsg, el rol de la ventana) lo pone este modulo al montar. */
+  // El panel montado en esta pagina: lo repinta `BOM.pintarPerfiles()` desde donde la pagina lo
+  // necesite (al llegar su catalogo, en su repintado general). Sin panel montado, no hace nada.
+  let panelPerfiles = null;
+  function pintarPerfilesMontado() { if (panelPerfiles) panelPerfiles.pintar(); }
+  function montarPerfiles(opciones) {
+    const o = opciones || {};
+    const doc = global.document;
+    const $ = (id) => doc.getElementById(id);
+    if (!o.vendor || typeof o.capturar !== 'function' || typeof o.aplicar !== 'function' || typeof o.equipo !== 'function') {
+      throw new Error('montarPerfiles: faltan vendor, capturar, aplicar o equipo');
+    }
+    const modal = $('modalConsolidado');
+    const btnCons = $('btnConsolidar');
+    // La ventana se anuncia como dialogo, con su titulo, en las siete.
+    if (modal) {
+      modal.setAttribute('role', 'dialog');
+      modal.setAttribute('aria-modal', 'true');
+      const tit = modal.querySelector('h2, h3');
+      if (tit) { if (!tit.id) tit.id = 'consolidadoTit'; modal.setAttribute('aria-labelledby', tit.id); }
+    }
+    // La linea de mensajes (guardado, cargado, falta un dato) existe en todas.
+    let msg = $('perfilMsg');
+    if (!msg) {
+      const fila = $('btnGuardarPerfil') && $('btnGuardarPerfil').parentNode;
+      if (fila && fila.parentNode) {
+        msg = doc.createElement('p');
+        msg.id = 'perfilMsg';
+        msg.className = 'hint';
+        msg.style.margin = '6px 0 0';
+        fila.parentNode.insertBefore(msg, fila.nextSibling);
+      }
+    }
+    if (msg) msg.setAttribute('role', 'status');
+    const decir = (t) => { if (msg) msg.textContent = t; };
+    const envolver = (boton, fn) => (typeof o.envolver === 'function' ? o.envolver(boton, fn) : fn());
+
+    function pintar() {
+      const caja = $('listaPerfiles');
+      if (!caja) return;
+      const l = perfilesDe(o.vendor);
+      const btnEstilo = 'style="font-size:10px;padding:3px 8px"';
+      caja.innerHTML = l.length
+        ? '<table class="tco-tabla"><thead><tr><th>Perfil</th><th>Sedes</th><th>Modelo</th><th>Guardado</th><th></th></tr></thead><tbody>'
+          + l.map((x) => `<tr><td><b>${esc(x.nombre)}</b></td><td>${esc(x.sedes)}</td><td>${esc(x.modelo)}</td><td>${esc(x.fecha || '—')}</td>`
+            + `<td><button type="button" class="btn ghost" data-perfil-cargar="${esc(x.id)}" ${btnEstilo}>Cargar</button> `
+            + `<button type="button" class="btn ghost" data-perfil-borrar="${esc(x.id)}" ${btnEstilo}>Eliminar</button></td></tr>`).join('')
+          + '</tbody></table>'
+        : '<p class="hint">Sin perfiles guardados todavía.</p>';
+      if (typeof o.alPintar === 'function') { o.alPintar(); return; }
+      if (btnCons) {
+        const hay = perfiles().length > 0;
+        btnCons.disabled = !hay;
+        btnCons.title = hay ? '' : 'Guarda al menos un perfil de sede para consolidar el BOM global.';
+      }
+    }
+
+    async function guardar() {
+      const nombre = $('nombrePerfil').value.trim();
+      const sedes = Math.max(0, parseInt($('perfilSedes').value, 10) || 0);
+      if (!nombre || !sedes) { decir('Pon un nombre y el número de sedes idénticas.'); $('nombrePerfil').focus(); return; }
+      if (typeof o.antes === 'function' && !(await o.antes('perfil'))) return;
+      const eq = await o.equipo();
+      if (!eq || eq.error || !eq.id || !Array.isArray(eq.filas) || !eq.filas.length) {
+        decir((eq && eq.error) || 'No hay un equipo dimensionado que guardar: ajusta el escenario primero.');
+        return;
+      }
+      guardarPerfil(Object.assign({ nombre, sedes, modelo: eq.id, vendor: o.vendor, ciclo: cicloDe(eq.modelo || null),
+        fecha: new Date().toISOString().slice(0, 10), version: o.version || 1 }, eq.extra || {},
+      { campos: o.capturar(), filas: JSON.parse(JSON.stringify(eq.filas)) }));
+      $('nombrePerfil').value = '';
+      $('perfilSedes').value = '';
+      decir(`Perfil «${nombre}» guardado con ${sedes} sede(s).`);
+      pintar();
+    }
+
+    function cerrar() {
+      if (!modal || modal.hidden) return;
+      modal.hidden = true;
+      if (btnCons) btnCons.focus();
+    }
+
+    async function consolidarYMostrar() {
+      if (typeof o.antes === 'function' && !(await o.antes('consolidar'))) return;
+      // El ciclo de los perfiles de esta pagina, al dia con su catalogo; los de otros
+      // fabricantes, con el suyo (pedido al servidor, mas abajo).
+      const buscar = typeof o.modeloPorId === 'function' ? o.modeloPorId : () => null;
+      const l = refrescarCiclo(perfiles(), o.vendor, (id) => buscar(id));
+      const { filas, totalSedes, fabricantes } = consolidar(l, o.reglas || { agregadas: [], unicas: [] });
+      if (!totalSedes) return;
+      const multi = fabricantes.length > 1;
+      const meta = {
+        titulo: `BOM global consolidado — ${l.length} perfil(es), ${totalSedes} sedes`,
+        subtitulo: l.map((x) => `${x.nombre} ×${x.sedes} (${x.modelo})`).join(' · '),
+        archivo: multi ? 'BOM_global_multifabricante' : `BOM_global_${o.archivo || o.vendor}`,
+        sinRefs: true,
+        perfiles: l,
+        notas: (o.notas || []).slice(),
+      };
+      const ctx = typeof o.contexto === 'function' ? (o.contexto() || {}) : {};
+      if (ctx.cliente) meta.cliente = ctx.cliente;
+      if (ctx.referencia) meta.referencia = ctx.referencia;
+      if (multi) meta.notas.push(typeof o.notaMulti === 'function' ? o.notaMulti(fabricantes) : `  MULTI-FABRICANTE: ${fabricantes.join(', ')}.`);
+      const d = typeof o.dto === 'function' ? (o.dto() || {}) : {};
+      if (d.valor > 0) { meta.dto = d.valor; meta.dtoEtq = d.etiqueta; }
+      const extra = typeof o.extra === 'function' ? (o.extra(l, meta) || '') : '';
+      // Y los perfiles de los demas fabricantes, al dia con su propio catalogo.
+      meta.perfiles = await refrescarCicloTodos(meta.perfiles);
+      const avisoMulti = !multi ? ''
+        : typeof o.avisoMulti === 'function' ? o.avisoMulti(fabricantes)
+          : `<p class="bom-aviso">Consolidado <b>multi-fabricante</b> (${esc(fabricantes.join(', '))}).</p>`;
+      $('consolidadoSub').textContent = `${meta.subtitulo} — ${totalSedes} sedes en total`;
+      $('consolidadoTabla').innerHTML = avisoCicloConsolidado(meta.perfiles) + avisoMulti + extra
+        + renderTabla(filas, { dto: d.valor > 0 ? d.valor : 0, sinRefs: true });
+      modal.hidden = false;
+      $('xlsConsolidadoBtn').onclick = () => exportarExcel(filas, meta);
+      $('consolidadoCerrar').focus();
+    }
+
+    $('btnGuardarPerfil').addEventListener('click', () => envolver($('btnGuardarPerfil'), guardar));
+    $('listaPerfiles').addEventListener('click', (e) => {
+      const b = e.target.closest('button');
+      if (!b) return;
+      if (b.dataset.perfilCargar != null) {
+        const x = perfilesDe(o.vendor).find((y) => y.id === b.dataset.perfilCargar);
+        if (x && x.campos) { o.aplicar(x.campos, x); decir(`Perfil «${x.nombre}» cargado.`); }
+      } else if (b.dataset.perfilBorrar != null) {
+        quitarPerfil(b.dataset.perfilBorrar);
+        pintar();
+      }
+    });
+    if (btnCons) btnCons.addEventListener('click', () => envolver(btnCons, consolidarYMostrar));
+    $('consolidadoCerrar').addEventListener('click', cerrar);
+    if (modal) modal.addEventListener('click', (e) => { if (e.target === modal) cerrar(); });
+    doc.addEventListener('keydown', (e) => { if (e.key === 'Escape') cerrar(); });
+    panelPerfiles = { pintar };
+    pintar();
+    return panelPerfiles;
+  }
+
   // Delegacion en document y no en la tabla: el BOM se repinta entero en cada cambio de
   // escenario, asi que un listener colgado del nodo moriria con el primer repintado.
   if (global.document && !global.document.__bomQuitarCableado) {
@@ -1499,7 +1666,7 @@
   }
 
   global.BOM = { renderTabla, exportarExcel, comoTexto, matrizExcel, matrizSupuestos, cicloDe, cicloDelEquipo, cicloDePerfiles, avisoCicloConsolidado, refrescarCiclo, refrescarCicloTodos, fuentesDelEquipo, money, esc, claveFila,
-    enviarACotizador, recogerEntrada, montarBotonCotizador, normalizar,
+    enviarACotizador, recogerEntrada, montarBotonCotizador, montarPerfiles, pintarPerfiles: pintarPerfilesMontado, normalizar,
     sincronizar, soltarManual, avisoDesvio, fijarRepintado,
     agregarRef, quitarRef, cantidadRef, refsExtra, fijarVendor,
     perfiles, perfilesDe, guardarPerfil, quitarPerfil, consolidar,

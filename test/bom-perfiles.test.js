@@ -153,16 +153,34 @@ test('el consolidado avisa del fin de venta de cada perfil y dice cuáles no tra
 // al cerrar el PR #50): antes un core SRX o un PE 7750 no entraba en el BOM consolidado.
 const PAGINAS_CON_PERFILES = ['aruba-edgeconnect', 'cisco-catalyst8k', 'fortinet-fortigate', 'huawei-netengine', 'mikrotik-routeros',
   'juniper-srx', 'nokia-7750sr'];
-
-test('las páginas con perfiles guardan el ciclo y lo llevan al consolidado', () => {
+// Desde el 2026-10-28 el bloque de perfiles vive en `BOM.montarPerfiles` (mejora propuesta al cerrar
+// el PR #55): estas reglas se comprueban una vez, en el módulo, y cada página tiene que montarlo
+// (test/bom-panel-perfiles.test.js comprueba además que ninguna conserva su copia).
+function cuerpoMontarPerfiles() {
+  const fs = require('fs');
+  const path = require('path');
+  const bom = fs.readFileSync(path.join(__dirname, '..', 'public', 'js', 'bom.js'), 'utf8');
+  const m = /function montarPerfiles\(opciones\) \{[\s\S]*?\n {2}\}\n/.exec(bom);
+  assert.ok(m, 'bom.js ya no tiene montarPerfiles');
+  return m[0];
+}
+function paginasMontan() {
   const fs = require('fs');
   const path = require('path');
   for (const p of PAGINAS_CON_PERFILES) {
     const js = fs.readFileSync(path.join(__dirname, '..', 'public', 'js', `dimensionador-${p}.js`), 'utf8');
-    assert.match(js, /BOM\.guardarPerfil\(\{[^}]*ciclo: ?BOM\.cicloDe\(/, `${p}: el perfil no guarda el ciclo de su equipo`);
-    assert.match(js, /sinRefs: ?true,\s*perfiles: ?l,/, `${p}: el consolidado no pasa los perfiles al Excel`);
-    assert.match(js, /BOM\.avisoCicloConsolidado\(/, `${p}: el consolidado en pantalla no avisa`);
+    assert.match(js, /BOM\.montarPerfiles\(\{\s*vendor: ?VENDOR,[\s\S]*?modeloPorId/, `${p}: no monta el panel común con su catálogo`);
   }
+}
+
+test('las páginas con perfiles guardan el ciclo y lo llevan al consolidado', () => {
+  const fs = require('fs');
+  const path = require('path');
+  const js = cuerpoMontarPerfiles();
+  assert.match(js, /guardarPerfil\(Object\.assign\(\{[^}]*ciclo: cicloDe\(eq\.modelo/, 'el perfil no guarda el ciclo de su equipo');
+  assert.match(js, /sinRefs: true,\s*perfiles: l,/, 'el consolidado no pasa los perfiles al Excel');
+  assert.match(js, /avisoCicloConsolidado\(/, 'el consolidado en pantalla no avisa');
+  paginasMontan();
   const bom = fs.readFileSync(path.join(__dirname, '..', 'public', 'js', 'bom.js'), 'utf8');
   assert.match(bom, /if \(m\.sinRefs && Array\.isArray\(m\.perfiles\)\)/, 'el Excel del consolidado no escribe el ciclo');
 });
@@ -200,13 +218,9 @@ test('al consolidar, el ciclo de los perfiles propios se pone al día y el de lo
 });
 
 test('las páginas con perfiles ponen el ciclo al día antes de consolidar', () => {
-  const fs = require('fs');
-  const path = require('path');
-  for (const p of PAGINAS_CON_PERFILES) {
-    const js = fs.readFileSync(path.join(__dirname, '..', 'public', 'js', `dimensionador-${p}.js`), 'utf8');
-    // Juniper busca en sus dos catálogos (SRX y SSR) y Nokia en el suyo: los dos con `modeloPorId`.
-    assert.match(js, /const l ?= ?BOM\.refrescarCiclo\(BOM\.perfiles\(\), VENDOR, \(id\) ?=> ?(MODELS\.find\(\(x\) ?=> ?x\.id ?=== ?id\)|modeloPorId\(id\))\);/, `${p}: consolida con la foto vieja del ciclo`);
-  }
+  // Juniper busca en sus dos catálogos (SRX y SSR) y Nokia en el suyo: cada página da su `modeloPorId`.
+  assert.match(cuerpoMontarPerfiles(), /const l = refrescarCiclo\(perfiles\(\), o\.vendor, \(id\) => buscar\(id\)\);/, 'consolida con la foto vieja del ciclo');
+  paginasMontan();
 });
 
 // LOS PERFILES DE OTROS FABRICANTES, TAMBIÉN AL DÍA (2026-10-28, mejora propuesta al cerrar el PR
@@ -245,11 +259,10 @@ test('al consolidar, los perfiles de otros fabricantes se ponen al día con su c
 test('las páginas con perfiles piden al consolidar el catálogo de los demás fabricantes', () => {
   const fs = require('fs');
   const path = require('path');
-  for (const p of PAGINAS_CON_PERFILES) {
-    const js = fs.readFileSync(path.join(__dirname, '..', 'public', 'js', `dimensionador-${p}.js`), 'utf8');
-    assert.match(js, /meta\.perfiles ?= ?await BOM\.refrescarCicloTodos\(meta\.perfiles\);/, `${p}: no pone al día los perfiles de otros fabricantes`);
-    assert.match(js, /BOM\.avisoCicloConsolidado\(meta\.perfiles\)/, `${p}: el aviso en pantalla no usa la lista puesta al día`);
-  }
+  const js = cuerpoMontarPerfiles();
+  assert.match(js, /meta\.perfiles = await refrescarCicloTodos\(meta\.perfiles\);/, 'no pone al día los perfiles de otros fabricantes');
+  assert.match(js, /avisoCicloConsolidado\(meta\.perfiles\)/, 'el aviso en pantalla no usa la lista puesta al día');
+  paginasMontan();
   const bom = fs.readFileSync(path.join(__dirname, '..', 'public', 'js', 'bom.js'), 'utf8');
   assert.match(bom, /if \(!VENDOR_VALIDO\.test\(v\)\) throw new Error\('fabricante no válido'\);/, 'el fabricante del almacenamiento local se valida antes de la URL');
 });

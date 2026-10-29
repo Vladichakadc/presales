@@ -130,7 +130,7 @@ function capaEfectiva() {
     .map((k, i) => `<option value="${esc(k)}"${i === Object.keys(BUNDLES).length - 1 ? ' selected' : ''}>${esc(BUNDLES[k].n)}</option>`).join('');
   render();
   renderCatalogo();
-  pintarPerfiles();
+  BOM.pintarPerfiles();
   PROCEDENCIA.registrarModelos('juniper', () => [...MODELS, ...SDWAN].map((m) => ({ model: m.id, ...m })));
 }());
 
@@ -737,73 +737,20 @@ function aplicarCampos(v) {
   render();
   renderBom();
 }
-function pintarPerfiles() {
-  const caja = $('listaPerfiles');
-  const l = BOM.perfilesDe(VENDOR);
-  caja.innerHTML = l.length
-    ? '<table class="tco-tabla"><thead><tr><th>Perfil</th><th>Sedes</th><th>Modelo</th><th>Guardado</th><th></th></tr></thead><tbody>'
-      + l.map((x) => `<tr><td><b>${esc(x.nombre)}</b></td><td>${x.sedes}</td><td>${esc(x.modelo)}</td><td>${esc(x.fecha || '—')}</td>`
-        + `<td><button type="button" class="btn ghost" data-perfil-cargar="${esc(x.id)}" style="font-size:10px;padding:3px 8px">Cargar</button> `
-        + `<button type="button" class="btn ghost" data-perfil-borrar="${esc(x.id)}" style="font-size:10px;padding:3px 8px">Eliminar</button></td></tr>`).join('')
-      + '</tbody></table>'
-    : '<p class="hint">Sin perfiles guardados todavía.</p>';
-  const hay = BOM.perfiles().length > 0;
-  $('btnConsolidar').disabled = !hay;
-  $('btnConsolidar').title = hay ? '' : 'Guarda al menos un perfil de sede para consolidar el BOM global.';
-}
-$('btnGuardarPerfil').addEventListener('click', () => {
-  const nombre = $('nombrePerfil').value.trim();
-  const sedes = Math.max(0, parseInt($('perfilSedes').value, 10) || 0);
-  if (!nombre || !sedes) { $('perfilMsg').textContent = 'Pon un nombre y el número de sedes idénticas.'; $('nombrePerfil').focus(); return; }
-  renderBom();
-  const id = $('pickModel').value || (lastPick && lastPick.id);
-  if (!bomFilas.length || !hayCandidato || !id) { $('perfilMsg').textContent = 'No hay un equipo dimensionado que guardar: ajusta el escenario primero.'; return; }
-  BOM.guardarPerfil({ nombre, sedes, modelo: id, vendor: VENDOR, ciclo: BOM.cicloDe(modeloPorId(id)), fecha: new Date().toISOString().slice(0, 10),
-    version: 1, campos: capturarCampos(), filas: JSON.parse(JSON.stringify(bomFilas)) });
-  $('nombrePerfil').value = ''; $('perfilSedes').value = '';
-  $('perfilMsg').textContent = `Perfil «${nombre}» guardado con ${sedes} sede(s).`;
-  pintarPerfiles();
-});
-$('listaPerfiles').addEventListener('click', (e) => {
-  const b = e.target.closest('button');
-  if (!b) return;
-  if (b.dataset.perfilCargar != null) {
-    const x = BOM.perfilesDe(VENDOR).find((y) => y.id === b.dataset.perfilCargar);
-    if (x && x.campos) { aplicarCampos(x.campos); $('perfilMsg').textContent = `Perfil «${x.nombre}» cargado.`; }
-  } else if (b.dataset.perfilBorrar != null) {
-    BOM.quitarPerfil(b.dataset.perfilBorrar);
-    pintarPerfiles();
-  }
-});
-$('btnConsolidar').addEventListener('click', async () => {
-  // El ciclo de los perfiles de esta página, al día con su catálogo; los de otros fabricantes, con el suyo.
-  const l = BOM.refrescarCiclo(BOM.perfiles(), VENDOR, (id) => modeloPorId(id));
-  const { filas, totalSedes, fabricantes } = BOM.consolidar(l, { agregadas: [], unicas: [] });
-  if (!totalSedes) return;
-  const multi = fabricantes.length > 1;
-  const meta = {
-    titulo: `BOM global consolidado — ${l.length} perfil(es), ${totalSedes} sedes`,
-    subtitulo: l.map((x) => `${x.nombre} ×${x.sedes} (${x.modelo})`).join(' · '),
-    archivo: multi ? 'BOM_global_multifabricante' : 'BOM_global_juniper',
-    sinRefs: true,
-    perfiles: l,
-    notas: ['REGLAS DE CONSOLIDACION (Juniper):',
-      '  Equipo, suscripcion y soporte: cantidad del perfil x sedes del perfil.',
-      '  Ninguna linea de Juniper lleva precio: no hay lista de precios en el material disponible.'],
-  };
-  if (multi) meta.notas.push(`  MULTI-FABRICANTE: ${fabricantes.join(', ')}.`);
-  // Y los perfiles de los demás fabricantes, al día con su propio catálogo (pedido al servidor).
-  meta.perfiles = await BOM.refrescarCicloTodos(meta.perfiles);
-  $('consolidadoSub').textContent = `${meta.subtitulo} — ${totalSedes} sedes en total`;
-  $('consolidadoTabla').innerHTML = BOM.avisoCicloConsolidado(meta.perfiles) + (multi ? `<p class="bom-aviso">Consolidado <b>multi-fabricante</b> (${esc(fabricantes.join(', '))}).</p>` : '')
-    + BOM.renderTabla(filas, { sinRefs: true });
-  $('modalConsolidado').hidden = false;
-  $('xlsConsolidadoBtn').onclick = () => BOM.exportarExcel(filas, meta);
-  $('consolidadoCerrar').focus();
-});
-$('consolidadoCerrar').addEventListener('click', () => { $('modalConsolidado').hidden = true; $('btnConsolidar').focus(); });
-document.addEventListener('keydown', (e) => {
-  if (e.key === 'Escape' && !$('modalConsolidado').hidden) { $('modalConsolidado').hidden = true; $('btnConsolidar').focus(); }
+// Guardar, cargar, consolidar y la ventana: el módulo común de bom.js (2026-10-28).
+BOM.montarPerfiles({
+  vendor: VENDOR,
+  capturar: capturarCampos,
+  aplicar: aplicarCampos,
+  modeloPorId,
+  equipo: () => {
+    renderBom();
+    const id = $('pickModel').value || (lastPick && lastPick.id);
+    return bomFilas.length && hayCandidato && id ? { id, modelo: modeloPorId(id), filas: bomFilas } : null;
+  },
+  notas: ['REGLAS DE CONSOLIDACION (Juniper):',
+    '  Equipo, suscripcion y soporte: cantidad del perfil x sedes del perfil.',
+    '  Ninguna linea de Juniper lleva precio: no hay lista de precios en el material disponible.'],
 });
 
 /* ══ ESTADO ENLAZABLE Y PERSISTENTE ══
