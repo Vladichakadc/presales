@@ -1,6 +1,6 @@
 # Relevo
 
-Última actualización: 2026-10-29 · PR #66
+Última actualización: 2026-10-29 · PR #67
 
 Informe para continuar el trabajo. Lo pidió el dueño del repositorio el 2026-10-27: «de aquí en
 adelante, un informe de pendientes y mejoras para que la cuenta **servicioiptv2025@gmail.com**
@@ -33,6 +33,9 @@ está en curso no va aquí: lo dice `npm run traspasos` (protocolo en `docs/tras
 
 ## Estado al cerrar esta entrega
 
+- **2026-10-29 · PR #67**: el marcado del panel de perfiles y de su ventana lo genera
+  `BOM.montarPerfiles`; las siete páginas solo dejan su sección con su explicación (la mejora
+  propuesta al cerrar el PR #62).
 - **2026-10-29 · PR #66**: al activar una función, la columna de resultados resalta lo que apareció o
   cambió por ella, con «Apareció al activar «X»», y el panel de funciones dice cuántos puntos y lleva
   al primero (petición del dueño; era la mejora propuesta al cerrar el PR #61).
@@ -317,18 +320,15 @@ existen los workflows de transporte. Huawei y HPE niegan además el navegador au
   `funciones-activas.js` y su caso en `e2e-funciones-activas.js`; si se hace mal, una pestaña que se
   repinta al abrirse (y no al recalcular) se compararía con una foto vieja y marcaría filas de más:
   la prueba tiene que abrir la pestaña después de marcar. Se decide por el dueño.
-- **El marcado del panel de perfiles, generado por el módulo** (propuesta al cerrar el PR #62).
-  `BOM.montarPerfiles` ya lleva la lógica de las siete páginas, pero su HTML (el panel con
-  `#nombrePerfil`, `#perfilSedes`, `#btnGuardarPerfil`, `#listaPerfiles`, `#btnConsolidar` y la
-  ventana `#modalConsolidado`) sigue copiado en siete `.html`, y es ahí donde ya divergió (la caja
-  con `role="dialog"` solo en MikroTik, `#perfilMsg` ausente en Aruba). Propuesta: que el módulo
-  genere el panel dentro de un contenedor (`<div id="panelPerfiles">`), como hace
-  `BOM.montarBotonCotizador`, y que cada página solo deje ese hueco. Evita la siguiente
-  divergencia y deja los perfiles a un dimensionador nuevo con una llamada. Cuesta tocar los siete
-  HTML y declarar los ids que crea el módulo en `TARDIOS` de `npm run catalogo`; si se hace mal, el
-  panel no aparece en alguna página o axe marca la ventana, y lo verían `e2e-accesibilidad.js`,
-  `e2e-ciclo-excel.js` y `e2e-perfiles-juniper-nokia.js`. Se decide por el dueño.
-- (Hecha en el PR #66: lo que trajo cada función, resaltado en el resultado. Hecha en el PR #62: el panel de perfiles, un solo módulo. Hecha en el PR #60: la licencia FortiGuard única del par en el BOM. Hecha en el PR #59: la vigilia del despliegue. Hecha en el PR #58: del override por ciclo de vida a ampliación o renovación en un clic. Hecha en el PR #57: el transporte probado sin red. Hecha en el PR #55: los perfiles multi-sede en Juniper y Nokia 7750. Hecha en el PR #54: la foto desde la página de cada modelo, hasta donde Cisco la publica, y el transporte fuera del YAML. Hecha en el PR #50: los perfiles de otros fabricantes al día al consolidar. Hecha en el PR #46: el ciclo del perfil al día al consolidar. Hecha en el PR #45: la fuente de la PQC enlazada a `fuentes.js`. Hecha en el PR #44: el ciclo en el consolidado multi-sede. Hecha en el PR #41: el fin de venta en el Excel. Hecha en el PR #40: la foto de producto en el Excel. Hecha en la septuagesimoprimera: el «no la trae» documentado, `pqcNo`. Hecha en la sexagesimoctava: la
+- **Los estilos de la ventana del consolidado, en la hoja común** (propuesta al cerrar el PR #67).
+  El marcado ya es uno, pero `#modalConsolidado`, `.acc-caja` y sus `h3` siguen escritos en la hoja
+  de cada una de las siete páginas, con diferencias (el tono del velo, rgba(28,25,23) en cuatro y
+  rgba(14,26,43) en tres). Moverlos a `controles.css` con las variables de cada página (`--card`,
+  `--rule`) deja una sola regla. Evita que la próxima mejora de la ventana se escriba siete veces.
+  Cuesta quitar unas cuatro líneas de cada hoja; si se hace mal, la ventana sale sin velo o sin
+  desplazamiento en alguna página, y lo verían el contraste de pantallas y `e2e-accesibilidad.js`
+  (que ya abre la ventana). Se decide por el dueño.
+- (Hecha en el PR #67: el marcado del panel de perfiles, generado por el módulo. Hecha en el PR #66: lo que trajo cada función, resaltado en el resultado. Hecha en el PR #62: el panel de perfiles, un solo módulo. Hecha en el PR #60: la licencia FortiGuard única del par en el BOM. Hecha en el PR #59: la vigilia del despliegue. Hecha en el PR #58: del override por ciclo de vida a ampliación o renovación en un clic. Hecha en el PR #57: el transporte probado sin red. Hecha en el PR #55: los perfiles multi-sede en Juniper y Nokia 7750. Hecha en el PR #54: la foto desde la página de cada modelo, hasta donde Cisco la publica, y el transporte fuera del YAML. Hecha en el PR #50: los perfiles de otros fabricantes al día al consolidar. Hecha en el PR #46: el ciclo del perfil al día al consolidar. Hecha en el PR #45: la fuente de la PQC enlazada a `fuentes.js`. Hecha en el PR #44: el ciclo en el consolidado multi-sede. Hecha en el PR #41: el fin de venta en el Excel. Hecha en el PR #40: la foto de producto en el Excel. Hecha en la septuagesimoprimera: el «no la trae» documentado, `pqcNo`. Hecha en la sexagesimoctava: la
   versión mínima de la PQC en la hoja «Supuestos».)
 
 ## Decisiones del dueño abiertas
