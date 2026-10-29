@@ -4,9 +4,9 @@
 - **Rama:** claude/transporte-sin-red
 - **Cuenta:** sesión de Claude del 2026-10-28 (cuenta del dueño)
 - **Estado:** en curso
-- **Actualizado:** 2026-10-28 21:10
+- **Actualizado:** 2026-10-28 21:35
 - **Archivos que toca:** scripts/transporte/traer.js, test/transporte-traer.test.js, test/traer-exploracion.test.js, test/traer-pantalla-login.test.js
-- **Siguiente paso:** convertir el script en `traer({ docs, solo, fetch, dir })` sin cambiar ninguna regla
+- **Siguiente paso:** comparar la corrida real (`fuente/transporte-sin-red-2026-10-28`) con `fuente/cisco-asr-2026-10-28`; si casa, cerrar y fusionar
 
 ## Encargo del dueño
 
@@ -14,7 +14,7 @@
 
 ## Hecho
 
-- Nada todavía.
+- `traer()` con lista, carpeta y fetch inyectables; el bucle, idéntico salvo esos dos nombres. Prueba `transporte-traer` (9 casos).
 
 ## Falta
 
