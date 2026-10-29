@@ -86,7 +86,8 @@ let paso = 'arranque';
     `el consolidado en pantalla avisa del perfil con fin de venta (${modal.slice(0, 160)})`);
   t.ok(/Perfil «Perfil viejo e2e» \(3 sede\(s\), Catalyst 8300-1N1S-6T\): el equipo tiene fin de venta anunciado/.test(modal) && !/Sin dato de ciclo/.test(modal),
     'el perfil guardado sin ciclo se pone al día con el catálogo al consolidar, no queda «sin dato»');
-  t.ok(/Perfil «Spoke Fortinet e2e» \(4 sede\(s\), FortiGate 70F\): el equipo está fuera de venta\./.test(modal),
+  // Con la fecha del catálogo desde el 2026-10-29 (PR #68): el aviso dice también el último pedido.
+  t.ok(/Perfil «Spoke Fortinet e2e» \(4 sede\(s\), FortiGate 70F\): el equipo está fuera de venta \(último pedido el 2026-05-17\)/.test(modal),
     'el perfil de otro fabricante se pone al día con el catálogo de su fabricante, pedido al servidor');
   try {
     const [d] = await Promise.all([page.waitForEvent('download', { timeout: 30000 }), page.click('#xlsConsolidadoBtn')]);
