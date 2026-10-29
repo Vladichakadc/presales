@@ -1,6 +1,6 @@
 # Relevo
 
-Última actualización: 2026-10-28 · PR #61
+Última actualización: 2026-10-29 · PR #64
 
 Informe para continuar el trabajo. Lo pidió el dueño del repositorio el 2026-10-27: «de aquí en
 adelante, un informe de pendientes y mejoras para que la cuenta **servicioiptv2025@gmail.com**
@@ -33,6 +33,10 @@ está en curso no va aquí: lo dice `npm run traspasos` (protocolo en `docs/tras
 
 ## Estado al cerrar esta entrega
 
+- **2026-10-29 · PR #64**: la cadencia de la vigilia del despliegue, medida: una corrida programada en
+  ~8 h donde se esperaban ~16. El aviso llega, pero puede llegar tarde. Se vuelve a medir el
+  2026-11-05 (ver *Vigilar* en `PENDIENTES.md`). La PQC de los SRX se contrastó con el Feature
+  Explorer de Juniper: casa con el catálogo, y el SRX4100 y los de sucursal siguen «no consta».
 - **2026-10-28 · PR #61**: las funciones activadas, resaltadas también en la columna de resultados de
   los ocho dimensionadores con casillas (panel «Funciones activadas», `public/js/funciones-activas.js`
   y la sección 3 de `controles.css`). **Criterio que conviene conservar**: el panel cuenta lo mismo que
@@ -291,6 +295,12 @@ existen los workflows de transporte. Huawei y HPE niegan además el navegador au
 
 ## Mejoras propuestas sin decidir
 
+- **Un reloj para la vigilia que no sea el de GitHub** (propuesta al cerrar el PR #64, solo si la
+  medición del 2026-11-05 confirma que faltan más de la mitad de las corridas). Una tarea programada
+  de Claude (fuera de Actions) que cada hora lance `vigilia-despliegue.yml` por `workflow_dispatch`.
+  Evita que un despliegue atascado se avise horas tarde. Cuesta una tarea programada por hora y su
+  aprobación; si se hace mal, solo duplica corridas, que el diseño de un aviso por commit ya tolera.
+  Se decide por el dueño.
 - **Del panel a la fila: resaltar en el resultado lo que cada función añadió** (propuesta al cerrar el
   PR #61). El panel dice con qué funciones se calculó, pero no qué cambió por cada una: en el BOM, la
   línea del PIM que trae «Respaldo celular», el NIM que trae «MACsec» o la segunda fuente que trae
