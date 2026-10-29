@@ -1,6 +1,6 @@
 # Relevo
 
-Última actualización: 2026-10-28 · PR #56
+Última actualización: 2026-10-28 · PR #57
 
 Informe para continuar el trabajo. Lo pidió el dueño del repositorio el 2026-10-27: «de aquí en
 adelante, un informe de pendientes y mejoras para que la cuenta **servicioiptv2025@gmail.com**
@@ -33,6 +33,10 @@ está en curso no va aquí: lo dice `npm run traspasos` (protocolo en `docs/tras
 
 ## Estado al cerrar esta entrega
 
+- **2026-10-28 · PR #57**: el transporte de documentos, probado sin red (mejora propuesta al cerrar el PR
+  #54). `traer()` se ejercita en `verificar` con respuestas fabricadas (`test/transporte-traer.test.js`).
+  **Criterio que conviene conservar**: una regla nueva del transporte entra con su caso en esa prueba,
+  y un cambio del script se confirma con una corrida real de una entrada conocida antes de fusionar.
 - **2026-10-28 · PR #56**: **Fortinet F3, cerrado con documento oficial.** La guía de FortiOS 7.6.6
   («Single FortiGuard license for FortiGate A-P HA cluster») da la licencia FortiGuard única en
   activo-pasivo a las series 40F, 60F, 70F, 80F y 100F: los 8 FortiGate del catálogo llevan
@@ -296,17 +300,7 @@ existen los workflows de transporte. Huawei y HPE niegan además el navegador au
   Cuesta tocar las siete páginas y sus pruebas, que hoy buscan el patrón en cada una; si se hace
   mal, «Guardar» o «Cargar» dejan de funcionar en alguna, y lo verían `bom-perfiles.test.js`,
   `e2e-ciclo-excel.js` y `e2e-perfiles-juniper-nokia.js`. Se decide por el dueño.
-- **El transporte, probado sin red** (propuesta al cerrar el PR #54). Ahora que `traer.js` es un
-  archivo, su lógica se puede ejercitar en `npm run verificar` con un `fetch` de mentira: la firma de
-  cada tipo (PDF, imagen, HTML con `debeContener`), la pantalla de inicio de sesión, el tope de
-  piezas, los dominios permitidos en `descubrirPiezas` y que una entrada que depende de otra no pida
-  nada si la otra no se guardó. Hoy eso solo se comprueba leyendo el texto del script con expresiones
-  regulares, o en una corrida de Actions. Evita que un cambio en el transporte se descubra cuando ya
-  no trae un documento (o, peor, cuando guarda una página que no es el documento). Cuesta exportar la
-  función principal de `traer.js` con `fetch` y el directorio inyectables, y una prueba con unas diez
-  respuestas fabricadas; si se hace mal, el workflow deja de correr el script al cargarlo: se prueba
-  con una corrida real antes de fusionar, como en el PR #54. Se decide por el dueño.
-- (Hecha en el PR #55: los perfiles multi-sede en Juniper y Nokia 7750. Hecha en el PR #54: la foto desde la página de cada modelo, hasta donde Cisco la publica, y el transporte fuera del YAML. Hecha en el PR #50: los perfiles de otros fabricantes al día al consolidar. Hecha en el PR #46: el ciclo del perfil al día al consolidar. Hecha en el PR #45: la fuente de la PQC enlazada a `fuentes.js`. Hecha en el PR #44: el ciclo en el consolidado multi-sede. Hecha en el PR #41: el fin de venta en el Excel. Hecha en el PR #40: la foto de producto en el Excel. Hecha en la septuagesimoprimera: el «no la trae» documentado, `pqcNo`. Hecha en la sexagesimoctava: la
+- (Hecha en el PR #57: el transporte probado sin red. Hecha en el PR #55: los perfiles multi-sede en Juniper y Nokia 7750. Hecha en el PR #54: la foto desde la página de cada modelo, hasta donde Cisco la publica, y el transporte fuera del YAML. Hecha en el PR #50: los perfiles de otros fabricantes al día al consolidar. Hecha en el PR #46: el ciclo del perfil al día al consolidar. Hecha en el PR #45: la fuente de la PQC enlazada a `fuentes.js`. Hecha en el PR #44: el ciclo en el consolidado multi-sede. Hecha en el PR #41: el fin de venta en el Excel. Hecha en el PR #40: la foto de producto en el Excel. Hecha en la septuagesimoprimera: el «no la trae» documentado, `pqcNo`. Hecha en la sexagesimoctava: la
   versión mínima de la PQC en la hoja «Supuestos».)
 
 ## Decisiones del dueño abiertas

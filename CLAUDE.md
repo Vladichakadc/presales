@@ -226,7 +226,8 @@ callaría.
   comilla doble que lo corte**: bash los procesa antes que Node (`test/workflows-node-e.test.js`).
   Un script largo va a un archivo y el workflow solo lo lanza: el del transporte vive en
   `scripts/transporte/` desde el 2026-10-28 (como `node -e` pasó el tope de 128 KiB de un argumento,
-  y como heredoc bash seguía leyéndolo antes que Node).
+  y como heredoc bash seguía leyéndolo antes que Node). `traer({ docs, solo, fetch, dir })` se prueba
+  sin red en `test/transporte-traer.test.js`: una regla nueva del transporte entra con su caso ahí.
 - **`npm run auditar` falla cerrado**: un aviso alto o crítico frena; la salida es una excepción
   declarada con GHSA, motivo y caducidad de 90 días como mucho, nunca apagar el paso.
 - Los jobs de navegador corren en `ubuntu-26.04` con **Playwright 1.61.1**, movidos juntos: la

@@ -9,26 +9,42 @@
 // Uso (desde la raíz del repositorio, con salida a internet): `SOLO=a.html,b.pdf node
 // scripts/transporte/traer.js`. Sin `SOLO`, todo. Desde los entornos de Claude Code el proxy de
 // egreso corta a los fabricantes: se corre desde Actions.
+//
+// Desde el 2026-10-28 (mejora propuesta al cerrar el PR #54) la lógica es una función, `traer()`, con la
+// lista, la carpeta y `fetch` inyectables: `test/transporte-traer.test.js` la ejercita en `npm run
+// verificar` con respuestas fabricadas (la firma de cada tipo, la pantalla de inicio de sesión, el tope
+// de piezas, los dominios permitidos, una entrada que depende de otra que no se guardó). Las reglas no
+// cambiaron; antes solo se comprobaban leyendo este texto con expresiones regulares o en Actions.
 const fs = require('fs');
+const path = require('path');
 const DOCS = require('./documentos');
+
 // Una pagina HTML se valida por un texto que solo puede estar en el documento correcto
 // (debeContener). La que se pide para ver que hay —un indice del archivo, una pagina de
 // control— se declara exploracion, y el informe la dice EXPL, no OK: el 2026-10-07 cinco
 // pantallas de inicio de sesion salieron OK porque nada distinguia una cosa de la otra.
-const sinFirma = DOCS.filter((d) => d.tipo === 'html' && !d.debeContener && !d.exploracion).map((d) => d.archivo);
-if (sinFirma.length) { console.error('Entradas html sin debeContener ni exploracion: ' + sinFirma.join(', ')); process.exit(1); }
-const SOLO = (process.env.SOLO || '').split(',').map((x) => x.trim()).filter(Boolean);
-const faltan = SOLO.filter((x) => !DOCS.some((d) => d.archivo === x));
-if (faltan.length) { console.error('Entradas que no existen: ' + faltan.join(', ')); process.exit(1); }
-const ELEGIDOS = SOLO.length ? DOCS.filter((d) => SOLO.includes(d.archivo)) : DOCS;
-const informe = [];
-(async () => {
-  fs.mkdirSync('fuente-cisco-huawei', { recursive: true });
+// Se comprueba ANTES de pedir nada: devuelve el motivo para no correr, o null.
+function validar(docs, solo) {
+  const sinFirma = docs.filter((d) => d.tipo === 'html' && !d.debeContener && !d.exploracion).map((d) => d.archivo);
+  if (sinFirma.length) return 'Entradas html sin debeContener ni exploracion: ' + sinFirma.join(', ');
+  const faltan = solo.filter((x) => !docs.some((d) => d.archivo === x));
+  if (faltan.length) return 'Entradas que no existen: ' + faltan.join(', ');
+  return null;
+}
+
+async function traer({ docs = DOCS, solo = [], fetch: pedir = globalThis.fetch, dir = 'fuente-cisco-huawei' } = {}) {
+  const motivo = validar(docs, solo);
+  if (motivo) throw new Error(motivo);
+  const DIR = dir;
+  // Copia: el descubrimiento añade URL a `doc.urls`, y la lista es un módulo compartido.
+  const ELEGIDOS = JSON.parse(JSON.stringify(solo.length ? docs.filter((d) => solo.includes(d.archivo)) : docs));
+  const informe = [];
+  fs.mkdirSync(DIR, { recursive: true });
   for (const doc of ELEGIDOS) {
     const intentos = [];
     let guardado = false;
     if (doc.descubrir) {
-      const origen = 'fuente-cisco-huawei/' + doc.descubrir.de;
+      const origen = path.join(DIR, doc.descubrir.de);
       if (!fs.existsSync(origen)) {
         intentos.push({ url: doc.descubrir.de, error: 'la pagina donde descubrir la URL no se guardo' });
       } else {
@@ -55,7 +71,7 @@ const informe = [];
       // Generico: los PDF que ENLAZA una pagina ya guardada, cuya ruta contiene el texto
       // pedido; relativos a la URL de esa pagina, y primero los que estan en ingles.
       const de = doc.descubrirEnlace;
-      const origen = 'fuente-cisco-huawei/' + de.de;
+      const origen = path.join(DIR, de.de);
       if (!fs.existsSync(origen)) {
         intentos.push({ url: de.de, error: 'la pagina donde descubrir la URL no se guardo' });
       } else {
@@ -95,11 +111,11 @@ const informe = [];
       // Los scripts (2026-10-07) se piden para LEER de donde saca sus datos una pagina
       // que llega como cascaron; no se ejecutan en ningun momento.
       const esJs = doc.tipo === 'scripts';
-      const carpeta = 'fuente-cisco-huawei/' + doc.archivo;
+      const carpeta = path.join(DIR, doc.archivo);
       fs.mkdirSync(carpeta, { recursive: true });
       const paginas = [];
       for (const de of cfg.de) {
-        const ruta = 'fuente-cisco-huawei/' + de;
+        const ruta = path.join(DIR, de);
         if (!fs.existsSync(ruta)) { intentos.push({ url: de, error: 'no se guardo, no se lee' }); continue; }
         if (fs.statSync(ruta).isDirectory()) for (const f of fs.readdirSync(ruta)) paginas.push(ruta + '/' + f);
         else paginas.push(ruta);
@@ -151,7 +167,7 @@ const informe = [];
         try {
           // Con Referer de su propio sitio: el CDN de carrier.huawei.com niega con 403
           // la imagen pedida sin el (corrida 37514205499).
-          res = await fetch(url, { headers: { 'User-Agent': 'Mozilla/5.0 (presales-traer-fuente/1.0)',
+          res = await pedir(url, { headers: { 'User-Agent': 'Mozilla/5.0 (presales-traer-fuente/1.0)',
             'Referer': new URL(url).origin + '/' } });
         } catch (e) { intentos.push({ url, error: String(e.message || e) }); continue; }
         if (!res.ok) { intentos.push({ url, status: res.status }); continue; }
@@ -177,7 +193,7 @@ const informe = [];
     for (const url of doc.urls) {
       let res;
       try {
-        res = await fetch(url, { headers: { 'User-Agent': 'Mozilla/5.0 (presales-traer-fuente/1.0)' } });
+        res = await pedir(url, { headers: { 'User-Agent': 'Mozilla/5.0 (presales-traer-fuente/1.0)' } });
       } catch (e) { intentos.push({ url, error: String(e.message || e) }); continue; }
       if (!res.ok) { intentos.push({ url, status: res.status }); continue; }
       const buf = Buffer.from(await res.arrayBuffer());
@@ -196,16 +212,28 @@ const informe = [];
         intentos.push({ url, status: res.status, bytes: buf.length, nota: 'no contiene el texto esperado' });
         continue;
       }
-      fs.writeFileSync('fuente-cisco-huawei/' + doc.archivo, buf);
+      fs.writeFileSync(path.join(DIR, doc.archivo), buf);
       intentos.push({ url, status: res.status, bytes: buf.length, guardado: true, verificado: !doc.exploracion });
       guardado = true;
       break;
     }
     informe.push({ archivo: doc.archivo, para: doc.para, guardado, exploracion: !!doc.exploracion, intentos });
   }
-  fs.writeFileSync('fuente-cisco-huawei/informe.json', JSON.stringify(informe, null, 2));
+  fs.writeFileSync(path.join(DIR, 'informe.json'), JSON.stringify(informe, null, 2));
+  return informe;
+}
+
+function imprimir(informe, log = console.log) {
   for (const d of informe) {
-    console.log((d.guardado ? (d.exploracion ? 'EXPL ' : 'OK   ') : 'FALLA') + '  ' + d.para + '  ' + d.archivo);
-    for (const i of d.intentos) console.log('        ' + (i.status || i.error) + '  ' + i.url + (i.nota ? '  <- ' + i.nota : ''));
+    log((d.guardado ? (d.exploracion ? 'EXPL ' : 'OK   ') : 'FALLA') + '  ' + d.para + '  ' + d.archivo);
+    for (const i of d.intentos) log('        ' + (i.status || i.error) + '  ' + i.url + (i.nota ? '  <- ' + i.nota : ''));
   }
-})().catch((e) => { console.error(e); process.exit(1); });
+}
+
+module.exports = { traer, validar, imprimir };
+
+// Lanzado por el workflow (`node scripts/transporte/traer.js`, con `SOLO` en el entorno).
+if (require.main === module) {
+  const solo = (process.env.SOLO || '').split(',').map((x) => x.trim()).filter(Boolean);
+  traer({ solo }).then((informe) => imprimir(informe)).catch((e) => { console.error(e && e.message ? e.message : e); process.exit(1); });
+}
