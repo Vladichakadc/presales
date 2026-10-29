@@ -1257,7 +1257,7 @@ for (const m of MODELS) {
   const h = HA_LICENCIA_UNICA[m.id];
   if (!h) continue;
   const hw = (SKUS_POR_MODELO[m.id] || []).find((x) => x.t === 'HW' && x.sku === `FG-${m.id.split(' ').pop()}-HA`);
-  m.haLicenciaUnica = {serie:h.serie, heartbeat:h.heartbeat, skuHa: hw ? hw.sku : null,
+  m.haLicenciaUnica = {serie:h.serie, heartbeat:h.heartbeat, skuHa: hw ? hw.sku : null, precioHa: hw && hw.p != null ? hw.p : null,
     servicios:'Enterprise Protection, UTP o ATP (no los servicios a la carta)',
     fuente:'FortiOS 7.6.6 Administration Guide, «Single FortiGuard license for FortiGate A-P HA cluster»',
     urls:['https://docs.fortinet.com/document/fortigate/7.6.6/administration-guide/246857']};

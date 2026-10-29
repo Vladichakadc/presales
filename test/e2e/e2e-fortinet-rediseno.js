@@ -311,6 +311,27 @@ const CU01 = new URLSearchParams({
   await asentar(page);
   t.ok(!/Falta justificación/.test(await texto('#resBloqueos')), 'T21: con la justificación, ese bloqueo desaparece');
 
+  /* ── HA-UNICA · LICENCIA FORTIGUARD ÚNICA DEL PAR (2026-10-28) ───────────────────── */
+  // Mejora propuesta al cerrar el PR #56: con la casilla, un par 60F activo-pasivo se cotiza con
+  // dos SKU de HA y un solo bundle. Sin ella, el BOM sigue por nodo (lo cubre la prueba del motor).
+  const HA60 = new URLSearchParams({
+    wanLinksData: JSON.stringify({ v: 2, wanLinks: [{ id: 1, tipo: 'DIA', down: 100, overlay: false }] }),
+    users: '20', chkAv: '1', chkHa: '1', haModo: 'ha-ap', pickModel: 'FortiGate 60F', chkHaLicUnica: '1',
+  }).toString();
+  await abrir(HA60);
+  const casillaVisible = await page.$eval('#fldHaLicUnica', (x) => !x.hidden);
+  const filasHa = await page.$$eval('#bomTabla tbody tr', (trs) => trs.map((tr) => tr.textContent.replace(/\s+/g, ' ')));
+  const lineaHa = filasHa.find((t) => /FG-60F-HA/.test(t)) || '';
+  t.ok(casillaVisible && /FG-60F-HA/.test(lineaHa) && !filasHa.some((t2) => /FG-60F-BDL/.test(t2)),
+    `HA-UNICA: con la casilla, el BOM lleva FG-60F-HA y no el SKU combinado (${lineaHa.slice(0, 80)})`);
+  t.ok(/FG-60F-HA/.test(await texto('#haLicUnicaHint')) && /número de serie virtual/.test(await texto('#haLicUnicaHint')),
+    'HA-UNICA: la casilla dice, para el 60F, su SKU de HA y el número de serie virtual');
+  await page.uncheck('#chkHaLicUnica');
+  await asentar(page);
+  const filasNodo = await page.$$eval('#bomTabla tbody tr', (trs) => trs.map((tr) => tr.textContent));
+  t.ok(filasNodo.some((t2) => /FG-60F-BDL/.test(t2)) && !filasNodo.some((t2) => /FG-60F-HA/.test(t2)),
+    'HA-UNICA: desmarcada, vuelve la suscripción por nodo con el SKU combinado');
+
   /* ── T22 · VDOM POR ENCIMA DE LOS INCLUIDOS ──────────────────────────────────────── */
   await abrir(CU01);
   await page.fill('#vdoms', '20');
