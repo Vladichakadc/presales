@@ -42,6 +42,9 @@ está en curso no va aquí: lo dice `npm run traspasos` (protocolo en `docs/tras
   sonda avisa de lo que falla y la vigilia de lo que no llega; un despliegue fallido no lo repite la
   vigilia. Con el issue abierto, el remedio de siempre: mirar Railway (`list-deployments`) y, si no
   ve el commit, un commit vacío en `main` o «Redeploy».
+- **2026-10-28 · PR #58**: en Fortinet, elegir un fuera de venta que cumple el escenario en compra nueva
+  ofrece «Es una ampliación» o «Es una renovación de servicios» en la caja del override: fija el tipo de
+  compra y lleva a la justificación, que el motor sigue exigiendo.
 - **2026-10-28 · PR #57**: el transporte de documentos, probado sin red (mejora propuesta al cerrar el PR
   #54). `traer()` se ejercita en `verificar` con respuestas fabricadas (`test/transporte-traer.test.js`).
   **Criterio que conviene conservar**: una regla nueva del transporte entra con su caso en esa prueba,
@@ -290,16 +293,6 @@ existen los workflows de transporte. Huawei y HPE niegan además el navegador au
   rama en `lineasComerciales` (que ya conoce `haLicenciaUnica` y el SKU de HA) y sus pruebas; si se
   hace mal, cotiza una sola suscripción en activo-activo o en un modelo sin SKU de HA (70F, 100F),
   y eso lo frenaría el motor (la regla ya distingue los tres casos). Se decide por el dueño.
-- **Del override por ciclo de vida a la operación que lo admite, en un clic** (propuesta al cerrar
-  el PR #51). En Fortinet, elegir un fuera de venta en compra nueva bloquea la cotización y la caja
-  solo ofrece «Volver al recomendado»; quien lo eligió casi siempre está renovando o ampliando un
-  parque instalado, y tiene que encontrar «Motivo de compra» y la justificación por su cuenta. Cuando
-  el único bloqueo es `CICLO_VIDA`, la caja ofrecería además «Es una ampliación/renovación»: fija el
-  motivo y lleva el foco a «Justificación del equipo fuera de venta», que el motor sigue exigiendo.
-  Evita el callejón sin salida sin abrir la puerta: la cotización no sale sin justificación. Cuesta un
-  botón con `data-corregir` en la caja y su acción en la delegación de clics existente; si se hace
-  mal, el botón cambia el motivo sin pedir la justificación, y la prueba del motor (T21) lo frenaría.
-  Se decide por el dueño.
 - **El panel de perfiles, un solo módulo** (propuesta al cerrar el PR #55). Las siete páginas con
   perfiles llevan cada una su copia del mismo bloque (unas 80 líneas: capturar y aplicar campos, la
   lista, guardar, cargar, consolidar y la ventana), y ya han divergido en lo pequeño (Escape y
@@ -310,7 +303,7 @@ existen los workflows de transporte. Huawei y HPE niegan además el navegador au
   Cuesta tocar las siete páginas y sus pruebas, que hoy buscan el patrón en cada una; si se hace
   mal, «Guardar» o «Cargar» dejan de funcionar en alguna, y lo verían `bom-perfiles.test.js`,
   `e2e-ciclo-excel.js` y `e2e-perfiles-juniper-nokia.js`. Se decide por el dueño.
-- (Hecha en el PR #59: la vigilia del despliegue. Hecha en el PR #57: el transporte probado sin red. Hecha en el PR #55: los perfiles multi-sede en Juniper y Nokia 7750. Hecha en el PR #54: la foto desde la página de cada modelo, hasta donde Cisco la publica, y el transporte fuera del YAML. Hecha en el PR #50: los perfiles de otros fabricantes al día al consolidar. Hecha en el PR #46: el ciclo del perfil al día al consolidar. Hecha en el PR #45: la fuente de la PQC enlazada a `fuentes.js`. Hecha en el PR #44: el ciclo en el consolidado multi-sede. Hecha en el PR #41: el fin de venta en el Excel. Hecha en el PR #40: la foto de producto en el Excel. Hecha en la septuagesimoprimera: el «no la trae» documentado, `pqcNo`. Hecha en la sexagesimoctava: la
+- (Hecha en el PR #59: la vigilia del despliegue. Hecha en el PR #58: del override por ciclo de vida a ampliación o renovación en un clic. Hecha en el PR #57: el transporte probado sin red. Hecha en el PR #55: los perfiles multi-sede en Juniper y Nokia 7750. Hecha en el PR #54: la foto desde la página de cada modelo, hasta donde Cisco la publica, y el transporte fuera del YAML. Hecha en el PR #50: los perfiles de otros fabricantes al día al consolidar. Hecha en el PR #46: el ciclo del perfil al día al consolidar. Hecha en el PR #45: la fuente de la PQC enlazada a `fuentes.js`. Hecha en el PR #44: el ciclo en el consolidado multi-sede. Hecha en el PR #41: el fin de venta en el Excel. Hecha en el PR #40: la foto de producto en el Excel. Hecha en la septuagesimoprimera: el «no la trae» documentado, `pqcNo`. Hecha en la sexagesimoctava: la
   versión mínima de la PQC en la hoja «Supuestos».)
 
 ## Decisiones del dueño abiertas
