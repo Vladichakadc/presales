@@ -1628,4 +1628,14 @@ module.exports = [
     'https://help.mikrotik.com/docs/spaces/UM/pages/93552657/CCR2004-16G-2S+PC',
     'https://manual.mikrotik.com/hardware/ccr2004-16g-2s-plus-pc',
   ] },
+  // · Huawei, iMaster NCE-Campus (2026-10-29, pendiente 4 de Huawei): su ficha R24C00 (escala por
+  //   despliegue, licencia por equipo, nube o en sitio) y la página de producto de NCE-WAN, para la
+  //   línea «Suscripción iMaster NCE-WAN» que hoy sale sin código ni tope. URL buscadas, no adivinadas.
+  { archivo: 'huawei-nce-campus-r24c00.pdf', tipo: 'pdf', para: 'HUAWEI', urls: [
+    'https://e.huawei.com/marketingcloud/pep/asset/20000001/Material/e3ae1dc4d0e34e08871f529f499579c7/M3T1A590N1069706146884108541/iMaster%20NCE-Campus%20Product%20Datasheet%20R24C00%201130.pdf',
+    'https://e-file.huawei.com/marketingcloud/pep/asset/20000001/Material/e3ae1dc4d0e34e08871f529f499579c7/M3T1A590N1069706146884108541/iMaster%20NCE-Campus%20Product%20Datasheet%20R24C00%201130.pdf',
+  ] },
+  { archivo: 'huawei-nce-wan-producto.html', tipo: 'html', para: 'HUAWEI', exploracion: true, urls: [
+    'https://e.huawei.com/en/products/network-management-and-analysis-software/imaster-nce-wan',
+  ] },
 ];
