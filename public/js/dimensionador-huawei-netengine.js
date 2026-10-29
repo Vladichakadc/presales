@@ -875,8 +875,6 @@ const PERFILES = BOM.montarPerfiles({
   dtoEtiqueta: dtoEtiqueta,
 });
 function pintarPerfiles(){ PERFILES.pintar(); }
-$('modalConsolidado').addEventListener('click', e => { if(e.target === $('modalConsolidado')) $('modalConsolidado').hidden = true; });
-document.addEventListener('keydown', e => { if(e.key === 'Escape' && !$('modalConsolidado').hidden) $('modalConsolidado').hidden = true; });
 
 /* ════════ CATÁLOGO DE ÓPTICAS ════════ */
 (async function initApp(){

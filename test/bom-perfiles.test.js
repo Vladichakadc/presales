@@ -165,7 +165,7 @@ test('las páginas con perfiles montan el panel común y le pasan el ciclo de su
     assert.match(js, /BOM\.montarPerfiles\(\{/, `${p}: no monta el panel común`);
     assert.match(js, /ciclo: ?BOM\.cicloDe\(/, `${p}: el perfil no guarda el ciclo de su equipo`);
     assert.match(js, /buscar: ?\(id\) ?=> ?(MODELS\.find\(\(x\) ?=> ?x\.id ?=== ?id\)|modeloPorId\(id\))/, `${p}: consolida con la foto vieja del ciclo`);
-    for (const copia of [/BOM\.guardarPerfil\(/, /BOM\.refrescarCiclo\(/, /BOM\.avisoCicloConsolidado\(/, /'modalConsolidado'\)\.hidden ?= ?false/]) {
+    for (const copia of [/BOM\.guardarPerfil\(/, /BOM\.refrescarCiclo\(/, /BOM\.avisoCicloConsolidado\(/, /'modalConsolidado'\)\.hidden ?= ?(false|true)/, /\$\('consolidadoCerrar'\)/]) {
       assert.doesNotMatch(js, copia, `${p}: lleva otra vez su copia del panel (${copia})`);
     }
   }
