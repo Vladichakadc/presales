@@ -295,6 +295,25 @@ const CU01 = new URLSearchParams({
     t.ok(await page.$eval('#verdict .ficha-sel-pill', (x) => !!x.offsetParent).catch(() => false)
       && await page.$eval('#verdict-sel', (x) => getComputedStyle(x).boxShadow !== 'none'),
       'T21: elegido, el desplegable lleva la pastilla «Fuera de venta» y la barra roja');
+    // Mejora del 2026-10-28: si solo lo aparta el ciclo de vida, la caja ofrece declarar la
+    // operación en un clic, y lleva a la justificación, que el motor sigue exigiendo.
+    const btnAmp = page.locator('#overrideAviso [data-corregir*="motivo-ciclo"][data-corregir*="ampliacion"]');
+    t.ok(await btnAmp.count() === 1 && /cumple este escenario, pero está fuera de venta/.test(await texto('#overrideAviso')),
+      'T21: la caja dice que cumple pero está fuera de venta, y ofrece «Es una ampliación»');
+    await btnAmp.click();
+    await asentar(page);
+    const trasClic = await page.evaluate(() => ({ motivo: document.getElementById('motivoCompra').value,
+      foco: document.activeElement && document.activeElement.id, sel: (document.getElementById('verdict-sel') || {}).value }));
+    t.ok(trasClic.motivo === 'ampliacion' && trasClic.foco === 'justificacionEol' && trasClic.sel === fueraNueva[0].v,
+      `T21: pasa a ampliación, conserva el ${fueraNueva[0].v} y lleva a la justificación (${JSON.stringify(trasClic)})`);
+    t.ok(/Bloqueada/i.test((await estado()).gate), 'T21: sin justificación, la cotización sigue bloqueada');
+    await page.fill('#justificacionEol', 'Ampliación de un clúster existente con el mismo modelo');
+    await page.dispatchEvent('#justificacionEol', 'input');
+    await asentar(page);
+    t.ok(await page.$eval('#overrideAviso', (x) => x.hidden) && !/Falta justificación/.test(await texto('#resBloqueos')),
+      'T21: con la justificación escrita, el equipo queda validado: sin caja de override ni falta de justificación');
+    await page.selectOption('#motivoCompra', 'nueva');
+    await asentar(page);
     await abrir(CU01);
     t.ok((await estado()).reco === recAntes, 'T21: al reabrir el escenario, vuelve el recomendado vigente');
   }

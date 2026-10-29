@@ -226,7 +226,8 @@ callaría.
   comilla doble que lo corte**: bash los procesa antes que Node (`test/workflows-node-e.test.js`).
   Un script largo va a un archivo y el workflow solo lo lanza: el del transporte vive en
   `scripts/transporte/` desde el 2026-10-28 (como `node -e` pasó el tope de 128 KiB de un argumento,
-  y como heredoc bash seguía leyéndolo antes que Node).
+  y como heredoc bash seguía leyéndolo antes que Node). `traer({ docs, solo, fetch, dir })` se prueba
+  sin red en `test/transporte-traer.test.js`: una regla nueva del transporte entra con su caso ahí.
 - **`npm run auditar` falla cerrado**: un aviso alto o crítico frena; la salida es una excepción
   declarada con GHSA, motivo y caducidad de 90 días como mucho, nunca apagar el paso.
 - Los jobs de navegador corren en `ubuntu-26.04` con **Playwright 1.61.1**, movidos juntos: la
@@ -489,6 +490,8 @@ Módulos compartidos:
   cargar; sus filas de vecinos OSPF (los declarados a mano) y de VRF no se usan, y no publica
   rutas aprendidas. El BOM sale solo del modelo validado; la puerta READY/WARNING/DRAFT/BLOCKED bloquea
   Excel, copiar y enviar con un P0, un SKU sin casar o la lista vencida, y el override exige motivo.
+  Si el override solo choca con `CICLO_VIDA` (cumple el escenario), su caja ofrece declarar ampliación o
+  renovación en un clic (`motivo-ciclo`), que lleva a la justificación sin escribirla.
   Un SKU nunca se busca con el marcador `-DD`. Figuras desde la página «Hardware» de cada ficha.
   **HA y FortiGuard** (F3, 2026-10-28): una suscripción por nodo, salvo en activo-pasivo de las
   series que la guía de FortiOS 7.6.6 nombra (`haLicenciaUnica`: 40F, 60F, 70F, 80F, 100F y
