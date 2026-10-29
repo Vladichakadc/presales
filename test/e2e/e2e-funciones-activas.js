@@ -6,7 +6,13 @@
    En los ocho dimensionadores con casillas de función: arriba de la columna de resultados está el
    panel «Funciones activadas»; al marcar una casilla de la izquierda aparece su pastilla, con el
    mismo acento que la fila marcada; al desmarcarla, desaparece; un clic en la pastilla devuelve el
-   foco a su casilla. */
+   foco a su casilla.
+
+   Y lo que trajo la función (2026-10-29: «cuando se active una función también debes resaltar la
+   descripción en el panel derecho para que los usuarios puedan observar en donde apareció»): tras
+   el recálculo, el panel dice cuántos puntos del resultado cambiaron, cada uno va resaltado dentro
+   de la columna de resultados con «Apareció al activar «X»», «Ver» lleva a uno, y al desmarcar no
+   queda ninguno. Al menos en una página la función tiene que cambiar algo visible. */
 const { cargarPlaywright, BASE, abrirSesion, asentar, trasNavegar, contador } = require('./ayuda');
 
 const PAGINAS = ['aruba-edgeconnect', 'cisco-catalyst8k', 'fortinet-fortigate', 'huawei-netengine',
@@ -48,6 +54,7 @@ const estado = (page, id) => page.evaluate((idCasilla) => {
   page.on('pageerror', (e) => errores.push(e.message));
   const t = contador();
   await abrirSesion(page);
+  let conCambios = 0;
 
   for (const pag of PAGINAS) {
     await trasNavegar(page, () => page.goto(`${BASE}/dimensionador-${pag}.html`, { waitUntil: 'domcontentloaded' }), { selector: '.funciones-activas' });
@@ -76,6 +83,34 @@ const estado = (page, id) => page.evaluate((idCasilla) => {
     t.ok(/inset/.test(on.barraChip) && on.barraChip === on.barraFila && Number(on.pesoChip) >= 600,
       `${pag}: la pastilla lleva el mismo resaltado que su fila (${on.barraChip})`);
 
+    // Lo que trajo: el módulo espera a que la derecha se calme y lo dice en el panel.
+    const llego = await page.waitForSelector('.funciones-activas .fa-cambio', { timeout: 8000 }).then(() => true, () => false);
+    t.ok(llego, `${pag}: al activar #${id} el panel dice qué cambió en el resultado`);
+    if (llego) {
+      const c = await page.evaluate(() => {
+        const d = globalThis.document;
+        const panel = d.querySelector('.funciones-activas');
+        const msg = panel.querySelector('.fa-cambio').textContent.replace(/\s+/g, ' ');
+        const m = /cambi(?:ó 1 punto|aron (\d+) puntos)/.exec(msg);
+        const marcas = [...d.querySelectorAll('.fa-nuevo')];
+        const rejilla = panel.closest('.cols, .dim') || panel.parentElement.closest('.cols, .dim');
+        const izq = rejilla.firstElementChild;
+        return { msg, n: m ? (m[1] ? Number(m[1]) : 1) : 0, marcas: marcas.length,
+          fuera: marcas.filter((e) => izq.contains(e) || panel.contains(e)).length,
+          sinTitulo: marcas.filter((e) => !/^Apareció al activar «.+»$/.test(e.title)).length,
+          visible: marcas.some((e) => e.getClientRects().length) };
+      });
+      t.ok(c.n === c.marcas, `${pag}: el número del panel es el de lo resaltado (${c.n} = ${c.marcas}: «${c.msg.slice(0, 80)}»)`);
+      t.ok(c.fuera === 0 && c.sinTitulo === 0, `${pag}: lo resaltado está en el resultado y dice de qué función salió`);
+      if (c.marcas) conCambios += 1;
+      if (c.visible) {
+        await page.click('.funciones-activas .fa-ver');
+        await asentar(page);
+        t.ok(await page.evaluate(() => !!(globalThis.document.activeElement && globalThis.document.activeElement.classList.contains('fa-nuevo'))),
+          `${pag}: «Ver» lleva a lo resaltado`);
+      }
+    }
+
     await page.click(`.funciones-activas .fa-pastilla[data-para="${id}"]`);
     await asentar(page);
     t.ok(await page.evaluate((x) => globalThis.document.activeElement && globalThis.document.activeElement.id === x, id), `${pag}: la pastilla lleva a su casilla`);
@@ -84,7 +119,10 @@ const estado = (page, id) => page.evaluate((idCasilla) => {
     await asentar(page);
     const off = await estado(page, id);
     t.ok(!off.chip && off.n < on.n, `${pag}: al desmarcarla, su pastilla se va`);
+    t.ok(await page.evaluate(() => !globalThis.document.querySelector('.fa-nuevo, .funciones-activas .fa-cambio')),
+      `${pag}: al desmarcarla no queda nada resaltado como si lo hubiera traído`);
   }
+  t.ok(conCambios > 0, `al menos en una página la función activada cambia algo visible del resultado (${conCambios} de ${PAGINAS.length})`);
 
   t.ok(errores.length === 0, 'sin errores de JS' + (errores.length ? ': ' + errores.join(' | ') : ''));
   await browser.close();
