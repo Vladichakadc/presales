@@ -1513,6 +1513,47 @@
   // necesite (al llegar su catalogo, en su repintado general). Sin panel montado, no hace nada.
   let panelPerfiles = null;
   function pintarPerfilesMontado() { if (panelPerfiles) panelPerfiles.pintar(); }
+  /* EL MARCADO DEL PANEL, TAMBIEN AQUI (2026-10-29, mejora propuesta al cerrar el PR #62). Las
+     siete paginas copiaban el formulario, la lista, «Consolidar» y la ventana, y era ahi donde ya
+     habian divergido (la caja de dialogo solo en MikroTik, la linea de mensajes ausente en Aruba,
+     botones sin `aria-label`). Cada pagina deja ahora su `<section id="panelPerfiles">` con el
+     titulo y SU explicacion (la de Aruba habla del pool de Boost; la de Fortinet, de la puerta), y
+     `data-ejemplo` si el nombre de ejemplo no es «Sucursal»; lo comun lo pone este modulo debajo.
+     La ventana va al final de `<body>`, con la caja como dialogo. Lo que la pagina ya trae (o el
+     DOM de una prueba) no se duplica: se construye solo lo que falta. Los estilos siguen en la hoja
+     de cada pagina, que ya pinta `#modalConsolidado` y `.acc-caja`. */
+  function construirPanel(doc, $) {
+    const caja = $('panelPerfiles');
+    if (caja && !$('nombrePerfil')) {
+      const ejemplo = esc((caja.dataset && caja.dataset.ejemplo) || 'Sucursal');
+      const btn = 'style="font-size:11px;padding:6px 12px;white-space:nowrap"';
+      caja.insertAdjacentHTML('beforeend',
+        '<div class="row" style="margin-bottom:10px;gap:8px;flex-wrap:wrap">'
+        + `<input type="text" id="nombrePerfil" placeholder="Nombre del perfil — p. ej. ${ejemplo}" autocomplete="off" aria-label="Nombre del perfil">`
+        + '<input type="number" id="perfilSedes" min="1" step="1" placeholder="Nº sedes" style="width:100px" autocomplete="off" aria-label="Número de sedes idénticas">'
+        + `<button type="button" class="btn" id="btnGuardarPerfil" ${btn}>Guardar perfil</button>`
+        + '</div>'
+        + '<p class="hint" id="perfilMsg" role="status"></p>'
+        + '<div id="listaPerfiles"></div>'
+        + '<div style="margin-top:10px">'
+        + `<button type="button" class="btn" id="btnConsolidar" ${btn} disabled>Consolidar BOM global</button>`
+        + '<p class="hint" style="margin-top:6px">Abre el BOM agregado Σ(BOM del perfil × sedes) en una ventana aparte, con su exportación a Excel.</p>'
+        + '</div>');
+    }
+    if (caja && !$('modalConsolidado') && doc.body) {
+      const btn = 'style="font-size:11px;padding:6px 12px"';
+      doc.body.insertAdjacentHTML('beforeend',
+        '<div id="modalConsolidado" hidden>'
+        + '<div class="acc-caja" style="max-width:860px" role="dialog" aria-modal="true" aria-labelledby="consolidadoTit">'
+        + '<h3 id="consolidadoTit">BOM global consolidado — perfiles multi-sede</h3>'
+        + '<p class="hint" id="consolidadoSub"></p>'
+        + '<div id="consolidadoTabla"></div>'
+        + '<div style="display:flex;gap:8px;justify-content:flex-end;margin-top:12px">'
+        + `<button type="button" class="btn" id="xlsConsolidadoBtn" ${btn}>Exportar consolidado a Excel</button>`
+        + `<button type="button" class="btn ghost" id="consolidadoCerrar" ${btn}>Cerrar</button>`
+        + '</div></div></div>');
+    }
+  }
   function montarPerfiles(opciones) {
     const o = opciones || {};
     const doc = global.document;
@@ -1520,6 +1561,7 @@
     if (!o.vendor || typeof o.capturar !== 'function' || typeof o.aplicar !== 'function' || typeof o.equipo !== 'function') {
       throw new Error('montarPerfiles: faltan vendor, capturar, aplicar o equipo');
     }
+    construirPanel(doc, $);
     const modal = $('modalConsolidado');
     const btnCons = $('btnConsolidar');
     // La ventana se anuncia como dialogo, con su titulo, en las siete. Donde la caja interior ya
