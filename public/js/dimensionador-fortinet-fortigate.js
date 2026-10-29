@@ -633,6 +633,15 @@ document.addEventListener('click', (e) => {
 function aplicarCorreccion(c) {
   if (!c) return;
   if (c.accion === 'volver-recomendado') { fijarSeleccion(null); return; }
+  // Fuera de venta elegido en compra nueva: declarar la operación y escribir por qué. El cambio
+  // de «Tipo de compra» repinta en el acto, así que la justificación ya está a la vista.
+  if (c.accion === 'motivo' && ['ampliacion', 'renovacion', 'coterm'].includes(c.valor)) {
+    const n = $('motivoCompra');
+    n.value = c.valor;
+    n.dispatchEvent(new Event('change', { bubbles: true }));
+    irAlCampo('comercial.justificacionEol');
+    return;
+  }
   if (c.accion === 'cambiar' && CAMPO_ID[c.campo]) {
     const n = $(CAMPO_ID[c.campo]);
     n.value = c.valor;
@@ -871,11 +880,22 @@ function pintarCabecera(r) {
       + `<td class="n">${d.disponible == null ? 'sin dato' : valEje(d, d.disponible)}</td>`
       + `<td class="n">${d.estado === 'sinDato' ? 'no comprobable' : `${R.pct(d.utilizacion)}${d.deficitPct != null ? ` (+${d.deficitPct} %)` : ''}`}</td></tr>`).join('');
     const otros = (ov.bloqueos || []).map((b) => `<li>${esc(b.mensaje)}</li>`).join('');
+    /* Si lo UNICO que lo aparta es el ciclo de vida (un fuera de venta en compra nueva), quien lo
+       eligio casi siempre amplia o renueva un parque instalado: la caja ofrece declararlo en un
+       clic y lleva a la justificacion, que el motor sigue exigiendo (`comercial.justificacionEol`)
+       antes de abrir la cotizacion (mejora aprobada por el dueño el 2026-10-29). */
+    const soloCiclo = !ov.deficit.length && (ov.bloqueos || []).length
+      && ov.bloqueos.every((b) => b.codigo === 'CICLO_VIDA');
+    const salidas = soloCiclo ? [['ampliacion', 'Es una ampliación'], ['renovacion', 'Es una renovación']]
+      .map(([v, txt]) => ` <button type="button" class="btn ghost btn-corr" data-corregir='${esc(JSON.stringify({ accion: 'motivo', valor: v }))}'>${txt}</button>`)
+      .join('') : '';
     cajaOv.innerHTML = `<b>Elegiste el ${esc(ov.modelo)} y no cumple este escenario.</b> La lista de materiales sigue con el `
       + `<b>${esc(r.seleccion ? r.seleccion.id : 'modelo validado')}</b> y la cotización queda <b>bloqueada</b> mientras mantengas esa elección.`
       + (filas ? `<table><thead><tr><th>Eje</th><th>Requerido</th><th>Disponible</th><th>Utilización</th></tr></thead><tbody>${filas}</tbody></table>` : '')
       + (otros ? `<ul style="margin:6px 0 0;padding-left:18px">${otros}</ul>` : '')
-      + `<p style="margin:8px 0 0"><button type="button" class="btn btn-corr" data-corregir='${esc(JSON.stringify({ accion: 'volver-recomendado' }))}'>Volver al recomendado</button></p>`;
+      + (soloCiclo ? '<p style="margin:8px 0 0">Si es un parque instalado, declara la operación: la cotización sigue '
+        + 'bloqueada hasta escribir por qué se cotiza un equipo fuera de venta.</p>' : '')
+      + `<p style="margin:8px 0 0"><button type="button" class="btn btn-corr" data-corregir='${esc(JSON.stringify({ accion: 'volver-recomendado' }))}'>Volver al recomendado</button>${salidas}</p>`;
     cajaOv.hidden = false;
   } else {
     cajaOv.hidden = true;

@@ -70,6 +70,7 @@ const CU01 = new URLSearchParams({
   const ov = await texto('#overrideAviso');
   t.ok(/40F/.test(ov) && /Threat Protection/.test(ov) && /Inspección SSL/.test(ov),
     'T02: elegir el 40F muestra el déficit de Threat Protection y de SSL');
+  t.ok(!/Es una ampliación/.test(ov), 'T02: con un déficit de capacidad no se ofrece declarar la operación: no la arreglaría');
   t.ok(e.bomModelo === 'FortiGate 90G' && e.reco === 'FortiGate 90G',
     'T02/T03: la recomendación y el BOM siguen en el 90G validado; el BOM nunca cotiza el 40F');
   t.ok(/Bloqueada/i.test(e.gate), 'T02: la puerta queda bloqueada mientras se mantenga la elección');
@@ -295,6 +296,17 @@ const CU01 = new URLSearchParams({
     t.ok(await page.$eval('#verdict .ficha-sel-pill', (x) => !!x.offsetParent).catch(() => false)
       && await page.$eval('#verdict-sel', (x) => getComputedStyle(x).boxShadow !== 'none'),
       'T21: elegido, el desplegable lleva la pastilla «Fuera de venta» y la barra roja');
+    // Solo lo aparta el ciclo de vida: la caja ofrece declarar la operación en un clic y lleva a
+    // la justificación, que se sigue exigiendo (mejora aprobada el 2026-10-29).
+    t.ok(/Es una ampliación/.test(await texto('#overrideAviso')) && /Es una renovación/.test(await texto('#overrideAviso')),
+      'T21: la caja ofrece «Es una ampliación» y «Es una renovación»');
+    await page.click('#overrideAviso [data-corregir*="ampliacion"]');
+    await asentar(page);
+    const tras = await page.evaluate(() => ({ motivo: document.getElementById('motivoCompra').value,
+      foco: (document.activeElement || {}).id, just: !document.getElementById('fldJustEol').hidden }));
+    t.ok(tras.motivo === 'ampliacion' && tras.just && tras.foco === 'justificacionEol',
+      `T21: el clic fija la ampliación y lleva el foco a la justificación (${JSON.stringify(tras)})`);
+    t.ok(/Bloqueada/i.test((await estado()).gate), 'T21: y la cotización sigue bloqueada hasta escribirla');
     await abrir(CU01);
     t.ok((await estado()).reco === recAntes, 'T21: al reabrir el escenario, vuelve el recomendado vigente');
   }
