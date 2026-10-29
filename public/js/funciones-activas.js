@@ -58,7 +58,17 @@
   // Donde va el panel: arriba de la columna de resultados; si la columna abre con su cabecera
   // (el panel de resultados de Fortinet), justo debajo de ella.
   // Solo mueve el panel si no está ya en su sitio: así su propia colocación no se repite.
+  //
+  // LA TARJETA CLAVADA (Aruba y Juniper: `.col-fijo`, sticky y sin scroll interno, petición del
+  // dueño del 2026-09-16) ya ocupa casi todo el alto de la pantalla: un panel DENTRO la alargaría y
+  // se soltaría antes del fondo (e2e-sticky.js lo frena). Ahí el panel va FUERA de la tarjeta, como
+  // otra pieza de la rejilla en la columna derecha, encima de ella (controles.css le da su fila):
+  // la tarjeta conserva su alto y su área hasta el fondo, y el panel se desplaza con la página.
   function colocar(der, panel) {
+    if (der.classList.contains('col-fijo')) {
+      if (panel.nextSibling !== der) der.parentElement.insertBefore(panel, der);
+      return;
+    }
     const cab = der.querySelector(':scope > .res-cab');
     const ref = cab ? cab.nextSibling : der.firstChild;
     if (ref === panel) return;

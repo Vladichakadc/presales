@@ -84,6 +84,17 @@ label:has(> input[type="checkbox"]:checked:disabled):not(.wan-sim):not(.wan-ov):
   padding: 10px 12px;
   margin: 0 0 14px;
 }
+/* Junto a la tarjeta clavada (`.col-fijo` de Aruba y Juniper) el panel es otra pieza de la rejilla:
+   arriba en la columna derecha, y la tarjeta en la fila de debajo, que con la columna de parámetros
+   abarcando las dos llega hasta el mismo fondo que antes. Así la tarjeta no crece y sigue clavada
+   hasta el final de la página (e2e-sticky.js). En móvil, una sola columna: el orden natural ya lo
+   deja encima de la tarjeta. */
+@media (min-width: 881px) {
+  .cols:has(> .funciones-activas) { grid-template-rows: auto 1fr; }
+  .cols:has(> .funciones-activas) > :first-child { grid-row: 1 / span 2; }
+  .cols > .funciones-activas { grid-column: 2; grid-row: 1; margin: 0; }
+  .cols:has(> .funciones-activas) > .col-fijo { grid-column: 2; grid-row: 2; }
+}
 /* Dentro del panel de resultados de Fortinet, que ya es una tarjeta: una franja, no otra tarjeta. */
 .dim-res > .funciones-activas { border: 0; border-bottom: 1px solid var(--rule, #D5DCE5); border-radius: 0; margin: 0; }
 .funciones-activas .fa-tit {

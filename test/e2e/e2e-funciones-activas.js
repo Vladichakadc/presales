@@ -17,7 +17,11 @@ const PAGINAS = ['aruba-edgeconnect', 'cisco-catalyst8k', 'fortinet-fortigate', 
 const elegir = (page) => page.evaluate(() => {
   const panel = globalThis.document.querySelector('.funciones-activas');
   if (!panel) return null;
-  const izq = panel.parentElement.parentElement.firstElementChild;
+  // La rejilla: la columna de resultados lleva el panel dentro, salvo la tarjeta clavada
+  // (`.col-fijo`), junto a la cual es otra pieza de la propia rejilla.
+  const esRejilla = (n) => n.classList.contains('cols') || n.classList.contains('dim');
+  const rejilla = esRejilla(panel.parentElement) ? panel.parentElement : panel.parentElement.parentElement;
+  const izq = rejilla.firstElementChild;
   const cb = [...izq.querySelectorAll('label > input[type="checkbox"]')].find((c) => !c.checked && !c.disabled && c.id
     && !c.parentElement.matches('.wan-sim, .wan-ov, .switch') && c.parentElement.getClientRects().length);
   return cb ? cb.id : null;
@@ -50,10 +54,16 @@ const estado = (page, id) => page.evaluate((idCasilla) => {
     await asentar(page);
     const sitio = await page.evaluate(() => {
       const p = globalThis.document.querySelector('.funciones-activas');
+      if (p.nextElementSibling && p.nextElementSibling.classList.contains('col-fijo')) {
+        // Junto a la tarjeta clavada: en la columna derecha, encima de ella, y la tarjeta igual de alta.
+        const a = p.getBoundingClientRect(), b = p.nextElementSibling.getBoundingClientRect();
+        const izq = p.parentElement.firstElementChild.getBoundingClientRect();
+        return { ok: Math.abs(a.left - b.left) <= 1 && a.bottom <= b.top && a.left > izq.right, donde: 'junto a la tarjeta clavada' };
+      }
       const rejilla = p.parentElement.parentElement;
-      return { segunda: rejilla.children[1] === p.parentElement, rejilla: /\b(cols|dim)\b/.test(rejilla.className) };
+      return { ok: rejilla.children[1] === p.parentElement && (rejilla.classList.contains('cols') || rejilla.classList.contains('dim')), donde: 'dentro de la columna de resultados' };
     });
-    t.ok(sitio.segunda && sitio.rejilla, `${pag}: el panel está arriba de la columna de resultados`);
+    t.ok(sitio.ok, `${pag}: el panel está arriba de la columna de resultados (${sitio.donde})`);
 
     const id = await elegir(page);
     if (!id) { t.ok(false, `${pag}: no hay una casilla de función libre que marcar`); continue; }
