@@ -1,6 +1,6 @@
 # Relevo
 
-Última actualización: 2026-10-28 · PR #60
+Última actualización: 2026-10-29 · PR #62
 
 Informe para continuar el trabajo. Lo pidió el dueño del repositorio el 2026-10-27: «de aquí en
 adelante, un informe de pendientes y mejoras para que la cuenta **servicioiptv2025@gmail.com**
@@ -33,6 +33,8 @@ está en curso no va aquí: lo dice `npm run traspasos` (protocolo en `docs/tras
 
 ## Estado al cerrar esta entrega
 
+- **2026-10-29 · PR #62**: el panel de perfiles multi-sede es un solo módulo (`BOM.montarPerfiles`); las
+  siete páginas declaran solo lo suyo y se comportan igual (diálogo accesible, Escape, mensajes).
 - **2026-10-28 · PR #60**: en Fortinet, la casilla «Licencia FortiGuard única del par» cotiza un par
   activo-pasivo de las series de la guía con dos SKU de HA y un solo bundle, y dice el ahorro; si algo
   falta (70F y 100F no tienen SKU de HA en la lista firmada), sigue por nodo y dice por qué.
@@ -286,17 +288,17 @@ existen los workflows de transporte. Huawei y HPE niegan además el navegador au
 
 ## Mejoras propuestas sin decidir
 
-- **El panel de perfiles, un solo módulo** (propuesta al cerrar el PR #55). Las siete páginas con
-  perfiles llevan cada una su copia del mismo bloque (unas 80 líneas: capturar y aplicar campos, la
-  lista, guardar, cargar, consolidar y la ventana), y ya han divergido en lo pequeño (Escape y
-  `role="dialog"` solo en las dos últimas; el mensaje al cargar, igual). Propuesta:
-  `BOM.montarPerfiles({ vendor, campos, segs, buscar, filas, render, notas })` en `bom.js` y el
-  marcado generado por él, como `BOM.montarBotonCotizador`. Evita que la próxima mejora del
-  consolidado haya que escribirla siete veces (pasó con el ciclo de vida en los PR #44, #46 y #50).
-  Cuesta tocar las siete páginas y sus pruebas, que hoy buscan el patrón en cada una; si se hace
-  mal, «Guardar» o «Cargar» dejan de funcionar en alguna, y lo verían `bom-perfiles.test.js`,
-  `e2e-ciclo-excel.js` y `e2e-perfiles-juniper-nokia.js`. Se decide por el dueño.
-- (Hecha en el PR #60: la licencia FortiGuard única del par en el BOM. Hecha en el PR #59: la vigilia del despliegue. Hecha en el PR #58: del override por ciclo de vida a ampliación o renovación en un clic. Hecha en el PR #57: el transporte probado sin red. Hecha en el PR #55: los perfiles multi-sede en Juniper y Nokia 7750. Hecha en el PR #54: la foto desde la página de cada modelo, hasta donde Cisco la publica, y el transporte fuera del YAML. Hecha en el PR #50: los perfiles de otros fabricantes al día al consolidar. Hecha en el PR #46: el ciclo del perfil al día al consolidar. Hecha en el PR #45: la fuente de la PQC enlazada a `fuentes.js`. Hecha en el PR #44: el ciclo en el consolidado multi-sede. Hecha en el PR #41: el fin de venta en el Excel. Hecha en el PR #40: la foto de producto en el Excel. Hecha en la septuagesimoprimera: el «no la trae» documentado, `pqcNo`. Hecha en la sexagesimoctava: la
+- **Los campos del perfil, de la misma lista que el enlace** (propuesta al cerrar el PR #62). Cada página
+  mantiene dos listas de campos: la del enlace (`ESTADO.vincular({ campos })`) y la del perfil
+  (`CAMPOS_PERFIL`, `SEGS_PERFIL` y su `capturarCampos`/`aplicarCampos`), y no coinciden: en Juniper el
+  perfil guarda `qty`, `licTier` y `termYears`, que el enlace no lleva; en otras, un control nuevo puede
+  entrar en el enlace y no en el perfil sin que nada lo frene. Propuesta: que `BOM.montarPerfiles` acepte
+  `campos` y capture y aplique con la misma lógica que `estado.js` (grupos `.seg`, casillas, selects),
+  dejando a la página solo el repintado y sus migraciones. Evita perfiles que se cargan a medias. Cuesta
+  unificar las dos listas en siete páginas y conservar los perfiles ya guardados (sus `campos` siguen
+  siendo ids, así que cargan igual); si se hace mal, «Cargar» deja la pantalla en un escenario a medias,
+  y lo verían `e2e-perfiles-juniper-nokia` y una prueba que compare las dos listas. Se decide por el dueño.
+- (Hecha en el PR #62: el panel de perfiles, un solo módulo. Hecha en el PR #60: la licencia FortiGuard única del par en el BOM. Hecha en el PR #59: la vigilia del despliegue. Hecha en el PR #58: del override por ciclo de vida a ampliación o renovación en un clic. Hecha en el PR #57: el transporte probado sin red. Hecha en el PR #55: los perfiles multi-sede en Juniper y Nokia 7750. Hecha en el PR #54: la foto desde la página de cada modelo, hasta donde Cisco la publica, y el transporte fuera del YAML. Hecha en el PR #50: los perfiles de otros fabricantes al día al consolidar. Hecha en el PR #46: el ciclo del perfil al día al consolidar. Hecha en el PR #45: la fuente de la PQC enlazada a `fuentes.js`. Hecha en el PR #44: el ciclo en el consolidado multi-sede. Hecha en el PR #41: el fin de venta en el Excel. Hecha en el PR #40: la foto de producto en el Excel. Hecha en la septuagesimoprimera: el «no la trae» documentado, `pqcNo`. Hecha en la sexagesimoctava: la
   versión mínima de la PQC en la hoja «Supuestos».)
 
 ## Decisiones del dueño abiertas
