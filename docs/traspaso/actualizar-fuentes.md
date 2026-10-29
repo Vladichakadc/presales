@@ -6,7 +6,7 @@
 - **Estado:** en curso
 - **Actualizado:** 2026-10-29 15:10
 - **Archivos que toca:** server/vigiaEnVivo.js, server/server.js (solo la ruta `/api/fuentes/:vendor/salud`), scripts/vigia-fuentes.js (`revisar` acepta un tiempo límite), public/js/procedencia.js, test/vigia-en-vivo.test.js
-- **Siguiente paso:** `server/vigiaEnVivo.js` con la regla del vigía, la ruta y el botón
+- **Siguiente paso:** CI del PR; si verde, cierre (PENDIENTES, RELEVO, CLAUDE.md, fuera este traspaso), fusión y comprobar en producción que el botón lee los documentos
 
 ## Encargo del dueño
 
@@ -16,7 +16,10 @@ producción» (2026-10-29). Preguntado a qué botón se refería (no había ning
 
 ## Hecho
 
-- (nada todavía)
+- `server/vigiaEnVivo.js` (`revisarVendor`: `revisar`, `conRetirada` y `clasificar` del vigía contra `fuentes.lock.json`; caché de 10 min, una corrida a la vez, 4 en paralelo, 20 s por documento); `revisar` acepta `opts.tiempoLimite`.
+- La ruta `/api/fuentes/:vendor/salud` lo usa (fabricante solo de `fuentes.js`, registra quién y si fue de caché) y conserva los campos que lee el botón de Aruba.
+- `procedencia.js`: «↻ Actualizar fuentes» en las siete pestañas, columna «Comprobado ahora» y resumen que sobrevive a un repintado.
+- `test/vigia-en-vivo.test.js` (4). Banco en Chromium con la API simulada: botón, columna y resumen correctos. Contra la red real desde este contenedor: «inalcanzable» por el proxy, al instante.
 
 ## Falta
 
@@ -35,4 +38,4 @@ producción» (2026-10-29). Preguntado a qué botón se refería (no había ning
 
 ## Verificación
 
-- (pendiente)
+- `node --test`: los mismos fallos de entorno que `main`; lint limpio.

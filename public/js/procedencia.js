@@ -45,6 +45,36 @@
     return `<td style="color:${g.color};font-weight:600;white-space:nowrap" title="${escapeHtml((v && v.motivo) || '')}">${escapeHtml(g.etiqueta)}${sufijo}</td>`;
   }
 
+  /* «COMPROBADO AHORA» (2026-10-29: el botón «Actualizar fuentes»). La Vigilancia de la tabla es la
+     del vigía del lunes; esta columna es la de una comprobación pedida desde aquí: el servidor vuelve
+     a leer cada documento en el sitio del fabricante y lo compara con lo que una persona contrastó
+     (server/vigiaEnVivo.js, la regla del vigía). No escribe nada. Aparece solo después de comprobar. */
+  const AHORA = {
+    'sin cambios': { etiqueta: 'Sin cambios', color: 'var(--green)' },
+    'CAMBIÓ': { etiqueta: 'Cambió · sin contrastar', color: 'var(--amber)' },
+    'varió (página dinámica)': { etiqueta: 'Varió (página dinámica)', color: 'var(--steel)' },
+    'primera medición': { etiqueta: 'Primera medición', color: 'var(--steel)' },
+  };
+  const comprobado = {}; // code -> respuesta de /api/fuentes/<code>/salud
+  const mensajes = {}; // code -> la línea de estado del botón, que sobrevive a un repintado
+  function celdaAhora(f, code) {
+    const r = comprobado[code];
+    if (!r) return '';
+    const m = (r.fuentes || []).find((x) => x.url && x.url === f.url);
+    let g;
+    let detalle = '';
+    if (f.subida || !m) g = { etiqueta: f.subida ? 'Cargada aquí' : '—', color: 'var(--steel)' };
+    else if (m.estado === 'leido') {
+      g = AHORA[m.cambio] || { etiqueta: m.cambio && m.cambio.startsWith('nueva línea base') ? 'Nueva línea base' : (m.cambio || 'Leído'), color: 'var(--steel)' };
+      if (m.cambio === 'CAMBIÓ' && m.pendienteDesde) detalle = `desde ${String(m.pendienteDesde).slice(0, 10)}`;
+      if (m.reaparecio) detalle = 'el fabricante lo volvió a publicar';
+    } else if (m.estado === 'inalcanzable') { g = { etiqueta: 'Inalcanzable', color: 'var(--red)' }; detalle = m.detalle || ''; }
+    else if (m.estado === 'retirada') { g = { etiqueta: 'Retirada', color: 'var(--steel)' }; detalle = m.detalle || ''; }
+    else if (m.estado === 'sin-vigilancia') { g = { etiqueta: 'Sin vigilancia', color: 'var(--steel)' }; detalle = m.detalle || ''; }
+    else g = { etiqueta: 'Sin URL pública', color: 'var(--steel)' };
+    return `<td style="color:${g.color};font-weight:600" title="${escapeHtml(detalle)}">${escapeHtml(g.etiqueta)}${detalle ? `<br><span style="font-weight:400;font-size:11px">${escapeHtml(detalle.length > 90 ? `${detalle.slice(0, 90)}…` : detalle)}</span>` : ''}</td>`;
+  }
+
   let puedeSync = false;
   const fuenteModelos = {}; // code -> () => [{model, ...specs}]
 
@@ -62,13 +92,14 @@
            data-borrar-fuente="${escapeHtml(code)}" data-fuente-id="${escapeHtml(f.id)}"
            title="Borra este documento cargado y su fila de procedencia">Borrar</button>`
       : '<span style="color:var(--steel);font-size:11px" title="Esta fuente viene del catálogo (server/seed/legacyData/fuentes.js): se quita con un commit, no desde aquí">en el código</span>';
-    const cols = puedeSync ? 7 : 6;
+    const cols = (puedeSync ? 7 : 6) + (comprobado[code] ? 1 : 0);
     return `<tr>
       <td>${enlace}</td>
       <td style="white-space:nowrap">${escapeHtml(f.fecha || 'sin fecha')}</td>
       <td style="white-space:nowrap">${escapeHtml(antiguedad)}</td>
       <td style="color:${est.color};font-weight:600;white-space:nowrap">${escapeHtml(est.etiqueta)}</td>
       ${celdaVigilancia(f.vigilancia)}
+      ${celdaAhora(f, code)}
       <td>${escapeHtml(f.cubre || '')}</td>
       ${puedeSync ? `<td style="white-space:nowrap;text-align:center">${accion}</td>` : ''}
     </tr>${f.nota ? `<tr><td colspan="${cols}" style="color:var(--steel);font-size:12px;padding-top:0">${escapeHtml(f.nota)}</td></tr>` : ''}`;
@@ -76,9 +107,9 @@
 
   function barraProcedencia(code) {
     return `<div style="display:flex;gap:10px;align-items:center;justify-content:flex-end;margin-bottom:8px">
-      <span id="refresco-${escapeHtml(code)}" style="font-size:11.5px;color:var(--steel)"></span>
+      <span id="refresco-${escapeHtml(code)}" role="status" style="font-size:11.5px;color:var(--steel)">${escapeHtml(mensajes[code] || '')}</span>
       <button class="btn" style="padding:5px 12px;font-size:12px;background:#fff;color:var(--ink);border:1px solid var(--rule)"
-        data-refrescar-fuentes="${escapeHtml(code)}" title="Vuelve a leer la procedencia del servidor y repinta la tabla">&#8635; Actualizar</button>
+        data-refrescar-fuentes="${escapeHtml(code)}" title="Vuelve a leer cada documento oficial en el sitio del fabricante y dice si sigue siendo el que se contrastó. No cambia el catálogo.">&#8635; Actualizar fuentes</button>
     </div>`;
   }
 
@@ -112,7 +143,7 @@
       const activas = todas.filter((f) => f.estado !== 'historico');
       const historicas = todas.filter((f) => f.estado === 'historico');
       const cab = `<thead><tr>
-            <th>Documento</th><th>Fecha</th><th>Antigüedad</th><th>Estado</th><th title="¿El documento oficial sigue siendo el mismo contra el que se verificó el catálogo?">Vigilancia</th><th>Qué cubre</th>${puedeSync ? '<th style="text-align:center">Acciones</th>' : ''}
+            <th>Documento</th><th>Fecha</th><th>Antigüedad</th><th>Estado</th><th title="¿El documento oficial sigue siendo el mismo contra el que se verificó el catálogo? (vigía semanal)">Vigilancia</th>${comprobado[code] ? `<th title="Comprobado desde aquí el ${escapeHtml(String(comprobado[code].revisadoEn || '').slice(0, 16).replace('T', ' '))} UTC">Comprobado ahora</th>` : ''}<th>Qué cubre</th>${puedeSync ? '<th style="text-align:center">Acciones</th>' : ''}
           </tr></thead>`;
       const tabla = activas.length
         ? `<table>${cab}<tbody>${activas.map((f) => filaProcedencia(f, code)).join('')}</tbody></table>`
@@ -128,15 +159,33 @@
   }
 
   async function refrescarFuentes(code) {
-    const antes = document.getElementById(`refresco-${code}`);
-    if (antes) antes.textContent = 'Actualizando…';
-    await renderProcedencia();
-    const span = document.getElementById(`refresco-${code}`);
-    if (span) {
-      const h = new Date().toLocaleTimeString('es', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-      span.textContent = `Actualizado a las ${h}`;
+    const boton = document.querySelector(`[data-refrescar-fuentes="${code}"]`);
+    const decir = (t) => { mensajes[code] = t; const e = document.getElementById(`refresco-${code}`); if (e) e.textContent = t; };
+    if (boton) boton.disabled = true;
+    decir('Leyendo cada documento en el sitio del fabricante… (puede tardar un minuto)');
+    try {
+      const res = await fetch(`/api/fuentes/${encodeURIComponent(code)}/salud`);
+      const d = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(d.error || `HTTP ${res.status}`);
+      comprobado[code] = d;
+      await renderProcedencia();
+      const c = d.resumen || {};
+      const partes = [`${c.sinCambios || 0} sin cambios`];
+      if (c.cambiaron) partes.push(`${c.cambiaron} cambiaron sin contrastar`);
+      if (c.varian) partes.push(`${c.varian} páginas dinámicas que varían`);
+      if (c.primera) partes.push(`${c.primera} sin medición previa`);
+      if (c.inalcanzables) partes.push(`${c.inalcanzables} inalcanzables`);
+      const h = new Date(d.revisadoEn).toLocaleTimeString('es', { hour: '2-digit', minute: '2-digit' });
+      decir(`Comprobado a las ${h}${d.deCache ? ' (resultado de hace menos de 10 min)' : ''}: ${partes.join(' · ')}.`);
+    } catch (err) {
+      await renderProcedencia();
+      decir(`No se pudieron comprobar las fuentes: ${err.message}`);
+    } finally {
+      const b = document.querySelector(`[data-refrescar-fuentes="${code}"]`);
+      if (b) b.disabled = false;
     }
   }
+
 
   async function subirFuenteOficial(code) {
     const input = document.getElementById(`file-fuente-${code}`);
