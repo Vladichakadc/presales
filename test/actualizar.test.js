@@ -32,7 +32,9 @@ test('el botón valida, recalcula y dice el resultado', () => {
   assert.match(js, /role="status"/);
   // Sin JavaScript en línea (CSP `script-src 'self'`).
   assert.doesNotMatch(js, /onclick=|on[a-z]+="/);
-  // Estilos: la hoja común para las ocho y la propia de Starlink, que no enlaza controles.css.
-  assert.match(leer('public/controles.css'), /\.btn-actualizar \{/);
-  assert.match(leer('public/dimensionador-starlink-leo.css'), /\.btn-actualizar \{/);
+  // Estilos: su propia hoja, enlazada en las nueve (Starlink no enlaza controles.css).
+  assert.match(leer('public/actualizar.css'), /\.btn-actualizar \{/);
+  for (const pag of PAGINAS) {
+    assert.strictEqual((leer(`public/dimensionador-${pag}.html`).match(/<link rel="stylesheet" href="\/actualizar\.css">/g) || []).length, 1, `${pag}: sin su hoja el botón sale sin estilo`);
+  }
 });

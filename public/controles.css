@@ -136,33 +136,8 @@ label:has(> input[type="checkbox"]:checked:disabled):not(.wan-sim):not(.wan-ov):
 .funciones-activas .fa-pastilla.fa-fija { box-shadow: inset 3px 0 0 var(--steel, #5C6E85); }
 .funciones-activas .fa-vacio { margin: 0; font-size: 12.5px; color: var(--steel, #5C6E85); }
 
-/* 4 · Botón «Actualizar» (2026-10-29: «un botón en todos los dimensionadores que diga actualizar
-   y, al darle clic, realice los cálculos o las validaciones correspondientes»). `actualizar.js`
-   pone la barra arriba de la columna de parámetros; es sticky para que acompañe al bajar. El
-   botón usa la tinta, no `--red`: el azul de marca de Cisco no llega a AA con texto blanco. */
-.barra-actualizar {
-  position: sticky; top: 8px; z-index: 6;
-  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
-  margin: 0 0 12px; padding: 8px 10px;
-  background: var(--card, #FFF); border: 1px solid var(--rule, #D5DCE5); border-radius: 3px;
-  box-shadow: 0 2px 6px rgba(14, 26, 43, .08);
-}
-.btn-actualizar {
-  font-family: 'Barlow', system-ui, sans-serif; font-size: 13px; font-weight: 700; letter-spacing: .02em;
-  padding: 7px 16px; border: 1px solid var(--ink, #0E1A2B); border-radius: 2px;
-  background: var(--ink, #0E1A2B); color: #FFF; cursor: pointer; white-space: nowrap;
-}
-.btn-actualizar:hover { background: #24344A; }
-.btn-actualizar:focus-visible { outline: 2px solid var(--ink, #0E1A2B); outline-offset: 2px; }
-.btn-actualizar:disabled { opacity: .6; cursor: progress; }
-.act-estado { font-size: 12.5px; color: var(--steel, #5C6E85); }
-.act-estado[data-tipo="ok"] { color: #1F6B4A; }
-.act-estado[data-tipo="aviso"], .act-estado[data-tipo="error"] { color: var(--ciclo-rojo); font-weight: 600; }
-.act-invalido { outline: 2px solid var(--ciclo-rojo) !important; outline-offset: 1px; background-color: var(--ciclo-rojo-fondo) !important; }
-
 /* En alto contraste de Windows el fondo desaparece: queda un borde, que el sistema sí pinta. */
 @media (forced-colors: active) {
-  .btn-actualizar { border: 2px solid ButtonText; }
   label:has(> input[type="checkbox"]:checked):not(.wan-sim):not(.wan-ov):not(.switch) { outline: 2px solid Highlight; }
   select:has(option.opt-ciclo:checked) { outline: 2px solid Mark; }
   .funciones-activas .fa-pastilla { outline: 2px solid Highlight; }
