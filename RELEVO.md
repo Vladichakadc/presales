@@ -1,6 +1,6 @@
 # Relevo
 
-Última actualización: 2026-10-29 · PR #62
+Última actualización: 2026-10-29 · PR #69
 
 Informe para continuar el trabajo. Lo pidió el dueño del repositorio el 2026-10-27: «de aquí en
 adelante, un informe de pendientes y mejoras para que la cuenta **servicioiptv2025@gmail.com**
@@ -33,6 +33,12 @@ está en curso no va aquí: lo dice `npm run traspasos` (protocolo en `docs/tras
 
 ## Estado al cerrar esta entrega
 
+- **2026-10-29 · PR #69**: botón «Actualizar» en los nueve dimensionadores (encargo del dueño: el
+  recálculo en línea no siempre reflejaba los parámetros). Valida los campos visibles con sus reglas
+  del HTML, recalcula todo con `window.DIMENSIONADOR_ACTUALIZAR` y dice el resultado. **Criterio que
+  conviene conservar**: un dimensionador nuevo registra su recálculo completo en
+  `window.DIMENSIONADOR_ACTUALIZAR` (devuelve `false` si el catálogo no llegó) y carga
+  `actualizar.js` y `actualizar.css`; `test/actualizar.test.js` lo frena si falta.
 - **2026-10-29 · PR #62**: el panel de perfiles multi-sede de las siete páginas es un solo módulo,
   `BOM.montarPerfiles` en `bom.js` (la mejora propuesta al cerrar el PR #55): una mejora del
   consolidado se escribe una vez, y las siete se comportan igual (diálogo, Escape, mensajes).
@@ -298,6 +304,14 @@ existen los workflows de transporte. Huawei y HPE niegan además el navegador au
 
 ## Mejoras propuestas sin decidir
 
+- **Encontrar los campos que el recálculo en línea no escucha** (propuesta al cerrar el PR #69). El
+  botón «Actualizar» es la salida segura, pero no dice por qué la página no se actualizó sola: cada
+  página escucha una lista de campos (en Fortinet, `NUMERICOS` e `INMEDIATOS`), y uno fuera de la
+  lista no dispara nada. Una batería e2e que cambie cada campo de la columna de parámetros de cada
+  página y compruebe que la derecha cambia sin pulsar el botón; los que no, se enlazan uno a uno.
+  Evita que el preventa tenga que acordarse de pulsar. Cuesta una batería nueva y tiempo de CI; si se
+  hace mal, da falsos avisos en campos que de verdad no mueven el resultado, así que la batería debe
+  admitir una lista declarada de campos sin efecto con su motivo. Se decide por el dueño.
 - **Un reloj para la vigilia que no sea el de GitHub** (propuesta al cerrar el PR #64, solo si la
   medición del 2026-11-05 confirma que faltan más de la mitad de las corridas). Una tarea programada
   de Claude (fuera de Actions) que cada hora lance `vigilia-despliegue.yml` por `workflow_dispatch`.
