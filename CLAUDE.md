@@ -436,6 +436,13 @@ Módulos compartidos:
   usa interruptores): el rojo del ciclo de vida en los desplegables (`#B42318`, nunca `--red`, que
   es el color de marca de cada página) y la fila de la casilla de función marcada, resaltada con el
   acento de la página al 6 % (AA con el texto gris), sin moverse de sitio.
+- `funciones-activas.js` — el panel «Funciones activadas» arriba de la columna de resultados de esas
+  ocho páginas (2026-10-28): una pastilla por casilla de función marcada, con el mismo resaltado que su
+  fila y un clic que lleva a ella. Lee las rejillas `.cols`/`.dim` (parámetros en la primera hija,
+  resultados en la segunda), con las mismas exclusiones que la hoja (`test/funciones-activas.test.js`);
+  se repinta también cuando la derecha se recalcula. Sin tocar el código de ninguna página. Junto a
+  la tarjeta clavada (`.col-fijo`, Aruba y Juniper) va FUERA de ella, como pieza de la rejilla encima:
+  dentro la alargaba y se soltaba antes del fondo (`e2e-sticky.js`).
 - `pqc.js` — **el requisito «Exigir PQC»** (2026-10-27), una sola regla para los siete
   dimensionadores y para el motor de Fortinet en el servidor: `''` no se exige, `'clave'` basta un
   mecanismo quantum-safe documentado (PPK, MACsec/ANYsec o ML-KEM), `'mlkem'` exige ML-KEM. Sin

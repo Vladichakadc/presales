@@ -70,8 +70,75 @@ label:has(> input[type="checkbox"]:checked) .hint { font-weight: 400; }
    apaga con opacidad, que bajaría el contraste del texto por debajo de AA. */
 label:has(> input[type="checkbox"]:checked:disabled):not(.wan-sim):not(.wan-ov):not(.switch) { box-shadow: inset 3px 0 0 var(--steel, #5C6E85); }
 
+/* 3 · Las funciones activadas, también a la derecha (2026-10-28: «cuando se seleccione una opción
+   de cualquier dimensionador, como ya se está resaltando en la parte de la izquierda, también se
+   resalte en la parte de la derecha»). `funciones-activas.js` pone arriba de la columna de
+   resultados una pastilla por cada casilla de función marcada, con el MISMO resaltado que su fila
+   de la izquierda (acento de la página al 6 %, barra a la izquierda, seminegrita), para que quien
+   lee el resultado vea con qué funciones se calculó sin volver a los parámetros. Un clic lleva a su
+   casilla. La que fija la página lleva la barra en gris, como a la izquierda. */
+.funciones-activas {
+  background: var(--card, #FFF);
+  border: 1px solid var(--rule, #D5DCE5);
+  border-radius: 4px;
+  padding: 10px 12px;
+  margin: 0 0 14px;
+}
+/* Junto a la tarjeta clavada (`.col-fijo` de Aruba y Juniper) el panel es otra pieza de la rejilla:
+   arriba en la columna derecha, y la tarjeta en la fila de debajo, que con la columna de parámetros
+   abarcando las dos llega hasta el mismo fondo que antes. Así la tarjeta no crece y sigue clavada
+   hasta el final de la página (e2e-sticky.js). En móvil, una sola columna: el orden natural ya lo
+   deja encima de la tarjeta. */
+@media (min-width: 881px) {
+  .cols:has(> .funciones-activas) { grid-template-rows: auto 1fr; }
+  .cols:has(> .funciones-activas) > :first-child { grid-row: 1 / span 2; }
+  .cols > .funciones-activas { grid-column: 2; grid-row: 1; margin: 0; }
+  .cols:has(> .funciones-activas) > .col-fijo { grid-column: 2; grid-row: 2; }
+}
+/* Dentro del panel de resultados de Fortinet, que ya es una tarjeta: una franja, no otra tarjeta. */
+.dim-res > .funciones-activas { border: 0; border-bottom: 1px solid var(--rule, #D5DCE5); border-radius: 0; margin: 0; }
+.funciones-activas .fa-tit {
+  margin: 0 0 6px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: .02em;
+  text-transform: uppercase;
+  color: var(--steel, #5C6E85);
+}
+.funciones-activas .fa-n {
+  display: inline-block;
+  min-width: 1.6em;
+  margin-left: 4px;
+  padding: 0 5px;
+  border-radius: 9px;
+  text-align: center;
+  background: var(--red-txt, var(--red, #0E1A2B)); /* el tono de texto del acento: blanco encima, AA */
+  color: #FFF;
+}
+.funciones-activas .fa-lista { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; }
+.funciones-activas .fa-pastilla {
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--ink, #0E1A2B);
+  text-align: left;
+  max-width: 100%;
+  padding: 4px 9px 4px 10px;
+  border: 0;
+  border-radius: 3px;
+  cursor: pointer;
+  background-color: color-mix(in srgb, var(--red, #0E1A2B) 6%, var(--card, #FFF));
+  box-shadow: inset 3px 0 0 var(--red, #0E1A2B);
+  overflow-wrap: anywhere;
+}
+.funciones-activas .fa-pastilla:hover { background-color: color-mix(in srgb, var(--red, #0E1A2B) 12%, var(--card, #FFF)); }
+.funciones-activas .fa-pastilla:focus-visible { outline: 2px solid var(--red, #0E1A2B); outline-offset: 2px; }
+.funciones-activas .fa-pastilla.fa-fija { box-shadow: inset 3px 0 0 var(--steel, #5C6E85); }
+.funciones-activas .fa-vacio { margin: 0; font-size: 12.5px; color: var(--steel, #5C6E85); }
+
 /* En alto contraste de Windows el fondo desaparece: queda un borde, que el sistema sí pinta. */
 @media (forced-colors: active) {
   label:has(> input[type="checkbox"]:checked):not(.wan-sim):not(.wan-ov):not(.switch) { outline: 2px solid Highlight; }
   select:has(option.opt-ciclo:checked) { outline: 2px solid Mark; }
+  .funciones-activas .fa-pastilla { outline: 2px solid Highlight; }
 }
