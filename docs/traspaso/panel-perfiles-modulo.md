@@ -2,11 +2,11 @@
 
 - **Tema:** el panel de perfiles multi-sede de las siete páginas, un solo módulo (`BOM.montarPerfiles`)
 - **Rama:** claude/panel-perfiles-modulo
-- **Cuenta:** servicioiptv2025@gmail.com (sesión de Claude)
+- **Cuenta:** servicioiptv2025@gmail.com (sesión de Claude); retomado el 2026-10-29 05:50 por la sesión 01V8T7S6ACDK2CAYKoqhKyry tras ocho horas parado con CI en verde
 - **Estado:** en curso
-- **Actualizado:** 2026-10-28 23:30
+- **Actualizado:** 2026-10-29 05:50
 - **Archivos que toca:** public/js/bom.js, public/js/dimensionador-aruba-edgeconnect.js, public/js/dimensionador-cisco-catalyst8k.js, public/js/dimensionador-fortinet-fortigate.js, public/js/dimensionador-huawei-netengine.js, public/js/dimensionador-mikrotik-routeros.js, public/js/dimensionador-juniper-srx.js, public/js/dimensionador-nokia-7750sr.js, test/bom-perfiles.test.js, test/bom-panel-perfiles.test.js
-- **Siguiente paso:** esperar CI del PR (e2e-ciclo-excel, e2e-perfiles-juniper-nokia, e2e-aruba-fases23 conducen el panel); cierre y fusión.
+- **Siguiente paso:** rebase sobre `main` (PR #59 y #60 tocaron Fortinet), revisar el diff, CI y cierre del PR #62.
 
 ## Encargo del dueño
 
