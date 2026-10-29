@@ -641,6 +641,19 @@ function aplicarCorreccion(c) {
     return;
   }
   if (c.accion === 'ir' && c.campo) irAlCampo(c.campo);
+  // Del override por ciclo de vida a la operación que lo admite: fija el tipo de compra (la
+  // reevaluación es inmediata) y lleva al primer dato que esa operación pide y falta — la serie
+  // instalada en una renovación, y siempre la justificación del equipo fuera de venta.
+  if (c.accion === 'motivo-ciclo' && ['ampliacion', 'renovacion', 'coterm'].includes(c.valor)) {
+    const m = $('motivoCompra');
+    m.value = c.valor;
+    m.dispatchEvent(new Event('change', { bubbles: true }));
+    const falta = ['comercial.serieInstalada', 'comercial.justificacionEol'].find((campo) => {
+      const n = $(CAMPO_ID[campo]);
+      return n && !n.closest('[hidden]') && !n.value.trim();
+    });
+    if (falta) irAlCampo(falta);
+  }
 }
 function irAlCampo(campo) {
   const id = CAMPO_ID[campo];
@@ -864,11 +877,24 @@ function pintarCabecera(r) {
       + `<td class="n">${d.disponible == null ? 'sin dato' : valEje(d, d.disponible)}</td>`
       + `<td class="n">${d.estado === 'sinDato' ? 'no comprobable' : `${R.pct(d.utilizacion)}${d.deficitPct != null ? ` (+${d.deficitPct} %)` : ''}`}</td></tr>`).join('');
     const otros = (ov.bloqueos || []).map((b) => `<li>${esc(b.mensaje)}</li>`).join('');
-    cajaOv.innerHTML = `<b>Elegiste el ${esc(ov.modelo)} y no cumple este escenario.</b> La lista de materiales sigue con el `
+    // Solo lo aparta su ciclo de vida (cumple la capacidad y no tiene otro bloqueo): quien lo elige
+    // casi siempre amplía o renueva un parque instalado. La caja ofrece pasar a esa operación en un
+    // clic (petición del dueño, 2026-10-28: «ejecuta las mejoras propuestas»); la justificación la
+    // sigue exigiendo el motor, así que la cotización no sale sin ella.
+    const soloCiclo = !ov.deficit.length && (ov.bloqueos || []).length > 0
+      && ov.bloqueos.every((b) => b.codigo === 'CICLO_VIDA');
+    const btnMotivo = (motivo, txt) => `<button type="button" class="btn btn-corr" data-corregir='${esc(JSON.stringify({ accion: 'motivo-ciclo', valor: motivo }))}'>${txt}</button> `;
+    cajaOv.innerHTML = (soloCiclo
+      ? `<b>Elegiste el ${esc(ov.modelo)}: cumple este escenario, pero está fuera de venta</b> y en compra nueva no se ofrece. `
+      : `<b>Elegiste el ${esc(ov.modelo)} y no cumple este escenario.</b> `)
+      + `La lista de materiales sigue con el `
       + `<b>${esc(r.seleccion ? r.seleccion.id : 'modelo validado')}</b> y la cotización queda <b>bloqueada</b> mientras mantengas esa elección.`
       + (filas ? `<table><thead><tr><th>Eje</th><th>Requerido</th><th>Disponible</th><th>Utilización</th></tr></thead><tbody>${filas}</tbody></table>` : '')
-      + (otros ? `<ul style="margin:6px 0 0;padding-left:18px">${otros}</ul>` : '')
-      + `<p style="margin:8px 0 0"><button type="button" class="btn btn-corr" data-corregir='${esc(JSON.stringify({ accion: 'volver-recomendado' }))}'>Volver al recomendado</button></p>`;
+      + (otros && !soloCiclo ? `<ul style="margin:6px 0 0;padding-left:18px">${otros}</ul>` : '')
+      + (soloCiclo ? '<p style="margin:8px 0 0">Si es para un parque ya instalado, declara la operación: se te pedirá la justificación del equipo fuera de venta.</p>' : '')
+      + '<p class="ov-acciones" style="margin:8px 0 0">'
+      + (soloCiclo ? btnMotivo('ampliacion', 'Es una ampliación') + btnMotivo('renovacion', 'Es una renovación de servicios') : '')
+      + `<button type="button" class="btn ${soloCiclo ? 'ghost ' : ''}btn-corr" data-corregir='${esc(JSON.stringify({ accion: 'volver-recomendado' }))}'>Volver al recomendado</button></p>`;
     cajaOv.hidden = false;
   } else {
     cajaOv.hidden = true;
