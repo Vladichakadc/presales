@@ -490,6 +490,8 @@ Módulos compartidos:
   cargar; sus filas de vecinos OSPF (los declarados a mano) y de VRF no se usan, y no publica
   rutas aprendidas. El BOM sale solo del modelo validado; la puerta READY/WARNING/DRAFT/BLOCKED bloquea
   Excel, copiar y enviar con un P0, un SKU sin casar o la lista vencida, y el override exige motivo.
+  Si el override solo choca con `CICLO_VIDA` (cumple el escenario), su caja ofrece declarar ampliación o
+  renovación en un clic (`motivo-ciclo`), que lleva a la justificación sin escribirla.
   Un SKU nunca se busca con el marcador `-DD`. Figuras desde la página «Hardware» de cada ficha.
   **HA y FortiGuard** (F3, 2026-10-28): una suscripción por nodo, salvo en activo-pasivo de las
   series que la guía de FortiOS 7.6.6 nombra (`haLicenciaUnica`: 40F, 60F, 70F, 80F, 100F y
