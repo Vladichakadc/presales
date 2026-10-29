@@ -1,0 +1,32 @@
+[
+  {
+    "archivo": "huawei-nce-campus-r24c00.pdf",
+    "para": "HUAWEI",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://e.huawei.com/marketingcloud/pep/asset/20000001/Material/e3ae1dc4d0e34e08871f529f499579c7/M3T1A590N1069706146884108541/iMaster%20NCE-Campus%20Product%20Datasheet%20R24C00%201130.pdf",
+        "status": 200,
+        "bytes": 1196653,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "huawei-nce-wan-producto.html",
+    "para": "HUAWEI",
+    "guardado": true,
+    "exploracion": true,
+    "intentos": [
+      {
+        "url": "https://e.huawei.com/en/products/network-management-and-analysis-software/imaster-nce-wan",
+        "status": 200,
+        "bytes": 361442,
+        "guardado": true,
+        "verificado": false
+      }
+    ]
+  }
+]
