@@ -734,75 +734,19 @@ function aplicarCampos(v){
   SEGS_PERFIL.forEach(id=>{const b=v[id]!=null&&$(id).querySelector(`[data-v="${v[id]}"]`); if(b) b.click();});
   pintarEnlaces(); render(); renderBom();
 }
-function pintarPerfiles(){
-  const l=BOM.perfilesDe(VENDOR);
-  $('listaPerfiles').innerHTML=l.length
-    ? '<table class="tco-tabla"><thead><tr><th>Perfil</th><th>Sedes</th><th>Modelo</th><th>Guardado</th><th></th></tr></thead><tbody>'
-      +l.map(x=>`<tr><td><b>${esc(x.nombre)}</b></td><td>${x.sedes}</td><td>${esc(x.modelo)}</td><td>${esc(x.fecha||'—')}</td>`
-        +`<td><button type="button" class="btn ghost" data-perfil-cargar="${esc(x.id)}">Cargar</button> `
-        +`<button type="button" class="btn ghost" data-perfil-borrar="${esc(x.id)}">Eliminar</button></td></tr>`).join('')
-      +'</tbody></table>'
-    : '<p class="hint">Sin perfiles guardados todavía.</p>';
-  const hay=BOM.perfiles().length>0;
-  $('btnConsolidar').disabled=!hay;
-  $('btnConsolidar').title=hay?'':'Guarda al menos un perfil de sede para consolidar el BOM global.';
-}
-$('btnGuardarPerfil').addEventListener('click',()=>{
-  const nombre=$('nombrePerfil').value.trim();
-  const sedes=Math.max(0,parseInt($('perfilSedes').value,10)||0);
-  if(!nombre||!sedes){ $('perfilMsg').textContent='Pon un nombre y el número de sedes idénticas.'; $('nombrePerfil').focus(); return; }
-  if(!bomFilas.length||!hayCandidato){ $('perfilMsg').textContent='No hay un equipo dimensionado que guardar: ajusta el escenario primero.'; return; }
-  BOM.guardarPerfil({nombre, sedes, modelo:$('pickModel').value, vendor:VENDOR, ciclo:BOM.cicloDe(MODELS.find(x=>x.id===$('pickModel').value)), fecha:new Date().toISOString().slice(0,10),
-    version:1, campos:capturarCampos(), filas:JSON.parse(JSON.stringify(bomFilas))});
-  $('nombrePerfil').value=''; $('perfilSedes').value='';
-  $('perfilMsg').textContent=`Perfil «${nombre}» guardado con ${sedes} sede(s).`;
-  pintarPerfiles();
+// Guardar, cargar, consolidar y la ventana: el módulo común de bom.js (2026-10-28).
+BOM.montarPerfiles({
+  vendor:VENDOR,
+  capturar:capturarCampos,
+  aplicar:aplicarCampos,
+  modeloPorId:(id)=>MODELS.find((x)=>x.id===id),
+  equipo:()=>(bomFilas.length&&hayCandidato&&$('pickModel').value
+    ? {id:$('pickModel').value, modelo:MODELS.find(x=>x.id===$('pickModel').value), filas:bomFilas} : null),
+  dto:()=>({valor:dtoActual(), etiqueta:DTO?DTO.etiqueta():null}),
+  notas:['REGLAS DE CONSOLIDACION (MikroTik):',
+    '  Equipo, opticas, AP y soporte: cantidad del perfil x sedes del perfil.',
+    '  Precios: «Suggested price» de cada ficha de mikrotik.com, sin descuento de canal ni impuestos.'],
 });
-$('listaPerfiles').addEventListener('click',e=>{
-  const b=e.target.closest('button');
-  if(!b) return;
-  if(b.dataset.perfilCargar!=null){
-    const x=BOM.perfilesDe(VENDOR).find(y=>y.id===b.dataset.perfilCargar);
-    if(x&&x.campos) aplicarCampos(x.campos);
-  } else if(b.dataset.perfilBorrar!=null){
-    BOM.quitarPerfil(b.dataset.perfilBorrar);
-    pintarPerfiles();
-  }
-});
-function consolidarPerfiles(){
-  // El ciclo de los perfiles de MikroTik, al día con su catálogo; los de otros fabricantes, con su foto.
-  const l=BOM.refrescarCiclo(BOM.perfiles(), VENDOR, (id)=>MODELS.find((x)=>x.id===id));
-  const {filas, totalSedes, fabricantes}=BOM.consolidar(l,{agregadas:[], unicas:[]});
-  const multi=fabricantes.length>1;
-  const meta={
-    titulo:`BOM global consolidado — ${l.length} perfil(es), ${totalSedes} sedes`,
-    subtitulo:l.map(x=>`${x.nombre} ×${x.sedes} (${x.modelo})`).join(' · '),
-    archivo:multi?'BOM_global_multifabricante':'BOM_global_mikrotik',
-    sinRefs:true,
-    perfiles:l,
-    notas:['REGLAS DE CONSOLIDACION (MikroTik):',
-      '  Equipo, opticas, AP y soporte: cantidad del perfil x sedes del perfil.',
-      '  Precios: «Suggested price» de cada ficha de mikrotik.com, sin descuento de canal ni impuestos.'],
-  };
-  if(multi) meta.notas.push(`  MULTI-FABRICANTE: ${fabricantes.join(', ')}.`);
-  const d=dtoActual();
-  if(d>0){ meta.dto=d; meta.dtoEtq=DTO.etiqueta(); }
-  return {filas, meta, totalSedes, fabricantes};
-}
-$('btnConsolidar').addEventListener('click',async()=>{
-  const {filas, meta, totalSedes, fabricantes}=consolidarPerfiles();
-  // Y los perfiles de los demás fabricantes, al día con su propio catálogo (pedido al servidor).
-  meta.perfiles=await BOM.refrescarCicloTodos(meta.perfiles);
-  if(!totalSedes) return;
-  $('consolidadoSub').textContent=`${meta.subtitulo} — ${totalSedes} sedes en total`;
-  $('consolidadoTabla').innerHTML=BOM.avisoCicloConsolidado(meta.perfiles)+(fabricantes.length>1?`<p class="bom-aviso">Consolidado <b>multi-fabricante</b> (${esc(fabricantes.join(', '))}).</p>`:'')
-    +BOM.renderTabla(filas,{dto:dtoActual(), sinRefs:true});
-  $('modalConsolidado').hidden=false;
-  $('xlsConsolidadoBtn').onclick=()=>BOM.exportarExcel(filas,meta);
-  $('consolidadoCerrar').focus();
-});
-$('consolidadoCerrar').addEventListener('click',()=>{ $('modalConsolidado').hidden=true; $('btnConsolidar').focus(); });
-$('modalConsolidado').addEventListener('click',e=>{ if(e.target===$('modalConsolidado')) $('modalConsolidado').hidden=true; });
 
 // Memoria tecnica: Markdown con el resumen, la memoria de calculo (la celda de la ficha que
 // dimensiona y los supuestos declarados como tales) y el BOM. El contenido lo arma el motor.
@@ -838,7 +782,7 @@ $('memoriaBtn').addEventListener('click',()=>{
   render();
   renderBom();
   renderCatalogo();
-  pintarPerfiles();
+  BOM.pintarPerfiles();
   PROCEDENCIA.registrarModelos(VENDOR, () => MODELS.map(m => ({ model: m.id, ...m })));
 })();
 
