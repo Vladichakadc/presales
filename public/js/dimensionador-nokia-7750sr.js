@@ -365,74 +365,24 @@
     });
     render();
   }
-  function pintarPerfiles() {
-    const caja = $('listaPerfiles');
-    const l = BOM.perfilesDe(VENDOR);
-    caja.innerHTML = l.length
-      ? '<table class="tco-tabla"><thead><tr><th>Perfil</th><th>Sedes</th><th>Modelo</th><th>Guardado</th><th></th></tr></thead><tbody>'
-        + l.map((x) => `<tr><td><b>${esc(x.nombre)}</b></td><td>${x.sedes}</td><td>${esc(x.modelo)}</td><td>${esc(x.fecha || '—')}</td>`
-          + `<td><button type="button" class="btn ghost" data-perfil-cargar="${esc(x.id)}" style="font-size:10px;padding:3px 8px">Cargar</button> `
-          + `<button type="button" class="btn ghost" data-perfil-borrar="${esc(x.id)}" style="font-size:10px;padding:3px 8px">Eliminar</button></td></tr>`).join('')
-        + '</tbody></table>'
-      : '<p class="hint">Sin perfiles guardados todavía.</p>';
-    const hay = BOM.perfiles().length > 0;
-    $('btnConsolidar').disabled = !hay;
-    $('btnConsolidar').title = hay ? '' : 'Guarda al menos un perfil de sede para consolidar el BOM global.';
-  }
+  // Lo común (lista, guardar, cargar, borrar, consolidar y la ventana) es de `BOM.montarPerfiles`
+  // (2026-10-28); aquí solo lo de Nokia: qué se guarda y las reglas de su consolidado. Se monta
+  // detrás de la guarda de la página: las pruebas cargan el motor sin ella.
   function montarPerfiles() {
-    $('btnGuardarPerfil').addEventListener('click', () => {
-      const nombre = $('nombrePerfil').value.trim();
-      const sedes = Math.max(0, parseInt($('perfilSedes').value, 10) || 0);
-      if (!nombre || !sedes) { $('perfilMsg').textContent = 'Pon un nombre y el número de sedes idénticas.'; $('nombrePerfil').focus(); return; }
-      if (!bomFilas.length || !bomModelo) { $('perfilMsg').textContent = 'No hay un equipo dimensionado que guardar: ajusta el escenario primero.'; return; }
-      BOM.guardarPerfil({ nombre, sedes, modelo: bomModelo.id, vendor: VENDOR, ciclo: BOM.cicloDe(bomModelo), fecha: new Date().toISOString().slice(0, 10),
-        version: 1, campos: capturarCampos(), filas: JSON.parse(JSON.stringify(bomFilas)) });
-      $('nombrePerfil').value = ''; $('perfilSedes').value = '';
-      $('perfilMsg').textContent = `Perfil «${nombre}» guardado con ${sedes} sede(s).`;
-      pintarPerfiles();
+    const perfilesUi = BOM.montarPerfiles({
+      vendor: VENDOR,
+      capturar: capturarCampos,
+      aplicar: aplicarCampos,
+      equipo: () => (bomFilas.length && bomModelo
+        ? { modelo: bomModelo.id, ciclo: BOM.cicloDe(bomModelo), filas: bomFilas }
+        : { error: 'No hay un equipo dimensionado que guardar: ajusta el escenario primero.' }),
+      buscar: (id) => modeloPorId(id),
+      archivo: 'nokia',
+      notas: ['REGLAS DE CONSOLIDACION (Nokia 7250 IXR / 7750 SR):',
+        '  Chasis: cantidad del perfil x sedes del perfil.',
+        '  Transceptores, IOM, licencias y soporte no estan incluidos: dependen de la configuracion.'],
     });
-    $('listaPerfiles').addEventListener('click', (e) => {
-      const b = e.target.closest('button');
-      if (!b) return;
-      if (b.dataset.perfilCargar != null) {
-        const x = BOM.perfilesDe(VENDOR).find((y) => y.id === b.dataset.perfilCargar);
-        if (x && x.campos) { aplicarCampos(x.campos); $('perfilMsg').textContent = `Perfil «${x.nombre}» cargado.`; }
-      } else if (b.dataset.perfilBorrar != null) {
-        BOM.quitarPerfil(b.dataset.perfilBorrar);
-        pintarPerfiles();
-      }
-    });
-    $('btnConsolidar').addEventListener('click', async () => {
-      // El ciclo de los perfiles de esta página, al día con su catálogo; los de otros fabricantes, con el suyo.
-      const l = BOM.refrescarCiclo(BOM.perfiles(), VENDOR, (id) => modeloPorId(id));
-      const { filas, totalSedes, fabricantes } = BOM.consolidar(l, { agregadas: [], unicas: [] });
-      if (!totalSedes) return;
-      const multi = fabricantes.length > 1;
-      const meta = {
-        titulo: `BOM global consolidado — ${l.length} perfil(es), ${totalSedes} sedes`,
-        subtitulo: l.map((x) => `${x.nombre} ×${x.sedes} (${x.modelo})`).join(' · '),
-        archivo: multi ? 'BOM_global_multifabricante' : 'BOM_global_nokia',
-        sinRefs: true,
-        perfiles: l,
-        notas: ['REGLAS DE CONSOLIDACION (Nokia 7250 IXR / 7750 SR):',
-          '  Chasis: cantidad del perfil x sedes del perfil.',
-          '  Transceptores, IOM, licencias y soporte no estan incluidos: dependen de la configuracion.'],
-      };
-      if (multi) meta.notas.push(`  MULTI-FABRICANTE: ${fabricantes.join(', ')}.`);
-      // Y los perfiles de los demás fabricantes, al día con su propio catálogo (pedido al servidor).
-      meta.perfiles = await BOM.refrescarCicloTodos(meta.perfiles);
-      $('consolidadoSub').textContent = `${meta.subtitulo} — ${totalSedes} sedes en total`;
-      $('consolidadoTabla').innerHTML = BOM.avisoCicloConsolidado(meta.perfiles) + (multi ? `<p class="bom-aviso">Consolidado <b>multi-fabricante</b> (${esc(fabricantes.join(', '))}).</p>` : '')
-        + BOM.renderTabla(filas, { sinRefs: true });
-      $('modalConsolidado').hidden = false;
-      $('xlsConsolidadoBtn').onclick = () => BOM.exportarExcel(filas, meta);
-      $('consolidadoCerrar').focus();
-    });
-    $('consolidadoCerrar').addEventListener('click', () => { $('modalConsolidado').hidden = true; $('btnConsolidar').focus(); });
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && !$('modalConsolidado').hidden) { $('modalConsolidado').hidden = true; $('btnConsolidar').focus(); }
-    });
-    pintarPerfiles();
+    perfilesUi.pintar();
   }
 
   // ── Arranque ─────────────────────────────────────────────────────────────────

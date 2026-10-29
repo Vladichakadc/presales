@@ -1684,7 +1684,6 @@ $('copyBtn').addEventListener('click', () => conBoton($('copyBtn'), async (decir
 }));
 
 /* ── PERFILES MULTI-SEDE ─────────────────────────────────────────────────────────────── */
-const cargarPerfiles = () => BOM.perfilesDe(VENDOR);
 function capturarCampos() {
   const v = {};
   CAMPOS_ESCENARIO.forEach((id) => {
@@ -1733,85 +1732,46 @@ function aplicarCampos(v0) {
   wanRolPintado = null;
   evaluarYPintar();
 }
-$('btnGuardarPerfil').addEventListener('click', () => conBoton($('btnGuardarPerfil'), async () => {
-  const nombre = $('nombrePerfil').value.trim();
-  const sedes = Math.max(0, parseInt($('perfilSedes').value, 10) || 0);
-  if (!nombre || !sedes) { $('perfilMsg').textContent = 'Pon un nombre y el número de sedes idénticas.'; $('nombrePerfil').focus(); return; }
-  const v = await confirmar('perfil');
-  if (!v.ok) return;
-  BOM.guardarPerfil({ nombre, sedes, modelo: RES.seleccion.id, vendor: VENDOR, ciclo: BOM.cicloDe(MODELS.find((x) => x.id === RES.seleccion.id)), fecha: new Date().toISOString().slice(0, 10),
-    version: 2, huella: RES.scenarioHash, puerta: RES.quoteGate, campos: capturarCampos(), filas: JSON.parse(JSON.stringify(bomFilas)) });
-  $('nombrePerfil').value = '';
-  $('perfilSedes').value = '';
-  $('perfilMsg').textContent = `Perfil «${nombre}» guardado con ${sedes} sede(s).`;
-  pintarPerfiles();
-}));
-function pintarPerfiles() {
-  const caja = $('listaPerfiles');
-  const l = cargarPerfiles();
-  caja.innerHTML = l.length
-    ? '<table class="tco-tabla"><thead><tr><th>Perfil</th><th>Sedes</th><th>Modelo</th><th>Guardado</th><th></th></tr></thead><tbody>'
-      + l.map((x) => `<tr><td><b>${esc(x.nombre)}</b></td><td>${x.sedes}</td><td>${esc(x.modelo)}</td><td>${esc(x.fecha || '—')}</td>`
-        + `<td><button type="button" class="btn ghost" data-perfil-cargar="${esc(x.id)}" style="font-size:10px;padding:3px 8px">Cargar</button> `
-        + `<button type="button" class="btn ghost" data-perfil-borrar="${esc(x.id)}" style="font-size:10px;padding:3px 8px">Eliminar</button></td></tr>`).join('')
-      + '</tbody></table>'
-    : '<p class="hint">Sin perfiles guardados todavía.</p>';
-  if (RES) pintarBotones(RES);
-}
-$('listaPerfiles').addEventListener('click', (e) => {
-  const b = e.target.closest('button');
-  if (!b) return;
-  if (b.dataset.perfilCargar != null) {
-    const x = cargarPerfiles().find((y) => y.id === b.dataset.perfilCargar);
-    if (x && x.campos) { aplicarCampos(x.campos); registrarHistorial(); }
-  } else if (b.dataset.perfilBorrar != null) {
-    BOM.quitarPerfil(b.dataset.perfilBorrar);
-    pintarPerfiles();
-  }
-});
+// Lo común (lista, guardar, cargar, borrar, consolidar y la ventana) es de `BOM.montarPerfiles`
+// (2026-10-28); aquí solo lo de Fortinet: guardar y consolidar pasan por su puerta de cotización
+// (`confirmar`, que valida el escenario contra el servidor), cada perfil lleva la huella de su
+// escenario y la página decide el estado de «Consolidar» (`pintarBotones`).
 // En FortiGate TODO multiplica por sedes: en HA cada nodo paga su suscripcion. Pasar los
 // objetos vacios deja constancia de que se miro y se decidio, no de que se olvido.
-function consolidarPerfiles() {
-  // El ciclo de los perfiles de esta página, al día con su catálogo; los de otros fabricantes, con su foto.
-  const l = BOM.refrescarCiclo(BOM.perfiles(), VENDOR, (id) => MODELS.find((x) => x.id === id));
-  const { filas, totalSedes, fabricantes } = BOM.consolidar(l, { agregadas: [], unicas: [] });
-  const multi = fabricantes.length > 1;
-  const meta = {
-    titulo: `BOM global consolidado — ${l.length} perfil(es), ${totalSedes} sedes`,
-    subtitulo: l.map((x) => `${x.nombre} ×${x.sedes} (${x.modelo})`).join(' · '),
-    archivo: multi ? 'BOM_global_multifabricante' : 'BOM_global_fortinet',
-    sinRefs: true,
-    perfiles: l,
-    notas: ['REGLAS DE CONSOLIDACION (FortiGate):',
-      '  Equipo, licencias y soporte: cantidad por sede x sedes del perfil. En HA cada nodo lleva su propia suscripcion.',
-      '  Precios: los vigentes el dia en que se guardo cada perfil; cada perfil lleva la huella de su escenario.'],
-  };
-  const cli = $('nombreCliente').value.trim();
-  const ref = $('refProyecto').value.trim();
-  if (cli) meta.cliente = cli;
-  if (ref) meta.referencia = ref;
-  if (multi) meta.notas.push(`  MULTI-FABRICANTE: ${fabricantes.join(', ')}.`);
-  const d = dtoActual();
-  if (d > 0) { meta.dto = d; meta.dtoEtq = dtoEtiqueta(); }
-  return { filas, meta, totalSedes, fabricantes };
-}
-$('btnConsolidar').addEventListener('click', () => conBoton($('btnConsolidar'), async () => {
-  const v = await confirmar('consolidar');
-  if (!v.ok) return;
-  const { filas, meta, totalSedes, fabricantes } = consolidarPerfiles();
-  // Y los perfiles de los demás fabricantes, al día con su propio catálogo (pedido al servidor).
-  meta.perfiles = await BOM.refrescarCicloTodos(meta.perfiles);
-  if (!totalSedes) return;
-  $('consolidadoSub').textContent = `${meta.subtitulo} — ${totalSedes} sedes en total`;
-  $('consolidadoTabla').innerHTML = BOM.avisoCicloConsolidado(meta.perfiles) + (fabricantes.length > 1 ? `<p class="bom-aviso">Consolidado <b>multi-fabricante</b> (${esc(fabricantes.join(', '))}).</p>` : '')
-    + BOM.renderTabla(filas, { dto: dtoActual(), sinRefs: true });
-  $('modalConsolidado').hidden = false;
-  $('xlsConsolidadoBtn').onclick = () => BOM.exportarExcel(filas, meta);
-  $('consolidadoCerrar').focus();
-}));
-$('consolidadoCerrar').addEventListener('click', () => { $('modalConsolidado').hidden = true; $('btnConsolidar').focus(); });
-$('modalConsolidado').addEventListener('click', (e) => { if (e.target === $('modalConsolidado')) $('modalConsolidado').hidden = true; });
-document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !$('modalConsolidado').hidden) $('modalConsolidado').hidden = true; });
+const PERFILES = BOM.montarPerfiles({
+  vendor: VENDOR,
+  capturar: capturarCampos,
+  aplicar: aplicarCampos,
+  equipo: async () => {
+    const v = await confirmar('perfil');
+    if (!v.ok) return { cancelado: true };
+    return { modelo: RES.seleccion.id, ciclo: BOM.cicloDe(MODELS.find((x) => x.id === RES.seleccion.id)), filas: bomFilas,
+      extra: { huella: RES.scenarioHash, puerta: RES.quoteGate } };
+  },
+  buscar: (id) => MODELS.find((x) => x.id === id),
+  version: 2,
+  reglas: { agregadas: [], unicas: [] },
+  archivo: 'fortinet',
+  notas: ['REGLAS DE CONSOLIDACION (FortiGate):',
+    '  Equipo, licencias y soporte: cantidad por sede x sedes del perfil. En HA cada nodo lleva su propia suscripcion.',
+    '  Precios: los vigentes el dia en que se guardo cada perfil; cada perfil lleva la huella de su escenario.'],
+  extras: () => {
+    const meta = {};
+    const cli = $('nombreCliente').value.trim();
+    const ref = $('refProyecto').value.trim();
+    if (cli) meta.cliente = cli;
+    if (ref) meta.referencia = ref;
+    return { meta };
+  },
+  dto: () => dtoActual(),
+  dtoEtiqueta: () => dtoEtiqueta(),
+  antesDeConsolidar: async () => (await confirmar('consolidar')).ok,
+  envolver: conBoton,
+  controlaConsolidar: true,
+  alPintar: () => { if (RES) pintarBotones(RES); },
+  alCargar: () => registrarHistorial(),
+});
+function pintarPerfiles() { PERFILES.pintar(); }
 
 /* ── CHIPS DE LOS PASOS: salen del mismo resultado que el calculo ────────────────────── */
 function chip(id, cls, texto, titulo) {

@@ -1498,10 +1498,150 @@
     });
   }
 
+  /* ══ EL PANEL DE PERFILES MULTI-SEDE, UNA SOLA VEZ (2026-10-28) ═════════════════════════
+     Mejora propuesta al cerrar el PR #55. Las siete páginas con perfiles llevaban cada una su copia
+     del mismo bloque (lista, guardar, cargar, borrar, consolidar y la ventana) y ya habían
+     divergido: Escape y `role="dialog"` solo en dos, el mensaje al guardar o al no poder guardar en
+     cinco, cerrar pinchando fuera solo en Aruba. Y cada mejora del consolidado se escribía siete
+     veces (el ciclo de vida, en los PR #44, #46 y #50). Aquí va lo común; lo que es de cada página
+     entra por `cfg`, y nada de su modelo comercial se decide aquí:
+       vendor        la clave del fabricante (la de su ruta de catálogo: `nokia-sr` en el 7750).
+       capturar()    los campos del escenario que se guardan; aplicar(v) los repone al cargar.
+       equipo()      (puede ser asíncrono) qué se guarda: {modelo, ciclo, filas, extra} o {error}.
+                     Fortinet pasa por su puerta de cotización aquí; un {cancelado: true} calla.
+       buscar(id)    el modelo del catálogo de la página, para poner al día el ciclo al consolidar.
+       reglas        lo que `consolidar()` agrega o deja único (el pool de Boost de Aruba), y sus notas.
+       notas         las reglas de consolidación de la página, para el Excel.
+       extras(l)     lo que la página añade al consolidado: {notas, html, meta} (el VPNC de Aruba,
+                     el cliente y la referencia).
+       avisoMulti    el texto de la mezcla de fabricantes, si la página tiene algo que añadir.
+       dto(), dtoEtiqueta()  el descuento del simulador.
+       antesDeConsolidar()   (asíncrono) false para no consolidar (la puerta de Fortinet).
+       envolver(boton, fn)   para el estado ocupado del botón (Fortinet).
+       alPintar()    tras pintar la lista; si la página decide el estado de «Consolidar» (Fortinet,
+                     por su puerta), declara `controlaConsolidar: true` y lo pone ella.
+       alCargar(p)   tras cargar un perfil (el historial de Fortinet).
+     Devuelve {pintar}. El marcado sigue en cada página (los mismos ids en las siete); el módulo
+     le pone a la ventana lo que le faltara: `role="dialog"`, `aria-modal` y su título. */
+  function montarPerfiles(cfg) {
+    const doc = global.document;
+    const $ = (id) => doc.getElementById(id);
+    const vendor = String(cfg.vendor || '').toLowerCase();
+    const envolver = typeof cfg.envolver === 'function' ? cfg.envolver : (_b, fn) => fn();
+    const msg = (t) => { const n = $('perfilMsg'); if (n) n.textContent = t; };
+
+    const modal = $('modalConsolidado');
+    if (modal) {
+      if (!modal.getAttribute('role')) modal.setAttribute('role', 'dialog');
+      modal.setAttribute('aria-modal', 'true');
+      const tit = modal.querySelector('h3');
+      if (tit && !modal.getAttribute('aria-labelledby')) {
+        if (!tit.id) tit.id = 'consolidadoTit';
+        modal.setAttribute('aria-labelledby', tit.id);
+      }
+    }
+    const cerrar = () => { if (modal && !modal.hidden) { modal.hidden = true; const b = $('btnConsolidar'); if (b) b.focus(); } };
+
+    function pintar() {
+      const caja = $('listaPerfiles');
+      if (!caja) return;
+      const l = perfilesDe(vendor);
+      caja.innerHTML = l.length
+        ? '<table class="tco-tabla"><thead><tr><th>Perfil</th><th>Sedes</th><th>Modelo</th><th>Guardado</th><th></th></tr></thead><tbody>'
+          + l.map((x) => `<tr><td><b>${esc(x.nombre)}</b></td><td>${esc(x.sedes)}</td><td>${esc(x.modelo)}</td><td>${esc(x.fecha || '—')}</td>`
+            + `<td><button type="button" class="btn ghost" data-perfil-cargar="${esc(x.id)}" style="font-size:10px;padding:3px 8px">Cargar</button> `
+            + `<button type="button" class="btn ghost" data-perfil-borrar="${esc(x.id)}" style="font-size:10px;padding:3px 8px">Eliminar</button></td></tr>`).join('')
+          + '</tbody></table>'
+        : '<p class="hint">Sin perfiles guardados todavía.</p>';
+      const boton = $('btnConsolidar');
+      if (boton && !cfg.controlaConsolidar) {
+        const hay = perfiles().length > 0;
+        boton.disabled = !hay;
+        boton.title = hay ? '' : 'Guarda al menos un perfil de sede para consolidar el BOM global.';
+      }
+      if (typeof cfg.alPintar === 'function') cfg.alPintar();
+    }
+
+    async function guardar() {
+      const nombre = $('nombrePerfil').value.trim();
+      const sedes = Math.max(0, parseInt($('perfilSedes').value, 10) || 0);
+      if (!nombre || !sedes) { msg('Pon un nombre y el número de sedes idénticas.'); $('nombrePerfil').focus(); return; }
+      const e = (await cfg.equipo()) || {};
+      if (e.cancelado) return;
+      if (e.error || !e.modelo || !Array.isArray(e.filas) || !e.filas.length) {
+        msg(e.error || 'No hay un equipo dimensionado que guardar: ajusta el escenario primero.');
+        return;
+      }
+      guardarPerfil({ nombre, sedes, modelo: e.modelo, vendor, ciclo: e.ciclo === undefined ? null : e.ciclo,
+        fecha: new Date().toISOString().slice(0, 10), version: cfg.version || 1, ...(e.extra || {}),
+        campos: cfg.capturar(), filas: JSON.parse(JSON.stringify(e.filas)) });
+      $('nombrePerfil').value = '';
+      $('perfilSedes').value = '';
+      msg(`Perfil «${nombre}» guardado con ${sedes} sede(s).`);
+      pintar();
+    }
+
+    async function consolidarYMostrar() {
+      if (typeof cfg.antesDeConsolidar === 'function' && !(await cfg.antesDeConsolidar())) return;
+      // El ciclo de los perfiles de esta página, al día con su catálogo; los de otros fabricantes, con el suyo.
+      const l = refrescarCiclo(perfiles(), vendor, cfg.buscar);
+      const { filas, totalSedes, fabricantes } = consolidar(l, cfg.reglas || { agregadas: [], unicas: [] });
+      if (!totalSedes) return;
+      const multi = fabricantes.length > 1;
+      const extras = (typeof cfg.extras === 'function' ? cfg.extras(l) : null) || {};
+      const meta = {
+        titulo: `BOM global consolidado — ${l.length} perfil(es), ${totalSedes} sedes`,
+        subtitulo: l.map((x) => `${x.nombre} ×${x.sedes} (${x.modelo})`).join(' · '),
+        archivo: multi ? 'BOM_global_multifabricante' : `BOM_global_${cfg.archivo || vendor}`,
+        sinRefs: true,
+        perfiles: l,
+        notas: [...(cfg.notas || [])],
+        ...(extras.meta || {}),
+      };
+      if (multi) meta.notas.push(`  MULTI-FABRICANTE: ${fabricantes.join(', ')}.${cfg.notaMulti ? ' ' + cfg.notaMulti : ''}`);
+      if (extras.notas && extras.notas.length) meta.notas.push(...extras.notas);
+      const d = typeof cfg.dto === 'function' ? cfg.dto() : 0;
+      if (d > 0) { meta.dto = d; if (typeof cfg.dtoEtiqueta === 'function') meta.dtoEtq = cfg.dtoEtiqueta(); }
+      // Y los perfiles de los demás fabricantes, al día con su propio catálogo (pedido al servidor).
+      meta.perfiles = await refrescarCicloTodos(meta.perfiles);
+      $('consolidadoSub').textContent = `${meta.subtitulo} — ${totalSedes} sedes en total`;
+      const aviso = multi
+        ? `<p class="bom-aviso">Consolidado <b>multi-fabricante</b> (${esc(fabricantes.join(', '))}).${cfg.avisoMulti ? ' ' + cfg.avisoMulti : ''}</p>`
+        : '';
+      $('consolidadoTabla').innerHTML = avisoCicloConsolidado(meta.perfiles) + aviso + (extras.html || '')
+        + renderTabla(filas, { dto: d, sinRefs: true });
+      modal.hidden = false;
+      $('xlsConsolidadoBtn').onclick = () => exportarExcel(filas, meta);
+      $('consolidadoCerrar').focus();
+    }
+
+    $('btnGuardarPerfil').addEventListener('click', () => envolver($('btnGuardarPerfil'), guardar));
+    $('listaPerfiles').addEventListener('click', (ev) => {
+      const b = ev.target.closest('button');
+      if (!b) return;
+      if (b.dataset.perfilCargar != null) {
+        const x = perfilesDe(vendor).find((y) => y.id === b.dataset.perfilCargar);
+        if (x && x.campos) {
+          cfg.aplicar(x.campos);
+          msg(`Perfil «${x.nombre}» cargado.`);
+          if (typeof cfg.alCargar === 'function') cfg.alCargar(x);
+        }
+      } else if (b.dataset.perfilBorrar != null) {
+        quitarPerfil(b.dataset.perfilBorrar);
+        pintar();
+      }
+    });
+    $('btnConsolidar').addEventListener('click', () => envolver($('btnConsolidar'), consolidarYMostrar));
+    $('consolidadoCerrar').addEventListener('click', cerrar);
+    if (modal) modal.addEventListener('click', (ev) => { if (ev.target === modal) cerrar(); });
+    doc.addEventListener('keydown', (ev) => { if (ev.key === 'Escape') cerrar(); });
+    return { pintar };
+  }
+
   global.BOM = { renderTabla, exportarExcel, comoTexto, matrizExcel, matrizSupuestos, cicloDe, cicloDelEquipo, cicloDePerfiles, avisoCicloConsolidado, refrescarCiclo, refrescarCicloTodos, fuentesDelEquipo, money, esc, claveFila,
     enviarACotizador, recogerEntrada, montarBotonCotizador, normalizar,
     sincronizar, soltarManual, avisoDesvio, fijarRepintado,
     agregarRef, quitarRef, cantidadRef, refsExtra, fijarVendor,
-    perfiles, perfilesDe, guardarPerfil, quitarPerfil, consolidar,
+    perfiles, perfilesDe, guardarPerfil, quitarPerfil, consolidar, montarPerfiles,
     simuladorDescuento, tco, mrr };
 })(window);

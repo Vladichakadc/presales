@@ -154,16 +154,25 @@ test('el consolidado avisa del fin de venta de cada perfil y dice cuáles no tra
 const PAGINAS_CON_PERFILES = ['aruba-edgeconnect', 'cisco-catalyst8k', 'fortinet-fortigate', 'huawei-netengine', 'mikrotik-routeros',
   'juniper-srx', 'nokia-7750sr'];
 
-test('las páginas con perfiles guardan el ciclo y lo llevan al consolidado', () => {
-  const fs = require('fs');
-  const path = require('path');
+// EL PANEL ES UN SOLO MÓDULO (2026-10-28, mejora propuesta al cerrar el PR #55): cada página monta
+// `BOM.montarPerfiles` y le pasa el ciclo de su equipo; guardar, consolidar y la ventana son de bom.js.
+// Una página con su propio `guardarPerfil` o su propio consolidado es la copia que ya divergió.
+const leerJs = (nombre) => require('fs').readFileSync(require('path').join(__dirname, '..', 'public', 'js', nombre), 'utf8');
+
+test('las páginas con perfiles montan el panel común y le pasan el ciclo de su equipo', () => {
   for (const p of PAGINAS_CON_PERFILES) {
-    const js = fs.readFileSync(path.join(__dirname, '..', 'public', 'js', `dimensionador-${p}.js`), 'utf8');
-    assert.match(js, /BOM\.guardarPerfil\(\{[^}]*ciclo: ?BOM\.cicloDe\(/, `${p}: el perfil no guarda el ciclo de su equipo`);
-    assert.match(js, /sinRefs: ?true,\s*perfiles: ?l,/, `${p}: el consolidado no pasa los perfiles al Excel`);
-    assert.match(js, /BOM\.avisoCicloConsolidado\(/, `${p}: el consolidado en pantalla no avisa`);
+    const js = leerJs(`dimensionador-${p}.js`);
+    assert.match(js, /BOM\.montarPerfiles\(\{/, `${p}: no monta el panel común`);
+    assert.match(js, /ciclo: ?BOM\.cicloDe\(/, `${p}: el perfil no guarda el ciclo de su equipo`);
+    assert.match(js, /buscar: ?\(id\) ?=> ?(MODELS\.find\(\(x\) ?=> ?x\.id ?=== ?id\)|modeloPorId\(id\))/, `${p}: consolida con la foto vieja del ciclo`);
+    for (const copia of [/BOM\.guardarPerfil\(/, /BOM\.refrescarCiclo\(/, /BOM\.avisoCicloConsolidado\(/, /'modalConsolidado'\)\.hidden ?= ?false/]) {
+      assert.doesNotMatch(js, copia, `${p}: lleva otra vez su copia del panel (${copia})`);
+    }
   }
-  const bom = fs.readFileSync(path.join(__dirname, '..', 'public', 'js', 'bom.js'), 'utf8');
+  const bom = leerJs('bom.js');
+  assert.match(bom, /sinRefs: true,\s*perfiles: l,/, 'el consolidado no pasa los perfiles al Excel');
+  assert.match(bom, /meta\.perfiles = await refrescarCicloTodos\(meta\.perfiles\);/, 'no pone al día los perfiles de otros fabricantes');
+  assert.match(bom, /avisoCicloConsolidado\(meta\.perfiles\)/, 'el aviso en pantalla no usa la lista puesta al día');
   assert.match(bom, /if \(m\.sinRefs && Array\.isArray\(m\.perfiles\)\)/, 'el Excel del consolidado no escribe el ciclo');
 });
 
@@ -199,16 +208,6 @@ test('al consolidar, el ciclo de los perfiles propios se pone al día y el de lo
   assert.strictEqual(B.cicloDePerfiles(B.refrescarCiclo(lista, 'aruba', () => null), HOY).sinDato.length, 1);
 });
 
-test('las páginas con perfiles ponen el ciclo al día antes de consolidar', () => {
-  const fs = require('fs');
-  const path = require('path');
-  for (const p of PAGINAS_CON_PERFILES) {
-    const js = fs.readFileSync(path.join(__dirname, '..', 'public', 'js', `dimensionador-${p}.js`), 'utf8');
-    // Juniper busca en sus dos catálogos (SRX y SSR) y Nokia en el suyo: los dos con `modeloPorId`.
-    assert.match(js, /const l ?= ?BOM\.refrescarCiclo\(BOM\.perfiles\(\), VENDOR, \(id\) ?=> ?(MODELS\.find\(\(x\) ?=> ?x\.id ?=== ?id\)|modeloPorId\(id\))\);/, `${p}: consolida con la foto vieja del ciclo`);
-  }
-});
-
 // LOS PERFILES DE OTROS FABRICANTES, TAMBIÉN AL DÍA (2026-10-28, mejora propuesta al cerrar el PR
 // #46): al consolidar se pide el catálogo de cada fabricante presente; si falla, o ya no trae el
 // modelo, el perfil conserva su foto y el aviso dice por qué.
@@ -242,14 +241,9 @@ test('al consolidar, los perfiles de otros fabricantes se ponen al día con su c
   assert.match(t, /Perfil «Tienda» .*ciclo a fecha de 2026-10-01, sin contrastar con el catálogo de hoy \(no se pudo leer el catálogo de aruba \(HTTP 503\)\)\./);
 });
 
-test('las páginas con perfiles piden al consolidar el catálogo de los demás fabricantes', () => {
+test('el fabricante del almacenamiento local se valida antes de pedir su catálogo', () => {
   const fs = require('fs');
   const path = require('path');
-  for (const p of PAGINAS_CON_PERFILES) {
-    const js = fs.readFileSync(path.join(__dirname, '..', 'public', 'js', `dimensionador-${p}.js`), 'utf8');
-    assert.match(js, /meta\.perfiles ?= ?await BOM\.refrescarCicloTodos\(meta\.perfiles\);/, `${p}: no pone al día los perfiles de otros fabricantes`);
-    assert.match(js, /BOM\.avisoCicloConsolidado\(meta\.perfiles\)/, `${p}: el aviso en pantalla no usa la lista puesta al día`);
-  }
   const bom = fs.readFileSync(path.join(__dirname, '..', 'public', 'js', 'bom.js'), 'utf8');
   assert.match(bom, /if \(!VENDOR_VALIDO\.test\(v\)\) throw new Error\('fabricante no válido'\);/, 'el fabricante del almacenamiento local se valida antes de la URL');
 });
@@ -274,4 +268,144 @@ test('el consolidado nombra al fabricante, no la clave del dimensionador', () =>
   const g = cargar('public/js/bom.js');
   const r = g.BOM.consolidar([perfil('PE', 'nokia-sr', 1, []), perfil('Core', 'juniper', 2, [])], {});
   assert.strictEqual(JSON.stringify(r.fabricantes), '["nokia","juniper"]');
+});
+
+// EL MÓDULO, CONDUCIDO (2026-10-28). Un DOM mínimo con los ids que las siete páginas comparten: lo que se
+// prueba es lo que antes divergía entre copias (el mensaje al guardar o al no poder, Escape, pinchar
+// fuera, el rol de la ventana) y los ganchos de las páginas con algo propio (la puerta de Fortinet).
+function domPerfiles() {
+  const oyentes = { doc: [] };
+  const nodos = {};
+  const nodo = (id, extra) => {
+    const n = { id, value: '', textContent: '', innerHTML: '', hidden: false, disabled: false, title: '', attrs: {}, dataset: {},
+      enfocado: false, onclick: null,
+      setAttribute(k, v) { this.attrs[k] = String(v); }, getAttribute(k) { return this.attrs[k] == null ? null : this.attrs[k]; },
+      addEventListener(t, fn) { (oyentes[id] = oyentes[id] || []).push([t, fn]); },
+      focus() { for (const x of Object.values(nodos)) x.enfocado = false; this.enfocado = true; },
+      querySelector: () => null, ...extra };
+    nodos[id] = n;
+    return n;
+  };
+  ['nombrePerfil', 'perfilSedes', 'perfilMsg', 'listaPerfiles', 'btnGuardarPerfil', 'btnConsolidar', 'consolidadoSub',
+    'consolidadoTabla', 'xlsConsolidadoBtn', 'consolidadoCerrar'].forEach((id) => nodo(id));
+  const tit = nodo('tituloModal');
+  tit.id = '';
+  nodo('modalConsolidado', { hidden: true, querySelector: (sel) => (sel === 'h3' ? tit : null) });
+  const doc = { getElementById: (id) => nodos[id] || null, addEventListener: (t, fn) => oyentes.doc.push([t, fn]) };
+  const disparar = async (id, tipo, ev) => {
+    for (const [t, fn] of (id === 'doc' ? oyentes.doc : oyentes[id] || [])) if (t === tipo) await fn(ev || { target: nodos[id] });
+    await new Promise((r) => { setTimeout(r, 0); });
+  };
+  return { doc, nodos, disparar };
+}
+
+function montarConDom(cfgExtra) {
+  const g = cargar('public/js/bom.js');
+  const d = domPerfiles();
+  g.document = d.doc;
+  g.fetch = async () => ({ ok: false, status: 503, json: async () => ({}) });
+  const cfg = {
+    vendor: 'cisco',
+    capturar: () => ({ bw: '500' }),
+    aplicados: [],
+    aplicar(v) { this.aplicados.push(v); },
+    equipo: () => ({ modelo: 'C8200-1N-4T', ciclo: null, filas: [filaEquipo('C8200-1N-4T', 1, 1000)] }),
+    buscar: () => null,
+    notas: ['REGLAS (prueba)'],
+    ...cfgExtra,
+  };
+  const ui = g.BOM.montarPerfiles(cfg);
+  ui.pintar();
+  return { g, d, cfg, ui };
+}
+
+test('montarPerfiles: guardar dice qué falta o qué guardó, y la lista es solo de la página', async () => {
+  const { g, d } = montarConDom({ equipo: () => ({ error: 'Sin equipo que guardar.' }) });
+  const { nodos, disparar } = d;
+  assert.strictEqual(nodos.btnConsolidar.disabled, true, 'sin perfiles, «Consolidar» desactivado');
+  await disparar('btnGuardarPerfil', 'click');
+  assert.strictEqual(nodos.perfilMsg.textContent, 'Pon un nombre y el número de sedes idénticas.');
+  assert.ok(nodos.nombrePerfil.enfocado);
+  nodos.nombrePerfil.value = 'Sucursal';
+  nodos.perfilSedes.value = '20';
+  await disparar('btnGuardarPerfil', 'click');
+  assert.strictEqual(nodos.perfilMsg.textContent, 'Sin equipo que guardar.');
+  assert.strictEqual(g.BOM.perfiles().length, 0);
+
+  const ok = montarConDom();
+  ok.g.BOM.guardarPerfil(perfil('Ajeno', 'aruba', 3, [filaEquipo('EC-10104', 1, 100)]));
+  ok.d.nodos.nombrePerfil.value = 'Sucursal';
+  ok.d.nodos.perfilSedes.value = '20';
+  await ok.d.disparar('btnGuardarPerfil', 'click');
+  assert.strictEqual(ok.d.nodos.perfilMsg.textContent, 'Perfil «Sucursal» guardado con 20 sede(s).');
+  const [p] = ok.g.BOM.perfilesDe('cisco');
+  assert.strictEqual(p.vendor, 'cisco');
+  assert.strictEqual(p.ciclo, null, 'el ciclo viaja aunque sea «sin dato»');
+  assert.strictEqual(JSON.stringify(p.campos), '{"bw":"500"}');
+  assert.match(ok.d.nodos.listaPerfiles.innerHTML, /Sucursal/);
+  assert.doesNotMatch(ok.d.nodos.listaPerfiles.innerHTML, /Ajeno/, 'la lista enseña solo los perfiles de la página');
+  assert.strictEqual(ok.d.nodos.btnConsolidar.disabled, false);
+  assert.strictEqual(ok.d.nodos.nombrePerfil.value, '', 'el formulario se vacía al guardar');
+
+  await ok.d.disparar('listaPerfiles', 'click', { target: { closest: () => ({ dataset: { perfilCargar: p.id } }) } });
+  assert.strictEqual(JSON.stringify(ok.cfg.aplicados), '[{"bw":"500"}]');
+  assert.strictEqual(ok.d.nodos.perfilMsg.textContent, 'Perfil «Sucursal» cargado.');
+  await ok.d.disparar('listaPerfiles', 'click', { target: { closest: () => ({ dataset: { perfilBorrar: p.id } }) } });
+  assert.strictEqual(ok.g.BOM.perfilesDe('cisco').length, 0);
+  assert.strictEqual(ok.g.BOM.perfiles().length, 1, 'borrar no toca los perfiles de otro fabricante');
+});
+
+test('montarPerfiles: el consolidado cruza fabricantes, lo dice y se cierra con Escape o pinchando fuera', async () => {
+  const { g, d } = montarConDom({
+    avisoMulti: 'Texto propio de la página.',
+    extras: () => ({ html: '<p id="extraPagina">extra</p>' }),
+  });
+  const { nodos, disparar } = d;
+  assert.strictEqual(nodos.modalConsolidado.getAttribute('role'), 'dialog');
+  assert.strictEqual(nodos.modalConsolidado.getAttribute('aria-modal'), 'true');
+  assert.strictEqual(nodos.modalConsolidado.getAttribute('aria-labelledby'), 'consolidadoTit', 'la ventana se nombra por su título');
+  g.BOM.guardarPerfil({ ...perfil('Core', 'cisco', 2, [filaEquipo('C8500', 1, 9000)]), modelo: 'C8500', ciclo: null });
+  g.BOM.guardarPerfil({ ...perfil('Tienda', 'aruba', 10, [filaEquipo('EC-10104', 1, 100)]), fecha: '2026-10-01',
+    ciclo: g.BOM.cicloDe({ eolAnnounced: { lastOrder: '2027-06-30' } }) });
+  await disparar('btnConsolidar', 'click');
+  assert.strictEqual(nodos.modalConsolidado.hidden, false);
+  assert.match(nodos.consolidadoSub.textContent, /12 sedes en total$/);
+  assert.match(nodos.consolidadoTabla.innerHTML, /Consolidado <b>multi-fabricante<\/b> \(cisco, aruba\)\. Texto propio de la página\./);
+  assert.match(nodos.consolidadoTabla.innerHTML, /id="extraPagina"/, 'lo que añade la página va en la ventana');
+  assert.match(nodos.consolidadoTabla.innerHTML, /no se pudo leer el catálogo de aruba/, 'el perfil ajeno sin catálogo dice por qué conserva su foto');
+  assert.strictEqual(typeof nodos.xlsConsolidadoBtn.onclick, 'function');
+  assert.ok(nodos.consolidadoCerrar.enfocado, 'el foco entra en la ventana');
+  await disparar('doc', 'keydown', { key: 'Escape' });
+  assert.strictEqual(nodos.modalConsolidado.hidden, true, 'Escape cierra');
+  assert.ok(nodos.btnConsolidar.enfocado, 'y el foco vuelve a «Consolidar»');
+  await disparar('btnConsolidar', 'click');
+  await disparar('modalConsolidado', 'click', { target: nodos.modalConsolidado });
+  assert.strictEqual(nodos.modalConsolidado.hidden, true, 'pinchar fuera cierra');
+});
+
+test('montarPerfiles: la puerta de la página decide (Fortinet): cancelar no guarda ni consolida', async () => {
+  let pintadas = 0;
+  const { g, d } = montarConDom({
+    equipo: async () => ({ cancelado: true }),
+    antesDeConsolidar: async () => false,
+    controlaConsolidar: true,
+    alPintar: () => { pintadas += 1; },
+  });
+  const { nodos, disparar } = d;
+  assert.ok(pintadas >= 1);
+  nodos.btnConsolidar.disabled = true;
+  g.BOM.guardarPerfil(perfil('Spoke', 'cisco', 4, [filaEquipo('X', 1, 1)]));
+  d.nodos.btnConsolidar.disabled = false;
+  nodos.nombrePerfil.value = 'Otro';
+  nodos.perfilSedes.value = '1';
+  await disparar('btnGuardarPerfil', 'click');
+  assert.strictEqual(g.BOM.perfiles().length, 1, 'un «no» de la puerta no guarda');
+  assert.strictEqual(nodos.perfilMsg.textContent, '', 'y calla: la puerta ya dijo por qué');
+  await disparar('btnConsolidar', 'click');
+  assert.strictEqual(nodos.modalConsolidado.hidden, true, 'la puerta cerrada no consolida');
+  nodos.btnConsolidar.disabled = true;
+  const antes = pintadas;
+  await disparar('listaPerfiles', 'click', { target: { closest: () => ({ dataset: { perfilBorrar: g.BOM.perfiles()[0].id } }) } });
+  assert.ok(pintadas > antes, 'cada repintado avisa a la página');
+  assert.strictEqual(nodos.btnConsolidar.disabled, true, 'con `controlaConsolidar`, el estado del botón es de la página');
 });
