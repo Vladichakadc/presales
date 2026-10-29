@@ -855,89 +855,19 @@ $('memoriaBtn').addEventListener('click', () => {
 /* ── PERFILES MULTI-SEDE ──
    Misma clave compartida que los demás fabricantes (`BOM.perfiles`): un despliegue real mezcla
    marcas. Cargar es de Cisco (los campos son ids de ESTA página); consolidar no. */
-const CAMPOS_PERFIL = [...ENTRADAS, 'qty', 'termYears', 'licGestion', 'licNivel', 'licVpns', 'secUrl', 'secMalware', ...CAMPOS_SA, 'optQty'];
-const SEGS_PERFIL = ['modeSeg', 'dirSeg', 'critSeg'];
-function capturarCampos(){
-  const v = {};
-  CAMPOS_PERFIL.forEach(id => { const n = $(id); if(n) v[id] = n.type === 'checkbox' ? n.checked : n.value; });
-  SEGS_PERFIL.forEach(id => { const a = $(id).querySelector('[aria-pressed="true"]'); v[id] = a ? a.dataset.v : null; });
-  return v;
-}
-function aplicarCampos(v){
-  CAMPOS_PERFIL.forEach(id => {
-    const n = $(id);
-    if(!n || v[id] == null) return;
-    if(n.type === 'checkbox') n.checked = !!v[id]; else n.value = v[id];
-  });
+// El panel, la lista, guardar, cargar, consolidar y la ventana los monta bom.js (2026-10-29).
+BOM.montarPerfiles({
+  vendor: VENDOR, buscar: (id) => MODELS.find((x) => x.id === id),
+  campos: [...ENTRADAS, 'qty', 'termYears', 'licGestion', 'licNivel', 'licVpns', 'secUrl', 'secMalware', ...CAMPOS_SA, 'optQty'],
   // Los grupos .seg guardan su valor en una variable de la página: solo su manejador la actualiza.
-  SEGS_PERFIL.forEach(id => { const b = v[id] != null && $(id).querySelector(`[data-v="${v[id]}"]`); if(b) b.click(); });
-  render();
-}
-function pintarPerfiles(){
-  const caja = $('listaPerfiles');
-  const l = BOM.perfilesDe(VENDOR);
-  caja.innerHTML = l.length
-    ? '<table class="tco-tabla"><thead><tr><th>Perfil</th><th>Sedes</th><th>Modelo</th><th>Guardado</th><th></th></tr></thead><tbody>'
-      + l.map(x => `<tr><td><b>${esc(x.nombre)}</b></td><td>${x.sedes}</td><td>${esc(x.modelo)}</td><td>${esc(x.fecha || '—')}</td>`
-        + `<td><button type="button" class="btn ghost" data-perfil-cargar="${esc(x.id)}" style="font-size:10px;padding:3px 8px">Cargar</button> `
-        + `<button type="button" class="btn ghost" data-perfil-borrar="${esc(x.id)}" style="font-size:10px;padding:3px 8px">Eliminar</button></td></tr>`).join('')
-      + '</tbody></table>'
-    : '<p class="hint">Sin perfiles guardados todavía.</p>';
-  const hay = BOM.perfiles().length > 0;
-  $('btnConsolidar').disabled = !hay;
-  $('btnConsolidar').title = hay ? '' : 'Guarda al menos un perfil de sede para consolidar el BOM global.';
-}
-$('btnGuardarPerfil').addEventListener('click', () => {
-  const nombre = $('nombrePerfil').value.trim();
-  const sedes = Math.max(0, parseInt($('perfilSedes').value, 10) || 0);
-  if(!nombre || !sedes){ $('perfilMsg').textContent = 'Pon un nombre y el número de sedes idénticas.'; $('nombrePerfil').focus(); return; }
-  if(!bomFilas.length || !hayCandidato){ $('perfilMsg').textContent = 'No hay un equipo dimensionado que guardar: ajusta el escenario primero.'; return; }
-  BOM.guardarPerfil({nombre, sedes, modelo:$('pickModel').value, vendor:VENDOR, ciclo:BOM.cicloDe(MODELS.find(x => x.id === $('pickModel').value)), fecha:new Date().toISOString().slice(0, 10),
-    version:1, campos:capturarCampos(), filas:JSON.parse(JSON.stringify(bomFilas))});
-  $('nombrePerfil').value = ''; $('perfilSedes').value = '';
-  $('perfilMsg').textContent = `Perfil «${nombre}» guardado con ${sedes} sede(s).`;
-  pintarPerfiles();
+  segs: ['modeSeg', 'dirSeg', 'critSeg'],
+  tras: () => render(),
+  actual: () => (bomFilas.length && hayCandidato ? { modelo: $('pickModel').value, filas: bomFilas } : null),
+  notas: ['REGLAS DE CONSOLIDACION (Cisco):',
+    '  Equipo, modulos, licencias y soporte: cantidad del perfil x sedes del perfil.',
+    '  Precios de lista solo donde los trajo el export de CCW; el resto, consultar.'],
+  dto: dtoActual, dtoEtq: dtoEtiqueta,
 });
-$('listaPerfiles').addEventListener('click', e => {
-  const b = e.target.closest('button');
-  if(!b) return;
-  if(b.dataset.perfilCargar != null){
-    const x = BOM.perfilesDe(VENDOR).find(y => y.id === b.dataset.perfilCargar);
-    if(x && x.campos) aplicarCampos(x.campos);
-  } else if(b.dataset.perfilBorrar != null){
-    BOM.quitarPerfil(b.dataset.perfilBorrar);
-    pintarPerfiles();
-  }
-});
-$('btnConsolidar').addEventListener('click', async () => {
-  // El ciclo de los perfiles de esta página, al día con su catálogo; los de otros fabricantes, con su foto.
-  const l = BOM.refrescarCiclo(BOM.perfiles(), VENDOR, (id) => MODELS.find((x) => x.id === id));
-  const {filas, totalSedes, fabricantes} = BOM.consolidar(l, {agregadas:[], unicas:[]});
-  if(!totalSedes) return;
-  const multi = fabricantes.length > 1;
-  const meta = {
-    titulo:`BOM global consolidado — ${l.length} perfil(es), ${totalSedes} sedes`,
-    subtitulo:l.map(x => `${x.nombre} ×${x.sedes} (${x.modelo})`).join(' · '),
-    archivo:multi ? 'BOM_global_multifabricante' : 'BOM_global_cisco',
-    sinRefs:true,
-    perfiles:l,
-    notas:['REGLAS DE CONSOLIDACION (Cisco):',
-      '  Equipo, modulos, licencias y soporte: cantidad del perfil x sedes del perfil.',
-      '  Precios de lista solo donde los trajo el export de CCW; el resto, consultar.'],
-  };
-  if(multi) meta.notas.push(`  MULTI-FABRICANTE: ${fabricantes.join(', ')}.`);
-  // Y los perfiles de los demás fabricantes, al día con su propio catálogo (pedido al servidor).
-  meta.perfiles = await BOM.refrescarCicloTodos(meta.perfiles);
-  const d = dtoActual();
-  if(d > 0){ meta.dto = d; meta.dtoEtq = dtoEtiqueta(); }
-  $('consolidadoSub').textContent = `${meta.subtitulo} — ${totalSedes} sedes en total`;
-  $('consolidadoTabla').innerHTML = BOM.avisoCicloConsolidado(meta.perfiles) + (multi ? `<p class="bom-aviso">Consolidado <b>multi-fabricante</b> (${esc(fabricantes.join(', '))}).</p>` : '')
-    + BOM.renderTabla(filas, {dto:d, sinRefs:true});
-  $('modalConsolidado').hidden = false;
-  $('xlsConsolidadoBtn').onclick = () => BOM.exportarExcel(filas, meta);
-  $('consolidadoCerrar').focus();
-});
-$('consolidadoCerrar').addEventListener('click', () => { $('modalConsolidado').hidden = true; $('btnConsolidar').focus(); });
 
 /* ── ARRANQUE ── */
 (async function initApp(){
@@ -987,7 +917,7 @@ $('consolidadoCerrar').addEventListener('click', () => { $('modalConsolidado').h
   render();
   renderBom();
   renderCatalogo();
-  pintarPerfiles();
+  BOM.pintarPerfiles();
   PROCEDENCIA.registrarModelos('cisco', () => MODELS.map(m => ({ model:m.id, ...m })));
 })();
 

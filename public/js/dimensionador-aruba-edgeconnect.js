@@ -858,7 +858,6 @@ $('poolSedes').addEventListener('input',pintarPoolBoost);
 // Fortinet aqui no significa nada) pero consolidar cruza fabricantes, porque `filas` es la
 // forma neutra que los siete comparten.
 const VENDOR='aruba';
-const cargarPerfiles=()=>BOM.perfilesDe(VENDOR);
 // Captura/restauracion de campos del escenario (la misma lista que persiste ESTADO).
 // #wanLinksData viaja como un campo más: es la serialización v2 de los enlaces WAN.
 function capturarCampos(){
@@ -887,39 +886,6 @@ function aplicarCampos(v){
   $('secHint').innerHTML=SEC_HINT[secMode]||SEC_HINT.none;
   render();
 }
-$('btnGuardarPerfil').addEventListener('click',()=>{
-  const nombre=$('nombrePerfil').value.trim();
-  const sedes=Math.max(0,parseInt($('perfilSedes').value)||0);
-  if(!nombre||!sedes){ $('nombrePerfil').focus(); return; }
-  const m=MODELS.find(x=>x.id===$('pickModel').value);
-  if(!m||!bomFilas.length) return;
-  BOM.guardarPerfil({nombre, sedes, modelo:m.id, vendor:VENDOR, ciclo:BOM.cicloDe(m),
-    fecha:new Date().toISOString().slice(0,10),
-    version:2, campos:capturarCampos(), filas:JSON.parse(JSON.stringify(bomFilas))});
-  $('nombrePerfil').value=''; $('perfilSedes').value='';
-  pintarPerfiles();
-});
-function pintarPerfiles(){
-  const l=cargarPerfiles();
-  $('listaPerfiles').innerHTML=l.length
-    ?`<table class="tco-tabla"><thead><tr><th>Perfil</th><th>Sedes</th><th>Modelo</th><th>Guardado</th><th></th></tr></thead><tbody>`
-      +l.map(p=>`<tr><td><b>${esc(p.nombre)}</b></td><td>${p.sedes}</td><td>${esc(p.modelo)}</td><td>${p.fecha||'—'}</td>`
-        +`<td><button type="button" class="btn ghost" data-perfil-cargar="${esc(p.id)}" style="font-size:10px;padding:3px 8px">Cargar</button> `
-        +`<button type="button" class="btn ghost" data-perfil-borrar="${esc(p.id)}" style="font-size:10px;padding:3px 8px">Eliminar</button></td></tr>`).join('')
-      +'</tbody></table>'
-    :'<p class="hint">Sin perfiles guardados todavía.</p>';
-  $('btnConsolidar').disabled=!l.length;
-  $('btnConsolidar').title=l.length?'':'Guarda al menos un perfil de sede para consolidar el BOM global.';
-}
-$('listaPerfiles').addEventListener('click',e=>{
-  const b=e.target.closest('button'); if(!b) return;
-  if(b.dataset.perfilCargar!=null){
-    const p=cargarPerfiles().find(x=>x.id===b.dataset.perfilCargar);
-    if(p&&p.campos) aplicarCampos(p.campos);
-  }else if(b.dataset.perfilBorrar!=null){
-    BOM.quitarPerfil(b.dataset.perfilBorrar); pintarPerfiles();
-  }
-});
 // M8 (2026-09-24): túneles SD-WAN que una sede abre hacia CADA VPNC. El orquestador levanta
 // un túnel por enlace WAN de la sucursal hacia cada headend (VSG SD-Branch, «Overlay Tunnel
 // Orchestrator» y «Headend Redundancy»), también por el de respaldo.
@@ -1004,34 +970,36 @@ function consolidarPerfiles(){
   return {filas, meta, totalSedes, fabricantes, vpnc};
 }
 
-$('btnConsolidar').addEventListener('click',async()=>{
-  const {filas, meta, totalSedes, fabricantes, vpnc}=consolidarPerfiles();
-  // Y los perfiles de los demás fabricantes, al día con su propio catálogo (pedido al servidor).
-  meta.perfiles=await BOM.refrescarCicloTodos(meta.perfiles);
-  if(!totalSedes) return;
-  // SI HAY MAS DE UNA MARCA, SE DICE EN PANTALLA Y NO SOLO EN EL EXCEL. Las dos reglas de
-  // agregacion de arriba (pool de Boost, Orchestrator unico) son el modelo comercial de Aruba;
-  // las lineas de otro fabricante se multiplican por sedes como cualquier otra. Un consolidado
-  // que mezcla marcas sin declararlo invita a leer esas reglas como si aplicaran a todo.
-  const aviso=fabricantes.length>1
-    ? `<p class="bom-aviso">Consolidado <b>multi-fabricante</b> (${fabricantes.join(', ')}). `
-      +'Las reglas de agregación de Aruba —pool de Boost en una línea, Orchestrator una vez por '
-      +'fabric— aplican solo a sus líneas; las de los demás fabricantes se multiplican por sedes.</p>'
-    : '';
-  $('consolidadoSub').textContent=meta.subtitulo+` — ${totalSedes} sedes en total`;
-  const avisoVpnc=vpnc
-    ?`<p class="bom-aviso" id="avisoVpnc"><b>Headend VPNC (SD-Branch), no incluido en la lista:</b> ${vpnc.sedes} sedes con gateway de sucursal abren <b>${milesVpnc(vpnc.tuneles)} túneles</b> SD-WAN hacia cada VPNC. `
-      +(vpnc.elegido
-        ?`El mínimo por túneles es el <b>${esc(vpnc.elegido.id)}</b> (${milesVpnc(vpnc.elegido.vpncTuneles)} túneles según el VSG SD-Branch); en par redundante, 2 unidades. `
-        :'Ningún headend del catálogo llega a esa cifra: hay que repartir en varios VPNC o regiones SD-WAN. ')
-      +'El throughput cifrado agregado y el crecimiento también cuentan: es un mínimo, no el diseño del datacenter.</p>'
-    :'';
-  $('consolidadoTabla').innerHTML=BOM.avisoCicloConsolidado(meta.perfiles)+aviso+avisoVpnc+BOM.renderTabla(filas,{dto:dtoActual(), sinRefs:true});
-  $('modalConsolidado').hidden=false;
-  $('xlsConsolidadoBtn').onclick=()=>BOM.exportarExcel(filas,meta);
+// El panel, la lista, guardar, cargar, consolidar y la ventana los monta bom.js (2026-10-29); Aruba
+// pone su consolidado, con las reglas del fabric y el aviso del headend VPNC.
+BOM.montarPerfiles({
+  vendor:VENDOR, buscar:(id)=>MODELS.find(x=>x.id===id), ejemplo:'Tienda', version:2,
+  capturar:capturarCampos, aplicar:aplicarCampos,
+  actual:()=>{
+    const m=MODELS.find(x=>x.id===$('pickModel').value);
+    return m&&bomFilas.length?{modelo:m.id, filas:bomFilas}:null;
+  },
+  consolidado:()=>{
+    const {filas, meta, totalSedes, fabricantes, vpnc}=consolidarPerfiles();
+    // SI HAY MAS DE UNA MARCA, SE DICE EN PANTALLA Y NO SOLO EN EL EXCEL. Las dos reglas de
+    // agregacion de arriba (pool de Boost, Orchestrator unico) son el modelo comercial de Aruba;
+    // las lineas de otro fabricante se multiplican por sedes como cualquier otra. Un consolidado
+    // que mezcla marcas sin declararlo invita a leer esas reglas como si aplicaran a todo.
+    const aviso=fabricantes.length>1
+      ? `<p class="bom-aviso">Consolidado <b>multi-fabricante</b> (${fabricantes.join(', ')}). `
+        +'Las reglas de agregación de Aruba —pool de Boost en una línea, Orchestrator una vez por '
+        +'fabric— aplican solo a sus líneas; las de los demás fabricantes se multiplican por sedes.</p>'
+      : '';
+    const avisoVpnc=vpnc
+      ?`<p class="bom-aviso" id="avisoVpnc"><b>Headend VPNC (SD-Branch), no incluido en la lista:</b> ${vpnc.sedes} sedes con gateway de sucursal abren <b>${milesVpnc(vpnc.tuneles)} túneles</b> SD-WAN hacia cada VPNC. `
+        +(vpnc.elegido
+          ?`El mínimo por túneles es el <b>${esc(vpnc.elegido.id)}</b> (${milesVpnc(vpnc.elegido.vpncTuneles)} túneles según el VSG SD-Branch); en par redundante, 2 unidades. `
+          :'Ningún headend del catálogo llega a esa cifra: hay que repartir en varios VPNC o regiones SD-WAN. ')
+        +'El throughput cifrado agregado y el crecimiento también cuentan: es un mínimo, no el diseño del datacenter.</p>'
+      :'';
+    return {filas, meta, totalSedes, fabricantes, html:aviso+avisoVpnc, dto:dtoActual()};
+  },
 });
-$('consolidadoCerrar').addEventListener('click',()=>{ $('modalConsolidado').hidden=true; });
-$('modalConsolidado').addEventListener('click',e=>{ if(e.target===$('modalConsolidado')) $('modalConsolidado').hidden=true; });
 
 // Texto del destino de tráfico (2026-09-13, refactor arquitectónico): la estrategia de
 // aplicaciones sustituye a los campos abstractos. Cloud-First usa First-packet iQ para
@@ -3712,7 +3680,7 @@ document.addEventListener('DOMContentLoaded', () => {
     ESTADO.avisoOrigen(caja, st);
   }
   // Perfiles multi-sede guardados en este navegador (arubaPerfilesV1): se pintan al arrancar.
-  pintarPerfiles();
+  BOM.pintarPerfiles();
   // Si el fetch del catálogo llegó ANTES que DOMContentLoaded, initApp ya pintó con el
   // builder vacío: se repinta con las filas restauradas/migradas. Si llegó después, el
   // render de initApp ya lee las filas correctas y esta llamada no cambia nada.

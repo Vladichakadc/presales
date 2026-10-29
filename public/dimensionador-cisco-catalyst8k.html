@@ -512,17 +512,7 @@ tr.sel td{background:rgba(4,159,217,.07);font-weight:600}
   <section class="panel">
     <h2>Perfiles multi-sede</h2>
     <p class="hint" style="margin:0 0 10px">Guarda el escenario actual como perfil («Sucursal», «Hub regional»…) con su número de sedes idénticas. El <b>BOM global consolidado</b> suma las líneas de todos los perfiles —de cualquier fabricante— y se exporta aparte.</p>
-    <div class="row" style="margin-bottom:10px">
-      <input type="text" id="nombrePerfil" placeholder="Nombre del perfil — p. ej. Sucursal" autocomplete="off" aria-label="Nombre del perfil">
-      <input type="number" id="perfilSedes" min="1" step="1" placeholder="Nº sedes" style="width:100px" autocomplete="off" aria-label="Número de sedes">
-      <button type="button" class="btn" id="btnGuardarPerfil" style="font-size:11px;padding:6px 12px;white-space:nowrap">Guardar perfil</button>
-    </div>
-    <p class="hint" id="perfilMsg" aria-live="polite"></p>
-    <div id="listaPerfiles"></div>
-    <div style="margin-top:10px">
-      <button type="button" class="btn" id="btnConsolidar" style="font-size:11px;padding:6px 12px" disabled>Consolidar BOM global</button>
-      <p class="hint" style="margin-top:6px">Abre el BOM agregado Σ(BOM del perfil × sedes) en una ventana aparte, con su exportación a Excel.</p>
-    </div>
+    <div id="perfilesPanel"></div>
   </section>
 </div>
 </div>
@@ -573,18 +563,6 @@ tr.sel td{background:rgba(4,159,217,.07);font-weight:600}
 </p>
 
 </div><!-- /wrap -->
-
-<div id="modalConsolidado" hidden>
-<div class="acc-caja" style="max-width:860px">
-<h3>BOM global consolidado — perfiles multi-sede</h3>
-<p class="hint" id="consolidadoSub"></p>
-<div id="consolidadoTabla"></div>
-<div style="display:flex;gap:8px;justify-content:flex-end;margin-top:12px">
-<button type="button" class="btn" id="xlsConsolidadoBtn" style="font-size:11px;padding:6px 12px">Exportar consolidado a Excel</button>
-<button type="button" class="btn ghost" id="consolidadoCerrar" style="font-size:11px;padding:6px 12px">Cerrar</button>
-</div>
-</div>
-</div>
 
 <script src="/js/pqc.js"></script>
 <script src="/js/cisco-motor.js"></script>

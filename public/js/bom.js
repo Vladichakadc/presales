@@ -1481,6 +1481,185 @@
     return b;
   }
 
+  /* EL PANEL DE PERFILES MULTI-SEDE, UNA SOLA VEZ (2026-10-29; mejora propuesta al cerrar el PR
+     #55, aprobada por el dueño). Las siete páginas con perfiles llevaban cada una su copia del mismo
+     bloque —marcado, lista, guardar, cargar, borrar, consolidar y la ventana— y ya divergían en lo
+     pequeño: Escape y `role="dialog"` solo en dos, el mensaje al cargar en dos, Aruba sin mensajes ni
+     nombres accesibles. La siguiente mejora del consolidado había que escribirla siete veces (pasó con
+     el ciclo de vida en los PR #44, #46 y #50). Aquí va todo eso, y el marcado del panel y de la
+     ventana. La página pone el título y la explicación del panel, un `<div id="perfilesPanel">` vacío,
+     y lo suyo:
+       vendor        la clave de su ruta de catálogo (`nokia-sr` en el 7750, no `nokia`)
+       campos, segs  ids que guarda y repone «Cargar» (campos y casillas, y grupos `.seg`)
+       segsPrimero   repone los grupos antes que los campos (su manejador cambia el formulario)
+       eventos       avisa con `change` de cada casilla repuesta (MikroTik: sus casillas abren campos)
+       tras()        repinta después de reponer `campos`
+       capturar(), aplicar(v)  en vez de `campos`, si la página guarda otra cosa (Fortinet, Aruba)
+       migrar(v)     traduce un perfil guardado con campos de antes, antes de reponerlo (Huawei)
+       actual()      { modelo, filas, extra } del equipo dimensionado, o null si no hay
+       buscar(id)    del id al modelo de SU catálogo, para el ciclo de vida
+       notas, archivo, dto(), dtoEtq(), meta()  lo que el consolidado declara en el Excel
+       consolidado(lista)  si el consolidado tiene reglas propias (Aruba): { filas, meta,
+                     totalSedes, fabricantes, html, dto }
+       antes(accion) confirmación asíncrona antes de 'perfil' o 'consolidar' (Fortinet: la puerta)
+       envolver(boton, fn)  el estado del botón mientras confirma (Fortinet)
+       alPintar(), alCargar(perfil), ejemplo, version */
+  let perfilesMontado = null;
+  // Repinta el panel montado; antes de montarlo no hay panel que pintar, y no se falla por eso.
+  function pintarPerfiles() { if (perfilesMontado) perfilesMontado.pintar(); }
+  function montarPerfiles(o) {
+    const doc = global.document;
+    const $ = (id) => doc.getElementById(id);
+    const panel = $('perfilesPanel');
+    if (!panel || !o || !o.vendor) return null;
+    panel.innerHTML = '<div class="row" style="margin-bottom:10px;gap:8px;flex-wrap:wrap">'
+      + `<input type="text" id="nombrePerfil" placeholder="Nombre del perfil — p. ej. ${esc(o.ejemplo || 'Sucursal')}" autocomplete="off" aria-label="Nombre del perfil">`
+      + '<input type="number" id="perfilSedes" min="1" step="1" placeholder="Nº sedes" style="width:100px" autocomplete="off" aria-label="Número de sedes">'
+      + '<button type="button" class="btn" id="btnGuardarPerfil" style="font-size:11px;padding:6px 12px;white-space:nowrap">Guardar perfil</button></div>'
+      + '<p class="hint" id="perfilMsg" aria-live="polite"></p><div id="listaPerfiles"></div>'
+      + '<div style="margin-top:10px"><button type="button" class="btn" id="btnConsolidar" style="font-size:11px;padding:6px 12px" disabled>Consolidar BOM global</button>'
+      + '<p class="hint" style="margin-top:6px">Abre el BOM agregado Σ(BOM del perfil × sedes) en una ventana aparte, con su exportación a Excel.</p></div>';
+    if (!$('modalConsolidado')) {
+      const v = doc.createElement('div');
+      v.id = 'modalConsolidado';
+      v.setAttribute('role', 'dialog');
+      v.setAttribute('aria-modal', 'true');
+      v.setAttribute('aria-labelledby', 'consolidadoTit');
+      v.hidden = true;
+      v.innerHTML = '<div class="acc-caja" style="max-width:860px">'
+        + '<h3 id="consolidadoTit">BOM global consolidado — perfiles multi-sede</h3>'
+        + '<p class="hint" id="consolidadoSub"></p><div id="consolidadoTabla"></div>'
+        + '<div style="display:flex;gap:8px;justify-content:flex-end;margin-top:12px">'
+        + '<button type="button" class="btn" id="xlsConsolidadoBtn" style="font-size:11px;padding:6px 12px">Exportar consolidado a Excel</button>'
+        + '<button type="button" class="btn ghost" id="consolidadoCerrar" style="font-size:11px;padding:6px 12px">Cerrar</button></div></div>';
+      doc.body.appendChild(v);
+    }
+    const modal = $('modalConsolidado');
+    const decir = (t) => { $('perfilMsg').textContent = t; };
+    const campos = o.campos || [];
+    const segs = o.segs || [];
+    const capturar = o.capturar || (() => {
+      const v = {};
+      campos.forEach((id) => { const n = $(id); if (n) v[id] = n.type === 'checkbox' ? n.checked : n.value; });
+      segs.forEach((id) => { const a = $(id) && $(id).querySelector('[aria-pressed="true"]'); v[id] = a ? a.dataset.v : null; });
+      return v;
+    });
+    // Por `dataset` y no con un selector: el valor viene del almacenamiento local, y aquí `CSS` es la
+    // hoja de estilos del BOM (la API del navegador queda tapada en este archivo).
+    const ponerSegs = (v) => segs.forEach((id) => {
+      const caja = v[id] != null && $(id);
+      const b = caja && [...caja.querySelectorAll('[data-v]')].find((x) => x.dataset.v === String(v[id]));
+      if (b) b.click();
+    });
+    const ponerCampos = (v) => campos.forEach((id) => {
+      const n = $(id);
+      if (!n || v[id] == null) return;
+      if (n.type === 'checkbox') {
+        n.checked = !!v[id];
+        if (o.eventos) n.dispatchEvent(new Event('change'));
+      } else n.value = v[id];
+    });
+    const aplicar = o.aplicar || ((v) => {
+      if (o.segsPrimero) { ponerSegs(v); ponerCampos(v); } else { ponerCampos(v); ponerSegs(v); }
+      if (o.tras) o.tras(v);
+    });
+    const migrar = o.migrar || ((v) => v);
+    const envolver = o.envolver || ((boton, fn) => fn());
+    const antes = async (accion) => (o.antes ? !!(await o.antes(accion)) : true);
+
+    function pintar() {
+      const l = perfilesDe(o.vendor);
+      $('listaPerfiles').innerHTML = l.length
+        ? '<table class="tco-tabla"><thead><tr><th>Perfil</th><th>Sedes</th><th>Modelo</th><th>Guardado</th><th></th></tr></thead><tbody>'
+          + l.map((x) => `<tr><td><b>${esc(x.nombre)}</b></td><td>${esc(x.sedes)}</td><td>${esc(x.modelo)}</td><td>${esc(x.fecha || '—')}</td>`
+            + `<td><button type="button" class="btn ghost" data-perfil-cargar="${esc(x.id)}" style="font-size:10px;padding:3px 8px">Cargar</button> `
+            + `<button type="button" class="btn ghost" data-perfil-borrar="${esc(x.id)}" style="font-size:10px;padding:3px 8px">Eliminar</button></td></tr>`).join('')
+          + '</tbody></table>'
+        : '<p class="hint">Sin perfiles guardados todavía.</p>';
+      // El consolidado suma los perfiles de TODOS los fabricantes: basta uno de cualquiera.
+      const hay = perfiles().length > 0;
+      $('btnConsolidar').disabled = !hay;
+      $('btnConsolidar').title = hay ? '' : 'Guarda al menos un perfil de sede para consolidar el BOM global.';
+      if (o.alPintar) o.alPintar();
+    }
+
+    $('btnGuardarPerfil').addEventListener('click', () => envolver($('btnGuardarPerfil'), async () => {
+      const nombre = $('nombrePerfil').value.trim();
+      const sedes = Math.max(0, parseInt($('perfilSedes').value, 10) || 0);
+      if (!nombre || !sedes) { decir('Pon un nombre y el número de sedes idénticas.'); $('nombrePerfil').focus(); return; }
+      const a = o.actual ? o.actual() : null;
+      if (!a || !a.modelo || !(a.filas || []).length) { decir('No hay un equipo dimensionado que guardar: ajusta el escenario primero.'); return; }
+      if (!(await antes('perfil'))) return;
+      guardarPerfil(Object.assign({ nombre, sedes, modelo: a.modelo, vendor: o.vendor,
+        ciclo: cicloDe(o.buscar ? o.buscar(a.modelo) : null), fecha: new Date().toISOString().slice(0, 10),
+        version: o.version || 1, campos: capturar(), filas: JSON.parse(JSON.stringify(a.filas)) }, a.extra || {}));
+      $('nombrePerfil').value = '';
+      $('perfilSedes').value = '';
+      decir(`Perfil «${nombre}» guardado con ${sedes} sede(s).`);
+      pintar();
+    }));
+    $('listaPerfiles').addEventListener('click', (e) => {
+      const b = e.target.closest('button');
+      if (!b) return;
+      if (b.dataset.perfilCargar != null) {
+        const x = perfilesDe(o.vendor).find((y) => y.id === b.dataset.perfilCargar);
+        if (x && x.campos) {
+          aplicar(migrar(x.campos));
+          decir(`Perfil «${x.nombre}» cargado.`);
+          if (o.alCargar) o.alCargar(x);
+        }
+      } else if (b.dataset.perfilBorrar != null) {
+        quitarPerfil(b.dataset.perfilBorrar);
+        pintar();
+      }
+    });
+
+    // El consolidado de siempre: el ciclo de los perfiles de ESTA página, al día con su catálogo
+    // (los de otros fabricantes se ponen al día después, con el suyo); todo × sedes salvo las
+    // reglas que la página declare; y las notas, el descuento y los datos que lleva el Excel.
+    function consolidadoPorDefecto(lista) {
+      const l = refrescarCiclo(lista, o.vendor, o.buscar || (() => null));
+      const { filas, totalSedes, fabricantes } = consolidar(l, o.reglas || { agregadas: [], unicas: [] });
+      const multi = fabricantes.length > 1;
+      const meta = {
+        titulo: `BOM global consolidado — ${l.length} perfil(es), ${totalSedes} sedes`,
+        subtitulo: l.map((x) => `${x.nombre} ×${x.sedes} (${x.modelo})`).join(' · '),
+        archivo: multi ? 'BOM_global_multifabricante' : `BOM_global_${o.archivo || o.vendor}`,
+        sinRefs: true,
+        perfiles: l,
+        notas: (o.notas || []).slice(),
+      };
+      if (multi) meta.notas.push(`  MULTI-FABRICANTE: ${fabricantes.join(', ')}.`);
+      const dto = o.dto ? o.dto() : 0;
+      if (dto > 0) { meta.dto = dto; if (o.dtoEtq) meta.dtoEtq = o.dtoEtq(); }
+      if (o.meta) Object.assign(meta, o.meta());
+      return { filas, meta, totalSedes, fabricantes, dto: dto || undefined };
+    }
+    $('btnConsolidar').addEventListener('click', () => envolver($('btnConsolidar'), async () => {
+      if (!(await antes('consolidar'))) return;
+      const c = o.consolidado ? o.consolidado(perfiles(), consolidadoPorDefecto) : consolidadoPorDefecto(perfiles());
+      // Y los perfiles de los demás fabricantes, al día con su propio catálogo (pedido al servidor).
+      c.meta.perfiles = await refrescarCicloTodos(c.meta.perfiles);
+      if (!c.totalSedes) return;
+      const multi = c.fabricantes.length > 1;
+      $('consolidadoSub').textContent = `${c.meta.subtitulo} — ${c.totalSedes} sedes en total`;
+      $('consolidadoTabla').innerHTML = avisoCicloConsolidado(c.meta.perfiles)
+        + (c.html != null ? c.html
+          : multi ? `<p class="bom-aviso">Consolidado <b>multi-fabricante</b> (${esc(c.fabricantes.join(', '))}).</p>` : '')
+        + renderTabla(c.filas, { dto: c.dto, sinRefs: true });
+      modal.hidden = false;
+      $('xlsConsolidadoBtn').onclick = () => exportarExcel(c.filas, c.meta);
+      $('consolidadoCerrar').focus();
+    }));
+    const cerrar = () => { modal.hidden = true; $('btnConsolidar').focus(); };
+    $('consolidadoCerrar').addEventListener('click', cerrar);
+    modal.addEventListener('click', (e) => { if (e.target === modal) cerrar(); });
+    doc.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !modal.hidden) cerrar(); });
+    pintar();
+    perfilesMontado = { pintar, capturar, aplicar };
+    return perfilesMontado;
+  }
+
   // Delegacion en document y no en la tabla: el BOM se repinta entero en cada cambio de
   // escenario, asi que un listener colgado del nodo moriria con el primer repintado.
   if (global.document && !global.document.__bomQuitarCableado) {
@@ -1499,7 +1678,7 @@
   }
 
   global.BOM = { renderTabla, exportarExcel, comoTexto, matrizExcel, matrizSupuestos, cicloDe, cicloDelEquipo, cicloDePerfiles, avisoCicloConsolidado, refrescarCiclo, refrescarCicloTodos, fuentesDelEquipo, money, esc, claveFila,
-    enviarACotizador, recogerEntrada, montarBotonCotizador, normalizar,
+    enviarACotizador, recogerEntrada, montarBotonCotizador, montarPerfiles, pintarPerfiles, normalizar,
     sincronizar, soltarManual, avisoDesvio, fijarRepintado,
     agregarRef, quitarRef, cantidadRef, refsExtra, fijarVendor,
     perfiles, perfilesDe, guardarPerfil, quitarPerfil, consolidar,

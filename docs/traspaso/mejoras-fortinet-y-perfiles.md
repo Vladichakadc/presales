@@ -4,9 +4,9 @@
 - **Rama:** claude/elegant-pascal-7ymts7
 - **Cuenta:** vladichakadc, sesión 01TxCQ3W2sHYVmimAdMKht3j
 - **Estado:** en curso
-- **Actualizado:** 2026-10-29 07:30
-- **Archivos que toca:** public/js/fortinet-reglas.js, public/js/fortinet-motor.js, public/js/dimensionador-fortinet-fortigate.js, public/dimensionador-fortinet-fortigate.html, server/routes/fortinet.js, test/fortinet-reglas.test.js, test/fortinet-motor.test.js, test/fortinet-ha-licencia.test.js, test/e2e/e2e-fortinet-ha-licencia.js, test/e2e/e2e-fortinet-rediseno.js, public/js/bom.js, public/js/dimensionador-aruba-edgeconnect.js, public/js/dimensionador-cisco-catalyst8k.js, public/js/dimensionador-huawei-netengine.js, public/js/dimensionador-juniper-srx.js, public/js/dimensionador-mikrotik-routeros.js, public/js/dimensionador-nokia-7750sr.js, public/dimensionador-aruba-edgeconnect.html, public/dimensionador-cisco-catalyst8k.html, public/dimensionador-huawei-netengine.html, public/dimensionador-juniper-srx.html, public/dimensionador-mikrotik-routeros.html, public/dimensionador-nokia-7750sr.html, test/bom-perfiles.test.js, test/e2e/e2e-ciclo-excel.js, test/e2e/e2e-perfiles-juniper-nokia.js
-- **Siguiente paso:** la licencia única del par en el motor de Fortinet (`lineasComerciales`) y su casilla en el paso de alta disponibilidad
+- **Actualizado:** 2026-10-29 10:40
+- **Archivos que toca:** public/js/fortinet-reglas.js, public/js/fortinet-motor.js, public/js/dimensionador-fortinet-fortigate.js, public/dimensionador-fortinet-fortigate.html, server/routes/fortinet.js, test/fortinet-reglas.test.js, test/fortinet-motor.test.js, test/fortinet-ha-licencia.test.js, test/e2e/e2e-fortinet-ha-licencia.js, test/e2e/e2e-fortinet-rediseno.js, public/js/bom.js, public/js/dimensionador-aruba-edgeconnect.js, public/js/dimensionador-cisco-catalyst8k.js, public/js/dimensionador-huawei-netengine.js, public/js/dimensionador-juniper-srx.js, public/js/dimensionador-mikrotik-routeros.js, public/js/dimensionador-nokia-7750sr.js, public/dimensionador-aruba-edgeconnect.html, public/dimensionador-cisco-catalyst8k.html, public/dimensionador-huawei-netengine.html, public/dimensionador-juniper-srx.html, public/dimensionador-mikrotik-routeros.html, public/dimensionador-nokia-7750sr.html, test/bom-perfiles.test.js, test/e2e/e2e-ciclo-excel.js, test/e2e/e2e-perfiles-juniper-nokia.js, test/e2e/e2e-perfiles-panel.js
+- **Siguiente paso:** pendientes con fuente oficial que se puedan cerrar desde una sesión; luego verificación con navegador completa, PR y cierre
 
 ## Encargo del dueño
 
@@ -16,7 +16,14 @@ quedan aprobadas. «El transporte, probado sin red» lo lleva otra sesión (PR #
 
 ## Hecho
 
-- (nada aún)
+- Licencia FortiGuard única del par, elegible en el BOM (e53b4f5): casilla en activo-pasivo; dos SKU
+  de HA con su precio de la lista firmada y un solo bundle al vSN, sin SKU combinado; si no se puede,
+  lo dice y sigue por nodo (activo-activo, otro modelo, sin SKU de HA, sin bundle, o algo a la carta).
+- Override por ciclo de vida en un clic (56ff4bd): «Es una ampliación» / «Es una renovación» en la
+  caja cuando solo aparta CICLO_VIDA; foco a la justificación; T21 y T02 del e2e.
+- Panel de perfiles en un solo módulo: `BOM.montarPerfiles` genera el panel y la ventana (diálogo con
+  nombre, Escape, fondo, foco de vuelta) y hace guardar, cargar, borrar y consolidar; las siete
+  páginas dan solo lo suyo (ganchos `capturar`/`aplicar`/`migrar`/`consolidado`/`antes`…).
 
 ## Falta
 
@@ -27,7 +34,12 @@ quedan aprobadas. «El transporte, probado sin red» lo lleva otra sesión (PR #
 
 ## Decisiones y hallazgos
 
-- (nada aún)
+- Dentro de bom.js `CSS` es la hoja de estilos del BOM: tapa `CSS.escape` del navegador. El módulo
+  busca el botón del grupo por `dataset`, no por selector.
+- La casilla de la licencia única iba en un `.checks` con `display:grid`, que anula `hidden`: se
+  envolvió en un `.field`, como el modo del clúster.
+- `innerText` de una fila de la tabla del BOM pega las celdas sin separador: las pruebas leen celda
+  a celda.
 
 ## Verificación
 
