@@ -37,6 +37,11 @@ está en curso no va aquí: lo dice `npm run traspasos` (protocolo en `docs/tras
   ~8 h donde se esperaban ~16. El aviso llega, pero puede llegar tarde. Se vuelve a medir el
   2026-11-05 (ver *Vigilar* en `PENDIENTES.md`). La PQC de los SRX se contrastó con el Feature
   Explorer de Juniper: casa con el catálogo, y el SRX4100 y los de sucursal siguen «no consta».
+- **2026-10-28 · PR #61**: las funciones activadas, resaltadas también en la columna de resultados de
+  los ocho dimensionadores con casillas (panel «Funciones activadas», `public/js/funciones-activas.js`
+  y la sección 3 de `controles.css`). **Criterio que conviene conservar**: el panel cuenta lo mismo que
+  la izquierda resalta; una exclusión nueva en la hoja (otro tipo de casilla compacta) va también en
+  `EXCLUIDAS` del módulo, y la prueba lo frena si no.
 - **2026-10-28 · PR #60**: en Fortinet, la casilla «Licencia FortiGuard única del par» cotiza un par
   activo-pasivo de las series de la guía con dos SKU de HA y un solo bundle, y dice el ahorro; si algo
   falta (70F y 100F no tienen SKU de HA en la lista firmada), sigue por nodo y dice por qué.
@@ -296,6 +301,17 @@ existen los workflows de transporte. Huawei y HPE niegan además el navegador au
   Evita que un despliegue atascado se avise horas tarde. Cuesta una tarea programada por hora y su
   aprobación; si se hace mal, solo duplica corridas, que el diseño de un aviso por commit ya tolera.
   Se decide por el dueño.
+- **Del panel a la fila: resaltar en el resultado lo que cada función añadió** (propuesta al cerrar el
+  PR #61). El panel dice con qué funciones se calculó, pero no qué cambió por cada una: en el BOM, la
+  línea del PIM que trae «Respaldo celular», el NIM que trae «MACsec» o la segunda fuente que trae
+  «Doble fuente» no se distinguen de las demás. Que cada fila nacida de una función lleve su marca
+  (`data-por="<id de la casilla>"`) y que al pasar o pulsar la pastilla se resalten su casilla y sus
+  filas. Evita que un preventa quite o defienda una línea del BOM sin saber de qué requisito sale.
+  Cuesta tocar el armado del BOM de cada página (empezar por Cisco y Fortinet, las que más piezas
+  derivan de funciones) y una comprobación e2e por página; si se hace mal, una fila marcada con la
+  función equivocada engaña más que no marcar nada, así que cada marca sale del mismo `if` que crea la
+  fila, nunca de un mapa aparte.
+
 - **El panel de perfiles, un solo módulo** (propuesta al cerrar el PR #55). Las siete páginas con
   perfiles llevan cada una su copia del mismo bloque (unas 80 líneas: capturar y aplicar campos, la
   lista, guardar, cargar, consolidar y la ventana), y ya han divergido en lo pequeño (Escape y
