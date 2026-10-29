@@ -1257,7 +1257,11 @@ for (const m of MODELS) {
   const h = HA_LICENCIA_UNICA[m.id];
   if (!h) continue;
   const hw = (SKUS_POR_MODELO[m.id] || []).find((x) => x.t === 'HW' && x.sku === `FG-${m.id.split(' ').pop()}-HA`);
+  // El precio del SKU de HA, de la misma lista firmada. La lista lo rotula «HA Pair HW», y la guía
+  // pide dos unidades («2 x FG-40F-HA»): es precio por unidad, que es además el de la unidad normal
+  // en los seis que la lista trae (FG-40F-HA 873, FG-61F-HA 1.309…). Sin SKU, sin precio.
   m.haLicenciaUnica = {serie:h.serie, heartbeat:h.heartbeat, skuHa: hw ? hw.sku : null,
+    precioHa: hw && hw.p != null ? hw.p : null, descHa: hw ? hw.d : null,
     servicios:'Enterprise Protection, UTP o ATP (no los servicios a la carta)',
     fuente:'FortiOS 7.6.6 Administration Guide, «Single FortiGuard license for FortiGate A-P HA cluster»',
     urls:['https://docs.fortinet.com/document/fortigate/7.6.6/administration-guide/246857']};

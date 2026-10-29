@@ -170,7 +170,7 @@
       poeW: N(0, 1e6), psuRedundante: B,
       registro: E(['ninguno', 'local', 'nube', 'faz', 'syslog']), registroGbDia: N(0, 1e7), registroDias: I(0, 3650),
     },
-    disponibilidad: { modo: E(['standalone', 'ha-ap', 'ha-aa']) },
+    disponibilidad: { modo: E(['standalone', 'ha-ap', 'ha-aa']), licenciaUnica: B },
     politica: { crecimientoPct: N(0, 1000), techoPct: N(10, 100) },
     comercial: {
       motivo: E(['nueva', 'renovacion', 'ampliacion', 'coterm']), anios: E([1, 3, 5]),
@@ -195,7 +195,7 @@
       vdoms: 0, fortiAps: 0, fortiSwitches: 0, bgpPeers: 0 },
     fisico: { puertos: Object.fromEntries(TIPOS_PUERTO.map((p) => [p.k, 0])), poeW: 0, psuRedundante: false,
       registro: 'ninguno', registroGbDia: 0, registroDias: 0 },
-    disponibilidad: { modo: 'standalone' },
+    disponibilidad: { modo: 'standalone', licenciaUnica: false },
     politica: { crecimientoPct: 30, techoPct: 100 },
     comercial: { motivo: 'nueva', anios: 3, bundle: 'ent', soporte: 'fcpre', converter: false, sdwan: [],
       emsActivo: false, emsEndpoints: 0, emsDespliegue: '', sandbox: 'ninguno', sandboxModalidad: '', saseUsuarios: 0,
@@ -323,6 +323,11 @@
       requerido: (s) => s.seguridad.funciones.includes('chkSandbox') && s.comercial.sandbox === 'dedicado', afecta: ['bom'] },
     { campo: 'comercial.serieInstalada', visible: (s) => ['renovacion', 'coterm'].includes(s.comercial.motivo),
       requerido: (s) => ['renovacion', 'coterm'].includes(s.comercial.motivo), afecta: ['bom'] },
+    // La licencia FortiGuard única del par (guía de FortiOS 7.6.6): se pide al COMPRAR las dos
+    // unidades con el SKU de HA, y solo en activo-pasivo. En renovación el par ya existe y la guía
+    // no describe cómo se renueva su vSN: la casilla no se ofrece, y no viaja.
+    { campo: 'disponibilidad.licenciaUnica', visible: (s) => s.disponibilidad.modo === 'ha-ap' && s.comercial.motivo === 'nueva',
+      afecta: ['bom'] },
     { campo: 'comercial.justificacionEol', visible: (s, ctx) => s.comercial.motivo !== 'nueva' && !!(ctx && ctx.manualEsEol),
       requerido: (s, ctx) => s.comercial.motivo !== 'nueva' && !!(ctx && ctx.manualEsEol), afecta: ['puerta'] },
   ];
@@ -752,7 +757,8 @@
     const com = R.lineasComerciales({
       modelo: m, bundles: cat.bundles || {}, care: cat.care || {},
       bundle: c.bundle, care_elegido: c.soporte, careKey,
-      qty: nodos, haModo: s.disponibilidad.modo, anios: c.anios, terminos: cat.terminos,
+      qty: nodos, haModo: s.disponibilidad.modo, licenciaUnica: s.disponibilidad.licenciaUnica,
+      anios: c.anios, terminos: cat.terminos,
       converter: c.converter,
       serviciosSdwan: conSdwan(s) ? (cat.serviciosSdwan || []).filter((sv) => c.sdwan.includes(sv.id)) : [],
       endpointsEms: c.emsActivo ? c.emsEndpoints : 0, emsDespliegue: c.emsDespliegue, ems: cat.ems,
@@ -779,7 +785,7 @@
     // (dato requerido, bloquea la puerta). Un segundo bloqueo aqui repetia el mismo motivo con
     // otras palabras en la misma lista.
     return { modelo: m.id, nodos, construccion: com.bdl ? 'bdl' : 'separado', filas: com.filas, avisos, bloqueos,
-      soporteIncluido: com.soporteIncluido };
+      soporteIncluido: com.soporteIncluido, licenciaUnica: com.licenciaUnica };
   }
 
   /* ── 9 · PUERTA DE COTIZACION Y CONFIANZA ─────────────────────────────────────────────
