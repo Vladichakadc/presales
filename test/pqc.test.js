@@ -80,12 +80,13 @@ test('solo lleva `pqc` el equipo que su documento nombra', () => {
     ['7750 SR-14s', '7750 SR-1', '7750 SR-1s', '7750 SR-2s', '7750 SR-7s', '7750 SR-1x-48D', '7750 SR-1x-92S'].sort());
   assert.ok(CATALOGOS.huawei.every((m) => !m.pqc), 'huawei: no hay documento oficial de PQC en el catálogo');
   // Aruba: los EdgeConnect (ECOS; la fuente no da la versión) y, desde el 2026-10-28, los gateways
-  // que corren AOS-8.10 o posterior según las notas de AOS-8.12.0.5. El 9004-LTE, el 9106 y el 9114, no.
-  const GW_AOS8 = ['Gateway 9004', 'Gateway 9012', 'Gateway 9240', '7005', '7008', '7010', '7024', '7030', '7205', '7210', '7220', '7240XM'];
+  // que corren AOS-8.10 o posterior según las notas de AOS-8.12.0.5; desde el 2026-10-29 también el
+  // 9106, que el «What's New» de AOS-8 da en AOS-8 desde la 8.13.1.0. El 9004-LTE y el 9114, no.
+  const GW_AOS8 = ['Gateway 9004', 'Gateway 9012', 'Gateway 9106', 'Gateway 9240', '7005', '7008', '7010', '7024', '7030', '7205', '7210', '7220', '7240XM'];
   for (const m of CATALOGOS.aruba) {
     assert.strictEqual(!!m.pqc, m.fam === 'ec' || GW_AOS8.includes(m.id), `${m.id}: pqc donde no toca`);
     if (m.pqc && m.fam === 'ec') assert.strictEqual(m.pqc.desde, null);
-    if (m.pqc && m.fam !== 'ec') { assert.strictEqual(m.pqc.desde, 'AOS-8.10.0.0'); assert.match(m.pqc.alcance, /solo con AOS-8/); }
+    if (m.pqc && m.fam !== 'ec') { assert.strictEqual(m.pqc.desde, m.id === 'Gateway 9106' ? 'AOS-8.13.1.0' : 'AOS-8.10.0.0'); assert.match(m.pqc.alcance, /solo con AOS-8/); }
   }
   // MikroTik: donde la ficha o el manual de usuario dicen «RouterOS v7», en CHR y, desde el
   // 2026-10-28, donde el changelog oficial de una versión posterior a la 7.21 trae un cambio para

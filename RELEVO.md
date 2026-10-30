@@ -1,6 +1,6 @@
 # Relevo
 
-Última actualización: 2026-10-29 · PR #71
+Última actualización: 2026-10-29 · PR #72
 
 Informe para continuar el trabajo. Lo pidió el dueño del repositorio el 2026-10-27: «de aquí en
 adelante, un informe de pendientes y mejoras para que la cuenta **servicioiptv2025@gmail.com**
@@ -33,6 +33,7 @@ está en curso no va aquí: lo dice `npm run traspasos` (protocolo en `docs/tras
 
 ## Estado al cerrar esta entrega
 
+- **2026-10-29 · PR #72**: **la PQC del Gateway 9106, cerrada con documento oficial.** El «What's New» de AOS-8 (traído por Actions) dice «Starting with AOS-8.13.1.0, the 9106 controller is now supported in AOS-8.x»; con la guía de PPK de AOS-8 (desde la 8.10.0.0), el 9106 trae la PPK con AOS-8.13.1.0. Los SKU S0B85A y S0B86A vienen con AOS-10 y no bajan: lo dice su `alcance`. **Queda un retoque**: el texto `#reqPqcHint` de `public/dimensionador-aruba-edgeconnect.html` aún nombra el 9106 entre los que no tienen documento; esa página la tocan los PR #69 y #70 de otra sesión, y se corrige tras su fusión.
 - **2026-10-29 · PR #71**: «↻ Actualizar fuentes» en las siete pestañas de fuentes: el servidor
   vuelve a leer cada documento oficial y dice si sigue siendo el contrastado (columna «Comprobado
   ahora»); solo lee, con 10 minutos de caché por fabricante.
@@ -277,7 +278,7 @@ traspaso (el #37, de otra sesión, se fusionó mientras se cerraba esta).
 | Pendiente | Qué se buscó el 2026-10-29 | Qué se encontró | Por qué sigue abierto · lo que lo cierra |
 |---|---|---|---|
 | PQC del SRX4100 y los SRX de sucursal (300/320/340/345/380) | Feature Explorer de Juniper, función 7502, y «Get started with PQC» de Junos | La tabla oficial nombra SRX1500, 1600, 2300, 4200, 4300 y 4700 con su versión: casa con el catálogo. Los demás no salen | No salir no es «no la trae». Lo cierra que la tabla los añada (entran como `pqc`) o un documento que diga que no (`pqcNo`) |
-| PQC de los gateways Aruba 9004-LTE, 9106 y 9114 | Novedades de AOS 8 y gateways soportados de Central | Ninguna de las dos los nombra para la PPK | Lo cierran las notas de una versión de AOS-8 que los nombre, o la referencia de CLI de AOS-10 con `ppk-mandatory` en el gateway |
+| PQC de los gateways Aruba 9004-LTE y 9114 (el 9106 se cerró en el PR #72) | «What's New» de AOS-8, notas de AOS-8.12.0.0 y gateways soportados de Central | El 9106 corre AOS-8 desde la 8.13.1.0 y trae la PPK desde ahí. El 9004-LTE y el 9114 no salen en ninguna versión de AOS-8 (Central los da solo con AOS-10) | Lo cierra la referencia de CLI de AOS-10 que nombre `ppk-mandatory` en el gateway |
 | PQC de los Meraki MX y G2-MX | Búsqueda de PPK / RFC 8784 en Meraki | Solo la norma y sus borradores en el IETF; el roadmap quantum-safe de Cisco (ago-2026) cita el TLS del Dashboard | Lo cierra una página de Meraki que dé PPK o ML-KEM en Auto VPN o en la VPN de terceros |
 | PQC de los Nokia 7250 IXR y 7220 IXR | Sin documento nuevo desde el PR #49 | Sus fichas R26 no llaman quantum-safe a su MACsec (7250) ni nombran MACsec (7220) | Lo cierra una ficha o guía de Nokia que lo diga |
 | PQC y ciclo de vida de Huawei | No se buscó: Info-Finder pide sesión | — | Lo cierra la cuenta Huawei del dueño |
@@ -285,7 +286,7 @@ traspaso (el #37, de otra sesión, se fusionó mientras se cerraba esta).
 
 
 - **Criptografía post-cuántica sin documento**: Huawei (pide la cuenta); de los gateways AOS de
-  Aruba, el 9004-LTE, el 9106 y el 9114 (los demás la traen con AOS-8 desde el PR #49; con AOS-10
+  Aruba, el 9004-LTE y el 9114 (los demás la traen con AOS-8 desde el PR #49, y el 9106 desde la 8.13.1.0 con el PR #72; con AOS-10
   no consta en ninguno: lo cierra la referencia de CLI de AOS-10 que nombre `ppk-mandatory` en el
   gateway); los Meraki MX y G2-MX (el roadmap quantum-safe de Cisco de ago-2026 solo cita
   el TLS del Dashboard); el SRX4100 y los SRX de sucursal (fuera del Feature Explorer; la PQC de Junos
