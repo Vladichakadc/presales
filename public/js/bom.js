@@ -740,7 +740,8 @@
     if (c.eol) {
       filas.push(['Estado', 'Fuera de venta']);
       filas.push(['Último día de pedido', a && a.lastOrder ? a.lastOrder : 'el catálogo no trae la fecha']);
-      linea = 'el equipo está fuera de venta';
+      // Con fecha en el catálogo (Fortinet, 2026-10-29), la línea la dice también.
+      linea = `el equipo está fuera de venta${a && a.lastOrder ? ` (último pedido el ${a.lastOrder})` : ''}`;
     } else if (a && vencido) {
       filas.push(['Estado', 'Fuera de venta: la fecha de último pedido ya pasó']);
       filas.push(['Último día de pedido', a.lastOrder]);
