@@ -37,6 +37,15 @@ está en curso no va aquí: lo dice `npm run traspasos` (protocolo en `docs/tras
   elegido. 60F y 61F: último pedido 2027-01-13 (siguen recomendables hasta entonces y caen solos);
   1000F y 1001F: vencido el 2026-10-13, ya no se recomiendan en compra nueva; 400F y 401F sin fin
   de venta. Las fechas son de terceros y llevan la nota `confirmar` hasta leerlas en el portal.
+- **2026-10-29 · PR #69**: botón «Actualizar» en los nueve dimensionadores (encargo del dueño: el
+  recálculo en línea no siempre reflejaba los parámetros). Valida los campos visibles con sus reglas
+  del HTML, recalcula todo con `window.DIMENSIONADOR_ACTUALIZAR` y dice el resultado. **Criterio que
+  conviene conservar**: un dimensionador nuevo registra su recálculo completo en
+  `window.DIMENSIONADOR_ACTUALIZAR` (devuelve `false` si el catálogo no llegó) y carga
+  `actualizar.js` y `actualizar.css`; `test/actualizar.test.js` lo frena si falta.
+- **2026-10-29 · PR #71**: «↻ Actualizar fuentes» en las siete pestañas de fuentes: el servidor
+  vuelve a leer cada documento oficial y dice si sigue siendo el contrastado (columna «Comprobado
+  ahora»); solo lee, con 10 minutos de caché por fabricante.
 - **2026-10-29 · PR #65**: la revisión de los pendientes que esperan documento, registrada uno por uno en *Esperan un documento oficial* (qué se buscó, qué se encontró, qué lo cierra). Ninguno se cierra sin su documento.
 - **2026-10-29 · PR #67**: el marcado del panel de perfiles y de su ventana lo genera
   `BOM.montarPerfiles`; las siete páginas solo dejan su sección con su explicación (la mejora
@@ -329,6 +338,14 @@ existen los workflows de transporte. Huawei y HPE niegan además el navegador au
   aparece un modelo nuevo. Evita que un anuncio como el del 60F pase sin verse. Cuesta un workflow
   más; depende de un repertorio de terceros cuyo formato puede cambiar (el issue solo avisa, nunca
   escribe en `legacyData/`).
+- **Encontrar los campos que el recálculo en línea no escucha** (propuesta al cerrar el PR #69). El
+  botón «Actualizar» es la salida segura, pero no dice por qué la página no se actualizó sola: cada
+  página escucha una lista de campos (en Fortinet, `NUMERICOS` e `INMEDIATOS`), y uno fuera de la
+  lista no dispara nada. Una batería e2e que cambie cada campo de la columna de parámetros de cada
+  página y compruebe que la derecha cambia sin pulsar el botón; los que no, se enlazan uno a uno.
+  Evita que el preventa tenga que acordarse de pulsar. Cuesta una batería nueva y tiempo de CI; si se
+  hace mal, da falsos avisos en campos que de verdad no mueven el resultado, así que la batería debe
+  admitir una lista declarada de campos sin efecto con su motivo. Se decide por el dueño.
 - **Un reloj para la vigilia que no sea el de GitHub** (propuesta al cerrar el PR #64, solo si la
   medición del 2026-11-05 confirma que faltan más de la mitad de las corridas). Una tarea programada
   de Claude (fuera de Actions) que cada hora lance `vigilia-despliegue.yml` por `workflow_dispatch`.
@@ -353,7 +370,14 @@ existen los workflows de transporte. Huawei y HPE niegan además el navegador au
   Cuesta quitar unas cuatro líneas de cada hoja; si se hace mal, la ventana sale sin velo o sin
   desplazamiento en alguna página, y lo verían el contraste de pantallas y `e2e-accesibilidad.js`
   (que ya abre la ventana). Se decide por el dueño.
-- (Hecha en el PR #67: el marcado del panel de perfiles, generado por el módulo. Hecha en el PR #66: lo que trajo cada función, resaltado en el resultado. Hecha en el PR #62: el panel de perfiles, un solo módulo. Hecha en el PR #60: la licencia FortiGuard única del par en el BOM. Hecha en el PR #59: la vigilia del despliegue. Hecha en el PR #58: del override por ciclo de vida a ampliación o renovación en un clic. Hecha en el PR #57: el transporte probado sin red. Hecha en el PR #55: los perfiles multi-sede en Juniper y Nokia 7750. Hecha en el PR #54: la foto desde la página de cada modelo, hasta donde Cisco la publica, y el transporte fuera del YAML. Hecha en el PR #50: los perfiles de otros fabricantes al día al consolidar. Hecha en el PR #46: el ciclo del perfil al día al consolidar. Hecha en el PR #45: la fuente de la PQC enlazada a `fuentes.js`. Hecha en el PR #44: el ciclo en el consolidado multi-sede. Hecha en el PR #41: el fin de venta en el Excel. Hecha en el PR #40: la foto de producto en el Excel. Hecha en la septuagesimoprimera: el «no la trae» documentado, `pqcNo`. Hecha en la sexagesimoctava: la
+- **Comprobar las fuentes de los siete fabricantes desde el portal** (propuesta al cerrar el PR #71).
+  Hoy «Actualizar fuentes» va pestaña por pestaña: saber si algún documento de cualquier fabricante
+  cambió pide abrir siete páginas. Un panel en el portal que llame a la misma ruta para los siete (en
+  serie, respetando la caché de 10 minutos de cada uno) y enseñe un resumen por fabricante, con
+  enlace a su pestaña, daría la vista del vigía del lunes en el momento. Cuesta una sección del
+  portal y su script, sin tocar el servidor; si se hace mal, siete corridas a la vez pegarían a los
+  fabricantes (la prueba tiene que fijar que van de una en una). Se decide por el dueño.
+- (Hecha en el PR #71: «Actualizar fuentes» en vivo. Hecha en el PR #67: el marcado del panel de perfiles, generado por el módulo. Hecha en el PR #66: lo que trajo cada función, resaltado en el resultado. Hecha en el PR #62: el panel de perfiles, un solo módulo. Hecha en el PR #60: la licencia FortiGuard única del par en el BOM. Hecha en el PR #59: la vigilia del despliegue. Hecha en el PR #58: del override por ciclo de vida a ampliación o renovación en un clic. Hecha en el PR #57: el transporte probado sin red. Hecha en el PR #55: los perfiles multi-sede en Juniper y Nokia 7750. Hecha en el PR #54: la foto desde la página de cada modelo, hasta donde Cisco la publica, y el transporte fuera del YAML. Hecha en el PR #50: los perfiles de otros fabricantes al día al consolidar. Hecha en el PR #46: el ciclo del perfil al día al consolidar. Hecha en el PR #45: la fuente de la PQC enlazada a `fuentes.js`. Hecha en el PR #44: el ciclo en el consolidado multi-sede. Hecha en el PR #41: el fin de venta en el Excel. Hecha en el PR #40: la foto de producto en el Excel. Hecha en la septuagesimoprimera: el «no la trae» documentado, `pqcNo`. Hecha en la sexagesimoctava: la
   versión mínima de la PQC en la hoja «Supuestos».)
 
 ## Decisiones del dueño abiertas

@@ -280,21 +280,23 @@ app.get('/api/fuentes/:vendor/documento/:id', (req, res) => {
   res.sendFile(encontrado.ruta);
 });
 
-// Salud de las fuentes del fabricante: re-corre el vigía contra cada URL pública y
-// devuelve el estado por documento (leído / inalcanzable / sin-url). Consulta
-// explícita del usuario desde la pestaña «Fuentes» — no corre sola en segundo plano
-// porque cada revisión pega contra los servidores del fabricante.
+// Salud de las fuentes del fabricante: el botón «Actualizar fuentes» de la pestaña «Fuentes y
+// Referencias» (2026-10-29). Vuelve a leer cada documento oficial y lo clasifica contra lo que una
+// persona ya contrastó, con la regla del vigía (server/vigiaEnVivo.js): sin cambios, cambió sin
+// contrastar, inalcanzable… Solo lee, y con mesura: un resultado por fabricante vale 10 minutos y
+// dos pulsaciones a la vez comparten la corrida, porque cada revisión pega contra los servidores
+// del fabricante. Las URL salen de legacyData/fuentes.js, nunca de la petición.
 app.get('/api/fuentes/:vendor/salud', async (req, res) => {
   const { vendor } = req.params;
-  const lista = FUENTES[vendor];
-  if (!lista) return res.status(400).json({ error: 'Fabricante no válido' });
-  const { revisar } = require('../scripts/vigia-fuentes');
-  const salida = [];
-  for (const f of lista) {
-    if (!f.url) { salida.push({ vendor, documento: f.documento, url: null, estado: 'sin-url', detalle: 'fuente interna sin URL pública — se vigila por commit' }); continue; }
-    salida.push(await revisar(vendor, f));
+  if (!Object.prototype.hasOwnProperty.call(FUENTES, vendor)) return res.status(400).json({ error: 'Fabricante no válido' });
+  try {
+    const r = await require('./vigiaEnVivo').revisarVendor(vendor);
+    console.log(`[fuentes] comprobación · fabricante=${vendor} · ${r.deCache ? 'de caché' : 'en vivo'} · por=${req.usuario ? req.usuario.usuario : '-'}`);
+    res.json({ vendor, revisadoEn: r.revisadoEn, deCache: r.deCache, resumen: r.resumen, fuentes: r.fuentes });
+  } catch (err) {
+    console.error('[fuentes] error al comprobar:', err.message);
+    res.status(500).json({ error: 'No se pudieron comprobar las fuentes' });
   }
-  res.json({ vendor, revisadoEn: new Date().toISOString(), fuentes: salida });
 });
 
 // Borrar una fuente CARGADA. Exige `sync` igual que subirla: quitar la procedencia de un
