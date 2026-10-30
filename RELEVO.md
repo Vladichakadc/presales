@@ -34,6 +34,12 @@ está en curso no va aquí: lo dice `npm run traspasos` (protocolo en `docs/tras
 ## Estado al cerrar esta entrega
 
 - **2026-10-29 · PR #72**: **la PQC del Gateway 9106, cerrada con documento oficial.** El «What's New» de AOS-8 (traído por Actions) dice «Starting with AOS-8.13.1.0, the 9106 controller is now supported in AOS-8.x»; con la guía de PPK de AOS-8 (desde la 8.10.0.0), el 9106 trae la PPK con AOS-8.13.1.0. Los SKU S0B85A y S0B86A vienen con AOS-10 y no bajan: lo dice su `alcance`. **Queda un retoque**: el texto `#reqPqcHint` de `public/dimensionador-aruba-edgeconnect.html` aún nombra el 9106 entre los que no tienen documento; esa página la tocan los PR #69 y #70 de otra sesión, y se corrige tras su fusión.
+- **2026-10-29 · PR #69**: botón «Actualizar» en los nueve dimensionadores (encargo del dueño: el
+  recálculo en línea no siempre reflejaba los parámetros). Valida los campos visibles con sus reglas
+  del HTML, recalcula todo con `window.DIMENSIONADOR_ACTUALIZAR` y dice el resultado. **Criterio que
+  conviene conservar**: un dimensionador nuevo registra su recálculo completo en
+  `window.DIMENSIONADOR_ACTUALIZAR` (devuelve `false` si el catálogo no llegó) y carga
+  `actualizar.js` y `actualizar.css`; `test/actualizar.test.js` lo frena si falta.
 - **2026-10-29 · PR #71**: «↻ Actualizar fuentes» en las siete pestañas de fuentes: el servidor
   vuelve a leer cada documento oficial y dice si sigue siendo el contrastado (columna «Comprobado
   ahora»); solo lee, con 10 minutos de caché por fabricante.
@@ -321,6 +327,14 @@ existen los workflows de transporte. Huawei y HPE niegan además el navegador au
 
 ## Mejoras propuestas sin decidir
 
+- **Encontrar los campos que el recálculo en línea no escucha** (propuesta al cerrar el PR #69). El
+  botón «Actualizar» es la salida segura, pero no dice por qué la página no se actualizó sola: cada
+  página escucha una lista de campos (en Fortinet, `NUMERICOS` e `INMEDIATOS`), y uno fuera de la
+  lista no dispara nada. Una batería e2e que cambie cada campo de la columna de parámetros de cada
+  página y compruebe que la derecha cambia sin pulsar el botón; los que no, se enlazan uno a uno.
+  Evita que el preventa tenga que acordarse de pulsar. Cuesta una batería nueva y tiempo de CI; si se
+  hace mal, da falsos avisos en campos que de verdad no mueven el resultado, así que la batería debe
+  admitir una lista declarada de campos sin efecto con su motivo. Se decide por el dueño.
 - **Un reloj para la vigilia que no sea el de GitHub** (propuesta al cerrar el PR #64, solo si la
   medición del 2026-11-05 confirma que faltan más de la mitad de las corridas). Una tarea programada
   de Claude (fuera de Actions) que cada hora lance `vigilia-despliegue.yml` por `workflow_dispatch`.

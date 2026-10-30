@@ -450,6 +450,12 @@ Módulos compartidos:
   primero; nunca un mapa función→fila. Junto a
   la tarjeta clavada (`.col-fijo`, Aruba y Juniper) va FUERA de ella, como pieza de la rejilla encima:
   dentro la alargaba y se soltaba antes del fondo (`e2e-sticky.js`).
+- `actualizar.js` + `public/actualizar.css` — el botón **«Actualizar»** de los nueve dimensionadores
+  (2026-10-29, petición del dueño): arriba de la columna de parámetros (en Starlink, bajo la cabecera
+  del panel), valida los campos visibles con sus reglas del HTML (`min`, `max`, `step`, `required`),
+  recalcula con la función que cada página registra en `window.DIMENSIONADOR_ACTUALIZAR` (devuelve
+  `false` si el catálogo no llegó, y el botón lo dice) y lo anuncia en `role="status"`. Una página
+  nueva registra su recálculo completo y carga los dos archivos (`test/actualizar.test.js`).
 - `pqc.js` — **el requisito «Exigir PQC»** (2026-10-27), una sola regla para los siete
   dimensionadores y para el motor de Fortinet en el servidor: `''` no se exige, `'clave'` basta un
   mecanismo quantum-safe documentado (PPK, MACsec/ANYsec o ML-KEM), `'mlkem'` exige ML-KEM. Sin

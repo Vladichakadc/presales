@@ -952,6 +952,8 @@
     attachEvents();
     updateDynamicFields();
     recalculate();
+    // Botón «Actualizar» (actualizar.js, 2026-10-29): recalcula todo desde los campos tal como están.
+    window.DIMENSIONADOR_ACTUALIZAR = () => { updateDynamicFields(); recalculate(); return true; };
     window.StarlinkDimensioner = Object.freeze({
       version: VERSION,
       researchDate: RESEARCH_DATE,

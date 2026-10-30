@@ -279,6 +279,8 @@
     }
 
     render();
+    // Botón «Actualizar» (actualizar.js, 2026-10-29): recalcula todo desde los campos tal como están.
+    window.DIMENSIONADOR_ACTUALIZAR = () => { render(); return true; };
   }
 
   // Se expone la pieza pura —no el render entero— para que la regla que importa se pueda
