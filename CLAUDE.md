@@ -726,7 +726,10 @@ Módulos compartidos:
   `scripts/contrastes/` declara su línea base embebida y `medidoEn`; la cobertura de módulos se
   **mide** en Chromium (funciones ejecutadas; `ejercitado`, `rozado`, `sin conducir`).
 - **e2e** (`npm run e2e`, en CI): espera a condiciones con `asentar(page)`, nunca con pausas
-  fijas; `resumen()` fija el código de salida. `e2e-accesibilidad.js` pasa axe (WCAG 2.1 A/AA) y el
+  fijas; `resumen()` fija el código de salida. `e2e-campos-en-linea.js` cambia cada campo visible de los nueve dimensionadores y
+  compara el recálculo en línea con el del botón «Actualizar» (si difieren, el campo se quedó atrás;
+  `EXCEPCIONES`, `PREPARAR`; sus líneas `RESUMEN - ` salen como avisos de la comprobación).
+  `e2e-accesibilidad.js` pasa axe (WCAG 2.1 A/AA) y el
   reflujo a 640 px. **Recorrido de límites** (`npm run limites`, miércoles): los hallazgos van a un
   issue; lo correcto se declara en `EXCEPCIONES` con su motivo.
 

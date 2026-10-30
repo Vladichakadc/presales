@@ -1,6 +1,6 @@
 # Relevo
 
-Última actualización: 2026-10-30 · PR #75
+Última actualización: 2026-10-30 · PR #74
 
 Informe para continuar el trabajo. Lo pidió el dueño del repositorio el 2026-10-27: «de aquí en
 adelante, un informe de pendientes y mejoras para que la cuenta **servicioiptv2025@gmail.com**
@@ -33,6 +33,11 @@ está en curso no va aquí: lo dice `npm run traspasos` (protocolo en `docs/tras
 
 ## Estado al cerrar esta entrega
 
+- **2026-10-30 · PR #74**: la batería `e2e-campos-en-linea.js` vigila que cada campo de los nueve
+  dimensionadores recalcule en línea, con el botón «Actualizar» como oráculo. Medida en CI: 235
+  campos, ninguno atrás. **Criterio que conviene conservar**: un campo que de verdad no debe seguir en
+  línea se declara en `EXCEPCIONES` con su motivo; una página nueva entra en `PAGINAS` y, si sin
+  caudal no recomienda nada, en `PREPARAR`.
 - **2026-10-30 · PR #75**: los campos del perfil multi-sede salen de los del enlace (`CAMPOS_ENLACE`
   menos `PERFIL_SIN` más `PERFIL_EXTRA`, cada excepción con su motivo) en Cisco, Huawei, Juniper,
   MikroTik y Nokia 7750. El enlace no cambia; el perfil de MikroTik gana «Exigir PQC», que se perdía.
@@ -359,14 +364,15 @@ existen los workflows de transporte. Huawei y HPE niegan además el navegador au
   cambiaría y el cliente vería notas internas, así que la marca no entra en la hoja «BOM». Se decide
   por el dueño.
 
-- **Encontrar los campos que el recálculo en línea no escucha** (propuesta al cerrar el PR #69). El
-  botón «Actualizar» es la salida segura, pero no dice por qué la página no se actualizó sola: cada
-  página escucha una lista de campos (en Fortinet, `NUMERICOS` e `INMEDIATOS`), y uno fuera de la
-  lista no dispara nada. Una batería e2e que cambie cada campo de la columna de parámetros de cada
-  página y compruebe que la derecha cambia sin pulsar el botón; los que no, se enlazan uno a uno.
-  Evita que el preventa tenga que acordarse de pulsar. Cuesta una batería nueva y tiempo de CI; si se
-  hace mal, da falsos avisos en campos que de verdad no mueven el resultado, así que la batería debe
-  admitir una lista declarada de campos sin efecto con su motivo. Se decide por el dueño.
+- **Recorrer también los bloques que aparecen al marcar otro campo** (propuesta al cerrar el PR
+  #74). La batería marca los campos visibles una vez por pestaña: los que solo aparecen tras marcar una
+  casilla (HA, respaldo, seguridad) o las filas nuevas de los builders de enlaces (Aruba, Cisco,
+  MikroTik) no se prueban si al empezar estaban ocultos. Que, tras cada cambio, vuelva a buscar
+  campos recién visibles y los pruebe en ese escenario (con un tope por página). Evita que un campo
+  desconectado se esconda justo donde el dueño lo vio fallar, que no fue en lo visible. Cuesta
+  alargar el job de `pantallas` (hoy esta batería tarda unos minutos); si se hace mal, el recorrido
+  se vuelve combinatorio o deja la página en un escenario raro, así que cada bloque se prueba y se
+  repone antes de pasar al siguiente. Se decide por el dueño.
 - **Un reloj para la vigilia que no sea el de GitHub** (propuesta al cerrar el PR #64, solo si la
   medición del 2026-11-05 confirma que faltan más de la mitad de las corridas). Una tarea programada
   de Claude (fuera de Actions) que cada hora lance `vigilia-despliegue.yml` por `workflow_dispatch`.
