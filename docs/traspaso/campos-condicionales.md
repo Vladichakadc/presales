@@ -4,7 +4,7 @@
 - **Rama:** claude/campos-condicionales
 - **Cuenta:** servicioiptv2025@gmail.com (sesión de Claude Code en la nube)
 - **Estado:** en curso
-- **Actualizado:** 2026-10-30 07:55
+- **Actualizado:** 2026-10-30 08:10
 - **Archivos que toca:** test/e2e/e2e-campos-en-linea.js
 - **Siguiente paso:** leer los avisos `RESUMEN - ` y los fallos `e2e` de la comprobación `pantallas` del PR y enlazar cada campo que salga «se queda atrás»
 

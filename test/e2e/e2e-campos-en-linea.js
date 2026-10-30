@@ -191,7 +191,7 @@ let donde = 'al empezar';
     t.ok(await page.evaluate(() => window.DIMENSIONADOR_ACTUALIZAR() !== false), `${pag}: el catálogo llegó y el recálculo completo corre`);
     await asentar(page);
 
-    const cuenta = { probados: 0, enLinea: 0, sinEfecto: 0, revelados: 0, filas: 0 };
+    const cuenta = { probados: 0, enLinea: 0, sinEfecto: 0, revelados: 0, filas: 0, opciones: 0 };
     const malos = [];
 
     // Compara A (antes), B (en línea) y C (tras el botón) de una acción y lo anota.
@@ -278,6 +278,38 @@ let donde = 'al empezar';
       }
       for (const campo of await marcarCampos(page)) await probar(campo, 0);
 
+      // Los botones segmentados (`.seg`: plataforma, capa, destino…) no son campos de formulario, y
+      // son los que más bloques abren y cierran (Huawei, Juniper y Nokia no tienen otro modo). Cada
+      // opción no elegida se mide como un campo, se prueban los campos que hace aparecer, y se vuelve
+      // a la elegida.
+      const segs = await page.evaluate(() => {
+        const d = window.document;
+        const cols = [...d.querySelectorAll('.cols, .dim')].filter((g) => g.children.length > 1).map((g) => g.firstElementChild);
+        return cols.flatMap((c) => [...c.querySelectorAll('.seg[id]')]).filter((g) => g.checkVisibility()).map((g) => ({
+          id: g.id,
+          valores: [...g.querySelectorAll('button[data-v]')].filter((b) => !b.disabled).map((b) => b.dataset.v),
+          elegido: g.querySelector('button[aria-pressed="true"][data-v]') ? g.querySelector('button[aria-pressed="true"][data-v]').dataset.v : null,
+        }));
+      });
+      const pulsar = (id, v) => page.evaluate(([g, val]) => {
+        const b = [...window.document.querySelectorAll(`#${g} button[data-v]`)].find((x) => x.dataset.v === val);
+        if (b) b.click();
+      }, [id, v]);
+      for (const seg of segs) {
+        if (seg.elegido === null) continue;
+        for (const v of seg.valores.filter((x) => x !== seg.elegido)) {
+          if (cuenta.probados >= TOPE) break;
+          donde = `${pag}, ${seg.id}=${v}`;
+          cuenta.opciones += 1;
+          await medir(`${seg.id} → ${v}`, 'botón segmentado', () => pulsar(seg.id, v), (EXCEPCIONES[pag] || {})[seg.id]);
+          for (const campo of await marcarCampos(page)) await probar(campo, 1);
+          await pulsar(seg.id, seg.elegido);
+          await asentar(page);
+          await page.evaluate(() => window.DIMENSIONADOR_ACTUALIZAR());
+          await asentar(page);
+        }
+      }
+
       // Las filas que se añaden con un botón (enlaces WAN, ópticas): al final, para no cambiar el
       // escenario de lo anterior. El propio botón también tiene que recalcular en línea, y los campos
       // de la fila nueva se prueban como los demás.
@@ -294,8 +326,8 @@ let donde = 'al empezar';
         for (const campo of await marcarCampos(page)) await probar(campo, 1);
       }
     }
-    const { probados, enLinea, sinEfecto, revelados, filas } = cuenta;
-    console.log(`RESUMEN - ${pag}: ${probados} probados (${revelados} aparecieron al marcar otro o al añadir ${filas} fila(s)) · ${enLinea} recalculan en línea · ${sinEfecto} sin efecto en este escenario · ${malos.length} se quedan atrás`);
+    const { probados, enLinea, sinEfecto, revelados, filas, opciones } = cuenta;
+    console.log(`RESUMEN - ${pag}: ${probados} probados (${opciones} opciones de botones segmentados; ${revelados} campos aparecieron al marcar otro o al añadir ${filas} fila(s)) · ${enLinea} recalculan en línea · ${sinEfecto} sin efecto en este escenario · ${malos.length} se quedan atrás`);
     t.ok(probados > 0, `${pag}: hay campos que probar`);
     for (const m of malos) t.ok(false, `${pag}: ${m}`);
     if (!malos.length) t.ok(true, `${pag}: todos los campos que mueven el resultado lo mueven en línea`);
