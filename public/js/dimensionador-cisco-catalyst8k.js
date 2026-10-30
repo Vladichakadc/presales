@@ -862,8 +862,15 @@ $('memoriaBtn').addEventListener('click', () => {
 /* ── PERFILES MULTI-SEDE ──
    Misma clave compartida que los demás fabricantes (`BOM.perfiles`): un despliegue real mezcla
    marcas. Cargar es de Cisco (los campos son ids de ESTA página); consolidar no. */
-const CAMPOS_PERFIL = [...ENTRADAS, 'qty', 'termYears', 'licGestion', 'licNivel', 'licVpns', 'secUrl', 'secMalware', ...CAMPOS_SA, 'optQty'];
+// Lo que viaja en el enlace (ESTADO.vincular). Los campos del perfil salen de esta lista
+// (2026-10-30): se declara solo lo que el perfil no guarda y lo que solo guarda él.
+const CAMPOS_ENLACE = [...ENTRADAS, 'critSeg', 'dirSeg', 'modeSeg', 'qty', 'termYears', 'licGestion', 'licNivel', 'licVpns', 'secUrl', 'secMalware', ...CAMPOS_SA, 'optQty', 'verdict-sel'];
+// `verdict-sel`: el equipo lo guarda el perfil aparte, en `modelo`.
+const PERFIL_SIN = ['verdict-sel'];
+const PERFIL_EXTRA = [];
 const SEGS_PERFIL = ['modeSeg', 'dirSeg', 'critSeg'];
+const CAMPOS_PERFIL = [...CAMPOS_ENLACE.filter((id) => !SEGS_PERFIL.includes(id) && !PERFIL_SIN.includes(id)),
+  ...PERFIL_EXTRA];
 function capturarCampos(){
   const v = {};
   CAMPOS_PERFIL.forEach(id => { const n = $(id); if(n) v[id] = n.type === 'checkbox' ? n.checked : n.value; });
@@ -962,7 +969,7 @@ document.addEventListener('click', (e) => {
    demás (voz, AppX, APs) no tienen equivalente y el aviso del enlace lo dice. */
 document.addEventListener('DOMContentLoaded', () => {
   const MIGRADOS = ['sNgfw', 'sUmbrella', 'dnaTier'];
-  const st = ESTADO.vincular({ campos:[...ENTRADAS, 'critSeg', 'dirSeg', 'modeSeg', 'qty', 'termYears', 'licGestion', 'licNivel', 'licVpns', 'secUrl', 'secMalware', ...CAMPOS_SA, 'optQty', 'verdict-sel'],
+  const st = ESTADO.vincular({ campos: CAMPOS_ENLACE,
     migrados:MIGRADOS });
   const q = new URLSearchParams(location.search);
   const si = k => ['1', 'true', 'on'].includes(String(q.get(k)).toLowerCase());
