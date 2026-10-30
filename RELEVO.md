@@ -1,6 +1,6 @@
 # Relevo
 
-Última actualización: 2026-10-30 · PR #80
+Última actualización: 2026-10-30 · PR #79
 
 Informe para continuar el trabajo. Lo pidió el dueño del repositorio el 2026-10-27: «de aquí en
 adelante, un informe de pendientes y mejoras para que la cuenta **servicioiptv2025@gmail.com**
@@ -33,6 +33,10 @@ está en curso no va aquí: lo dice `npm run traspasos` (protocolo en `docs/tras
 
 ## Estado al cerrar esta entrega
 
+- **2026-10-30 · PR #79**: la batería de campos en línea recorre también los bloques que aparecen al
+  marcar otro campo, cada opción de los botones segmentados y las filas de «+ Añadir»: 380
+  comprobaciones en CI, ninguna atrás. **Criterio que conviene conservar**: `PROFUNDIDAD` y `TOPE`
+  acotan el recorrido; si una página crece y lo toca, se sube el tope antes que quitar niveles.
 - **2026-10-30 · PR #80**: el modelo de Aruba en un enlace lo repone `ESTADO` (`opcionesTarde`), sin la
   captura propia `QMODEL_URL`. `opcionesTarde` también anuncia el valor cuando las opciones ya estaban.
 - **2026-10-30 · PR #77**: el modelo de AP de MikroTik viaja en el enlace. **Criterio que conviene
@@ -372,15 +376,16 @@ existen los workflows de transporte. Huawei y HPE niegan además el navegador au
   cambiaría y el cliente vería notas internas, así que la marca no entra en la hoja «BOM». Se decide
   por el dueño.
 
-- **Recorrer también los bloques que aparecen al marcar otro campo** (propuesta al cerrar el PR
-  #74). La batería marca los campos visibles una vez por pestaña: los que solo aparecen tras marcar una
-  casilla (HA, respaldo, seguridad) o las filas nuevas de los builders de enlaces (Aruba, Cisco,
-  MikroTik) no se prueban si al empezar estaban ocultos. Que, tras cada cambio, vuelva a buscar
-  campos recién visibles y los pruebe en ese escenario (con un tope por página). Evita que un campo
-  desconectado se esconda justo donde el dueño lo vio fallar, que no fue en lo visible. Cuesta
-  alargar el job de `pantallas` (hoy esta batería tarda unos minutos); si se hace mal, el recorrido
-  se vuelve combinatorio o deja la página en un escenario raro, así que cada bloque se prueba y se
-  repone antes de pasar al siguiente. Se decide por el dueño.
+- **Medir el arranque de la página, no solo los cambios** (propuesta al cerrar el PR #79). En 380
+  comprobaciones ningún campo se queda atrás, pero la batería empieza pulsando el botón «Actualizar»
+  para partir de un estado limpio, y con eso tapa justo un desfase posible: la página que abre con
+  un escenario restaurado (el guardado en el navegador, un enlace compartido con parámetros, un
+  perfil multi-sede cargado) y pinta la derecha antes de aplicar lo restaurado. Que la batería
+  compare, en cada página, el texto de resultados recién abierta con el que deja el botón, en tres
+  arranques: vacía, con el escenario guardado de una visita anterior y desde un enlace con
+  parámetros. Evita el «no se actualiza» que no viene de ningún campo. Cuesta tres aperturas más por
+  página; si se hace mal, compara una carga a medias (catálogo sin llegar) y da un falso rojo, así
+  que se espera a `DIMENSIONADOR_ACTUALIZAR` y a `asentar` antes de leer. Se decide por el dueño.
 - **Un reloj para la vigilia que no sea el de GitHub** (propuesta al cerrar el PR #64, solo si la
   medición del 2026-11-05 confirma que faltan más de la mitad de las corridas). Una tarea programada
   de Claude (fuera de Actions) que cada hora lance `vigilia-despliegue.yml` por `workflow_dispatch`.
