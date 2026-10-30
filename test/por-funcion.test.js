@@ -32,6 +32,37 @@ test('Cisco: cada clave `req` del motor tiene su casilla, y la tabla repite la l
   for (const r of reqs) assert.ok(tablas[r], `el motor marca una fila con req:'${r}' y la página no sabe de qué casilla es`);
 });
 
+test('Huawei: cada clave `req` del motor tiene su casilla, y la tabla repite la lectura de la página', () => {
+  const motor = leer('public/js/huawei-motor.js');
+  const pag = leer('public/js/dimensionador-huawei-netengine.js');
+  const html = leer('public/dimensionador-huawei-netengine.html');
+  const m = /const CASILLA_REQ = \{([^}]*)\};/.exec(pag);
+  assert.ok(m, 'falta CASILLA_REQ');
+  const tabla = Object.fromEntries([...m[1].matchAll(/(\w+):'(\w+)'/g)].map((x) => [x[1], x[2]]));
+  for (const [k, id] of Object.entries(tabla)) {
+    assert.ok(pag.includes(`${k}:$('${id}').checked`), `CASILLA_REQ.${k} → ${id}: la página no lee esa casilla para esa clave`);
+    assert.ok(casillaEnHtml(html, id), `${id} no es una casilla de la página`);
+  }
+  const reqs = new Set([...motor.matchAll(/\breq: '(\w+)'/g)].map((x) => x[1]));
+  for (const r of reqs) assert.ok(tabla[r], `el motor marca req:'${r}' y la página no sabe de qué casilla es`);
+  // DSVPN y compresión van por su propia clave (`req: k` dentro de ['dsvpn', 'compresion']).
+  assert.ok(tabla.dsvpn && tabla.compresion);
+});
+
+test('Aruba y MikroTik: cada `por` escrito en la página es una casilla suya, y la página carga el módulo', () => {
+  for (const pag of ['aruba-edgeconnect', 'mikrotik-routeros', 'huawei-netengine', 'cisco-catalyst8k', 'fortinet-fortigate']) {
+    const js = leer(`public/js/dimensionador-${pag}.js`);
+    const html = leer(`public/dimensionador-${pag}.html`);
+    const ids = [...js.matchAll(/\bpor:\s*(?:'(\w+)'|\[([^\]]+)\]|\w+\s*\?\s*null\s*:\s*'(\w+)')/g)]
+      .flatMap((x) => (x[2] ? [...x[2].matchAll(/'(\w+)'/g)].map((y) => y[1]) : [x[1] || x[3]]));
+    for (const id of ids) assert.ok(casillaEnHtml(html, id), `${pag}: por:'${id}' no es una casilla de la página`);
+    const i = html.indexOf('<script src="/js/por-funcion.js"></script>');
+    assert.ok(i > 0 && i < html.indexOf('<body'), `${pag}: por-funcion.js, sin defer y antes del <body>`);
+  }
+  // Juniper y los dos Nokia no lo llevan: sus casillas cambian la capa o la cantidad, no añaden líneas.
+  for (const pag of ['juniper-srx', 'nokia-7750sr', 'nokia-7220ixr']) assert.doesNotMatch(leer(`public/dimensionador-${pag}.html`), /por-funcion\.js/);
+});
+
 test('Fortinet: cada `req` de las reglas es una casilla de la tabla de enlaces de la página', () => {
   const reglas = leer('public/js/fortinet-reglas.js');
   const pag = leer('public/js/dimensionador-fortinet-fortigate.js');
