@@ -54,14 +54,14 @@ const marcarCampos = (page) => page.evaluate(() => {
   d.querySelectorAll('.config-panel').forEach((p) => cols.push(p));
   // Lo plegado se abre, como lo abriría quien busca ese parámetro (los avanzados de Starlink).
   cols.forEach((c) => c.querySelectorAll('details:not([open])').forEach((x) => { x.open = true; }));
+  const SEL = 'input:not([type="hidden"]):not([type="button"]):not([type="submit"]):not([type="file"]):not([type="date"]):not([type="color"]), select, textarea';
+  window.__e2eSel = SEL;
   const claveDe = (el, col) => {
     const fila = el.closest('[data-i]');
     return el.id || `${fila ? fila.dataset.i : '-'}|${el.dataset.campo || el.dataset.k || el.name || ''}|${el.tagName}|${el.type || ''}`
       + (el.id || el.dataset.campo || el.dataset.k || el.name ? '' : `|${[...col.querySelectorAll(SEL)].indexOf(el)}`);
   };
   window.__e2eClaveDe = claveDe;
-  const SEL = 'input:not([type="hidden"]):not([type="button"]):not([type="submit"]):not([type="file"]):not([type="date"]):not([type="color"]), select, textarea';
-  window.__e2eSel = SEL;
   window.__e2eCols = cols;
   const out = [];
   let n = Number(d.body.dataset.e2eN || 0);
