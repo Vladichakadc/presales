@@ -171,19 +171,21 @@
 
   // Requisitos de hardware. Cada uno dice qué campo lo confirma; un modelo que no lo confirma se
   // aparta, distinguiendo «no lo tiene» de «no consta».
+  // Cada pieza dice qué requisito la trajo (`req`, la clave de `r`), en el mismo `if` que la crea: la
+  // página la marca en el BOM con la casilla de ese requisito (mejora «del panel a la fila», 2026-10-29).
   function requisitos(m, r) {
     const motivos = [], avisos = [], piezas = [];
     if (r.dualPsu) {
       if (m.redund === true) { /* de serie */ }
       else if (m.redund === 'opcional') {
-        if (m.psu2) piezas.push({ cat: 'Alimentación', desc: 'Segunda fuente para redundancia', sku: m.psu2.sku, nota: m.psu2.d });
+        if (m.psu2) piezas.push({ cat: 'Alimentación', desc: 'Segunda fuente para redundancia', sku: m.psu2.sku, nota: m.psu2.d, req: 'dualPsu' });
         else avisos.push('La segunda fuente es opcional y el catálogo no trae su referencia: confirmarla en la guía de pedido.');
       } else if (m.redund === false) motivos.push('fuente única: no admite una segunda');
       else motivos.push('no consta cuántas fuentes trae de serie');
     }
     if (r.celular) {
       if (m.lte) { /* integrado */ }
-      else if (m.pim) piezas.push({ cat: 'Módulos', desc: 'Módulo celular (PIM) — elegir uno', sku: null, pim: true, need: r.celularMbps || null });
+      else if (m.pim) piezas.push({ cat: 'Módulos', desc: 'Módulo celular (PIM) — elegir uno', sku: null, pim: true, need: r.celularMbps || null, req: 'celular' });
       else motivos.push('sin celular integrado ni ranura PIM');
     }
     // AppQoE con DRE (propuesta 2.3): la guía dice quién lo ejecuta y cuántas conexiones optimiza
@@ -205,7 +207,7 @@
     if (r.sm && !(num(m.sm) >= 1)) motivos.push('sin ranura SM');
     if (r.macsec) {
       if (m.macsec === 'integrado') { /* en todos sus puertos */ }
-      else if (m.macsec === 'nim') piezas.push({ cat: 'Módulos', desc: 'NIM WAN con MACsec — elegir una', sku: null, macsec: true });
+      else if (m.macsec === 'nim') piezas.push({ cat: 'Módulos', desc: 'NIM WAN con MACsec — elegir una', sku: null, macsec: true, req: 'macsec' });
       else motivos.push('MACsec no consta en su ficha');
     }
     if (r.poe) {
@@ -736,7 +738,7 @@
     const puestos = u ? Math.max(u, SA.minUsuarios) : SA.minUsuarios;
     if (!u) res.avisos.push(`Secure Access: sin usuarios declarados, la licencia por usuario va con el mínimo de la guía (${SA.minUsuarios}); ajustarla.`);
     else if (u < SA.minUsuarios) res.avisos.push(`Secure Access pide un mínimo de ${SA.minUsuarios} usuarios: se proponen ${SA.minUsuarios}.`);
-    const porUsuario = (uso, sku, n) => res.filas.push({ cat, desc: `Secure ${uso} Access ${SA.usuario[nivel].n} — por usuario`, sku, qty: n,
+    const porUsuario = (uso, sku, n, req) => res.filas.push({ req, cat, desc: `Secure ${uso} Access ${SA.usuario[nivel].n} — por usuario`, sku, qty: n,
       nota: 'Licencia por usuario cubierto (empleados y terceros con acceso); el precio sale del tramo de usuarios y del plazo en CCW.' });
     if (x.licencia === 'sede') {
       if (nivel !== 'ess') { res.avisos.push('Secure Access por sede solo existe en SIA Essentials: se propone Essentials.'); nivel = 'ess'; }
@@ -749,13 +751,13 @@
         res.filas.push({ cat, desc: `Secure Internet Access Essentials por sede, grupo ${g.grupo} (hasta ${miles(g.hastaMbps)} Mbps) — elegir una`, sku: null, qty: 1,
           nota: `${g.tiers.map((t) => `${t.sku}: ${t.datos} de datos al mes`).join('; ')}. Lo decide el volumen mensual. Cubre solo a los usuarios de la sede (los remotos van por usuario) y no trae Experience Insights, Secure Client ni RBI.` });
       }
-      if (x.privado) porUsuario('Private', SA.usuario[nivel].spa, puestos);
+      if (x.privado) porUsuario('Private', SA.usuario[nivel].spa, puestos, 'privado');
       if (x.ips) res.avisos.push('Secure Access: el complemento de IPS (SA-THRT) va por puesto; con la licencia por sede, consultar.');
     } else {
       porUsuario('Internet', SA.usuario[nivel].sia, puestos);
-      if (x.privado) porUsuario('Private', SA.usuario[nivel].spa, puestos);
+      if (x.privado) porUsuario('Private', SA.usuario[nivel].spa, puestos, 'privado');
       if (x.ips) {
-        if (nivel === 'ess') res.filas.push({ cat, desc: SA.amenazas.n, sku: SA.amenazas.sku, qty: puestos, nota: `${SA.amenazas.d} Cantidad: el mayor número de puestos.` });
+        if (nivel === 'ess') res.filas.push({ req: 'ips', cat, desc: SA.amenazas.n, sku: SA.amenazas.sku, qty: puestos, nota: `${SA.amenazas.d} Cantidad: el mayor número de puestos.` });
         else res.avisos.push('Secure Access Advantage ya incluye IPS y control L7: no hace falta SA-THRT.');
       }
     }
@@ -979,8 +981,8 @@
             filas.push({ cat: 'Licencias', desc: LIC.swmOnPrem.n, sku: LIC.swmOnPrem.sku, qty: 1, unit: null, nota: LIC.swmOnPrem.d });
           }
           filas.push({ cat: 'Licencias', desc: LIC.secT.n, sku: sku(LIC.secT.sku, c), qty: 1, unit: null, nota: LIC.secT.d });
-          if (o.url) filas.push({ cat: 'Licencias', desc: LIC.secC.n, sku: sku(LIC.secC.sku, c), qty: 1, unit: null, nota: LIC.secC.d });
-          if (o.malware) filas.push({ cat: 'Licencias', desc: LIC.secM.n, sku: sku(LIC.secM.sku, c), qty: 1, unit: null, nota: LIC.secM.d });
+          if (o.url) filas.push({ req: 'url', cat: 'Licencias', desc: LIC.secC.n, sku: sku(LIC.secC.sku, c), qty: 1, unit: null, nota: LIC.secC.d });
+          if (o.malware) filas.push({ req: 'malware', cat: 'Licencias', desc: LIC.secM.n, sku: sku(LIC.secM.sku, c), qty: 1, unit: null, nota: LIC.secM.d });
         }
       }
     } else if (m.lic === 'meraki') {
