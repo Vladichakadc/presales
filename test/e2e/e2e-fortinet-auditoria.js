@@ -519,7 +519,9 @@ const PAGINA = `${BASE}/dimensionador-fortinet-fortigate.html`;
   await asentar(page);
   // El 1000F y no el 1800F desde el 2026-09-23: su ficha por serie publica 250 VDOM y el
   // Product Matrix no lo listaba, así que antes se apartaba por no traer la cifra.
-  t.ok(await page.$eval('#verdict-sel', (e) => e.value) === 'FortiGate 1000F',
+  // Desde el 2026-10-29 el 1000F y el 1001F están fuera de venta (último pedido 2026-10-13, PR #68):
+  // el primero vigente que admite 120 VDOM es el 1800F (250 publicados).
+  t.ok(await page.$eval('#verdict-sel', (e) => e.value) === 'FortiGate 1800F',
     'AT-32: 120 VDOM declarados llevan al primer modelo cuyo máximo publicado los admite');
   t.ok(/VDOM/.test(await texto('#verdict')), 'AT-32: y la pantalla lo declara junto al equipo');
 
