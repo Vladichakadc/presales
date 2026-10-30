@@ -37,11 +37,16 @@ const PREPARAR = {
   'nokia-7750sr': [['#bw', '100']],
 };
 
+// Bloques condicionales: hasta dos niveles (una casilla que abre un bloque con otra casilla que abre
+// otro), y un tope por página para que el job de `pantallas` no se alargue sin límite.
+const PROFUNDIDAD = 2;
+const TOPE = 160;
+
 // { 'pagina': { idDelCampo: 'motivo' } }
 const EXCEPCIONES = {};
 
 // Marca cada campo visible y habilitado de las columnas de parámetros con `data-e2e-campo` y
-// devuelve su descripción. Los ya probados (por `data-e2e-hecho`) no vuelven.
+// devuelve su descripción. Los ya probados en esta página no vuelven.
 const marcarCampos = (page) => page.evaluate(() => {
   const d = window.document;
   const cols = [];
@@ -49,17 +54,33 @@ const marcarCampos = (page) => page.evaluate(() => {
   d.querySelectorAll('.config-panel').forEach((p) => cols.push(p));
   // Lo plegado se abre, como lo abriría quien busca ese parámetro (los avanzados de Starlink).
   cols.forEach((c) => c.querySelectorAll('details:not([open])').forEach((x) => { x.open = true; }));
+  const claveDe = (el, col) => {
+    const fila = el.closest('[data-i]');
+    return el.id || `${fila ? fila.dataset.i : '-'}|${el.dataset.campo || el.dataset.k || el.name || ''}|${el.tagName}|${el.type || ''}`
+      + (el.id || el.dataset.campo || el.dataset.k || el.name ? '' : `|${[...col.querySelectorAll(SEL)].indexOf(el)}`);
+  };
+  window.__e2eClaveDe = claveDe;
   const SEL = 'input:not([type="hidden"]):not([type="button"]):not([type="submit"]):not([type="file"]):not([type="date"]):not([type="color"]), select, textarea';
+  window.__e2eSel = SEL;
+  window.__e2eCols = cols;
   const out = [];
   let n = Number(d.body.dataset.e2eN || 0);
   cols.forEach((c) => c.querySelectorAll(SEL).forEach((el) => {
-    if (el.disabled || el.readOnly || !el.checkVisibility({ visibilityProperty: true }) || el.dataset.e2eHecho) return;
+    if (el.disabled || el.readOnly || !el.checkVisibility({ visibilityProperty: true })) return;
+    // La identidad del campo no es el nodo: las páginas rehacen las filas de enlaces al escribir, y
+    // un nodo nuevo sin marca se volvería a probar en cada cambio. Se identifica por su id o, en una
+    // fila, por su posición y su clave.
+    const clave = claveDe(el, c);
+    window.__e2eHechos = window.__e2eHechos || new Set();
+    window.__e2eClaves = window.__e2eClaves || {};
+    if (window.__e2eHechos.has(clave)) return;
     // La barra del propio botón y los campos de la lista de perfiles no son parámetros del cálculo.
     if (el.closest('.barra-actualizar, .perfiles, #panelPerfiles, dialog')) return;
     if (el.tagName === 'SELECT' && el.options.length < 2) return;
     n += 1;
     el.dataset.e2eCampo = String(n);
-    el.dataset.e2eHecho = '1';
+    window.__e2eHechos.add(clave);
+    window.__e2eClaves[n] = clave;
     const lab = el.id && d.querySelector(`label[for="${window.CSS.escape(el.id)}"]`);
     const nombre = el.id || el.name || (el.dataset.campo ? `[data-campo=${el.dataset.campo}]` : '')
       || ((lab || el.closest('label') || {}).textContent || '').replace(/\s+/g, ' ').trim().slice(0, 40) || `campo ${n}`;
@@ -93,8 +114,15 @@ const valorDe = (page, n) => page.evaluate((k) => {
   return el.type === 'checkbox' || el.type === 'radio' ? { checked: el.checked } : { value: el.value };
 }, n);
 
+// Si la página rehízo el nodo (una fila de enlaces repintada), se vuelve a encontrar por su clave.
 const usable = (page, n) => page.evaluate((k) => {
-  const el = window.document.querySelector(`[data-e2e-campo="${k}"]`);
+  let el = window.document.querySelector(`[data-e2e-campo="${k}"]`);
+  if (!el && window.__e2eClaves && window.__e2eClaves[k]) {
+    for (const col of window.__e2eCols || []) {
+      el = [...col.querySelectorAll(window.__e2eSel)].find((x) => window.__e2eClaveDe(x, col) === window.__e2eClaves[k]);
+      if (el) { el.dataset.e2eCampo = String(k); break; }
+    }
+  }
   return !!el && !el.disabled && !el.readOnly && el.checkVisibility({ visibilityProperty: true });
 }, n);
 
@@ -163,84 +191,111 @@ let donde = 'al empezar';
     t.ok(await page.evaluate(() => window.DIMENSIONADOR_ACTUALIZAR() !== false), `${pag}: el catálogo llegó y el recálculo completo corre`);
     await asentar(page);
 
-    // Las pestañas que tengan columna de parámetros (Cisco y MikroTik llevan campos en la del BOM).
-    const pestanas = await page.evaluate(() => [...window.document.querySelectorAll('[role="tab"]')].map((b, i) => i));
-    const recorridos = pestanas.length ? pestanas : [null];
-    let probados = 0, enLinea = 0, sinEfecto = 0;
+    const cuenta = { probados: 0, enLinea: 0, sinEfecto: 0, revelados: 0, filas: 0 };
     const malos = [];
 
-    for (const p of recorridos) {
+    // Compara A (antes), B (en línea) y C (tras el botón) de una acción y lo anota.
+    async function medir(nombre, tipo, accion, excepcion) {
+      const a = await leerResultados(page);
+      await accion();
+      await asentar(page);
+      const b = await leerResultados(page);
+      await page.evaluate(() => window.DIMENSIONADOR_ACTUALIZAR());
+      await asentar(page);
+      const c = await leerResultados(page);
+      cuenta.probados += 1;
+      if (c !== b) {
+        // La primera diferencia, para que el aviso diga qué se quedó atrás.
+        let i = 0;
+        while (i < b.length && b[i] === c[i]) i += 1;
+        const tramo = `en línea «…${b.slice(Math.max(0, i - 30), i + 50)}…» / con el botón «…${c.slice(Math.max(0, i - 30), i + 50)}…»`;
+        if (excepcion) console.log(`ok - ${pag}: ${nombre} no sigue en línea, declarado: ${excepcion}`);
+        else malos.push(`${nombre} (${tipo}, ${b === a ? 'no se enteró' : 'a medias'}): ${tramo}`);
+      } else if (b !== a) cuenta.enLinea += 1;
+      else cuenta.sinEfecto += 1;
+    }
+
+    // Prueba un campo y, mientras está cambiado, los que ESE cambio hizo aparecer (un bloque
+    // condicional: HA, respaldo, seguridad…), hasta PROFUNDIDAD niveles. Cada campo se prueba una
+    // vez por página (la marca `data-e2e-hecho`), y nunca más de TOPE: el recorrido no se vuelve
+    // combinatorio. Después repone el valor, que vuelve a ocultar lo que apareció.
+    async function probar(campo, nivel) {
+      if (cuenta.probados >= TOPE) return;
+      donde = `${pag}, campo ${campo.nombre}`;
+      // Un campo anterior puede haberlo ocultado o bloqueado: se salta, como lo saltaría una persona.
+      if (!(await usable(page, campo.n))) return;
+      const original = await valorDe(page, campo.n);
+      if (!original) return;
+      let nuevo = null;
+      if (campo.tipo === 'select') {
+        nuevo = await page.evaluate((k) => {
+          const el = window.document.querySelector(`[data-e2e-campo="${k}"]`);
+          const o = el && [...el.options].find((x) => !x.disabled && x.value !== el.value);
+          return o ? o.value : null;
+        }, campo.n);
+      } else if (campo.tipo === 'number' || campo.tipo === 'range') {
+        nuevo = await otroNumero(page, campo.n);
+      } else if (campo.tipo !== 'checkbox' && campo.tipo !== 'radio') {
+        nuevo = `${original.value} e2e`;
+      }
+      if (nuevo === null && campo.tipo !== 'checkbox' && campo.tipo !== 'radio') return;
+      if (nivel > 0) cuenta.revelados += 1;
+
+      try {
+        await medir(campo.nombre, campo.tipo, () => cambiar(page, campo, nuevo), (EXCEPCIONES[pag] || {})[campo.id]);
+      } catch (err) {
+        console.log(`  ${pag}: ${campo.nombre} no se pudo cambiar (${err.message.split('\n')[0]}): se salta`);
+        return;
+      }
+      if (nivel < PROFUNDIDAD) {
+        for (const hijo of await marcarCampos(page)) await probar(hijo, nivel + 1);
+      }
+
+      // Reponer y volver al mismo escenario.
+      donde = `${pag}, reponiendo ${campo.nombre}`;
+      const vuelve = await usable(page, campo.n);
+      const ahora = vuelve && await valorDe(page, campo.n);
+      if (ahora && JSON.stringify(ahora) !== JSON.stringify(original)) {
+        try {
+          await cambiar(page, campo, 'checked' in original ? null : original.value);
+        } catch (err) {
+          console.log(`  ${pag}: ${campo.nombre} no se pudo reponer (${err.message.split('\n')[0]})`);
+        }
+      }
+      await asentar(page);
+      await page.evaluate(() => window.DIMENSIONADOR_ACTUALIZAR());
+      await asentar(page);
+    }
+
+    // Las pestañas que tengan columna de parámetros (Cisco y MikroTik llevan campos en la del BOM).
+    const pestanas = await page.evaluate(() => [...window.document.querySelectorAll('[role="tab"]')].map((b, i) => i));
+    for (const p of pestanas.length ? pestanas : [null]) {
       if (p !== null) {
         // Por su posición y no por una marca: hay barras de pestañas que se repintan al elegir.
         donde = `${pag}, pestaña ${p}`;
         await page.evaluate((i) => { const b = window.document.querySelectorAll('[role="tab"]')[i]; if (b) b.click(); }, p);
         await asentar(page);
       }
-      const campos = await marcarCampos(page);
-      for (const campo of campos) {
-        const excepcion = (EXCEPCIONES[pag] || {})[campo.id];
-        // Un campo anterior puede haberlo ocultado o bloqueado (un desplegable que cambia el bloque
-        // visible): se salta, igual que lo saltaría una persona.
-        donde = `${pag}, campo ${campo.nombre}`;
-        if (!(await usable(page, campo.n))) continue;
-        const original = await valorDe(page, campo.n);
-        if (!original) continue;
-        let nuevo = null;
-        if (campo.tipo === 'select') {
-          nuevo = await page.evaluate((k) => {
-            const el = window.document.querySelector(`[data-e2e-campo="${k}"]`);
-            const o = el && [...el.options].find((x) => !x.disabled && x.value !== el.value);
-            return o ? o.value : null;
-          }, campo.n);
-        } else if (campo.tipo === 'number' || campo.tipo === 'range') {
-          nuevo = await otroNumero(page, campo.n);
-        } else if (campo.tipo !== 'checkbox' && campo.tipo !== 'radio') {
-          nuevo = `${original.value} e2e`;
-        }
-        if (nuevo === null && campo.tipo !== 'checkbox' && campo.tipo !== 'radio') continue;
+      for (const campo of await marcarCampos(page)) await probar(campo, 0);
 
-        const a = await leerResultados(page);
-        try {
-          await cambiar(page, campo, nuevo);
-        } catch (err) {
-          console.log(`  ${pag}: ${campo.nombre} no se pudo cambiar (${err.message.split('\n')[0]}): se salta`);
-          continue;
-        }
-        await asentar(page);
-        const b = await leerResultados(page);
-        await page.evaluate(() => window.DIMENSIONADOR_ACTUALIZAR());
-        await asentar(page);
-        const c = await leerResultados(page);
-        probados += 1;
-
-        if (c !== b) {
-          // La primera diferencia, para que el aviso diga qué se quedó atrás.
-          let i = 0;
-          while (i < b.length && b[i] === c[i]) i += 1;
-          const tramo = `en línea «…${b.slice(Math.max(0, i - 30), i + 50)}…» / con el botón «…${c.slice(Math.max(0, i - 30), i + 50)}…»`;
-          if (excepcion) console.log(`ok - ${pag}: ${campo.nombre} no sigue en línea, declarado: ${excepcion}`);
-          else malos.push(`${campo.nombre} (${campo.tipo}, ${b === a ? 'no se enteró' : 'a medias'}): ${tramo}`);
-        } else if (b !== a) {
-          enLinea += 1;
-        } else {
-          sinEfecto += 1;
-        }
-
-        // Reponer y volver al mismo escenario.
-        const ahora = await valorDe(page, campo.n);
-        if (ahora && JSON.stringify(ahora) !== JSON.stringify(original) && await usable(page, campo.n)) {
-          try {
-            await cambiar(page, campo, 'checked' in original ? null : original.value);
-          } catch (err) {
-            console.log(`  ${pag}: ${campo.nombre} no se pudo reponer (${err.message.split('\n')[0]})`);
-          }
-        }
-        await asentar(page);
-        await page.evaluate(() => window.DIMENSIONADOR_ACTUALIZAR());
-        await asentar(page);
+      // Las filas que se añaden con un botón (enlaces WAN, ópticas): al final, para no cambiar el
+      // escenario de lo anterior. El propio botón también tiene que recalcular en línea, y los campos
+      // de la fila nueva se prueban como los demás.
+      const botones = await page.evaluate(() => {
+        const d = window.document;
+        const cols = [...d.querySelectorAll('.cols, .dim')].filter((g) => g.children.length > 1).map((g) => g.firstElementChild);
+        return cols.flatMap((c) => [...c.querySelectorAll('button[id^="btnAdd"]')])
+          .filter((b) => !b.disabled && b.checkVisibility()).map((b) => b.id);
+      });
+      for (const id of botones) {
+        donde = `${pag}, botón ${id}`;
+        cuenta.filas += 1;
+        await medir(`botón ${id}`, 'botón', () => page.evaluate((x) => window.document.getElementById(x).click(), id));
+        for (const campo of await marcarCampos(page)) await probar(campo, 1);
       }
     }
-    console.log(`RESUMEN - ${pag}: ${probados} campos probados · ${enLinea} recalculan en línea · ${sinEfecto} sin efecto en este escenario · ${malos.length} se quedan atrás`);
+    const { probados, enLinea, sinEfecto, revelados, filas } = cuenta;
+    console.log(`RESUMEN - ${pag}: ${probados} probados (${revelados} aparecieron al marcar otro o al añadir ${filas} fila(s)) · ${enLinea} recalculan en línea · ${sinEfecto} sin efecto en este escenario · ${malos.length} se quedan atrás`);
     t.ok(probados > 0, `${pag}: hay campos que probar`);
     for (const m of malos) t.ok(false, `${pag}: ${m}`);
     if (!malos.length) t.ok(true, `${pag}: todos los campos que mueven el resultado lo mueven en línea`);
