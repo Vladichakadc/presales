@@ -396,20 +396,9 @@ tr.total td{border-top:2px solid var(--ink);border-bottom:0;font-weight:600;padd
     <div id="mrrBox"></div>
     <p class="hint" style="margin-top:10px">El equipo, las ópticas y los AP traen el «Suggested price» de su ficha; la licencia RouterOS viene incluida en el equipo y el soporte de comunidad es gratuito. El contrato con partner y la capacitación no tienen precio publicado: salen «sin cotizar» y el TCO se declara <b>parcial</b> si se eligen.</p>
   </section>
-  <section class="panel">
+  <section class="panel" id="panelPerfiles">
     <h2>Perfiles multi-sede</h2>
     <p class="hint" style="margin:0 0 10px">Guarda el escenario actual como perfil («Sucursal», «Hub regional»…) con su número de sedes idénticas. El <b>BOM global consolidado</b> suma las líneas de todos los perfiles —de cualquier fabricante— y se exporta aparte. El perfil guarda la lista de materiales tal como está ahora; «Cargar» repone el escenario, y las ópticas se vuelven a elegir en el BOM.</p>
-    <div class="row" style="margin-bottom:10px;gap:8px;flex-wrap:wrap">
-      <input type="text" id="nombrePerfil" placeholder="Nombre del perfil — p. ej. Sucursal" autocomplete="off" aria-label="Nombre del perfil">
-      <input type="number" id="perfilSedes" min="1" step="1" placeholder="Nº sedes" style="width:100px" autocomplete="off" aria-label="Número de sedes">
-      <button type="button" class="btn" id="btnGuardarPerfil" style="white-space:nowrap">Guardar perfil</button>
-    </div>
-    <p class="hint" id="perfilMsg" aria-live="polite"></p>
-    <div id="listaPerfiles"></div>
-    <div style="margin-top:10px">
-      <button type="button" class="btn" id="btnConsolidar" disabled>Consolidar BOM global</button>
-      <p class="hint" style="margin-top:6px">Abre el BOM agregado Σ(BOM del perfil × sedes) en una ventana aparte, con su exportación a Excel.</p>
-    </div>
   </section>
 </div>
 </div>
@@ -581,17 +570,6 @@ Precios de referencia MSRP público, sin price list regional firmado — <b>veri
 </p>
 
 </div><!-- /wrap -->
-<div id="modalConsolidado" hidden>
-<div class="acc-caja" style="max-width:860px" role="dialog" aria-modal="true" aria-labelledby="consolidadoTitulo">
-<h3 id="consolidadoTitulo">BOM global consolidado — perfiles multi-sede</h3>
-<p class="hint" id="consolidadoSub"></p>
-<div id="consolidadoTabla"></div>
-<div style="display:flex;gap:8px;justify-content:flex-end;margin-top:12px">
-<button type="button" class="btn" id="xlsConsolidadoBtn">Exportar consolidado a Excel</button>
-<button type="button" class="btn ghost" id="consolidadoCerrar">Cerrar</button>
-</div>
-</div>
-</div>
 <script src="/js/bom.js"></script>
 <script src="/js/ficha.js"></script>
 <script src="/js/estado.js"></script>
