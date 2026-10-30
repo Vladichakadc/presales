@@ -3614,7 +3614,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // se migra a filas equivalentes con aviso por consola; y al final se reconstruyen las
   // filas desde la serialización que haya quedado.
   reconstruirWanDesdeHidden();
-  const st = ESTADO.vincular({ campos: CAMPOS_ESCENARIO, migrados: PARAMS_RETIRADOS, opcionesTarde: ['pickModel'] });
+  const st = ESTADO.vincular({ campos: CAMPOS_ESCENARIO, migrados: PARAMS_RETIRADOS, opcionesTarde: ['pickModel', 'selTier'] });
   // Migración v1→v2: migrarEstadoV1 escribe la serialización en el input oculto; hay que
   // reconstruir las filas DESPUÉS y entonces avisar a ESTADO (sincronizarWanHidden leería
   // las filas viejas y pisaría lo migrado — orden importa).
