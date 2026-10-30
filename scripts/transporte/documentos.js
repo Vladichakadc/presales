@@ -1628,4 +1628,9 @@ module.exports = [
     'https://help.mikrotik.com/docs/spaces/UM/pages/93552657/CCR2004-16G-2S+PC',
     'https://manual.mikrotik.com/hardware/ccr2004-16g-2s-plus-pc',
   ] },
+  // 2026-10-29, transporte de una sola corrida (rama claude/traer-aos8-9106, no se fusiona): la
+  //   pagina «What's New» de AOS-8, que da el 9106 en AOS-8 desde la 8.13.1.0.
+  { archivo: 'aruba-aos8-whats-new.html', tipo: 'html', para: 'ARUBA', debeContener: '9106', urls: [
+    'https://arubanetworking.hpe.com/techdocs/ArubaOS/AOS_8x_WebHelp/Content/arubaos-solutions/AOS8-Whats-New.htm',
+  ] },
 ];
