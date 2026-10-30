@@ -327,6 +327,8 @@
   // tabla «Software Package Functions»), por la clave de requisito del motor.
   const N1_SOLO_ADVANCED = { mcast: 'multicast IP sobre SD-WAN', compresion: 'compresión de datos' };
 
+  // Cada línea que existe solo porque se pidió algo dice qué la trajo (`req`: la clave de `c.svc` o de
+  // `c.req`), en el mismo `if` que la crea; la página la marca con su casilla (2026-10-29).
   function licencias(pick, c) {
     const m = pick.m, L = [];
     // Plazo de las suscripciones (1, 3 o 5 anos): el texto de cada linea dice el termino real.
@@ -365,17 +367,17 @@
       }
       if (c.svc.utm) {
         const pq = fx ? (fx.paquetes || []).filter((p) => p.para === 'utm') : [];
-        pq.forEach((p) => L.push({ on: 1, t: `Paquete de seguridad ${p.sku}`, sku: p.sku, d: `${p.d}${doc}.` }));
-        if (!pq.length) L.push({ on: 1, t: 'Licencia de seguridad: IPS, filtrado URL y antivirus', d: 'Funciones licenciadas aparte en la serie AR, no vienen activas.' });
+        pq.forEach((p) => L.push({ req: 'utm', on: 1, t: `Paquete de seguridad ${p.sku}`, sku: p.sku, d: `${p.d}${doc}.` }));
+        if (!pq.length) L.push({ req: 'utm', on: 1, t: 'Licencia de seguridad: IPS, filtrado URL y antivirus', d: 'Funciones licenciadas aparte en la serie AR, no vienen activas.' });
         const tp = fx && fx.amenazas ? fx.amenazas[Math.min(5, Math.max(1, anios))] : null;
         L.push(tp
-          ? { on: 1, t: `Suscripción de amenazas ${tp} — ${T}`, sku: tp, d: `Actualiza las firmas de IPS y antivirus y la consulta remota de URL${doc}. Va aparte del paquete N1: ni Foundation ni Advanced traen IPS, URL ni antivirus, que son el add-on «Security Threat Prevention» (ficha de la solución SD-WAN R25C00).` }
-          : { on: 1, t: `Suscripción de bases de firmas — ${T}`, d: 'Sin firmas vigentes el IPS y el antivirus quedan sin actualizar. La ficha de este modelo no lista su código.' });
+          ? { req: 'utm', on: 1, t: `Suscripción de amenazas ${tp} — ${T}`, sku: tp, d: `Actualiza las firmas de IPS y antivirus y la consulta remota de URL${doc}. Va aparte del paquete N1: ni Foundation ni Advanced traen IPS, URL ni antivirus, que son el add-on «Security Threat Prevention» (ficha de la solución SD-WAN R25C00).` }
+          : { req: 'utm', on: 1, t: `Suscripción de bases de firmas — ${T}`, d: 'Sin firmas vigentes el IPS y el antivirus quedan sin actualizar. La ficha de este modelo no lista su código.' });
       }
       ['dsvpn', 'compresion'].forEach((k) => {
         if (!req.includes(k) || !fx) return;
         const pq = (fx.paquetes || []).filter((p) => p.para === k);
-        pq.forEach((p) => L.push({ on: 1, t: `Paquete de valor añadido ${p.sku}`, sku: p.sku, d: `${p.d}${doc}.` }));
+        pq.forEach((p) => L.push({ req: k, on: 1, t: `Paquete de valor añadido ${p.sku}`, sku: p.sku, d: `${p.d}${doc}.` }));
         if (!pq.length) L.push({ on: 0, t: `${k === 'dsvpn' ? 'DSVPN' : 'Compresión de datos'}: sin paquete en la ficha`, d: `La ficha de la serie ${m.ser} no lista un paquete aparte para esta función: confirma con Huawei si va incluida.` });
       });
       if (c.aps > 0) {
@@ -386,7 +388,7 @@
     } else {
       L.push({ on: 1, t: 'Licencia base del sistema VRP por chasis', d: 'Habilita el conjunto de funciones de la plataforma.' });
       L.push({ on: 1, t: 'Licencias de función de transporte: L3VPN, EVPN, SRv6', d: 'Se licencian por funcionalidad activada.' });
-      if (c.svc.slice) L.push({ on: 1, t: 'Licencia de slicing FlexE / SRv6', d: 'Aislamiento duro de red y ajuste de ancho de banda por rebanada.' });
+      if (c.svc.slice) L.push({ req: 'slice', on: 1, t: 'Licencia de slicing FlexE / SRv6', d: 'Aislamiento duro de red y ajuste de ancho de banda por rebanada.' });
       L.push({ on: 1, t: 'Licencia de capacidad por puerto y tarjeta', d: 'La capacidad se habilita por incrementos. Cotiza la densidad del año 1 y crece por licencia.' });
       L.push({ on: 1, t: `Suscripción iMaster NCE — ${T}`, d: 'Gestión, automatización y O&M proactiva del nodo.' });
     }

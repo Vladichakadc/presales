@@ -450,6 +450,12 @@ Módulos compartidos:
   primero; nunca un mapa función→fila. Junto a
   la tarjeta clavada (`.col-fijo`, Aruba y Juniper) va FUERA de ella, como pieza de la rejilla encima:
   dentro la alargaba y se soltaba antes del fondo (`e2e-sticky.js`).
+- `por-funcion.js` — **«por <función>» en la fila del BOM** (2026-10-29, PR #70; complementa el
+  resaltado de `funciones-activas.js`): la fila que existe solo porque se pidió una función lleva
+  `por` (id de su casilla), puesto en el mismo `if` que la crea o traducido del `req` del motor con
+  una tabla que repite la lectura de la página (`test/por-funcion.test.js`); `bom.js` pinta
+  `data-por` y la etiqueta con un botón a la casilla. Falla cerrado; ni el consolidado ni el Excel la
+  llevan. Cisco, Fortinet, Huawei, Aruba y MikroTik; se carga sin `defer` antes del `<body>`.
 - `actualizar.js` + `public/actualizar.css` — el botón **«Actualizar»** de los nueve dimensionadores
   (2026-10-29, petición del dueño): arriba de la columna de parámetros (en Starlink, bajo la cabecera
   del panel), valida los campos visibles con sus reglas del HTML (`min`, `max`, `step`, `required`),
