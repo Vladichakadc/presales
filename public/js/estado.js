@@ -86,6 +86,17 @@
     // de por qué se eligió un querystring en vez de un blob codificado.
     const defectos = {};
     for (const id of campos) defectos[id] = leer(document.getElementById(id));
+    // DESPLEGABLES QUE SE RELLENAN TARDE (2026-10-30). Un <select> que ya está en el HTML pero
+    // vacío (sus opciones llegan con el catálogo, como el modelo de AP de MikroTik) no se puede
+    // restaurar ahora: `escribir` lo rechazaría y el valor del enlace se perdería sin aviso. Y su
+    // valor por defecto no es '' sino la primera opción que llegue: si no, en cuanto se rellenara
+    // contaría como cambiado y viajaría siempre en el enlace. Lo declara la página
+    // (`cfg.opcionesTarde`): una que ya repone su desplegable por su cuenta (Aruba, `QMODEL_URL`)
+    // no debe tener dos vías compitiendo.
+    const sinOpciones = (cfg.opcionesTarde || []).filter((id) => {
+      const n = document.getElementById(id);
+      return campos.includes(id) && n && n.tagName === 'SELECT' && !n.options.length;
+    });
     // Lo que `escenario()` necesita para describir la pantalla en el Excel (hoja «Supuestos»).
     vinculado = { campos, defectos };
 
@@ -168,6 +179,22 @@
           if (destino) destino.click();
         }
       }, 0);
+    }
+
+    for (const id of sinOpciones) {
+      const nodo = document.getElementById(id);
+      const obs = new MutationObserver(() => {
+        if (!nodo.options.length) return;
+        if (defectos[id] === '') defectos[id] = nodo.options[0].value;
+        // Lo que trae el enlace, ahora que hay opciones; se anuncia como si lo eligiera alguien.
+        if (id in guardado && escribir(nodo, guardado[id])) {
+          nodo.dispatchEvent(new Event('input', { bubbles: true }));
+          nodo.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+        obs.disconnect();
+      });
+      obs.observe(nodo, { childList: true });
+      setTimeout(() => obs.disconnect(), 8000);
     }
 
     // CAMPOS QUE APARECEN TARDE. El desplegable de equipo lo pinta ficha.js DESPUÉS del
