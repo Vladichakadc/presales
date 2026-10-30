@@ -1,0 +1,32 @@
+[
+  {
+    "archivo": "juniper-srx4100-srx4200-ds.html",
+    "para": "JUNIPER",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://www.juniper.net/gb/en/products/security/srx-series/srx4100-srx4200-firewall-datasheet.html",
+        "status": 200,
+        "bytes": 736885,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "meraki-c8111-c8121-g2-mx-ficha.html",
+    "para": "CISCO",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://documentation.meraki.com/SASE_and_SD-WAN/MX/Product_Information/Overviews_and_Datasheets/C8111-G2-MX_and_C8121-G2-MX_Data_Sheet",
+        "status": 200,
+        "bytes": 430741,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  }
+]
