@@ -428,7 +428,8 @@ Módulos compartidos:
   viaja; un enlace con parámetros que la pantalla ya no entiende lo dice (`avisoOrigen`), salvo lo
   que la página declara migrar; un `<select>` que el HTML trae vacío y se rellena con el catálogo se
   declara en `opcionesTarde` y se repone cuando llegan sus opciones, o se anuncia si ya estaban
-  (MikroTik, `apModel`; Aruba, `pickModel`, que su `change` marca como elegido a mano).
+  (MikroTik, `apModel`; Aruba, `pickModel`, que su `change` marca como elegido a mano, y `selTier`);
+  `test/opciones-tarde.test.js` frena un desplegable vacío del enlace sin declarar.
 - `procedencia.js` — la pestaña de fuentes (leer, subir, borrar, contrastar en el acto con
   `contraste.js`: cambios, altas, sin cambio y columnas ignoradas; nunca adivina un mapeo); y
   «↻ Actualizar fuentes», 2026-10-29: `/api/fuentes/:vendor/salud` con `server/vigiaEnVivo.js` vuelve a

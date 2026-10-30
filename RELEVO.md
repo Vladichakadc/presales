@@ -1,6 +1,6 @@
 # Relevo
 
-Última actualización: 2026-10-30 · PR #79
+Última actualización: 2026-10-30 · PR #81
 
 Informe para continuar el trabajo. Lo pidió el dueño del repositorio el 2026-10-27: «de aquí en
 adelante, un informe de pendientes y mejoras para que la cuenta **servicioiptv2025@gmail.com**
@@ -33,6 +33,9 @@ está en curso no va aquí: lo dice `npm run traspasos` (protocolo en `docs/tras
 
 ## Estado al cerrar esta entrega
 
+- **2026-10-30 · PR #81**: el tier de caudal de Aruba viaja en el enlace (`selTier` en `opcionesTarde`;
+  medido antes en CI: se perdía). **Criterio que conviene conservar**: un `<select>` vacío en el HTML
+  que viaja en el enlace va en `opcionesTarde`; `test/opciones-tarde.test.js` lo frena si no.
 - **2026-10-30 · PR #79**: la batería de campos en línea recorre también los bloques que aparecen al
   marcar otro campo, cada opción de los botones segmentados y las filas de «+ Añadir»: 380
   comprobaciones en CI, ninguna atrás. **Criterio que conviene conservar**: `PROFUNDIDAD` y `TOPE`
@@ -418,15 +421,7 @@ existen los workflows de transporte. Huawei y HPE niegan además el navegador au
   enlace a su pestaña, daría la vista del vigía del lunes en el momento. Cuesta una sección del
   portal y su script, sin tocar el servidor; si se hace mal, siete corridas a la vez pegarían a los
   fabricantes (la prueba tiene que fijar que van de una en una). Se decide por el dueño.
-- **El tier de Aruba en el enlace** (propuesta al cerrar el PR #80). `selTier` viaja en el enlace
-  (`CAMPOS_ESCENARIO`) pero el HTML lo trae vacío y sus opciones llegan con el catálogo, el mismo caso
-  que tenían `apModel` y `pickModel`: lo más probable es que un enlace con tier aterrice en el de por
-  defecto. Lo primero es medirlo con una batería e2e como `e2e-aruba-pickmodel-enlace`; si se pierde,
-  declararlo en `opcionesTarde`. Evita que el receptor de un enlace cotice otra licencia. Cuesta una
-  batería y una línea; si se hace mal (sus opciones dependen del modelo y se rehacen en cada render),
-  un tier que el modelo nuevo no admite se quedaría sin elegir: la batería debe cubrir ese cambio.
-  Se decide por el dueño.
-- (Hecha en el PR #80: el modelo de Aruba por `opcionesTarde`. Hecha en el PR #77: el modelo de AP de MikroTik en el enlace. Hecha en el PR #75: los campos del perfil, de los del enlace. Hecha en el PR #71: «Actualizar fuentes» en vivo. Hecha en el PR #67: el marcado del panel de perfiles, generado por el módulo. Hecha en el PR #66: lo que trajo cada función, resaltado en el resultado. Hecha en el PR #62: el panel de perfiles, un solo módulo. Hecha en el PR #60: la licencia FortiGuard única del par en el BOM. Hecha en el PR #59: la vigilia del despliegue. Hecha en el PR #58: del override por ciclo de vida a ampliación o renovación en un clic. Hecha en el PR #57: el transporte probado sin red. Hecha en el PR #55: los perfiles multi-sede en Juniper y Nokia 7750. Hecha en el PR #54: la foto desde la página de cada modelo, hasta donde Cisco la publica, y el transporte fuera del YAML. Hecha en el PR #50: los perfiles de otros fabricantes al día al consolidar. Hecha en el PR #46: el ciclo del perfil al día al consolidar. Hecha en el PR #45: la fuente de la PQC enlazada a `fuentes.js`. Hecha en el PR #44: el ciclo en el consolidado multi-sede. Hecha en el PR #41: el fin de venta en el Excel. Hecha en el PR #40: la foto de producto en el Excel. Hecha en la septuagesimoprimera: el «no la trae» documentado, `pqcNo`. Hecha en la sexagesimoctava: la
+- (Hecha en el PR #81: el tier de Aruba en el enlace. Hecha en el PR #80: el modelo de Aruba por `opcionesTarde`. Hecha en el PR #77: el modelo de AP de MikroTik en el enlace. Hecha en el PR #75: los campos del perfil, de los del enlace. Hecha en el PR #71: «Actualizar fuentes» en vivo. Hecha en el PR #67: el marcado del panel de perfiles, generado por el módulo. Hecha en el PR #66: lo que trajo cada función, resaltado en el resultado. Hecha en el PR #62: el panel de perfiles, un solo módulo. Hecha en el PR #60: la licencia FortiGuard única del par en el BOM. Hecha en el PR #59: la vigilia del despliegue. Hecha en el PR #58: del override por ciclo de vida a ampliación o renovación en un clic. Hecha en el PR #57: el transporte probado sin red. Hecha en el PR #55: los perfiles multi-sede en Juniper y Nokia 7750. Hecha en el PR #54: la foto desde la página de cada modelo, hasta donde Cisco la publica, y el transporte fuera del YAML. Hecha en el PR #50: los perfiles de otros fabricantes al día al consolidar. Hecha en el PR #46: el ciclo del perfil al día al consolidar. Hecha en el PR #45: la fuente de la PQC enlazada a `fuentes.js`. Hecha en el PR #44: el ciclo en el consolidado multi-sede. Hecha en el PR #41: el fin de venta en el Excel. Hecha en el PR #40: la foto de producto en el Excel. Hecha en la septuagesimoprimera: el «no la trae» documentado, `pqcNo`. Hecha en la sexagesimoctava: la
   versión mínima de la PQC en la hoja «Supuestos».)
 
 ## Decisiones del dueño abiertas
