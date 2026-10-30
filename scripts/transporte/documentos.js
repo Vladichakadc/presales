@@ -1628,4 +1628,11 @@ module.exports = [
     'https://help.mikrotik.com/docs/spaces/UM/pages/93552657/CCR2004-16G-2S+PC',
     'https://manual.mikrotik.com/hardware/ccr2004-16g-2s-plus-pc',
   ] },
+  // 2026-10-30, transporte de una sola corrida (rama claude/traer-pendientes-pqc, no se fusiona):
+  //   los documentos que podrian cerrar la PQC que sigue en «no consta» (Nokia 7250 IXR).
+  { archivo: 'nokia-anysec-quantum-safe.pdf', tipo: 'pdf', para: 'NOKIA', urls: ['https://www.nokia.com/asset/f/210676/'] },
+  { archivo: 'nokia-7250-ixr-x-ds.pdf', tipo: 'pdf', para: 'NOKIA', urls: ['https://www.nokia.com/asset/f/210319/'] },
+  { archivo: 'nokia-7250-ixr-r-ds.pdf', tipo: 'pdf', para: 'NOKIA', urls: ['https://www.nokia.com/asset/f/206658/'] },
+  { archivo: 'nokia-7250-ixr-6e-10e-srl-ds.pdf', tipo: 'pdf', para: 'NOKIA', urls: ['https://www.nokia.com/asset/f/212673/'] },
+  { archivo: 'nokia-series-ds.pdf', tipo: 'pdf', para: 'NOKIA', urls: ['https://www.nokia.com/asset/f/207599/'] },
 ];
