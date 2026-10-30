@@ -55,11 +55,9 @@ const FICHA_CFG={vendor:'aruba', refs:false, selector:false,
   panelFijo:true, detalleExpandible:true, vistas:null,
   refsNota:'Las referencias de pedido de este equipo —y de todo el catálogo de Aruba: hardware, remanufacturados, suscripciones EdgeConnect, Boost, Central y licencias perpetuas— están integradas en la lista de materiales. Allí se añaden y se quitan con su SKU y su List Price.'};
 
-// El modelo viaja en la URL como parte del escenario compartible, pero ESTADO reescribe el
-// querystring al vincular —cuando el desplegable aun no tiene opciones y no puede
-// reponerlo— y el parametro se pierde. Se captura aqui, al cargar el script (antes de que
-// ESTADO corra en DOMContentLoaded), y se reaplica en initApp con el catalogo ya puesto.
-const QMODEL_URL=new URLSearchParams(location.search).get('pickModel');
+// El modelo viaja en la URL como parte del escenario compartible. Sus opciones llegan con el
+// catálogo, así que lo repone ESTADO cuando existen (`opcionesTarde`, 2026-10-30; antes, una
+// captura propia, QMODEL_URL): su `change` lo marca como elegido, igual que una elección a mano.
 // Mismo motivo, mismo patrón: ?ficha=abierta (deep-link de las características,
 // 2026-09-16) se captura al cargar el script y se reaplica tras el primer render.
 const FICHA_ABIERTA_URL=new URLSearchParams(location.search).get('ficha')==='abierta';
@@ -3570,13 +3568,8 @@ async function compararListaPrecios(archivo){
   // declara aquí: es lo que permite que la lista de materiales muestre solo lo de Aruba.
   if(BOM.fijarVendor) BOM.fijarVendor('aruba');
   populateSelects();
-  // Reponer desde un enlace ES elegir: queda como seleccion manual, igual que hacia el
-  // antiguo desplegable de la ficha (capturado al cargar el script, ver QMODEL_URL).
-  if(QMODEL_URL&&[...$('pickModel').options].some(o=>o.value===QMODEL_URL)){
-    $('pickModel').value=QMODEL_URL;
-    $('pickModel').dataset.bomManual='1';
-    $('pickModel').dataset.firmaPuertos=firmaPuertos(leerWanLinks());
-  }
+  // Reponer desde un enlace ES elegir: lo hace ESTADO (`opcionesTarde`) con el `change` del
+  // selector, que marca la elección manual igual que hacía el antiguo desplegable de la ficha.
   render();
   // Deep-link: ?ficha=abierta abre las características al cargar. El clic pasa por el
   // mismo cauce que el del usuario (toggle de ficha.js + soltar sticky + reponer el
@@ -3621,7 +3614,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // se migra a filas equivalentes con aviso por consola; y al final se reconstruyen las
   // filas desde la serialización que haya quedado.
   reconstruirWanDesdeHidden();
-  const st = ESTADO.vincular({ campos: CAMPOS_ESCENARIO, migrados: PARAMS_RETIRADOS });
+  const st = ESTADO.vincular({ campos: CAMPOS_ESCENARIO, migrados: PARAMS_RETIRADOS, opcionesTarde: ['pickModel'] });
   // Migración v1→v2: migrarEstadoV1 escribe la serialización en el input oculto; hay que
   // reconstruir las filas DESPUÉS y entonces avisar a ESTADO (sincronizarWanHidden leería
   // las filas viejas y pisaría lo migrado — orden importa).

@@ -427,7 +427,8 @@ Módulos compartidos:
   solo se serializa lo que difiere del valor por defecto; lo que va dentro de `[data-inactivo]` no
   viaja; un enlace con parámetros que la pantalla ya no entiende lo dice (`avisoOrigen`), salvo lo
   que la página declara migrar; un `<select>` que el HTML trae vacío y se rellena con el catálogo se
-  declara en `opcionesTarde` y se repone cuando llegan sus opciones (MikroTik, `apModel`).
+  declara en `opcionesTarde` y se repone cuando llegan sus opciones, o se anuncia si ya estaban
+  (MikroTik, `apModel`; Aruba, `pickModel`, que su `change` marca como elegido a mano).
 - `procedencia.js` — la pestaña de fuentes (leer, subir, borrar, contrastar en el acto con
   `contraste.js`: cambios, altas, sin cambio y columnas ignoradas; nunca adivina un mapeo); y
   «↻ Actualizar fuentes», 2026-10-29: `/api/fuentes/:vendor/salud` con `server/vigiaEnVivo.js` vuelve a
