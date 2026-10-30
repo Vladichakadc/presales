@@ -35,32 +35,34 @@
  */
 const BASE_LINEA = [
   { n: 'SSL 300 Mbps (AT-01)', bw: 300, ssl: true, techo: '100',
-    recomendado: 'FortiGate 30G', need: '390 Mbps', nCandidatos: 53 },
+    recomendado: 'FortiGate 30G', need: '390 Mbps', nCandidatos: 51 },
   { n: 'SSL 800 Mbps', bw: 800, ssl: true, techo: '100',
-    recomendado: 'FortiGate 50G', need: '1.0 Gbps', nCandidatos: 46 },
+    recomendado: 'FortiGate 50G', need: '1.0 Gbps', nCandidatos: 44 },
   { n: 'SSL 1.500 Mbps', bw: 1500, ssl: true, techo: '100',
-    recomendado: 'FortiGate 90G', need: '1.9 Gbps', nCandidatos: 42 },
+    recomendado: 'FortiGate 90G', need: '1.9 Gbps', nCandidatos: 40 },
   // Era «ningun modelo trae la cifra» y daba cero. Hoy el 200G la trae y la respuesta
   // correcta es el 200G: el escenario se conserva con su nueva respuesta en vez de retirarse,
   // porque sigue siendo el que veria un motor que volviera a caer a Threat Protection -ahi
   // recomendaria un 90G, dos gamas por debajo-.
   { n: 'SSL 4.000 Mbps', bw: 4000, ssl: true, techo: '100',
-    recomendado: 'FortiGate 200G', need: '5.2 Gbps', nCandidatos: 38 },
+    recomendado: 'FortiGate 200G', need: '5.2 Gbps', nCandidatos: 36 },
   // Este escenario fijaba «sin dato aparta» con el 600F, que sobraba por Threat Protection y no
   // publicaba SSL. Desde el 2026-09-23 su ficha por serie SI la publica y ademas esta fuera de
   // venta, asi que ya no prueba esa regla: la prueba `extra`, en ampliacion y con el 200F. Se
   // conserva como punto de la escalera de gama media.
   { n: 'SSL 2.000 Mbps — gama media', bw: 2000, ssl: true, techo: '100',
-    recomendado: 'FortiGate 120G', need: '2.6 Gbps', nCandidatos: 40 },
+    recomendado: 'FortiGate 120G', need: '2.6 Gbps', nCandidatos: 38 },
   { n: 'control sin SSL, 800 Mbps', bw: 800, ssl: false, techo: '100',
-    recomendado: 'FortiGate 50G', need: '1.0 Gbps', nCandidatos: 46 },
+    recomendado: 'FortiGate 50G', need: '1.0 Gbps', nCandidatos: 44 },
   { n: 'SSL 800 Mbps con techo del 70 %', bw: 800, ssl: true, techo: '70',
-    recomendado: 'FortiGate 90G', need: '1.0 Gbps', nCandidatos: 42 },
+    recomendado: 'FortiGate 90G', need: '1.0 Gbps', nCandidatos: 40 },
   { n: 'control sin SSL, 800 Mbps con techo del 70 %', bw: 800, ssl: false, techo: '70',
-    recomendado: 'FortiGate 90G', need: '1.0 Gbps', nCandidatos: 42 },
+    recomendado: 'FortiGate 90G', need: '1.0 Gbps', nCandidatos: 40 },
 ];
 
 module.exports = {
+  // 2026-10-29 (PR #68): el 1000F y el 1001F pasan a fuera de venta (ultimo pedido 2026-10-13):
+  // salen de los candidatos de cada escenario (-2) y, donde eran el recomendado, sube el 1800F.
   // Medida en Chromium el dia del cambio, sobre el commit anterior a el. Va con su fecha y
   // su commit porque una linea base sin procedencia sigue pasando en verde cuando ya no
   // quiere decir nada — misma regla que la fecha de cada fuente del catalogo.

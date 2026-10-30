@@ -29,52 +29,54 @@ const BASE_LINEA = [
   // el tope de tuneles. No es un escenario de laboratorio: un hub que concentra sedes de muy
   // poco trafico (retail, IoT, cajeros) es exactamente donde el conteo aprieta y el caudal no.
   { n: 'hub con 190 spokes de 1 Mbps — cabe en los 200 tuneles del 30G', rol: 'hub', sites: 190, bw: 1,
-    techo: '100', recomendado: 'FortiGate 30G', nCandidatos: 54 },
+    techo: '100', recomendado: 'FortiGate 30G', nCandidatos: 52 },
   { n: 'hub con 260 spokes de 1 Mbps — el tope de 200 tuneles lo saca', rol: 'hub', sites: 260, bw: 1,
-    techo: '100', recomendado: 'FortiGate 120G', nCandidatos: 40 },
+    techo: '100', recomendado: 'FortiGate 120G', nCandidatos: 38 },
   // EL TECHO DE UTILIZACION NO RECORTA UN TOPE DE PLATAFORMA. Mismo escenario que el primero
   // con el techo al 70 %: 190 de 200 tuneles es el 95 %, asi que un techo aplicado a ciegas
   // lo habria sacado. Sigue entrando, y el resultado es identico al del 100 %.
   { n: 'hub con 190 spokes y techo del 70 % — el tope no se recorta', rol: 'hub', sites: 190, bw: 1,
-    techo: '70', recomendado: 'FortiGate 30G', nCandidatos: 54 },
+    techo: '70', recomendado: 'FortiGate 30G', nCandidatos: 52 },
   // ACCESO REMOTO: el mismo numero de usuarios, el mismo caudal y el mismo requerimiento
   // -130 Mbps en los dos- caben por IPsec dial-up y no por SSL-VPN. Es exactamente lo que la
   // pagina no podia distinguir antes de preguntar el modo, porque sumaba los dos al eje IPsec.
   { n: '400 remotos por IPsec dial-up', rol: 'none', vpnUsers: 400, vpnTipo: 'ipsec', bw: 100,
-    techo: '100', recomendado: 'FortiGate 60F', nCandidatos: 49 },
+    techo: '100', recomendado: 'FortiGate 60F', nCandidatos: 47 },
   // CON FortiOS 7.4 (etapa 7, F02): en 7.6.3 o superior el modo tunel SSL-VPN no existe y el
   // escenario queda bloqueado —que es la respuesta correcta, y la vigila fortinet-motor.test.js—.
   // Aqui se mide lo que este caso mide: que los dos motores tienen topes distintos.
   { n: '400 remotos por SSL-VPN (FortiOS 7.4) — otro motor, otro tope, otro equipo', rol: 'none', vpnUsers: 400, vpnTipo: 'sslvpn', fortiOS: '7.4', bw: 100,
-    techo: '100', recomendado: 'FortiGate 120G', nCandidatos: 40 },
+    techo: '100', recomendado: 'FortiGate 120G', nCandidatos: 38 },
   // VDOM: un tope de plataforma que este catalogo no tenia y que decide un diseno multi-tenant.
   // CON 120 VDOM EL RECOMENDADO PASA DEL 1800F AL 1000F (2026-09-23), y es dato, no motor: la
   // ficha por serie del 1000F (FG-1000F-DAT-R17) publica 250 VDOM y el Product Matrix no lo
   // listaba, asi que antes se apartaba por no traer la cifra. Con ella es el mas pequeño que
   // los admite.
   { n: '20 VDOM', rol: 'none', vdoms: 20, bw: 100, techo: '100',
-    recomendado: 'FortiGate 200G', nCandidatos: 38 },
+    recomendado: 'FortiGate 200G', nCandidatos: 36 },
   { n: '120 VDOM', rol: 'none', vdoms: 120, bw: 100, techo: '100',
-    recomendado: 'FortiGate 1000F', nCandidatos: 28 },
+    recomendado: 'FortiGate 1800F', nCandidatos: 26 },
   // VECINOS BGP (2026-10-13, F4-resto): la Maximum Values Table de FortiOS 7.6.7. El par fija
   // el tope: 1000 vecinos caben en todo lo que la tabla lista (1000 es el minimo de la gama) y
   // solo apartan a los que NO tienen dato -400G, 3000G, 3500G, 3800G y sus variantes, 7081F y 7121F, porque un
   // eje duro sin cifra aparta-; 1001 saca ademas a todos los de 1000 y el recomendado sube al
   // 1000F (5000). Medido en la pantalla el dia del cambio.
   { n: '1000 vecinos BGP — caben en el minimo de la tabla', rol: 'none', bgpPeers: 1000, bw: 100, techo: '100',
-    recomendado: 'FortiGate 30G', nCandidatos: 44 },
+    recomendado: 'FortiGate 30G', nCandidatos: 42 },
   { n: '1001 vecinos BGP — el tope de 1000 saca a la gama baja', rol: 'none', bgpPeers: 1001, bw: 100, techo: '100',
-    recomendado: 'FortiGate 1000F', nCandidatos: 20 },
+    recomendado: 'FortiGate 1800F', nCandidatos: 18 },
   // EL CONTROL. Mismo caudal, sin declarar ningun limite: compiten los 54 vigentes (los 4
   // fuera de venta no son candidatos en compra nueva desde la etapa 7). Sin el, un motor
   // que se rompiera y apartara a todo el mundo daria listas cortas en los seis de arriba y
   // pasaria por «el eje funciona».
   { n: 'control · 100 Mbps sin limites declarados', rol: 'none', bw: 100, techo: '100',
-    recomendado: 'FortiGate 30G', nCandidatos: 54 },
+    recomendado: 'FortiGate 30G', nCandidatos: 52 },
 ];
 
 
 module.exports = {
+  // 2026-10-29 (PR #68): el 1000F y el 1001F pasan a fuera de venta (ultimo pedido 2026-10-13):
+  // salen de los candidatos de cada escenario (-2) y, donde eran el recomendado, sube el 1800F.
   // RE-MEDIDA EL 2026-09-23 EN EL ARBOL DE LA ETAPA 7. `recomendado` no cambia salvo en 120 VDOM
   // (ver arriba); `nCandidatos` sube por los 5 modelos que las fichas por serie completaron
   // (400F, 401F, 600F, 1000F, 1001F: tuneles, SSL-VPN, VDOM) y baja por los 4 fuera de venta.
