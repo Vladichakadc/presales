@@ -34,14 +34,14 @@
        traerlo compiten, salvo los fuera de venta. Con SD-WAN: 48 → 51 y 34 → 38.
    Medido con el motor unico en el arbol de la etapa 7 sobre ec2f803. */
 const BASE_LINEA = [
-  { n: 'sin sdwan, 500 Mbps',          bw: 500,   rol: 'none',  pct: 100, recomendado: 'FortiGate 60F',  need: '650 Mbps', nCandidatos: 51 },
-  { n: 'sin sdwan, 2.5 Gbps',          bw: 2500,  rol: 'none',  pct: 100, recomendado: 'FortiGate 200G', need: '3.3 Gbps', nCandidatos: 38 },
-  { n: 'spoke 100% overlay, 500',      bw: 500,   rol: 'spoke', pct: 100, recomendado: 'FortiGate 60F',  need: '689 Mbps', nCandidatos: 51 },
-  { n: 'spoke 70% overlay, 500',       bw: 500,   rol: 'spoke', pct: 70,  recomendado: 'FortiGate 60F',  need: '677 Mbps', nCandidatos: 51 },
-  { n: 'spoke 30% overlay, 2.5 Gbps',  bw: 2500,  rol: 'spoke', pct: 30,  recomendado: 'FortiGate 200G', need: '3.3 Gbps', nCandidatos: 38 },
-  { n: 'spoke 100% overlay, 2.5 Gbps', bw: 2500,  rol: 'spoke', pct: 100, recomendado: 'FortiGate 200G', need: '3.4 Gbps', nCandidatos: 38 },
-  { n: 'hub 100% overlay, 10 Gbps',    bw: 10000, rol: 'hub',   pct: 100, recomendado: 'FortiGate 200G', need: '4.8 Gbps', nCandidatos: 38 },
-  { n: 'hub 50% overlay, 10 Gbps',     bw: 10000, rol: 'hub',   pct: 50,  recomendado: 'FortiGate 200G', need: '4.7 Gbps', nCandidatos: 38 },
+  { n: 'sin sdwan, 500 Mbps',          bw: 500,   rol: 'none',  pct: 100, recomendado: 'FortiGate 60F',  need: '650 Mbps', nCandidatos: 49 },
+  { n: 'sin sdwan, 2.5 Gbps',          bw: 2500,  rol: 'none',  pct: 100, recomendado: 'FortiGate 200G', need: '3.3 Gbps', nCandidatos: 36 },
+  { n: 'spoke 100% overlay, 500',      bw: 500,   rol: 'spoke', pct: 100, recomendado: 'FortiGate 60F',  need: '689 Mbps', nCandidatos: 49 },
+  { n: 'spoke 70% overlay, 500',       bw: 500,   rol: 'spoke', pct: 70,  recomendado: 'FortiGate 60F',  need: '677 Mbps', nCandidatos: 49 },
+  { n: 'spoke 30% overlay, 2.5 Gbps',  bw: 2500,  rol: 'spoke', pct: 30,  recomendado: 'FortiGate 200G', need: '3.3 Gbps', nCandidatos: 36 },
+  { n: 'spoke 100% overlay, 2.5 Gbps', bw: 2500,  rol: 'spoke', pct: 100, recomendado: 'FortiGate 200G', need: '3.4 Gbps', nCandidatos: 36 },
+  { n: 'hub 100% overlay, 10 Gbps',    bw: 10000, rol: 'hub',   pct: 100, recomendado: 'FortiGate 200G', need: '4.8 Gbps', nCandidatos: 36 },
+  { n: 'hub 50% overlay, 10 Gbps',     bw: 10000, rol: 'hub',   pct: 50,  recomendado: 'FortiGate 200G', need: '4.7 Gbps', nCandidatos: 36 },
 ];
 
 // La fraccion cifrada deja de declararse como porcentaje y pasa a ser un enlace de overlay
@@ -55,6 +55,8 @@ function filasDe(e) {
 }
 
 module.exports = {
+  // 2026-10-29 (PR #68): el 1000F y el 1001F pasan a fuera de venta (ultimo pedido 2026-10-13):
+  // salen de los candidatos de cada escenario (-2) y, donde eran el recomendado, sube el 1800F.
   // Medida en Chromium sobre el commit ANTERIOR al builder, con el deslizador todavia
   // puesto. Va con su fecha y su commit porque una linea base sin procedencia sigue pasando
   // en verde cuando ya no quiere decir nada — el mismo motivo por el que cada fuente del

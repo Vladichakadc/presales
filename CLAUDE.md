@@ -398,7 +398,7 @@ Módulos compartidos:
   es OPEX lo declara la página), perfiles multi-sede de todos los fabricantes en una clave (siete
   páginas, con un solo panel: `BOM.montarPerfiles(opciones)` monta lista, guardar, cargar, consolidar
   y la ventana, y cada página solo declara lo suyo; el marcado también lo pone el módulo
-  (`construirPanel`: cada página deja `<section id="panelPerfiles">` con su explicación); no la 7220 IXR ni Starlink; el `vendor` del perfil es la clave de la ruta de catálogo de su
+  (`construirPanel`: cada página deja `<section id="panelPerfiles">` con su explicación); los campos que guarda un perfil salen de los del enlace —`CAMPOS_ENLACE` menos `PERFIL_SIN` más `PERFIL_EXTRA`, cada excepción con su motivo, `test/perfil-campos-enlace.test.js`—, y Aruba y Fortinet usan una sola lista, `CAMPOS_ESCENARIO`); no la 7220 IXR ni Starlink; el `vendor` del perfil es la clave de la ruta de catálogo de su
   página —`nokia-sr` en el 7750— y `NOMBRE_FABRICANTE` la traduce al enseñarla), y el
   traspaso al cotizador: el equipo viaja como nombre (su precio lo pone `CATALOG`) y el resto del
   BOM como referencias; falla cerrado si la fila del equipo no casa. El Excel (ExcelJS) lleva
@@ -456,6 +456,12 @@ Módulos compartidos:
   recalcula con la función que cada página registra en `window.DIMENSIONADOR_ACTUALIZAR` (devuelve
   `false` si el catálogo no llegó, y el botón lo dice) y lo anuncia en `role="status"`. Una página
   nueva registra su recálculo completo y carga los dos archivos (`test/actualizar.test.js`).
+- `por-funcion.js` — **«por <función>» en la fila del BOM** (2026-10-29, PR #70; complementa el
+  resaltado de `funciones-activas.js`): la fila que existe solo porque se pidió una función lleva
+  `por` (id de su casilla), puesto en el mismo `if` que la crea o traducido del `req` del motor con
+  una tabla que repite la lectura de la página (`test/por-funcion.test.js`); `bom.js` pinta
+  `data-por` y la etiqueta con un botón a la casilla. Falla cerrado; ni el consolidado ni el Excel la
+  llevan. Cisco, Fortinet, Huawei, Aruba y MikroTik; se carga sin `defer` antes del `<body>`.
 - `pqc.js` — **el requisito «Exigir PQC»** (2026-10-27), una sola regla para los siete
   dimensionadores y para el motor de Fortinet en el servidor: `''` no se exige, `'clave'` basta un
   mecanismo quantum-safe documentado (PPK, MACsec/ANYsec o ML-KEM), `'mlkem'` exige ML-KEM. Sin

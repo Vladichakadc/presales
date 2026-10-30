@@ -627,14 +627,14 @@ function renderBom(){
     nota:`${x.ns.length>1?'Enlaces':'Enlace'} WAN ${x.ns.join(', ')} → ${x.puertos.join(', ')}${x.d?' · '+x.d:''}${x.kit?' · '+M.NOTA_BIDI:''}${x.sku?'':' · el equipo no figura en la matriz oficial de compatibilidad: módulo a consultar'}`}));
   optics.forEach(o=>filas.push({cat:'Ópticas y cables', desc:o.optic.sku, sku:o.optic.sku,
     qty:o.qty*qty, unit:o.optic.price, nota:`Adicional · ${o.optic.d}`}));
-  if(apQty&&ap) filas.push({cat:'Puntos de acceso', desc:ap.sku, sku:ap.hwModel||null,
+  if(apQty&&ap) filas.push({por:apManual?null:'chkCapsman', cat:'Puntos de acceso', desc:ap.sku, sku:ap.hwModel||null,
     qty:apQty, unit:ap.price, nota:ap.d});
   // Fuente de 48 V para el PoE (2026-10-14): si se eligió, es una línea más de la propuesta. MikroTik
   // no publica su precio aquí: sale «sin cotizar», con la potencia mínima que tiene que dar.
   if(fuentePoe()==='48'&&$('chkCapsman').checked&&$('chkPoe').checked&&!isChr){
     const pAp=(APS.find(a=>a.sku===$('apModel').value)||{}).poeDraw||0, nAp=Math.max(0,parseInt($('apCount').value)||0);
     const base=m.consumoSinAcc;
-    filas.push({cat:'Alimentación', desc:'Fuente de 48 V para PoE (no incluida en la caja)', sku:null, qty, unit:null,
+    filas.push({por:['chkPoe', 'chkCapsman'], cat:'Alimentación', desc:'Fuente de 48 V para PoE (no incluida en la caja)', sku:null, qty, unit:null,
       nota:`Al menos ${nAp*pAp}${base!=null?` + ${base}`:''} W (PoE de ${nAp} AP${base!=null?' + consumo del equipo sin accesorios':''}). MikroTik no publica aquí su precio: confirmar con el distribuidor.`});
   }
   filas.push({cat:'Licencia', desc:isChr?`Licencia CHR ${m.id.replace('CHR ','')}`:`RouterOS ${lvlTxt(m)} — perpetua`,
@@ -643,7 +643,7 @@ function renderBom(){
               :`Incluida en el hardware, sin costo recurrente. ${lic.d||''}`});
   filas.push({cat:'Soporte', desc:support?support.n:'', sku:null, qty:null, unit:supCode==='sw-basic'?0:null,
     nota:support?support.sla:''});
-  if($('chkTraining').checked) filas.push({cat:'Capacitación', desc:SUPPORT.training.n, sku:null, qty:null, unit:null,
+  if($('chkTraining').checked) filas.push({por:'chkTraining', cat:'Capacitación', desc:SUPPORT.training.n, sku:null, qty:null, unit:null,
     nota:SUPPORT.training.d});
 
   const meta={
@@ -714,10 +714,20 @@ $('xlsBtn').addEventListener('click',async()=>{
    Misma clave compartida que los demas fabricantes (`BOM.perfiles`): un despliegue real mezcla
    marcas. Cargar es de MikroTik (los campos son ids de ESTA pagina); consolidar no. Todo se
    multiplica por sedes: MikroTik vende por equipo, sin pools ni licencias por despliegue. */
-const CAMPOS_PERFIL=['bw','unit','head','dirMult','sedes','conc','enlacesData','chkRespaldoIpsec','firewall','cifrado','chkVirtual','chkQos','chkL3hw',
-  'chkBgp','bgpFeeds','chkPppoe','pppoeSess','ovpnTun','hotspotUsers','chkCapsman','apCount','apModel','chkPoe','poeFuente','chkHa',
-  'qty','supportTier','chkTraining','bomApModel','bomApQty'];
+// Lo que viaja en el enlace (ESTADO.vincular). Los campos del perfil salen de esta lista
+// (2026-10-30): se declara solo lo que el perfil no guarda y lo que solo guarda él.
+const CAMPOS_ENLACE = ['bw','unit','head','dirMult','sedes','conc','enlacesData','chkRespaldoIpsec','firewall','cifrado','chkVirtual','chkQos','chkL3hw',
+  'chkBgp','bgpFeeds','chkPppoe','pppoeSess','ovpnTun','hotspotUsers','chkCapsman','apCount','chkPoe','poeFuente','chkHa','reqPqc',
+  'mediaSeg','profileSeg','modoSeg','tramaSeg','verdict-sel','aniosTco','plazoMrr','margenFin','feeMsp'];
+// `verdict-sel`: el equipo lo guarda el perfil aparte, en `modelo`.
+// Simulador financiero y TCO (`aniosTco`, `plazoMrr`, `margenFin`, `feeMsp`): no entran en el consolidado.
+// Solo en el perfil: `apModel` (no viaja en el enlace) y opciones del BOM que el enlace no lleva.
+// Antes, `reqPqc` viajaba en el enlace y no en el perfil: un perfil cargado perdía «Exigir PQC».
+const PERFIL_SIN = ['verdict-sel', 'aniosTco', 'plazoMrr', 'margenFin', 'feeMsp'];
+const PERFIL_EXTRA = ['apModel', 'qty', 'supportTier', 'chkTraining', 'bomApModel', 'bomApQty'];
 const SEGS_PERFIL=['profileSeg','mediaSeg','modoSeg','tramaSeg'];
+const CAMPOS_PERFIL = [...CAMPOS_ENLACE.filter((id) => !SEGS_PERFIL.includes(id) && !PERFIL_SIN.includes(id)),
+  ...PERFIL_EXTRA];
 function capturarCampos(){
   const v={};
   CAMPOS_PERFIL.forEach(id=>{const n=$(id); if(n) v[id]=n.type==='checkbox'?n.checked:n.value;});
@@ -799,9 +809,7 @@ document.addEventListener('click', (e) => {
    El escenario viaja en la URL (ver /js/estado.js). Lo que va dentro de [data-inactivo] (el
    hub en un sitio, el cifrado fuera de IPsec) no viaja. */
 document.addEventListener('DOMContentLoaded', () => {
-  const st = ESTADO.vincular({ campos: ['bw','unit','head','dirMult','sedes','conc','enlacesData','chkRespaldoIpsec','firewall','cifrado','chkVirtual','chkQos','chkL3hw',
-    'chkBgp','bgpFeeds','chkPppoe','pppoeSess','ovpnTun','hotspotUsers','chkCapsman','apCount','chkPoe','poeFuente','chkHa','reqPqc',
-    'mediaSeg','profileSeg','modoSeg','tramaSeg','verdict-sel','aniosTco','plazoMrr','margenFin','feeMsp'] });
+  const st = ESTADO.vincular({ campos: CAMPOS_ENLACE });
   const anclaje = document.querySelector('.tabs') || document.querySelector('.masthead');
   if (anclaje && anclaje.parentNode) {
     const caja = document.createElement('div');

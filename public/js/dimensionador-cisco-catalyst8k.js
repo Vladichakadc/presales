@@ -192,6 +192,13 @@ function modulosElegidos(m){
   const lista = modulosDe(m).lista;
   return ['modNim', 'modSm', 'modPim'].map(id => lista.find(x => x.sku === $(id).value)).filter(Boolean);
 }
+// «Por <función>» en el BOM (2026-10-29, `por-funcion.js`): el motor marca cada fila nacida de una
+// opción con su clave (`req`) y aquí se traduce a la casilla que la página lee para esa misma clave
+// (`requisitos` en el escenario, `opcionesLicencia`, `lineasSecureAccess`). Cada entrada repite una
+// lectura que existe, y `test/por-funcion.test.js` lo comprueba: no es un mapa aparte.
+const CASILLA_REQ = {dualPsu:'chkRedund', celular:'chk4g', macsec:'chkMacsec'};
+const CASILLA_LIC = {url:'secUrl', malware:'secMalware'};
+const CASILLA_SA = {privado:'saPrivado', ips:'saIps'};
 function opcionesLicencia(p, m){
   return {gestion:$('licGestion').value, nivel:$('licNivel').value, seguridad:p.seguridad,
     url:$('secUrl').checked, malware:$('secMalware').checked, anios:+$('termYears').value || 1,
@@ -676,20 +683,20 @@ function renderBom(){
       const rot = o => `${o.sku}${o.red ? ` (${o.red}, ${miles(o.bajada)}/${miles(o.subida)} Mbps)` : ' (categoría sin dato)'}`;
       const need = pz.need && (pz.need.bajada || pz.need.subida) ? `${miles(pz.need.bajada || 0)}/${miles(pz.need.subida || 0)} Mbps de bajada/subida` : null;
       if(!pc.opciones.length){
-        filas.push({cat:'Módulos', desc:'Módulo celular (PIM) — elegir uno', sku:null, qty, unit:null, nota:'Referencia en la guía de pedido de esta familia: consultar en CCW.'});
+        filas.push({por:CASILLA_REQ[pz.req], cat:'Módulos', desc:'Módulo celular (PIM) — elegir uno', sku:null, qty, unit:null, nota:'Referencia en la guía de pedido de esta familia: consultar en CCW.'});
       } else if(!pc.elegibles.length){
-        filas.push({cat:'Módulos', desc:'Módulo celular (PIM) — consultar', sku:null, qty, unit:null,
+        filas.push({por:CASILLA_REQ[pz.req], cat:'Módulos', desc:'Módulo celular (PIM) — consultar', sku:null, qty, unit:null,
           nota:`Ningún PIM de su guía de pedido llega por categoría a ${need}${pc.max ? ` (el mayor, ${rot(pc.max)})` : ''}: consultar.`});
       } else {
-        filas.push({cat:'Módulos', desc:`Módulo celular (PIM)${pc.elegibles.length > 1 ? ' — elegir uno' : ''}`, sku:pc.elegibles.length === 1 ? pc.elegibles[0].sku : null, qty, unit:null,
+        filas.push({por:CASILLA_REQ[pz.req], cat:'Módulos', desc:`Módulo celular (PIM)${pc.elegibles.length > 1 ? ' — elegir uno' : ''}`, sku:pc.elegibles.length === 1 ? pc.elegibles[0].sku : null, qty, unit:null,
           nota:`${pc.falta ? 'Según la región y el operador' : `Llegan a ${need} por categoría; según la región y el operador`}: ${pc.elegibles.map(rot).join(', ')} (guía de pedido, ${mods.pim}). La categoría da el pico de la norma, no el caudal del operador.`});
       }
     } else if(pz.macsec){
       if(/^C-NIM-WAN/.test($('modNim').value)) continue;
-      filas.push({cat:'Módulos', desc:'NIM WAN con MACsec — elegir una', sku:null, qty, unit:null,
+      filas.push({por:CASILLA_REQ[pz.req], cat:'Módulos', desc:'NIM WAN con MACsec — elegir una', sku:null, qty, unit:null,
         nota:g2 ? 'C-NIM-WAN-2X (2 × 1/10G SFP+) o C-NIM-WAN-4S (4 × 1G SFP), guía de pedido, tabla 7.' : 'Referencia en la guía de pedido de esta familia.'});
     } else {
-      filas.push({cat:pz.cat, desc:pz.desc, sku:pz.sku, qty, unit:null, nota:pz.nota || ''});
+      filas.push({por:CASILLA_REQ[pz.req], cat:pz.cat, desc:pz.desc, sku:pz.sku, qty, unit:null, nota:pz.nota || ''});
     }
   }
   for(const id of ['modNim', 'modSm', 'modPim']){
@@ -721,14 +728,14 @@ function renderBom(){
     ...(m.notaPuertos && enl.asignados.length ? [m.notaPuertos] : []),
   ];
   const lic = M.licencias(m, opcionesLicencia(p, m), LIC_G2, LIC_DNA);
-  lic.filas.forEach(x => filas.push({...x, qty:x.qty * qty, nota:x.incluida ? `${x.nota} Incluida con el equipo.` : x.nota}));
+  lic.filas.forEach(x => filas.push({...x, por:CASILLA_LIC[x.req], qty:x.qty * qty, nota:x.incluida ? `${x.nota} Incluida con el equipo.` : x.nota}));
   // El firewall dedicado, uno por sede (su cifra ya es la de toda la salida a Internet).
   const pf = M.piezasFirewall(firewallDe(p), anios);
   pf.filas.forEach(x => filas.push({...x, qty:sedesQty, unit:null}));
   lic.avisos.push(...pf.avisos);
   // Secure Access va por cliente y por usuario, no por equipo: su cantidad no se multiplica.
   const sa = lineasSecureAccess(p);
-  sa.filas.forEach(x => filas.push({...x, unit:null}));
+  sa.filas.forEach(x => filas.push({...x, por:CASILLA_SA[x.req], unit:null}));
   lic.avisos.push(...sa.avisos);
   const sn = SMARTNET[crit];
   if(sn) filas.push({cat:'Soporte', desc:sn.n, sku:null, qty, unit:null, nota:`${sn.sla || ''} · término ${anios} año(s)`});
@@ -855,8 +862,15 @@ $('memoriaBtn').addEventListener('click', () => {
 /* ── PERFILES MULTI-SEDE ──
    Misma clave compartida que los demás fabricantes (`BOM.perfiles`): un despliegue real mezcla
    marcas. Cargar es de Cisco (los campos son ids de ESTA página); consolidar no. */
-const CAMPOS_PERFIL = [...ENTRADAS, 'qty', 'termYears', 'licGestion', 'licNivel', 'licVpns', 'secUrl', 'secMalware', ...CAMPOS_SA, 'optQty'];
+// Lo que viaja en el enlace (ESTADO.vincular). Los campos del perfil salen de esta lista
+// (2026-10-30): se declara solo lo que el perfil no guarda y lo que solo guarda él.
+const CAMPOS_ENLACE = [...ENTRADAS, 'critSeg', 'dirSeg', 'modeSeg', 'qty', 'termYears', 'licGestion', 'licNivel', 'licVpns', 'secUrl', 'secMalware', ...CAMPOS_SA, 'optQty', 'verdict-sel'];
+// `verdict-sel`: el equipo lo guarda el perfil aparte, en `modelo`.
+const PERFIL_SIN = ['verdict-sel'];
+const PERFIL_EXTRA = [];
 const SEGS_PERFIL = ['modeSeg', 'dirSeg', 'critSeg'];
+const CAMPOS_PERFIL = [...CAMPOS_ENLACE.filter((id) => !SEGS_PERFIL.includes(id) && !PERFIL_SIN.includes(id)),
+  ...PERFIL_EXTRA];
 function capturarCampos(){
   const v = {};
   CAMPOS_PERFIL.forEach(id => { const n = $(id); if(n) v[id] = n.type === 'checkbox' ? n.checked : n.value; });
@@ -955,7 +969,7 @@ document.addEventListener('click', (e) => {
    demás (voz, AppX, APs) no tienen equivalente y el aviso del enlace lo dice. */
 document.addEventListener('DOMContentLoaded', () => {
   const MIGRADOS = ['sNgfw', 'sUmbrella', 'dnaTier'];
-  const st = ESTADO.vincular({ campos:[...ENTRADAS, 'critSeg', 'dirSeg', 'modeSeg', 'qty', 'termYears', 'licGestion', 'licNivel', 'licVpns', 'secUrl', 'secMalware', ...CAMPOS_SA, 'optQty', 'verdict-sel'],
+  const st = ESTADO.vincular({ campos: CAMPOS_ENLACE,
     migrados:MIGRADOS });
   const q = new URLSearchParams(location.search);
   const si = k => ['1', 'true', 'on'].includes(String(q.get(k)).toLowerCase());

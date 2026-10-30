@@ -347,8 +347,15 @@
   // —la ruta de catálogo de ESTOS catorce, `/api/dimensionador/nokia-sr`—, no `nokia`, que es la de
   // la 7220 IXR: con `nokia` el consolidado pediría un catálogo donde estos modelos no están.
   const VENDOR = 'nokia-sr';
-  const CAMPOS_PERFIL = ['bw', 'unit', 'head', 'portQty', 'portVel', 'chkHa', 'reqPqc'];
+  // Lo que viaja en el enlace (ESTADO.vincular). Los campos del perfil salen de esta lista
+  // (2026-10-30): se declara solo lo que el perfil no guarda y lo que solo guarda él.
+  const CAMPOS_ENLACE = ['bw', 'unit', 'head', 'portQty', 'portVel', 'chkHa', 'reqPqc', 'platSeg', 'verdict-sel'];
+  // `verdict-sel`: el equipo lo guarda el perfil aparte, en `modelo`.
+  const PERFIL_SIN = ['verdict-sel'];
+  const PERFIL_EXTRA = [];
   const SEGS_PERFIL = ['platSeg'];
+  const CAMPOS_PERFIL = [...CAMPOS_ENLACE.filter((id) => !SEGS_PERFIL.includes(id) && !PERFIL_SIN.includes(id)),
+    ...PERFIL_EXTRA];
   const modeloPorId = (id) => (CATALOGO.models || []).find((x) => x.id === id) || null;
   function capturarCampos() {
     const v = {};
@@ -398,7 +405,7 @@
     $('chkHa').addEventListener('change', render);
 
     const st = ESTADO.vincular({
-      campos: ['bw', 'unit', 'head', 'portQty', 'portVel', 'chkHa', 'reqPqc', 'platSeg', 'verdict-sel'],
+      campos: CAMPOS_ENLACE,
     });
     const anclaje = document.querySelector('.tabs') || document.querySelector('.masthead');
     if (anclaje && anclaje.parentNode) {

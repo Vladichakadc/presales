@@ -438,8 +438,48 @@ const CLAVES_MATRIX=['ssl','tunGw','tunCli','sslVpn','sslVpnUsers','policies','v
 const hermanasDe=(b)=>MODELS.filter((m)=>m!==b
   && m.fw===b.fw && m.tp===b.tp && m.vpn===b.vpn && m.sess===b.sess);
 
+// ── FIN DE VENTA CON FECHA (peticion del dueño, 2026-10-29: «incluye esta informacion en el
+// dimensionador cuando se selecciona el equipo… valida si el 400F tiene fecha de fin de venta,
+// asi como el de todos los equipos»). Hasta hoy Fortinet solo tenia el `eol` binario
+// (FORTINET_EOL_MODELS y «sin SKU de hardware»): la ficha decia «fuera de venta» sin fecha, y un
+// modelo con fin de venta ANUNCIADO no se marcaba. Ahora cada modelo con boletin lleva su
+// `eolAnnounced`, y la regla comun (`FICHA.rango`, `fueraDeVenta` del servidor) lo degrada solo
+// cuando pasa `lastOrder`.
+//
+// PROCEDENCIA, DICHA COMO ES. La fuente de verdad es la herramienta Product Life Cycle del
+// portal de soporte de Fortinet, que exige cuenta FortiCloud y no llega desde este entorno. Las
+// fechas se transcribieron el 2026-10-29 de dos repertorios que la reproducen (eol.network,
+// ficha por modelo, que enlaza el aviso oficial; fortineteol.com, «Fortinet last update
+// 2026-08-03»), y solo donde los dos casan o, en los anunciados despues de agosto, donde
+// eol.network trae la ficha del modelo. Por eso NO se declara `eolAnnounced` en `campos` de
+// fuentes.js (el semaforo no pinta «vigente» a nadie por esto) y cada fila lleva `confirmar`,
+// que la ficha ensena: hasta confirmarlo en el portal, es un dato a verificar, no un boletin.
+//
+// LOS QUE NO ESTAN NO SON «VIGENTES POR DECLARACION»: es que ningun repertorio trae aviso
+// (400F, 401F, 40F, 71F, 80F, 81F, 1800F, 2600F, 3000F, 3200F, 3500F, 3700F, 4400F, 4800F y la
+// serie G el 2026-10-29). Quedan sin afirmar, que es el tercer estado. 4200F, 7081F y 7121F no
+// se pudieron leer ese dia (error del sitio); quedan igual, sin afirmar.
+// `endOfSupport` = `lastOrder` + 60 meses, que es lo que publica cada aviso (no un calculo
+// propio: en los ocho casa con la ficha). `sucesor` en null: el aviso no se ha leido.
+const PORTAL_CICLO_VIDA='https://support.fortinet.com/Information/ProductLifeCycle.aspx';
+const CONFIRMAR_CICLO='Fechas transcritas el 2026-10-29 de repertorios que reproducen la herramienta Product Life Cycle de Fortinet; confirmar en el portal de soporte (requiere cuenta FortiCloud) antes de comprometerlas con un cliente.';
+const finDeVenta=(pid, lastOrder, endOfSupport)=>({pid, lastOrder, endOfSupport, sucesor:null, url:PORTAL_CICLO_VIDA, confirmar:CONFIRMAR_CICLO});
+const EOL_ANNOUNCED={
+  // Anunciados y aun pedibles: se proponen con normalidad hasta el 13-ene-2027.
+  '60F':   finDeVenta('FG-60F',   '2027-01-13', '2032-01-13'),
+  '61F':   finDeVenta('FG-61F',   '2027-01-13', '2032-01-13'),
+  // Ultimo pedido ya vencido: fuera de venta, referencia del parque instalado.
+  '1000F': finDeVenta('FG-1000F', '2026-10-13', '2031-10-13'),
+  '1001F': finDeVenta('FG-1001F', '2026-10-13', '2031-10-13'),
+  '70F':   finDeVenta('FG-70F',   '2026-05-17', '2031-05-17'),
+  '600F':  finDeVenta('FG-600F',  '2026-05-01', '2031-05-01'),
+  '100F':  finDeVenta('FG-100F',  '2026-04-16', '2031-04-16'),
+  '200F':  finDeVenta('FG-200F',  '2026-03-01', '2031-03-01'),
+};
+
 for (const m of MODELS) {
   m.hwSku=HW_SKU[bareId(m.id)]||null;
+  m.eolAnnounced=EOL_ANNOUNCED[bareId(m.id)]||null;
   m.lic=LICENSES[bareId(m.id)]||null;
   m.datasheetUrl=DATASHEET_URL;
   // null EXPLICITO en los que no tienen fila: «el catalogo no trae la cifra», nunca «no aplica».
@@ -1263,5 +1303,5 @@ for (const m of MODELS) {
     urls:['https://docs.fortinet.com/document/fortigate/7.6.6/administration-guide/246857']};
 }
 
-module.exports = { MODELS, BUNDLES, CARE, LICENSES, HW_SKU, FUNCIONES, SERVICIOS_SDWAN, SDWAN_SERVICIO, EMS_LICENCIAS, SASE_USUARIOS, TERMINOS, MATRIX_LIMITES,
+module.exports = { EOL_ANNOUNCED, MODELS, BUNDLES, CARE, LICENSES, HW_SKU, FUNCIONES, SERVICIOS_SDWAN, SDWAN_SERVICIO, EMS_LICENCIAS, SASE_USUARIOS, TERMINOS, MATRIX_LIMITES,
   FICHAS_LIMITES, MATRIX_PLATAFORMA, FICHAS_PLATAFORMA, PUERTOS, FORTIOS, REANCLAJE, MVT_LIMITES };
