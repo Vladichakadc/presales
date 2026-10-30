@@ -6,7 +6,7 @@
 - **Estado:** en curso
 - **Actualizado:** 2026-10-30 08:30
 - **Archivos que toca:** test/e2e/e2e-aruba-tier-enlace.js, public/js/dimensionador-aruba-edgeconnect.js
-- **Siguiente paso:** leer el resultado de la batería en CI sobre el primer commit (solo la prueba); si está en rojo, declarar `selTier` en `opcionesTarde`.
+- **Siguiente paso:** con CI en verde sobre el arreglo, commit de cierre y fusión en main.
 
 ## Encargo del dueño
 
@@ -15,7 +15,9 @@ que pedía medirlo antes de cambiar nada.
 
 ## Hecho
 
-- `test/e2e/e2e-aruba-tier-enlace.js`, subida sola para medir.
+- `test/e2e/e2e-aruba-tier-enlace.js`, subida sola para medir: en rojo con 3 fallos (un enlace con
+  `selTier=bw20` aterrizaba en `auto`; sin elegir, `selTier=auto` viajaba siempre).
+- Arreglo: `selTier` en `opcionesTarde` de Aruba.
 
 ## Decisiones y hallazgos
 
