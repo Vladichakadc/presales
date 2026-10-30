@@ -203,7 +203,7 @@ async function cambiar(page, campo, nuevo) {
         await asentar(page);
       }
     }
-    console.log(`  ${pag}: ${probados} campos probados · ${enLinea} recalculan en línea · ${sinEfecto} sin efecto en este escenario · ${malos.length} se quedan atrás`);
+    console.log(`RESUMEN - ${pag}: ${probados} campos probados · ${enLinea} recalculan en línea · ${sinEfecto} sin efecto en este escenario · ${malos.length} se quedan atrás`);
     t.ok(probados > 0, `${pag}: hay campos que probar`);
     for (const m of malos) t.ok(false, `${pag}: ${m}`);
     if (!malos.length) t.ok(true, `${pag}: todos los campos que mueven el resultado lo mueven en línea`);
