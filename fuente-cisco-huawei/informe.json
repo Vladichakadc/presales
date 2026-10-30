@@ -1,0 +1,17 @@
+[
+  {
+    "archivo": "aruba-aos8-whats-new.html",
+    "para": "ARUBA",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://arubanetworking.hpe.com/techdocs/ArubaOS/AOS_8x_WebHelp/Content/arubaos-solutions/AOS8-Whats-New.htm",
+        "status": 200,
+        "bytes": 485318,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  }
+]
