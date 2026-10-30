@@ -34,6 +34,9 @@ está en curso no va aquí: lo dice `npm run traspasos` (protocolo en `docs/tras
 ## Estado al cerrar esta entrega
 
 - **2026-10-29 · PR #72**: **la PQC del Gateway 9106, cerrada con documento oficial.** El «What's New» de AOS-8 (traído por Actions) dice «Starting with AOS-8.13.1.0, the 9106 controller is now supported in AOS-8.x»; con la guía de PPK de AOS-8 (desde la 8.10.0.0), el 9106 trae la PPK con AOS-8.13.1.0. Los SKU S0B85A y S0B86A vienen con AOS-10 y no bajan: lo dice su `alcance`. **Queda un retoque**: el texto `#reqPqcHint` de `public/dimensionador-aruba-edgeconnect.html` aún nombra el 9106 entre los que no tienen documento; esa página la tocan los PR #69 y #70 de otra sesión, y se corrige tras su fusión.
+- **2026-10-29 · PR #71**: «↻ Actualizar fuentes» en las siete pestañas de fuentes: el servidor
+  vuelve a leer cada documento oficial y dice si sigue siendo el contrastado (columna «Comprobado
+  ahora»); solo lee, con 10 minutos de caché por fabricante.
 - **2026-10-29 · PR #65**: la revisión de los pendientes que esperan documento, registrada uno por uno en *Esperan un documento oficial* (qué se buscó, qué se encontró, qué lo cierra). Ninguno se cierra sin su documento.
 - **2026-10-29 · PR #67**: el marcado del panel de perfiles y de su ventana lo genera
   `BOM.montarPerfiles`; las siete páginas solo dejan su sección con su explicación (la mejora
@@ -342,7 +345,14 @@ existen los workflows de transporte. Huawei y HPE niegan además el navegador au
   Cuesta quitar unas cuatro líneas de cada hoja; si se hace mal, la ventana sale sin velo o sin
   desplazamiento en alguna página, y lo verían el contraste de pantallas y `e2e-accesibilidad.js`
   (que ya abre la ventana). Se decide por el dueño.
-- (Hecha en el PR #67: el marcado del panel de perfiles, generado por el módulo. Hecha en el PR #66: lo que trajo cada función, resaltado en el resultado. Hecha en el PR #62: el panel de perfiles, un solo módulo. Hecha en el PR #60: la licencia FortiGuard única del par en el BOM. Hecha en el PR #59: la vigilia del despliegue. Hecha en el PR #58: del override por ciclo de vida a ampliación o renovación en un clic. Hecha en el PR #57: el transporte probado sin red. Hecha en el PR #55: los perfiles multi-sede en Juniper y Nokia 7750. Hecha en el PR #54: la foto desde la página de cada modelo, hasta donde Cisco la publica, y el transporte fuera del YAML. Hecha en el PR #50: los perfiles de otros fabricantes al día al consolidar. Hecha en el PR #46: el ciclo del perfil al día al consolidar. Hecha en el PR #45: la fuente de la PQC enlazada a `fuentes.js`. Hecha en el PR #44: el ciclo en el consolidado multi-sede. Hecha en el PR #41: el fin de venta en el Excel. Hecha en el PR #40: la foto de producto en el Excel. Hecha en la septuagesimoprimera: el «no la trae» documentado, `pqcNo`. Hecha en la sexagesimoctava: la
+- **Comprobar las fuentes de los siete fabricantes desde el portal** (propuesta al cerrar el PR #71).
+  Hoy «Actualizar fuentes» va pestaña por pestaña: saber si algún documento de cualquier fabricante
+  cambió pide abrir siete páginas. Un panel en el portal que llame a la misma ruta para los siete (en
+  serie, respetando la caché de 10 minutos de cada uno) y enseñe un resumen por fabricante, con
+  enlace a su pestaña, daría la vista del vigía del lunes en el momento. Cuesta una sección del
+  portal y su script, sin tocar el servidor; si se hace mal, siete corridas a la vez pegarían a los
+  fabricantes (la prueba tiene que fijar que van de una en una). Se decide por el dueño.
+- (Hecha en el PR #71: «Actualizar fuentes» en vivo. Hecha en el PR #67: el marcado del panel de perfiles, generado por el módulo. Hecha en el PR #66: lo que trajo cada función, resaltado en el resultado. Hecha en el PR #62: el panel de perfiles, un solo módulo. Hecha en el PR #60: la licencia FortiGuard única del par en el BOM. Hecha en el PR #59: la vigilia del despliegue. Hecha en el PR #58: del override por ciclo de vida a ampliación o renovación en un clic. Hecha en el PR #57: el transporte probado sin red. Hecha en el PR #55: los perfiles multi-sede en Juniper y Nokia 7750. Hecha en el PR #54: la foto desde la página de cada modelo, hasta donde Cisco la publica, y el transporte fuera del YAML. Hecha en el PR #50: los perfiles de otros fabricantes al día al consolidar. Hecha en el PR #46: el ciclo del perfil al día al consolidar. Hecha en el PR #45: la fuente de la PQC enlazada a `fuentes.js`. Hecha en el PR #44: el ciclo en el consolidado multi-sede. Hecha en el PR #41: el fin de venta en el Excel. Hecha en el PR #40: la foto de producto en el Excel. Hecha en la septuagesimoprimera: el «no la trae» documentado, `pqcNo`. Hecha en la sexagesimoctava: la
   versión mínima de la PQC en la hoja «Supuestos».)
 
 ## Decisiones del dueño abiertas
