@@ -1523,9 +1523,24 @@ for (const m of MODELS) {
 // (8.0–8.13). Fuera: el 9004-LTE (su ficha: AOS 8 «Not supported»), y el 9106 y el 9114, que esas
 // notas no listan. Solo con AOS-8: en AOS-10 no consta (las notas de AOS-10.8 traen
 // `ppk-mandatory` sin decir en qué equipo). Es una clave simétrica, no un algoritmo post-cuántico.
-const PQC_GW_AOS8 = ['Gateway 9004', 'Gateway 9012', 'Gateway 9240', '7005', '7008', '7010', '7024', '7030', '7205', '7210', '7220', '7240XM'];
+// El 9106 entra el 2026-10-29: la página «What's New» de AOS-8 (traída por traer-cisco-huawei.yml,
+// rama fuente/aos8-9106-2026-10-29) dice «Starting with AOS-8.13.1.0, the 9106 controller is now
+// supported in AOS-8.x», así que su PPK va desde la 8.13.1.0, no desde la 8.10; y avisa de que los
+// SKU S0B85A y S0B86A vienen con AOS-10 y no bajan a AOS-8. El 9004-LTE y el 9114 siguen fuera.
+const PQC_GW_AOS8 = ['Gateway 9004', 'Gateway 9012', 'Gateway 9106', 'Gateway 9240', '7005', '7008', '7010', '7024', '7030', '7205', '7210', '7220', '7240XM'];
+const WHATS_NEW_AOS8 = 'https://arubanetworking.hpe.com/techdocs/ArubaOS/AOS_8x_WebHelp/Content/arubaos-solutions/AOS8-Whats-New.htm';
 for (const m of MODELS) {
   if (!PQC_GW_AOS8.includes(m.id)) continue;
+  if (m.id === 'Gateway 9106') {
+    m.pqc = {tipo:'ppk',
+      mecanismo:'Clave precompartida post-cuántica (PPK) en IKEv2',
+      so:'aos8', soNombre:'AOS 8',
+      donde:'VPN IPsec sitio a sitio con IKEv2, con AOS-8 (solo sitio a sitio, según la guía)', desde:'AOS-8.13.1.0',
+      alcance:'solo con AOS-8, que el 9106 corre desde la 8.13.1.0; en AOS-10 no consta. Los SKU S0B85A y S0B86A vienen con AOS-10 y no bajan a AOS-8 («What\'s New» de AOS-8). Exigirla al otro extremo (ppk-mandatory) desde AOS-8.12.0.5',
+      fuente:'HPE Aruba Networking, guía de usuario de AOS-8 («Configuring a VPN with Postquantum Preshared Keys») y «What\'s New» de AOS-8 («Support for 9106 Controllers in AOS-8.x», AOS-8.13.1.0)',
+      urls:['https://arubanetworking.hpe.com/techdocs/ArubaOS/AOS_8x_WebHelp/Content/arubaos-solutions/vpn/vpn-ppk.htm', WHATS_NEW_AOS8]};
+    continue;
+  }
   m.pqc = {tipo:'ppk',
     mecanismo:'Clave precompartida post-cuántica (PPK) en IKEv2',
     so:'aos8', soNombre:'AOS 8',
