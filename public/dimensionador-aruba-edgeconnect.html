@@ -532,7 +532,7 @@ details.cumplimiento-especial summary:focus-visible{outline:2px solid var(--red)
     <div class="field" style="margin-top:10px">
       <label for="reqPqc">Criptografía post-cuántica (exigir)</label>
       <select id="reqPqc" aria-describedby="reqPqcHint"><option value="">No se exige</option><option value="clave">Mecanismo quantum-safe documentado (PPK, MACsec/ANYsec o ML-KEM)</option><option value="mlkem">Algoritmo post-cuántico ML-KEM (FIPS 203)</option></select>
-      <p class="hint" id="reqPqcHint">Los EdgeConnect documentan PPK (RFC 8784) en los túneles IPsec con IKE (guía de cifrados de ECOS), que es una clave precompartida y no un algoritmo ML-KEM. Los gateways documentan PPK con AOS-8 desde la 8.10.0.0 (guía de AOS-8 y notas de la 8.12.0.5: 9004, 9012, 9240 y las series 7000 y 7200); el 9004-LTE, el 9106 y el 9114 no tienen documento y se apartan como «no consta», nunca como «no la tiene».</p>
+      <p class="hint" id="reqPqcHint">Los EdgeConnect documentan PPK (RFC 8784) en los túneles IPsec con IKE (guía de cifrados de ECOS), que es una clave precompartida y no un algoritmo ML-KEM. Los gateways documentan PPK con AOS-8 desde la 8.10.0.0 (guía de AOS-8 y notas de la 8.12.0.5: 9004, 9012, 9240 y las series 7000 y 7200; el 9106, desde la 8.13.1.0, según el «What's New» de AOS-8); el 9004-LTE y el 9114 no tienen documento y se apartan como «no consta», nunca como «no la tiene».</p>
     </div>
   </section>
 

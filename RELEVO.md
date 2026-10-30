@@ -48,7 +48,7 @@ está en curso no va aquí: lo dice `npm run traspasos` (protocolo en `docs/tras
   elegido. 60F y 61F: último pedido 2027-01-13 (siguen recomendables hasta entonces y caen solos);
   1000F y 1001F: vencido el 2026-10-13, ya no se recomiendan en compra nueva; 400F y 401F sin fin
   de venta. Las fechas son de terceros y llevan la nota `confirmar` hasta leerlas en el portal.
-- **2026-10-29 · PR #72**: **la PQC del Gateway 9106, cerrada con documento oficial.** El «What's New» de AOS-8 (traído por Actions) dice «Starting with AOS-8.13.1.0, the 9106 controller is now supported in AOS-8.x»; con la guía de PPK de AOS-8 (desde la 8.10.0.0), el 9106 trae la PPK con AOS-8.13.1.0. Los SKU S0B85A y S0B86A vienen con AOS-10 y no bajan: lo dice su `alcance`. **Queda un retoque**: el texto `#reqPqcHint` de `public/dimensionador-aruba-edgeconnect.html` aún nombra el 9106 entre los que no tienen documento; esa página la tocan los PR #69 y #70 de otra sesión, y se corrige tras su fusión.
+- **2026-10-29 · PR #72**: **la PQC del Gateway 9106, cerrada con documento oficial.** El «What's New» de AOS-8 (traído por Actions) dice «Starting with AOS-8.13.1.0, the 9106 controller is now supported in AOS-8.x»; con la guía de PPK de AOS-8 (desde la 8.10.0.0), el 9106 trae la PPK con AOS-8.13.1.0. Los SKU S0B85A y S0B86A vienen con AOS-10 y no bajan: lo dice su `alcance`. El texto `#reqPqcHint` de la página de Aruba ya lo dice (corregido en el PR #73, tras integrar los PR #69 y #70).
 - **2026-10-29 · PR #71**: «↻ Actualizar fuentes» en las siete pestañas de fuentes: el servidor
   vuelve a leer cada documento oficial y dice si sigue siendo el contrastado (columna «Comprobado
   ahora»); solo lee, con 10 minutos de caché por fabricante.
