@@ -135,6 +135,9 @@ async function cambiar(page, campo, nuevo) {
   }
 }
 
+// Dónde va la batería: si algo revienta, el error lo dice (en CI solo se leen las anotaciones).
+let donde = 'al empezar';
+
 (async () => {
   const { chromium } = cargarPlaywright();
   const browser = await chromium.launch();
@@ -145,9 +148,11 @@ async function cambiar(page, campo, nuevo) {
   await abrirSesion(page);
 
   for (const pag of PAGINAS) {
+    donde = `${pag}, al abrir`;
     await trasNavegar(page, () => page.goto(`${BASE}/dimensionador-${pag}.html`, { waitUntil: 'domcontentloaded' }), { selector: '.btn-actualizar' });
     await page.waitForFunction(() => typeof window.DIMENSIONADOR_ACTUALIZAR === 'function', null, { timeout: 20000 });
     await asentar(page);
+    donde = `${pag}, preparando el escenario`;
     for (const [sel, v] of PREPARAR[pag] || []) {
       const loc = page.locator(sel).first();
       await loc.fill(v, { timeout: 10000 });
@@ -159,15 +164,16 @@ async function cambiar(page, campo, nuevo) {
     await asentar(page);
 
     // Las pestañas que tengan columna de parámetros (Cisco y MikroTik llevan campos en la del BOM).
-    const pestanas = await page.evaluate(() => [...window.document.querySelectorAll('[role="tab"]')]
-      .map((b, i) => { b.dataset.e2ePestana = String(i); return i; }));
+    const pestanas = await page.evaluate(() => [...window.document.querySelectorAll('[role="tab"]')].map((b, i) => i));
     const recorridos = pestanas.length ? pestanas : [null];
     let probados = 0, enLinea = 0, sinEfecto = 0;
     const malos = [];
 
     for (const p of recorridos) {
       if (p !== null) {
-        await page.locator(`[data-e2e-pestana="${p}"]`).evaluate((b) => b.click());
+        // Por su posición y no por una marca: hay barras de pestañas que se repintan al elegir.
+        donde = `${pag}, pestaña ${p}`;
+        await page.evaluate((i) => { const b = window.document.querySelectorAll('[role="tab"]')[i]; if (b) b.click(); }, p);
         await asentar(page);
       }
       const campos = await marcarCampos(page);
@@ -175,15 +181,17 @@ async function cambiar(page, campo, nuevo) {
         const excepcion = (EXCEPCIONES[pag] || {})[campo.id];
         // Un campo anterior puede haberlo ocultado o bloqueado (un desplegable que cambia el bloque
         // visible): se salta, igual que lo saltaría una persona.
+        donde = `${pag}, campo ${campo.nombre}`;
         if (!(await usable(page, campo.n))) continue;
         const original = await valorDe(page, campo.n);
         if (!original) continue;
         let nuevo = null;
         if (campo.tipo === 'select') {
-          nuevo = await page.locator(`[data-e2e-campo="${campo.n}"]`).evaluate((el) => {
-            const o = [...el.options].find((x) => !x.disabled && x.value !== el.value);
+          nuevo = await page.evaluate((k) => {
+            const el = window.document.querySelector(`[data-e2e-campo="${k}"]`);
+            const o = el && [...el.options].find((x) => !x.disabled && x.value !== el.value);
             return o ? o.value : null;
-          });
+          }, campo.n);
         } else if (campo.tipo === 'number' || campo.tipo === 'range') {
           nuevo = await otroNumero(page, campo.n);
         } else if (campo.tipo !== 'checkbox' && campo.tipo !== 'radio') {
@@ -241,4 +249,4 @@ async function cambiar(page, campo, nuevo) {
   t.ok(errores.length === 0, 'sin errores de JS' + (errores.length ? ': ' + [...new Set(errores)].slice(0, 5).join(' | ') : ''));
   await browser.close();
   process.exit(t.resumen('e2e-campos-en-linea'));
-})().catch((e) => { console.error('ERROR E2E:', e.message); process.exit(2); });
+})().catch((e) => { console.error('ERROR E2E:', `[${donde}]`, e.message.split('\n')[0]); process.exit(2); });
