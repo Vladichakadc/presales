@@ -717,14 +717,15 @@ $('xlsBtn').addEventListener('click',async()=>{
 // Lo que viaja en el enlace (ESTADO.vincular). Los campos del perfil salen de esta lista
 // (2026-10-30): se declara solo lo que el perfil no guarda y lo que solo guarda él.
 const CAMPOS_ENLACE = ['bw','unit','head','dirMult','sedes','conc','enlacesData','chkRespaldoIpsec','firewall','cifrado','chkVirtual','chkQos','chkL3hw',
-  'chkBgp','bgpFeeds','chkPppoe','pppoeSess','ovpnTun','hotspotUsers','chkCapsman','apCount','chkPoe','poeFuente','chkHa','reqPqc',
+  'chkBgp','bgpFeeds','chkPppoe','pppoeSess','ovpnTun','hotspotUsers','chkCapsman','apCount','apModel','chkPoe','poeFuente','chkHa','reqPqc',
   'mediaSeg','profileSeg','modoSeg','tramaSeg','verdict-sel','aniosTco','plazoMrr','margenFin','feeMsp'];
 // `verdict-sel`: el equipo lo guarda el perfil aparte, en `modelo`.
 // Simulador financiero y TCO (`aniosTco`, `plazoMrr`, `margenFin`, `feeMsp`): no entran en el consolidado.
-// Solo en el perfil: `apModel` (no viaja en el enlace) y opciones del BOM que el enlace no lleva.
+// Solo en el perfil: opciones del BOM que el enlace no lleva. `apModel` viaja en el enlace desde el
+// 2026-10-30; sus opciones llegan con el catálogo, así que ESTADO lo repone cuando existen (`opcionesTarde`).
 // Antes, `reqPqc` viajaba en el enlace y no en el perfil: un perfil cargado perdía «Exigir PQC».
 const PERFIL_SIN = ['verdict-sel', 'aniosTco', 'plazoMrr', 'margenFin', 'feeMsp'];
-const PERFIL_EXTRA = ['apModel', 'qty', 'supportTier', 'chkTraining', 'bomApModel', 'bomApQty'];
+const PERFIL_EXTRA = ['qty', 'supportTier', 'chkTraining', 'bomApModel', 'bomApQty'];
 const SEGS_PERFIL=['profileSeg','mediaSeg','modoSeg','tramaSeg'];
 const CAMPOS_PERFIL = [...CAMPOS_ENLACE.filter((id) => !SEGS_PERFIL.includes(id) && !PERFIL_SIN.includes(id)),
   ...PERFIL_EXTRA];
@@ -809,7 +810,7 @@ document.addEventListener('click', (e) => {
    El escenario viaja en la URL (ver /js/estado.js). Lo que va dentro de [data-inactivo] (el
    hub en un sitio, el cifrado fuera de IPsec) no viaja. */
 document.addEventListener('DOMContentLoaded', () => {
-  const st = ESTADO.vincular({ campos: CAMPOS_ENLACE });
+  const st = ESTADO.vincular({ campos: CAMPOS_ENLACE, opcionesTarde: ['apModel'] });
   const anclaje = document.querySelector('.tabs') || document.querySelector('.masthead');
   if (anclaje && anclaje.parentNode) {
     const caja = document.createElement('div');
