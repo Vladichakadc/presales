@@ -989,3 +989,7 @@ document.addEventListener('DOMContentLoaded', () => {
              de:document.title.split('—')[0].trim() };
   });
 });
+
+// Botón «Actualizar» (actualizar.js, 2026-10-29): recalcula todo desde los campos tal como están.
+// Devuelve false mientras el catálogo no ha llegado, para que el botón lo diga.
+window.DIMENSIONADOR_ACTUALIZAR = () => { if (!MODELS.length) return false; render(); renderBom(); return true; };

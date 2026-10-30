@@ -2126,3 +2126,7 @@ document.addEventListener('DOMContentLoaded', () => {
 // «Limpiar» vuelve a los valores por defecto SIN el querystring: recargar con el enlace
 // puesto lo repondria y no limpiaria nada.
 $('btnLimpiar').addEventListener('click', () => { location.href = location.pathname; });
+
+// Botón «Actualizar» (actualizar.js, 2026-10-29): recalcula todo desde los campos tal como están.
+// Devuelve false mientras el catálogo no ha llegado, para que el botón lo diga.
+window.DIMENSIONADOR_ACTUALIZAR = () => { if (!CAT) return false; registrarHistorial(); evaluarYPintar(); return true; };
