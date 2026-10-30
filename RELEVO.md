@@ -37,6 +37,13 @@ está en curso no va aquí: lo dice `npm run traspasos` (protocolo en `docs/tras
   elegido. 60F y 61F: último pedido 2027-01-13 (siguen recomendables hasta entonces y caen solos);
   1000F y 1001F: vencido el 2026-10-13, ya no se recomiendan en compra nueva; 400F y 401F sin fin
   de venta. Las fechas son de terceros y llevan la nota `confirmar` hasta leerlas en el portal.
+- **2026-10-29 · PR #65**: la revisión de los pendientes que esperan documento, registrada uno por uno en *Esperan un documento oficial* (qué se buscó, qué se encontró, qué lo cierra). Ninguno se cierra sin su documento.
+- **2026-10-29 · PR #67**: el marcado del panel de perfiles y de su ventana lo genera
+  `BOM.montarPerfiles`; las siete páginas solo dejan su sección con su explicación (la mejora
+  propuesta al cerrar el PR #62).
+- **2026-10-29 · PR #66**: al activar una función, la columna de resultados resalta lo que apareció o
+  cambió por ella, con «Apareció al activar «X»», y el panel de funciones dice cuántos puntos y lleva
+  al primero (petición del dueño; era la mejora propuesta al cerrar el PR #61).
 - **2026-10-29 · PR #62**: el panel de perfiles multi-sede de las siete páginas es un solo módulo,
   `BOM.montarPerfiles` en `bom.js` (la mejora propuesta al cerrar el PR #55): una mejora del
   consolidado se escribe una vez, y las siete se comportan igual (diálogo, Escape, mensajes).
@@ -269,6 +276,18 @@ traspaso (el #37, de otra sesión, se fusionó mientras se cerraba esta).
 
 ### Esperan un documento oficial (se cierran trayéndolo por Actions)
 
+**Revisión del 2026-10-29 (PR #65), uno por uno.** Ninguno se cierra: cada uno necesita un documento que hoy no existe o que esta sesión no alcanza, y marcarlo cerrado sin él inventaría el dato.
+
+| Pendiente | Qué se buscó el 2026-10-29 | Qué se encontró | Por qué sigue abierto · lo que lo cierra |
+|---|---|---|---|
+| PQC del SRX4100 y los SRX de sucursal (300/320/340/345/380) | Feature Explorer de Juniper, función 7502, y «Get started with PQC» de Junos | La tabla oficial nombra SRX1500, 1600, 2300, 4200, 4300 y 4700 con su versión: casa con el catálogo. Los demás no salen | No salir no es «no la trae». Lo cierra que la tabla los añada (entran como `pqc`) o un documento que diga que no (`pqcNo`) |
+| PQC de los gateways Aruba 9004-LTE, 9106 y 9114 | Novedades de AOS 8 y gateways soportados de Central | Ninguna de las dos los nombra para la PPK | Lo cierran las notas de una versión de AOS-8 que los nombre, o la referencia de CLI de AOS-10 con `ppk-mandatory` en el gateway |
+| PQC de los Meraki MX y G2-MX | Búsqueda de PPK / RFC 8784 en Meraki | Solo la norma y sus borradores en el IETF; el roadmap quantum-safe de Cisco (ago-2026) cita el TLS del Dashboard | Lo cierra una página de Meraki que dé PPK o ML-KEM en Auto VPN o en la VPN de terceros |
+| PQC de los Nokia 7250 IXR y 7220 IXR | Sin documento nuevo desde el PR #49 | Sus fichas R26 no llaman quantum-safe a su MACsec (7250) ni nombran MACsec (7220) | Lo cierra una ficha o guía de Nokia que lo diga |
+| PQC y ciclo de vida de Huawei | No se buscó: Info-Finder pide sesión | — | Lo cierra la cuenta Huawei del dueño |
+| Datos sueltos de Cisco (ficha del Secure Firewall dedicado, precio de Secure Access, velocidad mínima del mGig de los C8111/C8121-G2-MX, módulos del ASR, breakout 4x10G) | Sin documento nuevo | — | Cada uno, su documento por el transporte; el precio de Secure Access, CCW (sin acceso desde la sesión) |
+
+
 - **Criptografía post-cuántica sin documento**: Huawei (pide la cuenta); de los gateways AOS de
   Aruba, el 9004-LTE, el 9106 y el 9114 (los demás la traen con AOS-8 desde el PR #49; con AOS-10
   no consta en ninguno: lo cierra la referencia de CLI de AOS-10 que nombre `ppk-mandatory` en el
@@ -316,29 +335,25 @@ existen los workflows de transporte. Huawei y HPE niegan además el navegador au
   Evita que un despliegue atascado se avise horas tarde. Cuesta una tarea programada por hora y su
   aprobación; si se hace mal, solo duplica corridas, que el diseño de un aviso por commit ya tolera.
   Se decide por el dueño.
-- **Del panel a la fila: resaltar en el resultado lo que cada función añadió** (propuesta al cerrar el
-  PR #61). El panel dice con qué funciones se calculó, pero no qué cambió por cada una: en el BOM, la
-  línea del PIM que trae «Respaldo celular», el NIM que trae «MACsec» o la segunda fuente que trae
-  «Doble fuente» no se distinguen de las demás. Que cada fila nacida de una función lleve su marca
-  (`data-por="<id de la casilla>"`) y que al pasar o pulsar la pastilla se resalten su casilla y sus
-  filas. Evita que un preventa quite o defienda una línea del BOM sin saber de qué requisito sale.
-  Cuesta tocar el armado del BOM de cada página (empezar por Cisco y Fortinet, las que más piezas
-  derivan de funciones) y una comprobación e2e por página; si se hace mal, una fila marcada con la
-  función equivocada engaña más que no marcar nada, así que cada marca sale del mismo `if` que crea la
-  fila, nunca de un mapa aparte.
-
-- **El marcado del panel de perfiles, generado por el módulo** (propuesta al cerrar el PR #62).
-  `BOM.montarPerfiles` ya lleva la lógica de las siete páginas, pero su HTML (el panel con
-  `#nombrePerfil`, `#perfilSedes`, `#btnGuardarPerfil`, `#listaPerfiles`, `#btnConsolidar` y la
-  ventana `#modalConsolidado`) sigue copiado en siete `.html`, y es ahí donde ya divergió (la caja
-  con `role="dialog"` solo en MikroTik, `#perfilMsg` ausente en Aruba). Propuesta: que el módulo
-  genere el panel dentro de un contenedor (`<div id="panelPerfiles">`), como hace
-  `BOM.montarBotonCotizador`, y que cada página solo deje ese hueco. Evita la siguiente
-  divergencia y deja los perfiles a un dimensionador nuevo con una llamada. Cuesta tocar los siete
-  HTML y declarar los ids que crea el módulo en `TARDIOS` de `npm run catalogo`; si se hace mal, el
-  panel no aparece en alguna página o axe marca la ventana, y lo verían `e2e-accesibilidad.js`,
-  `e2e-ciclo-excel.js` y `e2e-perfiles-juniper-nokia.js`. Se decide por el dueño.
-- (Hecha en el PR #62: el panel de perfiles, un solo módulo. Hecha en el PR #60: la licencia FortiGuard única del par en el BOM. Hecha en el PR #59: la vigilia del despliegue. Hecha en el PR #58: del override por ciclo de vida a ampliación o renovación en un clic. Hecha en el PR #57: el transporte probado sin red. Hecha en el PR #55: los perfiles multi-sede en Juniper y Nokia 7750. Hecha en el PR #54: la foto desde la página de cada modelo, hasta donde Cisco la publica, y el transporte fuera del YAML. Hecha en el PR #50: los perfiles de otros fabricantes al día al consolidar. Hecha en el PR #46: el ciclo del perfil al día al consolidar. Hecha en el PR #45: la fuente de la PQC enlazada a `fuentes.js`. Hecha en el PR #44: el ciclo en el consolidado multi-sede. Hecha en el PR #41: el fin de venta en el Excel. Hecha en el PR #40: la foto de producto en el Excel. Hecha en la septuagesimoprimera: el «no la trae» documentado, `pqcNo`. Hecha en la sexagesimoctava: la
+- **Lo que trajo la función, también en la lista de materiales** (propuesta al cerrar el PR #66).
+  La comparación mira la columna de resultados de la rejilla donde está la casilla, y en las siete
+  páginas con BOM la lista de materiales va en su propia pestaña: la línea que una función añade al
+  BOM (el PIM del respaldo celular, la segunda fuente) no se resalta allí. Propuesta: tomar también
+  la foto de la tabla del BOM (`#bomTabla`) al pulsar la casilla y marcar sus filas nuevas con la
+  misma regla, y que el aviso del panel diga «y N líneas en la lista de materiales». Evita que quien
+  revisa el BOM no sepa de qué requisito sale una línea. Cuesta un segundo origen de la foto en
+  `funciones-activas.js` y su caso en `e2e-funciones-activas.js`; si se hace mal, una pestaña que se
+  repinta al abrirse (y no al recalcular) se compararía con una foto vieja y marcaría filas de más:
+  la prueba tiene que abrir la pestaña después de marcar. Se decide por el dueño.
+- **Los estilos de la ventana del consolidado, en la hoja común** (propuesta al cerrar el PR #67).
+  El marcado ya es uno, pero `#modalConsolidado`, `.acc-caja` y sus `h3` siguen escritos en la hoja
+  de cada una de las siete páginas, con diferencias (el tono del velo, rgba(28,25,23) en cuatro y
+  rgba(14,26,43) en tres). Moverlos a `controles.css` con las variables de cada página (`--card`,
+  `--rule`) deja una sola regla. Evita que la próxima mejora de la ventana se escriba siete veces.
+  Cuesta quitar unas cuatro líneas de cada hoja; si se hace mal, la ventana sale sin velo o sin
+  desplazamiento en alguna página, y lo verían el contraste de pantallas y `e2e-accesibilidad.js`
+  (que ya abre la ventana). Se decide por el dueño.
+- (Hecha en el PR #67: el marcado del panel de perfiles, generado por el módulo. Hecha en el PR #66: lo que trajo cada función, resaltado en el resultado. Hecha en el PR #62: el panel de perfiles, un solo módulo. Hecha en el PR #60: la licencia FortiGuard única del par en el BOM. Hecha en el PR #59: la vigilia del despliegue. Hecha en el PR #58: del override por ciclo de vida a ampliación o renovación en un clic. Hecha en el PR #57: el transporte probado sin red. Hecha en el PR #55: los perfiles multi-sede en Juniper y Nokia 7750. Hecha en el PR #54: la foto desde la página de cada modelo, hasta donde Cisco la publica, y el transporte fuera del YAML. Hecha en el PR #50: los perfiles de otros fabricantes al día al consolidar. Hecha en el PR #46: el ciclo del perfil al día al consolidar. Hecha en el PR #45: la fuente de la PQC enlazada a `fuentes.js`. Hecha en el PR #44: el ciclo en el consolidado multi-sede. Hecha en el PR #41: el fin de venta en el Excel. Hecha en el PR #40: la foto de producto en el Excel. Hecha en la septuagesimoprimera: el «no la trae» documentado, `pqcNo`. Hecha en la sexagesimoctava: la
   versión mínima de la PQC en la hoja «Supuestos».)
 
 ## Decisiones del dueño abiertas
