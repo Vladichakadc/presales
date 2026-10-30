@@ -1,0 +1,77 @@
+[
+  {
+    "archivo": "nokia-anysec-quantum-safe.pdf",
+    "para": "NOKIA",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://www.nokia.com/asset/f/210676/",
+        "status": 200,
+        "bytes": 420984,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "nokia-7250-ixr-x-ds.pdf",
+    "para": "NOKIA",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://www.nokia.com/asset/f/210319/",
+        "status": 200,
+        "bytes": 952525,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "nokia-7250-ixr-r-ds.pdf",
+    "para": "NOKIA",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://www.nokia.com/asset/f/206658/",
+        "status": 200,
+        "bytes": 1970069,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "nokia-7250-ixr-6e-10e-srl-ds.pdf",
+    "para": "NOKIA",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://www.nokia.com/asset/f/212673/",
+        "status": 200,
+        "bytes": 1339752,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "nokia-series-ds.pdf",
+    "para": "NOKIA",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://www.nokia.com/asset/f/207599/",
+        "status": 200,
+        "bytes": 818294,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  }
+]
