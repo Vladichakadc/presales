@@ -2697,9 +2697,9 @@ const money=n=>n==null?null:'$'+n.toLocaleString('en-US',{maximumFractionDigits:
    R7J63A $747 en la lista oficial del distribuidor). */
 function accesoriosInyectados(m,D){
   const out=[];
-  if(m.id==='EC-10150'&&D.bloques>0) out.push({sku:'S2N67A', qty:1,
+  if(m.id==='EC-10150'&&D.bloques>0) out.push({sku:'S2N67A', qty:1, por:'chkBoost',
     nota:'Requerido para Boost > 1 Gbps (de fábrica el EC-10150 rinde 1 Gbps sin el kit) — auto-añadido por el motor; removible solo si Boost vuelve a 0. List Price del catálogo maestro de accesorios.'});
-  if(m.id==='Gateway 9240'&&$('chkDualPsu').checked) out.push({sku:'R7J63A', qty:1,
+  if(m.id==='Gateway 9240'&&$('chkDualPsu').checked) out.push({sku:'R7J63A', qty:1, por:'chkDualPsu',
     nota:'Segunda fuente de alimentación 550W AC para el Gateway 9240 (alimentación 1+1) — opción de diseño marcada en el panel 4. List Price del catálogo maestro de accesorios.'});
   return out;
 }
@@ -2894,12 +2894,12 @@ function renderBom(){
   // que no dependen de la selección manual del modal. El precio sale del catálogo maestro
   // (ACCESSORY_CATALOG: S2N67A $9.096, R7J63A $747 — lista oficial del distribuidor).
   const inyectados=accesoriosInyectados(m,D);
-  inyectados.forEach(({sku,qty:qIny,nota})=>{
+  inyectados.forEach(({sku,qty:qIny,nota,por})=>{
     // Si además se eligió a mano en el modal, la línea inyectada manda y la manual se
     // suelta: duplicar el kit en la cotización sería un error de pedido.
     if(accesoriosElegidos[sku]) delete accesoriosElegidos[sku];
     const a=ACCESSORY_CATALOG[sku]||null;
-    filas.push({cat:'Accesorios', desc:a?a.name:sku, sku, qty:qIny,
+    filas.push({por, cat:'Accesorios', desc:a?a.name:sku, sku, qty:qIny,
       unit:a&&a.listPrice!=null?a.listPrice:null, nota});
   });
   // Ópticas SFP de los enlaces WAN (petición del dueño, 2026-09-15): una por enlace
@@ -2936,23 +2936,23 @@ function renderBom(){
   if(ha){
     const agr=fmt(ha.agregado);
     if(ha.modo==='cobre'){
-      filas.push({cat:'Accesorios', desc:`Latiguillo RJ-45 — interconexión EdgeHA del par (1 puerto ${NOMBRE_PUERTO[ha.puerto]} por chasis)`, sku:null, qty:1, unit:null,
+      filas.push({por:'chkHa', cat:'Accesorios', desc:`Latiguillo RJ-45 — interconexión EdgeHA del par (1 puerto ${NOMBRE_PUERTO[ha.puerto]} por chasis)`, sku:null, qty:1, unit:null,
         nota:`La auditoría de puertos del par la lleva por ${NOMBRE_PUERTO[ha.puerto]} libre en los dos chasis («match the media type and speed for both ends», Orchestrator): un latiguillo de cobre, ninguna óptica. El catálogo no cotiza latiguillos.${ha.aviso?` Aviso: ${ha.aviso}.`:''}`});
     }else if(ha.modo==='sinPuerto'){
-      filas.push({cat:'Accesorios', desc:'Interconexión EdgeHA — sin puerto libre del mismo tipo en los dos chasis', sku:null, qty:2, unit:null,
+      filas.push({por:'chkHa', cat:'Accesorios', desc:'Interconexión EdgeHA — sin puerto libre del mismo tipo en los dos chasis', sku:null, qty:2, unit:null,
         nota:'La auditoría de puertos del par no encuentra un puerto libre del mismo tipo en los dos chasis para la interconexión: el modelo no cabe con estos enlaces. Se declara para que la propuesta no salga sin el enlace del par.'});
     }else if(ha.modo==='sinOptica'){
-      filas.push({cat:'Accesorios', desc:`Interconexión EdgeHA — 2 puertos (1 por chasis)${ha.puerto?` por ${NOMBRE_PUERTO[ha.puerto]}`:''} — óptica a confirmar con HPE`, sku:null, qty:2, unit:null,
+      filas.push({por:'chkHa', cat:'Accesorios', desc:`Interconexión EdgeHA — 2 puertos (1 por chasis)${ha.puerto?` por ${NOMBRE_PUERTO[ha.puerto]}`:''} — óptica a confirmar con HPE`, sku:null, qty:2, unit:null,
         nota:`${ha.aviso.charAt(0).toUpperCase()+ha.aviso.slice(1)} (agregado del sitio ${agr}). No entra en el total: se declara, sin SKU inventado.`});
     }else if(!ha.sku){
-      filas.push({cat:'Accesorios', desc:'Interconexión EdgeHA — 2 ópticas (1 por chasis) — PENDIENTE DE SELECCIÓN en el builder', sku:null, qty:2, unit:null,
+      filas.push({por:'chkHa', cat:'Accesorios', desc:'Interconexión EdgeHA — 2 ópticas (1 por chasis) — PENDIENTE DE SELECCIÓN en el builder', sku:null, qty:2, unit:null,
         nota:`La interconexión del par lleva los túneles de cada underlay a ambos chasis (VSG SD-Branch, fig. «EC HA»)${ha.puerto?` y va por ${NOMBRE_PUERTO[ha.puerto]}`:''}. Velocidad ${ha.vel} (≥ agregado del sitio, ${agr} — regla declarada de la casa); hay ${ha.ops.length} ópticas compatibles: selecciona el tipo en la sección de enlaces WAN (pestaña Dimensionar). No entra en el total hasta elegirla.`});
     }else{
       // Misma regla anti-duplicado que el resto de ópticas: si ya se metió a mano en el
       // modal, la línea del builder manda y la manual se suelta.
       if(accesoriosElegidos[ha.sku]) delete accesoriosElegidos[ha.sku];
       const aHA=ACCESSORY_CATALOG[ha.sku];
-      filas.push({cat:'Accesorios', desc:`${aHA.name} — interconexión EdgeHA del par`, sku:ha.sku, qty:2, unit:aHA.listPrice!=null?aHA.listPrice:null,
+      filas.push({por:'chkHa', cat:'Accesorios', desc:`${aHA.name} — interconexión EdgeHA del par`, sku:ha.sku, qty:2, unit:aHA.listPrice!=null?aHA.listPrice:null,
         nota:`Óptica ${ha.vel} × 2 (1 por chasis)${ha.puerto?`, por ${NOMBRE_PUERTO[ha.puerto]}: no queda cobre libre del mismo tipo en los dos chasis`:''} — ≥ agregado del sitio (${agr}), regla declarada de la casa. List Price de la lista oficial (vigencia ${aHA.vigencia||'s/f'}); tipo seleccionado en el builder WAN`});
     }
   }
@@ -2965,7 +2965,7 @@ function renderBom(){
         filas.push({cat:'Suscripción SD-WAN', desc:`${BUNDLES[bundle].n} — ${bwTier?bwTier.n:'tier por definir'} · nodo primario`,
           sku:tierSku(licTier,termYrs), qty:1, unit:licPrice,
           nota:`${termino} · suscripción por caudal del sitio, no por modelo de appliance`});
-        filas.push({cat:'Suscripción SD-WAN', desc:`${BUNDLES[bundle].n} HA — ${bwTier?bwTier.n:'tier por definir'} · segundo nodo del par 1+1`,
+        filas.push({por:'chkHa', cat:'Suscripción SD-WAN', desc:`${BUNDLES[bundle].n} HA — ${bwTier?bwTier.n:'tier por definir'} · segundo nodo del par 1+1`,
           sku:tierSku(licHa,termYrs), qty:1, unit:licHaPrice,
           nota:`${termino} · ${D.onprem
             ?'SKU HA E-STU del QuickSpecs (sección «On-Premises High Availability», verificada 2026-09-16)'
@@ -2977,7 +2977,7 @@ function renderBom(){
             +(haPar&&D.onprem?' · par HA on-prem: la escalera de SKU HA E-STU no llegó del servidor — consultar':'' )});
       }
       if(bloques){
-        filas.push({cat:'Aceleración', desc:`${SIZING.boost.n} — bloque de ${SIZING.boost.bloque} Mbps`,
+        filas.push({por:'chkBoost', cat:'Aceleración', desc:`${SIZING.boost.n} — bloque de ${SIZING.boost.bloque} Mbps`,
           sku:tierSku(boostBlk,termYrs), qty:bloques, unit:boostPrice,
           nota:`Pool agregado del fabric (${fmt(bloques*SIZING.boost.bloque)} = 30 % del tráfico WAN privado estimado). Orchestrator lo reparte entre sedes; no multiplica por unidad.`});
       }
@@ -3003,7 +3003,7 @@ function renderBom(){
         }else if(haPar&&dtdHa){
           filas.push({cat:'Seguridad', desc:'Dynamic Threat Defense — IDS/IPS, DDoS adaptativo, clasificación web · nodo primario',
             sku:tierSku(dtdStd,yrs), qty:1, unit:tierPrice(dtdStd,yrs), nota:notaBase});
-          filas.push({cat:'Seguridad', desc:'Dynamic Threat Defense HA — IDS/IPS del segundo nodo del par 1+1',
+          filas.push({por:'chkHa', cat:'Seguridad', desc:'Dynamic Threat Defense HA — IDS/IPS del segundo nodo del par 1+1',
             sku:tierSku(dtdHa,yrs), qty:1, unit:tierPrice(dtdHa,yrs),
             nota:`${termino} · SKU de alta disponibilidad del segundo nodo; la lista lo tarifa igual que el estándar (invariante verificada 2026-09-14)${nota7}`});
         }else{
@@ -3016,7 +3016,7 @@ function renderBom(){
       // el ALOJAMIENTO — VM, disponibilidad, backup y actualizaciones. La linea lo declara
       // para que la propuesta no olvide dimensionar esa infraestructura (2026-09-13, fase 10).
       if(D.onprem){
-        filas.push({cat:'Orquestación', desc:'Orchestrator auto-alojado — software incluido en la suscripción On-Premises',
+        filas.push({por:'chkOnprem', cat:'Orquestación', desc:'Orchestrator auto-alojado — software incluido en la suscripción On-Premises',
           sku:null, qty:1, unit:null,
           nota:'Sin coste de licencia (incluido en E-STU) · el alojamiento —VM, uptime, backup y upgrades— corre por cuenta del cliente'});
       }

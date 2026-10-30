@@ -6,7 +6,8 @@
      FortiConverter…», lleva `data-por="chkConverter"` y su botón vuelve a la casilla en la pestaña
      «Dimensionar»; al desmarcarla, la línea se va. El equipo y el bundle no llevan marca.
    - Cisco: con la seguridad en la nube (SSE), «Acceso privado a aplicaciones» trae su línea de Secure
-     Private Access, marcada con `saPrivado`; la de Secure Internet Access, que va siempre, no. */
+     Private Access, marcada con `saPrivado`; la de Secure Internet Access, que va siempre, no.
+   - MikroTik: «Capacitación» trae su línea, marcada con `chkTraining`, y se va al desmarcarla. */
 const { cargarPlaywright, BASE, abrirSesion, asentar, trasNavegar, contador } = require('./ayuda');
 
 const filasPor = (page) => page.$$eval('#bomTabla tbody tr', (trs) => trs.map((tr) => ({
@@ -87,6 +88,25 @@ const valor = (page, sel, v) => page.$eval(sel, (el, x) => {
   t.ok(spa && spa.por === 'saPrivado' && /^por Acceso privado a aplicaciones/.test(spa.chip),
     `Cisco: la línea de Secure Private Access dice de qué función sale (${spa ? `${spa.por} · «${spa.chip}»` : 'sin la línea'})`);
   t.ok(sia && !sia.por, 'Cisco: la de Secure Internet Access, que va siempre con SSE, no lleva marca');
+
+  // ── MikroTik ─────────────────────────────────────────────────────────────────────────
+  // La capacitación es una línea que solo existe con su casilla: la marca va y viene con ella.
+  await trasNavegar(page, () => page.goto(`${BASE}/dimensionador-mikrotik-routeros.html`, { waitUntil: 'domcontentloaded' }),
+    { selector: '#bw' });
+  await asentar(page);
+  await valor(page, '#bw', '200');
+  await asentar(page);
+  await page.click('[data-tab=bom]');
+  await asentar(page);
+  await page.check('#chkTraining');
+  await asentar(page);
+  f = await filasPor(page);
+  const cap = f.filter((x) => x.por === 'chkTraining');
+  t.ok(cap.length === 1 && /^por /.test(cap[0].chip), `MikroTik: la capacitación dice de qué casilla sale (${cap.length ? `«${cap[0].chip}»` : 'sin la marca'})`);
+  await page.uncheck('#chkTraining');
+  await asentar(page);
+  f = await filasPor(page);
+  t.ok(!f.some((x) => x.por === 'chkTraining'), 'MikroTik: sin la casilla, ni la línea ni la marca');
 
   t.ok(errores.length === 0, 'sin errores de JS' + (errores.length ? ': ' + errores.join(' | ') : ''));
   await browser.close();

@@ -1,6 +1,6 @@
 # Relevo
 
-Última actualización: 2026-10-29 · PR #65
+Última actualización: 2026-10-29 · PR #70
 
 Informe para continuar el trabajo. Lo pidió el dueño del repositorio el 2026-10-27: «de aquí en
 adelante, un informe de pendientes y mejoras para que la cuenta **servicioiptv2025@gmail.com**
@@ -33,6 +33,11 @@ está en curso no va aquí: lo dice `npm run traspasos` (protocolo en `docs/tras
 
 ## Estado al cerrar esta entrega
 
+- **2026-10-29 · PR #70**: «por <función>» en la fila del BOM de Cisco, Fortinet, Huawei, Aruba y
+  MikroTik (`public/js/por-funcion.js`, `req` en los motores, `test/por-funcion.test.js`,
+  `e2e-por-funcion.js`); complementa el resaltado del PR #66. **Criterio que conviene conservar**:
+  una línea nueva que solo exista por una casilla lleva su `por` (o su `req`) en el mismo `if` que la
+  crea; la prueba frena un `por` que no sea una casilla de la página y una clave sin casilla.
 - **2026-10-29 · PR #65**: la revisión de los pendientes que esperan documento, registrada uno por uno en *Esperan un documento oficial* (qué se buscó, qué se encontró, qué lo cierra). Ninguno se cierra sin su documento.
 - **2026-10-29 · PR #67**: el marcado del panel de perfiles y de su ventana lo genera
   `BOM.montarPerfiles`; las siete páginas solo dejan su sección con su explicación (la mejora
@@ -317,13 +322,23 @@ existen los workflows de transporte. Huawei y HPE niegan además el navegador au
 
 ## Mejoras propuestas sin decidir
 
+- **«Por función» también en la hoja «Supuestos» del Excel** (propuesta al cerrar el PR #70). La
+  marca vive solo en pantalla: el Excel que se archiva con la propuesta no dice qué línea trajo cada
+  función, y quien la revisa días después no lo puede reconstruir. Una sección «Líneas por función»
+  en «Supuestos» (la hoja de los supuestos del preventa, no la del BOM que ve el cliente) con cada
+  línea marcada y el nombre de su casilla. Cuesta pasar las filas con `por` en `meta.supuestos` de las
+  cinco páginas y una sección en `matrizSupuestos` con su prueba; si se hace mal, la hoja del BOM
+  cambiaría y el cliente vería notas internas, así que la marca no entra en la hoja «BOM». Se decide
+  por el dueño.
+
 - **Un reloj para la vigilia que no sea el de GitHub** (propuesta al cerrar el PR #64, solo si la
   medición del 2026-11-05 confirma que faltan más de la mitad de las corridas). Una tarea programada
   de Claude (fuera de Actions) que cada hora lance `vigilia-despliegue.yml` por `workflow_dispatch`.
   Evita que un despliegue atascado se avise horas tarde. Cuesta una tarea programada por hora y su
   aprobación; si se hace mal, solo duplica corridas, que el diseño de un aviso por commit ya tolera.
   Se decide por el dueño.
-- **Lo que trajo la función, también en la lista de materiales** (propuesta al cerrar el PR #66).
+- **Lo que trajo la función, también en la lista de materiales** (propuesta al cerrar el PR #66; en
+  parte cubierta por el PR #70, que marca de forma fija la procedencia de esas líneas en cinco páginas).
   La comparación mira la columna de resultados de la rejilla donde está la casilla, y en las siete
   páginas con BOM la lista de materiales va en su propia pestaña: la línea que una función añade al
   BOM (el PIM del respaldo celular, la segunda fuente) no se resalta allí. Propuesta: tomar también

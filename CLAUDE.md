@@ -447,6 +447,12 @@ Módulos compartidos:
   primero; nunca un mapa función→fila. Junto a
   la tarjeta clavada (`.col-fijo`, Aruba y Juniper) va FUERA de ella, como pieza de la rejilla encima:
   dentro la alargaba y se soltaba antes del fondo (`e2e-sticky.js`).
+- `por-funcion.js` — **«por <función>» en la fila del BOM** (2026-10-29, PR #70; complementa el
+  resaltado de `funciones-activas.js`): la fila que existe solo porque se pidió una función lleva
+  `por` (id de su casilla), puesto en el mismo `if` que la crea o traducido del `req` del motor con
+  una tabla que repite la lectura de la página (`test/por-funcion.test.js`); `bom.js` pinta
+  `data-por` y la etiqueta con un botón a la casilla. Falla cerrado; ni el consolidado ni el Excel la
+  llevan. Cisco, Fortinet, Huawei, Aruba y MikroTik; se carga sin `defer` antes del `<body>`.
 - `pqc.js` — **el requisito «Exigir PQC»** (2026-10-27), una sola regla para los siete
   dimensionadores y para el motor de Fortinet en el servidor: `''` no se exige, `'clave'` basta un
   mecanismo quantum-safe documentado (PPK, MACsec/ANYsec o ML-KEM), `'mlkem'` exige ML-KEM. Sin
