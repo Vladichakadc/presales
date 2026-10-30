@@ -177,8 +177,11 @@ function articuloDe(html) {
 
 async function revisar(vendor, f, opts) {
   const base = { vendor, documento: f.documento, url: f.url };
+  // El vigia semanal espera hasta 45 s por documento; el boton de la pestaña de fuentes, que tiene
+  // a una persona esperando, pide menos (`opts.tiempoLimite`).
+  const limite = (opts && opts.tiempoLimite) || TIEMPO_LIMITE;
   const control = new AbortController();
-  const reloj = setTimeout(() => control.abort(), TIEMPO_LIMITE);
+  const reloj = setTimeout(() => control.abort(), limite);
   try {
     const res = await fetch(f.url, {
       redirect: 'follow',
@@ -233,7 +236,7 @@ async function revisar(vendor, f, opts) {
       texto: (opts && opts.conTexto) ? texto : undefined,
     };
   } catch (err) {
-    const detalle = err.name === 'AbortError' ? `sin respuesta en ${TIEMPO_LIMITE / 1000} s` : err.message;
+    const detalle = err.name === 'AbortError' ? `sin respuesta en ${limite / 1000} s` : err.message;
     return { ...base, estado: 'inalcanzable', detalle };
   } finally {
     clearTimeout(reloj);
