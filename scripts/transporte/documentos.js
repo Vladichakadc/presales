@@ -1645,4 +1645,8 @@ module.exports = [
   { archivo: 'juniper-srx300-line-ds.html', tipo: 'html', para: 'JUNIPER', debeContener: 'SRX300', urls: ['https://www.juniper.net/gb/en/products/security/srx-series/srx300-line-firewalls-branch-datasheet.html'] },
   { archivo: 'juniper-srx4100-srx4200-ds.pdf', tipo: 'pdf', para: 'JUNIPER', urls: ['https://www.juniper.net/content/dam/www/assets/datasheets/us/en/security/srx4100-srx4200-firewall-datasheet.pdf'] },
   { archivo: 'meraki-c8111-c8121-g2-mx-instalacion.html', tipo: 'html', para: 'CISCO', debeContener: 'C8121', urls: ['https://documentation.meraki.com/SASE_and_SD-WAN/MX/Install_and_Get_Started/Installation_Guides/C8111-G2-MX_and_C8121-G2-MX_Installation_Guide'] },
+  // 2026-10-30, tercera corrida de una sola vez: la ficha del SRX4100/4200 por su pagina HTML (el PDF
+  //   no se guardo en la segunda) y la ficha de Meraki de los C8111/C8121-G2-MX.
+  { archivo: 'juniper-srx4100-srx4200-ds.html', tipo: 'html', para: 'JUNIPER', debeContener: 'SRX4100', urls: ['https://www.juniper.net/gb/en/products/security/srx-series/srx4100-srx4200-firewall-datasheet.html'] },
+  { archivo: 'meraki-c8111-c8121-g2-mx-ficha.html', tipo: 'html', para: 'CISCO', debeContener: 'C8121', urls: ['https://documentation.meraki.com/SASE_and_SD-WAN/MX/Product_Information/Overviews_and_Datasheets/C8111-G2-MX_and_C8121-G2-MX_Data_Sheet'] },
 ];
