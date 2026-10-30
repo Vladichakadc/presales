@@ -398,7 +398,7 @@ Módulos compartidos:
   es OPEX lo declara la página), perfiles multi-sede de todos los fabricantes en una clave (siete
   páginas, con un solo panel: `BOM.montarPerfiles(opciones)` monta lista, guardar, cargar, consolidar
   y la ventana, y cada página solo declara lo suyo; el marcado también lo pone el módulo
-  (`construirPanel`: cada página deja `<section id="panelPerfiles">` con su explicación); no la 7220 IXR ni Starlink; el `vendor` del perfil es la clave de la ruta de catálogo de su
+  (`construirPanel`: cada página deja `<section id="panelPerfiles">` con su explicación); los campos que guarda un perfil salen de los del enlace —`CAMPOS_ENLACE` menos `PERFIL_SIN` más `PERFIL_EXTRA`, cada excepción con su motivo, `test/perfil-campos-enlace.test.js`—, y Aruba y Fortinet usan una sola lista, `CAMPOS_ESCENARIO`); no la 7220 IXR ni Starlink; el `vendor` del perfil es la clave de la ruta de catálogo de su
   página —`nokia-sr` en el 7750— y `NOMBRE_FABRICANTE` la traduce al enseñarla), y el
   traspaso al cotizador: el equipo viaja como nombre (su precio lo pone `CATALOG`) y el resto del
   BOM como referencias; falla cerrado si la fila del equipo no casa. El Excel (ExcelJS) lleva

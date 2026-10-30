@@ -839,8 +839,19 @@ $('copyBtn').addEventListener('click', async () => {
    Misma clave compartida que los demas fabricantes (`BOM.perfiles`): un despliegue real mezcla
    marcas. Cargar es de Huawei (los campos son ids de ESTA pagina); consolidar no. Aqui todo se
    multiplica por sedes: el modelo comercial de Huawei no declara pools ni lineas unicas. */
-const CAMPOS_PERFIL = ['bw','unit','sites','conc','head','frame','profile','lan','aps','sSdwan','sUtm','sSlice','rPoe','rWan','rWifi','crit','onsite','remote','chkHa','anios','qty','opticasData','trafico','fec','fecPct','sDia','diaPct','sNgfw','utmPct','rutasBgp','cgnat','bng','rSrv6','rMpls','rMcast','rDsvpn','rCompr','reqPqc'];
+// Lo que viaja en el enlace (ESTADO.vincular). Los campos del perfil salen de esta lista
+// (2026-10-30): se declara solo lo que el perfil no guarda y lo que solo guarda él.
+const CAMPOS_ENLACE = ['bw','unit','sites','conc','head','frame','profile','lan','aps','sSdwan','sUtm','sSlice','rPoe','rWan','rWifi','crit','onsite','remote','chkHa','anios','opticasData','selDescuento','dtoCustom','platSeg','dirSeg','modeSeg','verdict-sel',
+  'trafico','fec','fecPct','sDia','diaPct','sNgfw','utmPct','rutasBgp','cgnat','bng','rSrv6','rMpls','rMcast','rDsvpn','rCompr','reqPqc','plazoMrr','margenFin','feeMsp'];
+// `verdict-sel`: el equipo lo guarda el perfil aparte, en `modelo`.
+// Descuento (`selDescuento`, `dtoCustom`): el consolidado aplica el de la página.
+// Simulador financiero (`plazoMrr`, `margenFin`, `feeMsp`): no entra en el consolidado.
+// Solo en el perfil: `qty`, opción del BOM que el enlace no lleva.
+const PERFIL_SIN = ['verdict-sel', 'selDescuento', 'dtoCustom', 'plazoMrr', 'margenFin', 'feeMsp'];
+const PERFIL_EXTRA = ['qty'];
 const SEGS_PERFIL = ['platSeg','modeSeg','dirSeg'];
+const CAMPOS_PERFIL = [...CAMPOS_ENLACE.filter((id) => !SEGS_PERFIL.includes(id) && !PERFIL_SIN.includes(id)),
+  ...PERFIL_EXTRA];
 function capturarCampos(){
   const v = {};
   CAMPOS_PERFIL.forEach(id => { const n = $(id); if(n) v[id] = n.type === 'checkbox' ? n.checked : n.value; });
@@ -943,8 +954,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // plataforma NE8000 con cálculo de enlace. Se traduce en vez de dejar el enlace mudo.
   const qs0 = new URLSearchParams(location.search);
   const veniaDeCore = qs0.get('modeSeg') === 'core' && !qs0.has('platSeg');
-  const st = ESTADO.vincular({ campos: ['bw','unit','sites','conc','head','frame','profile','lan','aps','sSdwan','sUtm','sSlice','rPoe','rWan','rWifi','crit','onsite','remote','chkHa','anios','opticasData','selDescuento','dtoCustom','platSeg','dirSeg','modeSeg','verdict-sel',
-    'trafico','fec','fecPct','sDia','diaPct','sNgfw','utmPct','rutasBgp','cgnat','bng','rSrv6','rMpls','rMcast','rDsvpn','rCompr','reqPqc','plazoMrr','margenFin','feeMsp'] });
+  const st = ESTADO.vincular({ campos: CAMPOS_ENLACE });
   if (veniaDeCore) {
     $('platSeg').querySelector('[data-v="ne8000"]').click();
     $('modeSeg').querySelector('[data-v="link"]').click();

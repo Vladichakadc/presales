@@ -714,10 +714,20 @@ $('xlsBtn').addEventListener('click',async()=>{
    Misma clave compartida que los demas fabricantes (`BOM.perfiles`): un despliegue real mezcla
    marcas. Cargar es de MikroTik (los campos son ids de ESTA pagina); consolidar no. Todo se
    multiplica por sedes: MikroTik vende por equipo, sin pools ni licencias por despliegue. */
-const CAMPOS_PERFIL=['bw','unit','head','dirMult','sedes','conc','enlacesData','chkRespaldoIpsec','firewall','cifrado','chkVirtual','chkQos','chkL3hw',
-  'chkBgp','bgpFeeds','chkPppoe','pppoeSess','ovpnTun','hotspotUsers','chkCapsman','apCount','apModel','chkPoe','poeFuente','chkHa',
-  'qty','supportTier','chkTraining','bomApModel','bomApQty'];
+// Lo que viaja en el enlace (ESTADO.vincular). Los campos del perfil salen de esta lista
+// (2026-10-30): se declara solo lo que el perfil no guarda y lo que solo guarda él.
+const CAMPOS_ENLACE = ['bw','unit','head','dirMult','sedes','conc','enlacesData','chkRespaldoIpsec','firewall','cifrado','chkVirtual','chkQos','chkL3hw',
+  'chkBgp','bgpFeeds','chkPppoe','pppoeSess','ovpnTun','hotspotUsers','chkCapsman','apCount','chkPoe','poeFuente','chkHa','reqPqc',
+  'mediaSeg','profileSeg','modoSeg','tramaSeg','verdict-sel','aniosTco','plazoMrr','margenFin','feeMsp'];
+// `verdict-sel`: el equipo lo guarda el perfil aparte, en `modelo`.
+// Simulador financiero y TCO (`aniosTco`, `plazoMrr`, `margenFin`, `feeMsp`): no entran en el consolidado.
+// Solo en el perfil: `apModel` (no viaja en el enlace) y opciones del BOM que el enlace no lleva.
+// Antes, `reqPqc` viajaba en el enlace y no en el perfil: un perfil cargado perdía «Exigir PQC».
+const PERFIL_SIN = ['verdict-sel', 'aniosTco', 'plazoMrr', 'margenFin', 'feeMsp'];
+const PERFIL_EXTRA = ['apModel', 'qty', 'supportTier', 'chkTraining', 'bomApModel', 'bomApQty'];
 const SEGS_PERFIL=['profileSeg','mediaSeg','modoSeg','tramaSeg'];
+const CAMPOS_PERFIL = [...CAMPOS_ENLACE.filter((id) => !SEGS_PERFIL.includes(id) && !PERFIL_SIN.includes(id)),
+  ...PERFIL_EXTRA];
 function capturarCampos(){
   const v={};
   CAMPOS_PERFIL.forEach(id=>{const n=$(id); if(n) v[id]=n.type==='checkbox'?n.checked:n.value;});
@@ -799,9 +809,7 @@ document.addEventListener('click', (e) => {
    El escenario viaja en la URL (ver /js/estado.js). Lo que va dentro de [data-inactivo] (el
    hub en un sitio, el cifrado fuera de IPsec) no viaja. */
 document.addEventListener('DOMContentLoaded', () => {
-  const st = ESTADO.vincular({ campos: ['bw','unit','head','dirMult','sedes','conc','enlacesData','chkRespaldoIpsec','firewall','cifrado','chkVirtual','chkQos','chkL3hw',
-    'chkBgp','bgpFeeds','chkPppoe','pppoeSess','ovpnTun','hotspotUsers','chkCapsman','apCount','chkPoe','poeFuente','chkHa','reqPqc',
-    'mediaSeg','profileSeg','modoSeg','tramaSeg','verdict-sel','aniosTco','plazoMrr','margenFin','feeMsp'] });
+  const st = ESTADO.vincular({ campos: CAMPOS_ENLACE });
   const anclaje = document.querySelector('.tabs') || document.querySelector('.masthead');
   if (anclaje && anclaje.parentNode) {
     const caja = document.createElement('div');

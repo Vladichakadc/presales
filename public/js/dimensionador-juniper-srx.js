@@ -714,10 +714,18 @@ $('xlsBtn').addEventListener('click', async () => {
    consolidar suma los perfiles de todos. El ciclo de vida del SRX tiene boletín oficial; el del SSR
    no (la ficha lo dice), y `BOM.cicloDe` devuelve `null` donde el catálogo no trae dato. */
 const VENDOR = 'juniper';
-const CAMPOS_PERFIL = ['bw', 'unit', 'head', 'reqPqc', 'users', 'sesUser', 'chkIps', 'chkAtp', 'chkVpn', 'natUsers', 'natBloque',
-  'ssrRol', 'ssrSpokes', 'ssrSimult', 'ssrBreakout', 'ssrCifrado', 'ssrDup', 'ssrSeg', 'ssrCapa', 'ssrAlcance',
-  'qty', 'licTier', 'termYears', 'chkHa'];
+// Lo que viaja en el enlace (ESTADO.vincular). Los campos del perfil salen de esta lista
+// (2026-10-30): se declara solo lo que el perfil no guarda y lo que solo guarda él.
+const CAMPOS_ENLACE = ['bw','unit','head','reqPqc','users','sesUser','chkIps','chkAtp','chkVpn','natUsers','natBloque',
+  'ssrRol','ssrSpokes','ssrSimult','ssrBreakout','ssrCifrado','ssrDup','ssrSeg','ssrCapa','ssrAlcance',
+  'platSeg','capaSeg','verdict-sel'];
+// `verdict-sel`: el equipo lo guarda el perfil aparte, en `modelo`.
+// Solo en el perfil: opciones del BOM que el enlace no lleva (`qty`, `licTier`, `termYears`, `chkHa`).
+const PERFIL_SIN = ['verdict-sel'];
+const PERFIL_EXTRA = ['qty', 'licTier', 'termYears', 'chkHa'];
 const SEGS_PERFIL = ['platSeg', 'capaSeg'];
+const CAMPOS_PERFIL = [...CAMPOS_ENLACE.filter((id) => !SEGS_PERFIL.includes(id) && !PERFIL_SIN.includes(id)),
+  ...PERFIL_EXTRA];
 // SRX y Session Smart Router son catálogos distintos: el modelo de un perfil puede estar en cualquiera.
 const modeloPorId = (id) => [...MODELS, ...SDWAN].find((x) => x.id === id) || null;
 function capturarCampos() {
@@ -758,9 +766,7 @@ BOM.montarPerfiles({
    otra recomendacion. Ahora el escenario viaja en la URL; ya no se guarda entre sesiones
    (ver /js/estado.js). */
 document.addEventListener('DOMContentLoaded', () => {
-  const st = ESTADO.vincular({ campos: ['bw','unit','head','reqPqc','users','sesUser','chkIps','chkAtp','chkVpn','natUsers','natBloque',
-    'ssrRol','ssrSpokes','ssrSimult','ssrBreakout','ssrCifrado','ssrDup','ssrSeg','ssrCapa','ssrAlcance',
-    'platSeg','capaSeg','verdict-sel'] });
+  const st = ESTADO.vincular({ campos: CAMPOS_ENLACE });
   const anclaje = document.querySelector('.tabs') || document.querySelector('.masthead');
   if (anclaje && anclaje.parentNode) {
     const caja = document.createElement('div');
