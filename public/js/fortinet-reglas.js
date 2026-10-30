@@ -426,6 +426,10 @@
     'ha-licencia-unica', 'ha-licencia-unica-cotizada', 'bdl',
     'sandbox-incluido']);
 
+  // Una fila que existe solo porque se pidió algo dice qué la trajo (`req`: la ruta del campo del
+  // escenario, o `comercial.sdwan:<servicio>`), puesto en el mismo `if` que la crea; la página lo
+  // traduce a su casilla con su propia tabla de enlaces (mejora «del panel a la fila», 2026-10-29).
+  // Las que siempre van (equipo, bundle, soporte) no llevan `req`.
   function lineasComerciales(e) {
     const m = e.modelo;
     const bundles = e.bundles || {};
@@ -511,7 +515,7 @@
     } else if (aplicaUnica) {
       // El SKU combinado de compra nueva es equipo + bundle POR UNIDAD: con la licencia unica no
       // sirve. Van las dos unidades del SKU de HA, con su precio de la misma lista firmada.
-      filas.push({ cat: 'Equipo', desc: `${m.id} — unidad del par HA`, sku: haUnica.skuHa, qty,
+      filas.push({ req: 'comercial.haLicenciaUnica', cat: 'Equipo', desc: `${m.id} — unidad del par HA`, sku: haUnica.skuHa, qty,
         unit: haUnica.precioHa != null ? haUnica.precioHa : null, haUnica: true,
         nota: `${m.seg} · SKU de HA («HA Pair HW»): las dos unidades se registran juntas con un número de serie virtual (vSN)` });
     } else if (!sinEquipo) {
@@ -618,7 +622,7 @@
       // lo publica una sola vez por modelo («1 Year FCT SVC»). Aplicarle el sufijo del termino
       // producia a 3 y 5 anos un SKU que la lista no tiene, con el precio del de 12 meses.
       if (lic && lic.converter && lic.converter.sku) {
-        filas.push({ cat: 'Servicios opcionales', desc: 'FortiConverter — migración de configuración',
+        filas.push({ req: 'comercial.converter', cat: 'Servicios opcionales', desc: 'FortiConverter — migración de configuración',
           sku: lic.converter.sku, qty: 1, unit: lic.converter.fee,
           nota: 'Servicio único, pedido a la carta. Migra desde Cisco ASA, Check Point o Palo Alto. '
             + 'La price list lo publica solo como «1 Year FCT SVC»: no cambia con el término de la cotización.' });
@@ -646,7 +650,7 @@
         const unit = precio(svc.addon);
         sdwanSku = svc.addon.sku;
         if (!s.exacto) bloquear({ codigo: 'sku-dd', mensaje: `SD-WAN Service: ${s.motivo}.` });
-        filas.push({ cat: 'Servicios SD-WAN', desc: 'SD-WAN Service (add-on) — ' + nombres, sku: s.sku, qty, unit,
+        filas.push({ req: svs.map((sv) => 'comercial.sdwan:' + sv.id), cat: 'Servicios SD-WAN', desc: 'SD-WAN Service (add-on) — ' + nombres, sku: s.sku, qty, unit,
           nota: `${termino} · un solo SKU cubre los tres servicios${svc.nota ? ` · ${svc.nota}` : ''} (${svc.fuente})` });
         if (unit == null) {
           bloquear({ codigo: 'sin-precio-sdwan',
@@ -654,7 +658,7 @@
               + `${anios} año(s). Pedirlo al distribuidor antes de cotizar en firme.` });
         }
       } else {
-        filas.push({ cat: 'Servicios SD-WAN', desc: 'SD-WAN Service (add-on) — ' + nombres, sku: null, qty, unit: null,
+        filas.push({ req: svs.map((sv) => 'comercial.sdwan:' + sv.id), cat: 'Servicios SD-WAN', desc: 'SD-WAN Service (add-on) — ' + nombres, sku: null, qty, unit: null,
           nota: svs.map((sv) => sv.d).join(' ') });
         bloquear({ codigo: 'sin-sku-sdwan',
           mensaje: `SD-WAN Service para ${m.id}: `
@@ -738,7 +742,7 @@
         // Dos causas distintas y se dicen distinto: el dato que falta en el escenario, o la tabla
         // que falta en el catalogo servido (que seria un fallo de este repositorio, no del usuario).
         const sinTabla = !(tabla && tabla.sku);
-        filas.push({ cat: 'Licencias endpoint', desc: 'FortiClient EMS — VPN/ZTNA', sku: null, qty: ems, unit: null,
+        filas.push({ req: 'comercial.emsActivo', cat: 'Licencias endpoint', desc: 'FortiClient EMS — VPN/ZTNA', sku: null, qty: ems, unit: null,
           nota: `${termino} · ${ems} endpoint(s) gestionados · ${sinTabla ? 'sin tabla de SKU en el catálogo' : 'falta elegir el despliegue'}` });
         bloquear({ codigo: 'sin-sku-ems',
           mensaje: sinTabla
@@ -751,7 +755,7 @@
         for (const p of packs) {
           const s = skuTermino(porPack[p.tam], anios, terminos);
           if (!s.exacto) bloquear({ codigo: 'sku-dd', mensaje: `FortiClient EMS: ${s.motivo}.` });
-          filas.push({ cat: 'Licencias endpoint', desc: `${despN} — VPN/ZTNA, pack de ${p.tam} endpoints`, sku: s.sku,
+          filas.push({ req: 'comercial.emsActivo', cat: 'Licencias endpoint', desc: `${despN} — VPN/ZTNA, pack de ${p.tam} endpoints`, sku: s.sku,
             qty: p.n, unit: null,
             nota: `${termino} · ${ems} endpoint(s) gestionados: ${reparto} (${tabla.fuente})` });
         }
@@ -838,7 +842,7 @@
        Un equipo con `redund: 'opcional'` sale de fabrica con UNA fuente y admite la segunda:
        si el diseno exige redundancia, esa segunda fuente es una linea, no un supuesto. */
     if (e.segundaFuente) {
-      filas.push({ cat: 'Alimentación', desc: 'Segunda fuente / adaptador de alimentación (redundancia)', sku: null,
+      filas.push({ req: 'fisico.psuRedundante', cat: 'Alimentación', desc: 'Segunda fuente / adaptador de alimentación (redundancia)', sku: null,
         qty, unit: null, nota: 'El equipo sale de fabrica con una sola fuente y admite la segunda.' });
       bloquear({ codigo: 'sin-sku-fuente',
         mensaje: `${m.id} admite una segunda fuente que no viene incluida, y su SKU no está en este catálogo.` });

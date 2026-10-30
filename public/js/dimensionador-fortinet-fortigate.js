@@ -142,6 +142,12 @@ const UI = [
   ['comercial.justificacionEol', 'justificacionEol', 'txt'],
   ['comercial.haLicenciaUnica', 'chkHaLicUnica', 'chk'],
 ];
+function casillaDeReq(req) {
+  const m = /^comercial\.sdwan:(.+)$/.exec(String(req));
+  if (m) return CHK_SDWAN[m[1]] || null;
+  const e = UI.find(([ruta, , tipo]) => ruta === req && tipo === 'chk');
+  return e ? e[1] : null;
+}
 const PUERTOS_ID = M.TIPOS_PUERTO.map((t) => [t.k, `pt_${t.k}`]);
 // Campo del motor → control que lo edita. Lo usan los errores, los obligatorios y las
 // correcciones ofrecidas.
@@ -1503,7 +1509,10 @@ function pintarBom() {
   const care = s.comercial.soporte;
   const bDef = BUNDLES[bundle] || null;
   const cDef = CARE[care] || null;
-  const filas = r.bom.filas;
+  // «Por <función>» (2026-10-29, `por-funcion.js`): las reglas marcan con `req` la ruta del campo del
+  // escenario que trajo la fila; aquí se traduce con los mismos enlaces que construyen el escenario
+  // (`UI` para las casillas y `CHK_SDWAN` para los servicios SD-WAN), sin una tabla aparte.
+  const filas = r.bom.filas.map((f) => (f.req ? { ...f, por: [].concat(f.req).map(casillaDeReq).filter(Boolean) } : f));
   const soporte = filas.find((f) => f.cat === 'Soporte');
   const bdl = filas.find((f) => f.bdl);
   const sinEquipo = ['renovacion', 'coterm'].includes(s.comercial.motivo);
