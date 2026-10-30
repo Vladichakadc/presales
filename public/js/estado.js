@@ -86,6 +86,22 @@
     // de por qué se eligió un querystring en vez de un blob codificado.
     const defectos = {};
     for (const id of campos) defectos[id] = leer(document.getElementById(id));
+    // DESPLEGABLES QUE SE RELLENAN TARDE (2026-10-30). Un <select> que ya está en el HTML pero
+    // vacío (sus opciones llegan con el catálogo, como el modelo de AP de MikroTik) no se puede
+    // restaurar ahora: `escribir` lo rechazaría y el valor del enlace se perdería sin aviso. Y su
+    // valor por defecto no es '' sino la primera opción que llegue: si no, en cuanto se rellenara
+    // contaría como cambiado y viajaría siempre en el enlace. Lo declara la página
+    // (`cfg.opcionesTarde`: MikroTik, `apModel`; Aruba, `pickModel`). Si el catálogo llegó antes y
+    // ya hay opciones, se repone ahora, pero se anuncia igual (`input` y `change`): lo que trae un
+    // enlace cuenta como elegido, y la página lo marca así en su manejador (Aruba, `bomManual`).
+    const tarde = (cfg.opcionesTarde || []).filter((id) => {
+      const n = document.getElementById(id);
+      return campos.includes(id) && n && n.tagName === 'SELECT';
+    });
+    const anunciar = (nodo) => {
+      nodo.dispatchEvent(new Event('input', { bubbles: true }));
+      nodo.dispatchEvent(new Event('change', { bubbles: true }));
+    };
     // Lo que `escenario()` necesita para describir la pantalla en el Excel (hoja «Supuestos»).
     vinculado = { campos, defectos };
 
@@ -168,6 +184,24 @@
           if (destino) destino.click();
         }
       }, 0);
+    }
+
+    for (const id of tarde) {
+      const nodo = document.getElementById(id);
+      if (nodo.options.length) {
+        // Ya repuesto arriba; falta anunciarlo, en el siguiente tick, como los grupos .seg.
+        if (id in guardado && nodo.value === guardado[id]) setTimeout(() => anunciar(nodo), 0);
+        continue;
+      }
+      const obs = new MutationObserver(() => {
+        if (!nodo.options.length) return;
+        if (defectos[id] === '') defectos[id] = nodo.options[0].value;
+        // Lo que trae el enlace, ahora que hay opciones; se anuncia como si lo eligiera alguien.
+        if (id in guardado && escribir(nodo, guardado[id])) anunciar(nodo);
+        obs.disconnect();
+      });
+      obs.observe(nodo, { childList: true });
+      setTimeout(() => obs.disconnect(), 8000);
     }
 
     // CAMPOS QUE APARECEN TARDE. El desplegable de equipo lo pinta ficha.js DESPUÉS del
