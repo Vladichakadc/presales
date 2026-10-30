@@ -1635,4 +1635,14 @@ module.exports = [
   { archivo: 'nokia-7250-ixr-r-ds.pdf', tipo: 'pdf', para: 'NOKIA', urls: ['https://www.nokia.com/asset/f/206658/'] },
   { archivo: 'nokia-7250-ixr-6e-10e-srl-ds.pdf', tipo: 'pdf', para: 'NOKIA', urls: ['https://www.nokia.com/asset/f/212673/'] },
   { archivo: 'nokia-series-ds.pdf', tipo: 'pdf', para: 'NOKIA', urls: ['https://www.nokia.com/asset/f/207599/'] },
+  // 2026-10-30, segunda corrida de una sola vez: Huawei AR (PQC), Juniper SRX4100 y sucursal (PQC),
+  //   y la guia de instalacion de los C8111/C8121-G2-MX (velocidad minima de sus mGig).
+  { archivo: 'huawei-ar6000-r26c00-ds.pdf', tipo: 'pdf', para: 'HUAWEI', urls: ['https://e-file.huawei.com/marketingcloud/pep/asset/20000001/Material/b67ae821185b4ae68465a9494e6e3b81/M3T1A590N1311296491069919315/Huawei%20NetEngine%20AR6000%20Series%20Enterprise%20Routers%20Datasheet-R26C00.pdf'] },
+  { archivo: 'huawei-ar8000-r25c10-ds.pdf', tipo: 'pdf', para: 'HUAWEI', urls: ['https://e.huawei.com/marketingcloud/pep/asset/20000001/Material/eeda8c0f3659461cbe23ad0a36bc7d78/M3T1A590N1244677017247076576/Huawei%20NetEngine%20AR8000%20Series%20Enterprise%20Router%20Data%20Sheet-R25C10.pdf'] },
+  { archivo: 'huawei-ar6710-l-r26c00-ds.pdf', tipo: 'pdf', para: 'HUAWEI', urls: ['https://e-file.huawei.com/marketingcloud/pep/asset/20000001/Material/04c9821faf16492ea6cadb03722f97ce/M3T1A590N1311283223945314586/Huawei%20NetEngine%20AR6710-L%20Series%20Enterprise%20Router%20Data%20Sheet-R26C00.pdf'] },
+  { archivo: 'huawei-ar6710-h-r25c10-ds.pdf', tipo: 'pdf', para: 'HUAWEI', urls: ['https://e-file.huawei.com/marketingcloud/pep/asset/20000001/Material/c63ee1473b9147a4b6a50dc64c8f1bcd/M3T1A590N1244327824896741626/Huawei%20NetEngine%20AR6710-H%20Series%20Enterprise%20Router%20Data%20Sheet-R25C10.pdf'] },
+  { archivo: 'huawei-ar6700v-l-r26c00-ds.pdf', tipo: 'pdf', para: 'HUAWEI', urls: ['https://e-file.huawei.com/marketingcloud/pep/asset/20000001/Material/38fc9bf1621e4da1be2124f1a0682d46/M3T1A590N1311350166408065076/Huawei%20NetEngine%20AR6700V-L%20Virtual%20Router%20Data%20Sheet-R26C00.pdf'] },
+  { archivo: 'juniper-srx300-line-ds.html', tipo: 'html', para: 'JUNIPER', debeContener: 'SRX300', urls: ['https://www.juniper.net/gb/en/products/security/srx-series/srx300-line-firewalls-branch-datasheet.html'] },
+  { archivo: 'juniper-srx4100-srx4200-ds.pdf', tipo: 'pdf', para: 'JUNIPER', urls: ['https://www.juniper.net/content/dam/www/assets/datasheets/us/en/security/srx4100-srx4200-firewall-datasheet.pdf'] },
+  { archivo: 'meraki-c8111-c8121-g2-mx-instalacion.html', tipo: 'html', para: 'CISCO', debeContener: 'C8121', urls: ['https://documentation.meraki.com/SASE_and_SD-WAN/MX/Install_and_Get_Started/Installation_Guides/C8111-G2-MX_and_C8121-G2-MX_Installation_Guide'] },
 ];
