@@ -1,6 +1,6 @@
 # Relevo
 
-Última actualización: 2026-10-30 · PR #82
+Última actualización: 2026-10-30 · PR #83
 
 Informe para continuar el trabajo. Lo pidió el dueño del repositorio el 2026-10-27: «de aquí en
 adelante, un informe de pendientes y mejoras para que la cuenta **servicioiptv2025@gmail.com**
@@ -33,6 +33,7 @@ está en curso no va aquí: lo dice `npm run traspasos` (protocolo en `docs/tras
 
 ## Estado al cerrar esta entrega
 
+- **2026-10-30 · PR #83**: tercera corrida de transporte. La ficha oficial del SRX4100/4200 no trae PQC ni PPK, y la ficha de Meraki de los C8111/C8121-G2-MX da «2 x 2.5 mGig RJ45» para WAN sin velocidad mínima (como su guía de instalación): el `velMinSupuesto` sigue. Con esto, los pendientes que esperan documento han pasado por todos los documentos oficiales descargables que se conocen; lo que los cierra está en la tabla de *Esperan un documento oficial*.
 - **2026-10-30 · PR #82**: lo que trajo la segunda corrida de transporte, registrado en *Esperan un documento oficial*. Huawei AR6710-L R26C00 da «PQC is supported for SSL, SSH, and SD-WAN DTLS protocols»: es gestión y control, no el IPsec de datos, y no da algoritmo, así que no satisface «Exigir PQC» (no se escribe `pqc`). La ficha de la línea SRX300 no trae PQC; la guía de instalación de los C8111/C8121-G2-MX da «2.5 MGig» sin velocidad mínima (el `velMinSupuesto` sigue).
 - **2026-10-30 · PR #79**: la batería de campos en línea recorre también los bloques que aparecen al
   marcar otro campo, cada opción de los botones segmentados y las filas de «+ Añadir»: 380
@@ -319,7 +320,7 @@ traspaso (el #37, de otra sesión, se fusionó mientras se cerraba esta).
 
 | Pendiente | Qué se buscó el 2026-10-29 | Qué se encontró | Por qué sigue abierto · lo que lo cierra |
 |---|---|---|---|
-| PQC del SRX4100 y los SRX de sucursal (300/320/340/345/380) | Feature Explorer de Juniper, función 7502, y «Get started with PQC» de Junos; el 2026-10-30, por transporte (corrida 41060887530), la ficha de la línea SRX300 (sin PQC ni PPK; la del SRX4100/4200 no se pudo guardar por su URL de juniper.net) | La tabla oficial nombra SRX1500, 1600, 2300, 4200, 4300 y 4700 con su versión: casa con el catálogo. Los demás no salen | No salir no es «no la trae». Lo cierra que la tabla los añada (entran como `pqc`) o un documento que diga que no (`pqcNo`) |
+| PQC del SRX4100 y los SRX de sucursal (300/320/340/345/380) | Feature Explorer de Juniper, función 7502, y «Get started with PQC» de Junos; el 2026-10-30, por transporte (corrida 41060887530), la ficha de la línea SRX300 (sin PQC ni PPK) y, en una tercera corrida (rama `fuente/pendientes-3-2026-10-30`), la ficha del SRX4100/4200 en HTML (tampoco) | La tabla oficial nombra SRX1500, 1600, 2300, 4200, 4300 y 4700 con su versión: casa con el catálogo. Los demás no salen | No salir no es «no la trae». Lo cierra que la tabla los añada (entran como `pqc`) o un documento que diga que no (`pqcNo`) |
 | PQC de los gateways Aruba 9004-LTE y 9114 (el 9106 se cerró en el PR #72) | «What's New» de AOS-8, notas de AOS-8.12.0.0 y gateways soportados de Central | El 9106 corre AOS-8 desde la 8.13.1.0 y trae la PPK desde ahí. El 9004-LTE y el 9114 no salen en ninguna versión de AOS-8 (Central los da solo con AOS-10) | Lo cierra la referencia de CLI de AOS-10 que nombre `ppk-mandatory` en el gateway |
 | PQC de los Meraki MX y G2-MX | Búsqueda de PPK / RFC 8784 en Meraki y, el 2026-10-30, su página «IPsec VPN Configuration Settings» | Solo la norma y sus borradores en el IETF; el roadmap quantum-safe de Cisco (ago-2026) cita el TLS del Dashboard; la página de VPN da IKEv1/IKEv2 y los grupos DH 1, 2, 5, 14, 15 y 21, sin PPK ni ML-KEM | Lo cierra una página de Meraki que dé PPK o ML-KEM en Auto VPN o en la VPN de terceros |
 | PQC de los Nokia 7250 IXR y 7220 IXR | El 2026-10-30, por `traer-cisco-huawei.yml` (corrida 41050590900, rama `fuente/pqc-nokia-2026-10-30`): la nota de aplicación «ANYsec quantum-safe network cryptography» y las fichas R26 de las 7250 IXR-X, IXR-R, IXR-6e/10e/18e (edición SR Linux) y 7220 IXR-D | La nota ofrece ANYsec quantum-safe en «7250 IXR series» sin nombrar modelos; las fichas no lo llaman quantum-safe (IXR-R y 6e/10e dan MACsec; la IXR-X no lo nombra); la 7220 IXR-D no nombra MACsec | Lo cierra una ficha o guía de Nokia que lo diga |
