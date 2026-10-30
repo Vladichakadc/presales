@@ -4,7 +4,7 @@
 - **Rama:** claude/campos-en-linea
 - **Cuenta:** servicioiptv2025@gmail.com (sesión de Claude Code en la nube)
 - **Estado:** en curso
-- **Actualizado:** 2026-10-29 21:40
+- **Actualizado:** 2026-10-30 05:55
 - **Archivos que toca:** test/e2e/e2e-campos-en-linea.js, public/js/dimensionador-*.js
 - **Siguiente paso:** leer las anotaciones `e2e` de la comprobación `pantallas` de esta rama y enlazar cada campo que salga «se queda atrás»
 

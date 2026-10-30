@@ -117,17 +117,21 @@ const otroNumero = (page, n) => page.evaluate((k) => {
   return null;
 }, n);
 
+// Salir del campo (el `change` del navegador). Por el foco y no por el elemento: una página que
+// rehace su fila al escribir (el builder de enlaces) ya lo cambió por otro.
+const salir = (page) => page.evaluate(() => { const a = window.document.activeElement; if (a && a !== window.document.body) a.blur(); });
+
 async function cambiar(page, campo, nuevo) {
   const loc = page.locator(`[data-e2e-campo="${campo.n}"]`);
   if (campo.tipo === 'checkbox' || campo.tipo === 'radio') {
     // El clic del propio elemento: dispara input y change como el de una persona, aunque una
     // etiqueta estilizada lo tape.
-    await loc.evaluate((el) => el.click());
+    await loc.evaluate((el) => el.click(), null, { timeout: 5000 });
   } else if (campo.tipo === 'select') {
     await loc.selectOption(nuevo, { timeout: 5000 });
   } else {
     await loc.fill(nuevo, { timeout: 5000 });
-    await loc.evaluate((el) => el.blur());
+    await salir(page);
   }
 }
 
@@ -146,8 +150,8 @@ async function cambiar(page, campo, nuevo) {
     await asentar(page);
     for (const [sel, v] of PREPARAR[pag] || []) {
       const loc = page.locator(sel).first();
-      await loc.fill(v);
-      await loc.evaluate((el) => el.blur());
+      await loc.fill(v, { timeout: 10000 });
+      await salir(page);
       await asentar(page);
     }
     // Se parte de lo que el botón deja: si la página arrancó desfasada, eso no es de ningún campo.
@@ -188,7 +192,12 @@ async function cambiar(page, campo, nuevo) {
         if (nuevo === null && campo.tipo !== 'checkbox' && campo.tipo !== 'radio') continue;
 
         const a = await leerResultados(page);
-        await cambiar(page, campo, nuevo);
+        try {
+          await cambiar(page, campo, nuevo);
+        } catch (err) {
+          console.log(`  ${pag}: ${campo.nombre} no se pudo cambiar (${err.message.split('\n')[0]}): se salta`);
+          continue;
+        }
         await asentar(page);
         const b = await leerResultados(page);
         await page.evaluate(() => window.DIMENSIONADOR_ACTUALIZAR());
@@ -212,9 +221,11 @@ async function cambiar(page, campo, nuevo) {
         // Reponer y volver al mismo escenario.
         const ahora = await valorDe(page, campo.n);
         if (ahora && JSON.stringify(ahora) !== JSON.stringify(original) && await usable(page, campo.n)) {
-          if ('checked' in original) await cambiar(page, campo, null);
-          else if (campo.tipo === 'select') await cambiar(page, campo, original.value);
-          else await cambiar(page, campo, original.value);
+          try {
+            await cambiar(page, campo, 'checked' in original ? null : original.value);
+          } catch (err) {
+            console.log(`  ${pag}: ${campo.nombre} no se pudo reponer (${err.message.split('\n')[0]})`);
+          }
         }
         await asentar(page);
         await page.evaluate(() => window.DIMENSIONADOR_ACTUALIZAR());
