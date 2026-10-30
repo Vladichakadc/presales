@@ -25,6 +25,18 @@ const { cargarPlaywright, BASE, abrirSesion, asentar, trasNavegar, contador } = 
 const PAGINAS = ['aruba-edgeconnect', 'cisco-catalyst8k', 'fortinet-fortigate', 'huawei-netengine',
   'juniper-srx', 'mikrotik-routeros', 'nokia-7220ixr', 'nokia-7750sr', 'starlink-leo'];
 
+// El escenario de partida: sin caudal, casi todas las páginas dicen «sin candidato» y casi ningún
+// campo tiene nada que mover (la primera medición en CI, 2026-10-29: 29 de 38 campos de Cisco «sin
+// efecto»). Con un caudal típico de sucursal, cada campo tiene un resultado que cambiar.
+const PREPARAR = {
+  'aruba-edgeconnect': [['#users', '300'], ['.wan-fila input[data-campo=down]', '500']],
+  'cisco-catalyst8k': [['#bw', '500']],
+  'huawei-netengine': [['#bw', '500']],
+  'juniper-srx': [['#bw', '500']],
+  'mikrotik-routeros': [['#bw', '500']],
+  'nokia-7750sr': [['#bw', '100']],
+};
+
 // { 'pagina': { idDelCampo: 'motivo' } }
 const EXCEPCIONES = {};
 
@@ -132,6 +144,12 @@ async function cambiar(page, campo, nuevo) {
     await trasNavegar(page, () => page.goto(`${BASE}/dimensionador-${pag}.html`, { waitUntil: 'domcontentloaded' }), { selector: '.btn-actualizar' });
     await page.waitForFunction(() => typeof window.DIMENSIONADOR_ACTUALIZAR === 'function', null, { timeout: 20000 });
     await asentar(page);
+    for (const [sel, v] of PREPARAR[pag] || []) {
+      const loc = page.locator(sel).first();
+      await loc.fill(v);
+      await loc.evaluate((el) => el.blur());
+      await asentar(page);
+    }
     // Se parte de lo que el botón deja: si la página arrancó desfasada, eso no es de ningún campo.
     t.ok(await page.evaluate(() => window.DIMENSIONADOR_ACTUALIZAR() !== false), `${pag}: el catálogo llegó y el recálculo completo corre`);
     await asentar(page);
