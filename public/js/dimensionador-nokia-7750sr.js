@@ -410,6 +410,8 @@
       ESTADO.avisoOrigen(caja, st);
     }
 
+    // Botón «Actualizar» (actualizar.js, 2026-10-29): recalcula todo desde los campos tal como están.
+    window.DIMENSIONADOR_ACTUALIZAR = () => { render(); return true; };
     render();
     montarPerfiles();
   }
