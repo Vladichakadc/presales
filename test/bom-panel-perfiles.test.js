@@ -181,3 +181,42 @@ test('montar: donde la caja interior ya es el diálogo (MikroTik), no se anida o
   assert.strictEqual(caja.attrs.role, 'dialog');
   assert.strictEqual(caja.attrs['aria-labelledby'], 'consolidadoTitulo', 'conserva el título que su HTML declara');
 });
+
+// EL MARCADO TAMBIÉN EN EL MÓDULO (2026-10-29, mejora propuesta al cerrar el PR #62): las páginas
+// solo dejan su `<section id="panelPerfiles">` con título y explicación; el formulario, la lista,
+// «Consolidar» y la ventana los pone `BOM.montarPerfiles`, una sola vez.
+const PAGINAS_PERFILES = ['aruba-edgeconnect', 'cisco-catalyst8k', 'fortinet-fortigate', 'huawei-netengine',
+  'juniper-srx', 'mikrotik-routeros', 'nokia-7750sr'];
+test('marcado: ninguna página copia el panel ni la ventana; todas dejan su hueco con su explicación', () => {
+  for (const pag of PAGINAS_PERFILES) {
+    const html = fs.readFileSync(path.join(__dirname, '..', 'public', `dimensionador-${pag}.html`), 'utf8');
+    for (const id of ['nombrePerfil', 'perfilSedes', 'btnGuardarPerfil', 'perfilMsg', 'listaPerfiles', 'btnConsolidar',
+      'modalConsolidado', 'consolidadoSub', 'consolidadoTabla', 'xlsConsolidadoBtn', 'consolidadoCerrar']) {
+      assert.ok(!html.includes(`id="${id}"`), `${pag}: #${id} lo pone el módulo`);
+    }
+    assert.strictEqual((html.match(/<section class="panel[^"]*" id="panelPerfiles"/g) || []).length, 1, `${pag}: un solo hueco`);
+    assert.match(html, /id="panelPerfiles"[^>]*>\s*<h2>Perfiles multi-sede<\/h2>\s*<p class="hint"/, `${pag}: con su título y su explicación`);
+  }
+});
+
+test('marcado: el módulo construye lo que falta, con la ventana como diálogo, y no duplica lo que ya está', () => {
+  const g = cargar('public/js/bom.js');
+  // Un DOM que solo tiene el hueco: el módulo escribe dentro y al final de <body>.
+  let panelHtml = '';
+  let bodyHtml = '';
+  const caja = nodo('panelPerfiles', { dataset: { ejemplo: 'Tienda' }, insertAdjacentHTML: (_, h) => { panelHtml += h; } });
+  g.document.getElementById = (id) => (id === 'panelPerfiles' ? caja : null);
+  g.document.body = { insertAdjacentHTML: (_, h) => { bodyHtml += h; } };
+  // Este doble no interpreta HTML: tras escribir, `getElementById` sigue sin ver los botones y el
+  // montaje se para ahí (en el navegador los encuentra). Lo que se mira es lo que escribió.
+  assert.throws(() => g.BOM.montarPerfiles({ vendor: 'aruba', capturar: () => ({}), aplicar: () => {}, equipo: () => null }));
+  assert.match(panelHtml, /id="nombrePerfil" placeholder="Nombre del perfil — p\. ej\. Tienda"[^>]*aria-label="Nombre del perfil"/);
+  assert.match(panelHtml, /id="perfilSedes"[^>]*aria-label=/);
+  assert.match(panelHtml, /<p class="hint" id="perfilMsg" role="status"><\/p>/);
+  assert.match(panelHtml, /id="btnConsolidar"[^>]* disabled>Consolidar BOM global/);
+  assert.match(bodyHtml, /^<div id="modalConsolidado" hidden><div class="acc-caja"[^>]* role="dialog" aria-modal="true" aria-labelledby="consolidadoTit"><h3 id="consolidadoTit">/);
+  // Con el marcado ya en la página (o el DOM de las pruebas de arriba), no se escribe nada.
+  const g2 = cargar('public/js/bom.js');
+  montar(g2, { vendor: 'cisco', capturar: () => ({}), aplicar: () => {}, equipo: () => null });
+  assert.strictEqual(dom.nodos.panelPerfiles, undefined, 'sin hueco no construye');
+});

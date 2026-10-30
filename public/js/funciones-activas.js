@@ -23,6 +23,16 @@
 // en el cálculo. Una marcada y bloqueada (la fija la página) sí cuenta, con la barra en gris como
 // a la izquierda.
 //
+// LO QUE TRAJO LA FUNCIÓN (petición del dueño, 2026-10-29: «cuando se active una función también
+// debes resaltar la descripción en el panel derecho para que los usuarios puedan observar en donde
+// apareció dicha descripción»). Al marcar una casilla de función se toma una foto del texto de la
+// columna de resultados; cuando la página termina de recalcular, lo que no estaba antes (una fila
+// del BOM, un aviso, una cifra que cambió) se resalta con el mismo acento, con «Apareció al activar
+// «X»» en su `title`, y el panel dice cuántos puntos cambiaron y lleva al primero. La marca sale de
+// lo que de verdad cambió en la pantalla, no de un mapa función→fila escrito a mano que pudiera
+// mentir; por eso tampoco toca el código de ninguna página. Se borra con el siguiente cambio de
+// cualquier control; al desmarcar no se marca nada.
+//
 // CUÁNDO SE ACTUALIZA. Con cada `change` o `input` de la página y, además, cada vez que la
 // columna de resultados cambia: las páginas marcan casillas por programa (un perfil guardado, el
 // pliego, «restablecer») sin disparar eventos, pero siempre recalculan y repintan la derecha. El
@@ -77,9 +87,99 @@
 
   const rejillas = [];
 
+  // La unidad que se resalta: la fila, el párrafo, el elemento de lista o el título que contiene el
+  // texto; sin ninguna de ellas, el propio elemento. Nunca el panel de funciones.
+  const UNIDAD = 'tr, li, p, dt, dd, h1, h2, h3, h4, h5, h6, caption, figcaption, summary, .bom-aviso';
+  const clave = (el) => el.textContent.replace(/\s+/g, ' ').trim();
+  function unidades(r) {
+    const vistas = new Set();
+    r.der.querySelectorAll('*').forEach((el) => {
+      if (r.panel.contains(el) || el.closest('script, style, template')) return;
+      if (![...el.childNodes].some((n) => n.nodeType === 3 && n.textContent.trim())) return;
+      const u = el.closest(UNIDAD);
+      vistas.add(u && r.der.contains(u) && !r.panel.contains(u) ? u : el);
+    });
+    return [...vistas];
+  }
+  function foto(r) {
+    const cuenta = new Map();
+    for (const u of unidades(r)) { const k = clave(u); if (k) cuenta.set(k, (cuenta.get(k) || 0) + 1); }
+    return cuenta;
+  }
+  function limpiar(r) {
+    if (!r.cambio) return;
+    r.cambio.els.forEach((el) => { el.classList.remove('fa-nuevo'); if (el.dataset.faTitulo != null) { el.title = el.dataset.faTitulo; delete el.dataset.faTitulo; } else el.removeAttribute('title'); });
+    r.cambio = null;
+    r.firma = null;
+  }
+  // Lo que no estaba en la foto de antes, sin repetir una unidad dentro de otra ya marcada.
+  function marcar(r, antes, cb) {
+    const quedan = new Map(antes);
+    const nuevas = [];
+    for (const u of unidades(r)) {
+      const k = clave(u);
+      if (!k) continue;
+      const n = quedan.get(k) || 0;
+      if (n > 0) quedan.set(k, n - 1); else nuevas.push(u);
+    }
+    const els = nuevas.filter((u) => !nuevas.some((o) => o !== u && o.contains(u)));
+    r.cambio = { id: cb.id, nombre: nombreDe(cb), els: [], claves: els.map(clave) };
+    poner(r, els);
+  }
+  function poner(r, els) {
+    const c = r.cambio;
+    els.forEach((el) => {
+      if (el.hasAttribute('title') && el.dataset.faTitulo == null) el.dataset.faTitulo = el.title;
+      el.classList.add('fa-nuevo');
+      el.title = `Apareció al activar «${c.nombre}»`;
+    });
+    c.els = els;
+    r.firma = null;
+    pintar(r);
+  }
+  // La página repintó la derecha después de marcar (un segundo recálculo, la confirmación del
+  // servidor): las marcas se fueron con los nodos viejos. Se vuelven a poner en lo que tenga el
+  // mismo texto que se marcó, que es lo que la función trajo; nunca en otra cosa.
+  function reponer(r) {
+    const c = r.cambio;
+    if (!c || c.els.every((el) => el.isConnected)) return;
+    const faltan = new Map();
+    c.claves.forEach((k) => faltan.set(k, (faltan.get(k) || 0) + 1));
+    const els = [];
+    for (const u of unidades(r)) {
+      const k = clave(u);
+      const n = faltan.get(k) || 0;
+      if (n > 0 && !els.some((o) => o.contains(u))) { faltan.set(k, n - 1); els.push(u); }
+    }
+    // Lo que la función trajo ya no está (la página lo quitó): no queda nada que señalar.
+    if (!els.length) { limpiar(r); pintar(r); return; }
+    poner(r, els);
+  }
+  // Espera a que la página termine de repintar la derecha: 300 ms sin cambios (sin contar el panel),
+  // y como mucho 4 s. Si no cambia nada en 1,5 s, tampoco cambió nada que resaltar.
+  function seguir(r, cb) {
+    const antes = foto(r);
+    if (r.espera) r.espera.cancelar();
+    let quieto = null;
+    let hubo = false;
+    const obs = new MutationObserver((ms) => {
+      if (!ms.some((m) => !r.panel.contains(m.target))) return;
+      hubo = true;
+      clearTimeout(quieto);
+      quieto = setTimeout(fin, 300);
+    });
+    const tope = setTimeout(fin, 4000);
+    const nada = setTimeout(() => { if (!hubo) fin(); }, 1500);
+    function cancelar() { obs.disconnect(); clearTimeout(quieto); clearTimeout(tope); clearTimeout(nada); r.espera = null; }
+    function fin() { cancelar(); if (cb.checked) marcar(r, antes, cb); }
+    r.espera = { cancelar };
+    obs.observe(r.der, { childList: true, subtree: true, characterData: true });
+  }
+
   function pintar(r) {
     const activas = r.casillas().filter((cb) => cb.checked);
-    const firma = activas.map((cb) => `${cb.id}|${cb.disabled ? 1 : 0}|${nombreDe(cb)}`).join('§');
+    const c = r.cambio;
+    const firma = activas.map((cb) => `${cb.id}|${cb.disabled ? 1 : 0}|${nombreDe(cb)}`).join('§') + (c ? `#${c.id}:${c.els.length}` : '');
     colocar(r.der, r.panel);
     if (firma === r.firma) return;
     r.firma = firma;
@@ -89,10 +189,17 @@
       const dest = cb.id ? ` data-para="${esc(cb.id)}"` : '';
       return `<li><button type="button" class="fa-pastilla${fija}"${dest} title="${esc(n)}${cb.disabled ? ' (la fija la página)' : ''} — ir a la casilla">${esc(n)}</button></li>`;
     }).join('');
+    let cambio = '';
+    if (c) {
+      cambio = c.els.length
+        ? `<p class="fa-cambio">Al activar <b>${esc(c.nombre)}</b> cambi${c.els.length === 1 ? 'ó 1 punto del resultado: va resaltado' : `aron ${c.els.length} puntos del resultado: van resaltados`}. <button type="button" class="fa-ver">Ver ${c.els.length === 1 ? 'dónde' : 'el primero'}</button></p>`
+        : `<p class="fa-cambio">Al activar <b>${esc(c.nombre)}</b> no cambió nada visible del resultado.</p>`;
+    }
     r.panel.innerHTML = `<p class="fa-tit">Funciones activadas <span class="fa-n">${activas.length}</span></p>`
       + (activas.length
         ? `<ul class="fa-lista">${lista}</ul>`
-        : '<p class="fa-vacio">Ninguna. Las que marques en los parámetros aparecen aquí, resaltadas.</p>');
+        : '<p class="fa-vacio">Ninguna. Las que marques en los parámetros aparecen aquí, resaltadas.</p>')
+      + cambio;
   }
 
   function pintarTodo() { rejillas.forEach(pintar); }
@@ -108,23 +215,51 @@
       panel.className = 'funciones-activas';
       panel.setAttribute('aria-label', 'Funciones activadas en los parámetros');
       panel.setAttribute('aria-live', 'polite');
+      const r = { izq, der, panel, firma: null, casillas: () => casillasDe(izq) };
       panel.addEventListener('click', (e) => {
+        if (e.target.closest('.fa-ver')) {
+          // El primero que se ve (una pestaña oculta guarda los suyos para cuando se abra).
+          const el = r.cambio && r.cambio.els.find((x) => x.isConnected && x.getClientRects().length);
+          if (el) {
+            el.scrollIntoView({ block: 'center', behavior: 'smooth' });
+            if (!el.hasAttribute('tabindex')) el.setAttribute('tabindex', '-1');
+            el.focus({ preventScroll: true });
+          }
+          return;
+        }
         const b = e.target.closest('.fa-pastilla[data-para]');
         const cb = b && document.getElementById(b.dataset.para);
         if (!cb) return;
         cb.parentElement.scrollIntoView({ block: 'center', behavior: 'smooth' });
         cb.focus({ preventScroll: true });
       });
-      const r = { izq, der, panel, firma: null, casillas: () => casillasDe(izq) };
       rejillas.push(r);
       pintar(r);
       // La derecha se repinta tras cada recálculo; la izquierda muestra u oculta bloques.
-      new MutationObserver(() => pintar(r)).observe(der, { childList: true, subtree: true });
+      new MutationObserver(() => { if (!r.espera) reponer(r); pintar(r); }).observe(der, { childList: true, subtree: true });
       new MutationObserver(() => pintar(r)).observe(izq, { subtree: true, attributes: true, attributeFilter: ['hidden', 'class', 'disabled'] });
     });
     if (!rejillas.length) return;
     document.addEventListener('change', pintarTodo, true);
     document.addEventListener('input', pintarTodo, true);
+    // Lo que trajo cada función. El `click` llega antes que el `input` y el `change` con los que la
+    // página recalcula, así que la foto es la del resultado de antes. Cualquier otro control borra
+    // las marcas: ya no dicen lo que cambió la última acción.
+    document.addEventListener('click', (e) => {
+      const cb = e.target;
+      if (!cb || cb.tagName !== 'INPUT' || cb.type !== 'checkbox') return;
+      const r = rejillas.find((x) => x.casillas().includes(cb));
+      rejillas.forEach(limpiar);
+      if (r && cb.checked) seguir(r, cb);
+    }, true);
+    const otro = (e) => {
+      const t = e.target;
+      if (!t || !t.closest || (t.tagName === 'INPUT' && t.type === 'checkbox')) return;
+      if (t.closest('.funciones-activas')) return;
+      rejillas.forEach((x) => { if (x.espera) x.espera.cancelar(); limpiar(x); });
+    };
+    document.addEventListener('change', otro, true);
+    document.addEventListener('input', otro, true);
   }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', montar);
