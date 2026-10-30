@@ -21,7 +21,7 @@ const RUTA = '/dimensionador-mikrotik-routeros.html';
 
   const abrir = async (qs) => {
     await page.goto(BASE + RUTA + qs, { waitUntil: 'domcontentloaded' });
-    await page.waitForFunction(() => document.querySelectorAll('#apModel option').length > 1, null, { timeout: 20000 });
+    await page.waitForSelector('#apModel option:nth-child(2)', { state: 'attached', timeout: 20000 });
     await asentar(page);
   };
 
@@ -36,10 +36,11 @@ const RUTA = '/dimensionador-mikrotik-routeros.html';
 
   await abrir('?chkCapsman=1&apCount=4');
   t.ok((await page.inputValue('#apModel')) === primero, `un enlace sin apModel sigue en el de siempre (${primero})`);
-  await page.fill('#apCount', '5');
-  await page.dispatchEvent('#apCount', 'input');
+  // Otro campo visible: el bloque de CAPsMAN no se despliega al venir del enlace (anotado aparte).
+  await page.fill('#bw', '150');
+  await page.dispatchEvent('#bw', 'input');
   await asentar(page);
-  t.ok(!/apModel=/.test(page.url()), 'y el AP por defecto no viaja: nadie lo cambió');
+  t.ok(/bw=150/.test(page.url()) && !/apModel=/.test(page.url()), `y el AP por defecto no viaja: nadie lo cambió (${page.url().split('?')[1]})`);
 
   t.ok(errores.length === 0, 'sin errores de JS' + (errores.length ? ': ' + errores.join(' | ') : ''));
   await browser.close();
