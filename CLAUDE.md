@@ -428,7 +428,10 @@ Módulos compartidos:
   viaja; un enlace con parámetros que la pantalla ya no entiende lo dice (`avisoOrigen`), salvo lo
   que la página declara migrar.
 - `procedencia.js` — la pestaña de fuentes (leer, subir, borrar, contrastar en el acto con
-  `contraste.js`: cambios, altas, sin cambio y columnas ignoradas; nunca adivina un mapeo).
+  `contraste.js`: cambios, altas, sin cambio y columnas ignoradas; nunca adivina un mapeo); y
+  «↻ Actualizar fuentes», 2026-10-29: `/api/fuentes/:vendor/salud` con `server/vigiaEnVivo.js` vuelve a
+  leer cada documento y lo clasifica contra el lock con la regla del vigía —columna «Comprobado
+  ahora»—; solo lee, 10 min de caché por fabricante, cuatro descargas a la vez).
 - `navegacion.js` — barra de fabricante (anterior/siguiente conservando el paso, `Alt`+flechas).
 - `tabla.js` — ordenación por columna; la coma es separador de miles y el punto decimal, y «sin
   dato» va siempre al final.
