@@ -1,6 +1,6 @@
 # Relevo
 
-Última actualización: 2026-10-30 · PR #75
+Última actualización: 2026-10-30 · PR #76
 
 Informe para continuar el trabajo. Lo pidió el dueño del repositorio el 2026-10-27: «de aquí en
 adelante, un informe de pendientes y mejoras para que la cuenta **servicioiptv2025@gmail.com**
@@ -33,6 +33,7 @@ está en curso no va aquí: lo dice `npm run traspasos` (protocolo en `docs/tras
 
 ## Estado al cerrar esta entrega
 
+- **2026-10-30 · PR #76**: la ayuda de «Exigir PQC» de Aruba (`#reqPqcHint`) ya dice que el 9106 trae la PPK con AOS-8 desde la 8.13.1.0. Solo esa frase, con autorización expresa del dueño, porque la página la declara el traspaso de `claude/elegant-pascal-7ymts7`, que tiene cambios sin fusionar en ella: si esa rama se fusiona, el choque es de una línea.
 - **2026-10-30 · PR #75**: los campos del perfil multi-sede salen de los del enlace (`CAMPOS_ENLACE`
   menos `PERFIL_SIN` más `PERFIL_EXTRA`, cada excepción con su motivo) en Cisco, Huawei, Juniper,
   MikroTik y Nokia 7750. El enlace no cambia; el perfil de MikroTik gana «Exigir PQC», que se perdía.
@@ -43,7 +44,7 @@ está en curso no va aquí: lo dice `npm run traspasos` (protocolo en `docs/tras
   elegido. 60F y 61F: último pedido 2027-01-13 (siguen recomendables hasta entonces y caen solos);
   1000F y 1001F: vencido el 2026-10-13, ya no se recomiendan en compra nueva (sube el 1800F); 400F y
   401F sin fin de venta. Las fechas son de terceros y llevan la nota `confirmar` hasta leerlas en el portal.
-- **2026-10-29 · PR #72**: **la PQC del Gateway 9106, cerrada con documento oficial.** El «What's New» de AOS-8 (traído por Actions) dice «Starting with AOS-8.13.1.0, the 9106 controller is now supported in AOS-8.x»; con la guía de PPK de AOS-8 (desde la 8.10.0.0), el 9106 trae la PPK con AOS-8.13.1.0. Los SKU S0B85A y S0B86A vienen con AOS-10 y no bajan: lo dice su `alcance`. **Queda un retoque**: el texto `#reqPqcHint` de `public/dimensionador-aruba-edgeconnect.html` aún nombra el 9106 entre los que no tienen documento; esa página la tocan los PR #69 y #70 de otra sesión, y se corrige tras su fusión.
+- **2026-10-29 · PR #72**: **la PQC del Gateway 9106, cerrada con documento oficial.** El «What's New» de AOS-8 (traído por Actions) dice «Starting with AOS-8.13.1.0, the 9106 controller is now supported in AOS-8.x»; con la guía de PPK de AOS-8 (desde la 8.10.0.0), el 9106 trae la PPK con AOS-8.13.1.0. Los SKU S0B85A y S0B86A vienen con AOS-10 y no bajan: lo dice su `alcance`. El texto `#reqPqcHint` de la página de Aruba se puso al día en el PR #76.
 - **2026-10-29 · PR #70**: «por <función>» en la fila del BOM de Cisco, Fortinet, Huawei, Aruba y
   MikroTik (`public/js/por-funcion.js`, `req` en los motores, `test/por-funcion.test.js`,
   `e2e-por-funcion.js`); complementa el resaltado del PR #66. **Criterio que conviene conservar**:
