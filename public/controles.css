@@ -11,6 +11,7 @@
   --ciclo-rojo-fondo: #FEF3F2;
 }
 
+
 /* 1 · El ciclo de vida en los desplegables de equipos: «resalta en rojo en el combo cuando los
    equipos están o van a estar fuera de venta». La clase la pone FICHA.opcionCiclo() (ficha.js),
    la misma regla en el desplegable de la ficha y en el selector propio de cada página. El rojo
@@ -175,3 +176,19 @@ tr.fa-nuevo > :first-child { box-shadow: inset 3px 0 0 var(--red, #0E1A2B) !impo
   .funciones-activas .fa-pastilla { outline: 2px solid Highlight; }
   .fa-nuevo:not(tr), tr.fa-nuevo > td { outline: 2px solid Highlight; }
 }
+
+/* 5 · «Por <función>» en la fila del BOM (2026-10-29, `por-funcion.js`; complementa el resaltado
+   del PR #66, que marca lo que acaba de aparecer). La fila que existe solo porque se pidió una
+   función lo dice bajo su descripción, con un botón que lleva a la casilla; la casilla de destino
+   parpadea un momento con el acento de la página. */
+.fa-por { display: block; margin-top: 3px; font-size: 11.5px; font-weight: 400; color: var(--steel, #5C6E85); }
+.fa-por-b {
+  font: inherit; font-weight: 600; color: var(--ink, #0E1A2B); cursor: pointer;
+  padding: 0 5px; border: 0; border-radius: 2px;
+  background-color: color-mix(in srgb, var(--red, #0E1A2B) 6%, var(--card, #FFF));
+  box-shadow: inset 2px 0 0 var(--red, #0E1A2B);
+}
+.fa-por-b:hover { background-color: color-mix(in srgb, var(--red, #0E1A2B) 12%, var(--card, #FFF)); }
+.fa-por-b:focus-visible { outline: 2px solid var(--red, #0E1A2B); outline-offset: 1px; }
+label.fa-por-destino { outline: 2px solid var(--red, #0E1A2B); outline-offset: 2px; }
+@media (forced-colors: active) { .fa-por-b { outline: 1px solid ButtonText; } }

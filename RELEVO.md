@@ -35,8 +35,14 @@ está en curso no va aquí: lo dice `npm run traspasos` (protocolo en `docs/tras
 
 - **2026-10-29 · PR #68**: Fortinet con fechas de fin de venta y de soporte en la ficha del equipo
   elegido. 60F y 61F: último pedido 2027-01-13 (siguen recomendables hasta entonces y caen solos);
-  1000F y 1001F: vencido el 2026-10-13, ya no se recomiendan en compra nueva; 400F y 401F sin fin
-  de venta. Las fechas son de terceros y llevan la nota `confirmar` hasta leerlas en el portal.
+  1000F y 1001F: vencido el 2026-10-13, ya no se recomiendan en compra nueva (sube el 1800F); 400F y
+  401F sin fin de venta. Las fechas son de terceros y llevan la nota `confirmar` hasta leerlas en el portal.
+- **2026-10-29 · PR #72**: **la PQC del Gateway 9106, cerrada con documento oficial.** El «What's New» de AOS-8 (traído por Actions) dice «Starting with AOS-8.13.1.0, the 9106 controller is now supported in AOS-8.x»; con la guía de PPK de AOS-8 (desde la 8.10.0.0), el 9106 trae la PPK con AOS-8.13.1.0. Los SKU S0B85A y S0B86A vienen con AOS-10 y no bajan: lo dice su `alcance`. **Queda un retoque**: el texto `#reqPqcHint` de `public/dimensionador-aruba-edgeconnect.html` aún nombra el 9106 entre los que no tienen documento; esa página la tocan los PR #69 y #70 de otra sesión, y se corrige tras su fusión.
+- **2026-10-29 · PR #70**: «por <función>» en la fila del BOM de Cisco, Fortinet, Huawei, Aruba y
+  MikroTik (`public/js/por-funcion.js`, `req` en los motores, `test/por-funcion.test.js`,
+  `e2e-por-funcion.js`); complementa el resaltado del PR #66. **Criterio que conviene conservar**:
+  una línea nueva que solo exista por una casilla lleva su `por` (o su `req`) en el mismo `if` que la
+  crea; la prueba frena un `por` que no sea una casilla de la página y una clave sin casilla.
 - **2026-10-29 · PR #69**: botón «Actualizar» en los nueve dimensionadores (encargo del dueño: el
   recálculo en línea no siempre reflejaba los parámetros). Valida los campos visibles con sus reglas
   del HTML, recalcula todo con `window.DIMENSIONADOR_ACTUALIZAR` y dice el resultado. **Criterio que
@@ -290,7 +296,7 @@ traspaso (el #37, de otra sesión, se fusionó mientras se cerraba esta).
 | Pendiente | Qué se buscó el 2026-10-29 | Qué se encontró | Por qué sigue abierto · lo que lo cierra |
 |---|---|---|---|
 | PQC del SRX4100 y los SRX de sucursal (300/320/340/345/380) | Feature Explorer de Juniper, función 7502, y «Get started with PQC» de Junos | La tabla oficial nombra SRX1500, 1600, 2300, 4200, 4300 y 4700 con su versión: casa con el catálogo. Los demás no salen | No salir no es «no la trae». Lo cierra que la tabla los añada (entran como `pqc`) o un documento que diga que no (`pqcNo`) |
-| PQC de los gateways Aruba 9004-LTE, 9106 y 9114 | Novedades de AOS 8 y gateways soportados de Central | Ninguna de las dos los nombra para la PPK | Lo cierran las notas de una versión de AOS-8 que los nombre, o la referencia de CLI de AOS-10 con `ppk-mandatory` en el gateway |
+| PQC de los gateways Aruba 9004-LTE y 9114 (el 9106 se cerró en el PR #72) | «What's New» de AOS-8, notas de AOS-8.12.0.0 y gateways soportados de Central | El 9106 corre AOS-8 desde la 8.13.1.0 y trae la PPK desde ahí. El 9004-LTE y el 9114 no salen en ninguna versión de AOS-8 (Central los da solo con AOS-10) | Lo cierra la referencia de CLI de AOS-10 que nombre `ppk-mandatory` en el gateway |
 | PQC de los Meraki MX y G2-MX | Búsqueda de PPK / RFC 8784 en Meraki | Solo la norma y sus borradores en el IETF; el roadmap quantum-safe de Cisco (ago-2026) cita el TLS del Dashboard | Lo cierra una página de Meraki que dé PPK o ML-KEM en Auto VPN o en la VPN de terceros |
 | PQC de los Nokia 7250 IXR y 7220 IXR | Sin documento nuevo desde el PR #49 | Sus fichas R26 no llaman quantum-safe a su MACsec (7250) ni nombran MACsec (7220) | Lo cierra una ficha o guía de Nokia que lo diga |
 | PQC y ciclo de vida de Huawei | No se buscó: Info-Finder pide sesión | — | Lo cierra la cuenta Huawei del dueño |
@@ -298,7 +304,7 @@ traspaso (el #37, de otra sesión, se fusionó mientras se cerraba esta).
 
 
 - **Criptografía post-cuántica sin documento**: Huawei (pide la cuenta); de los gateways AOS de
-  Aruba, el 9004-LTE, el 9106 y el 9114 (los demás la traen con AOS-8 desde el PR #49; con AOS-10
+  Aruba, el 9004-LTE y el 9114 (los demás la traen con AOS-8 desde el PR #49, y el 9106 desde la 8.13.1.0 con el PR #72; con AOS-10
   no consta en ninguno: lo cierra la referencia de CLI de AOS-10 que nombre `ppk-mandatory` en el
   gateway); los Meraki MX y G2-MX (el roadmap quantum-safe de Cisco de ago-2026 solo cita
   el TLS del Dashboard); el SRX4100 y los SRX de sucursal (fuera del Feature Explorer; la PQC de Junos
@@ -338,6 +344,15 @@ existen los workflows de transporte. Huawei y HPE niegan además el navegador au
   aparece un modelo nuevo. Evita que un anuncio como el del 60F pase sin verse. Cuesta un workflow
   más; depende de un repertorio de terceros cuyo formato puede cambiar (el issue solo avisa, nunca
   escribe en `legacyData/`).
+- **«Por función» también en la hoja «Supuestos» del Excel** (propuesta al cerrar el PR #70). La
+  marca vive solo en pantalla: el Excel que se archiva con la propuesta no dice qué línea trajo cada
+  función, y quien la revisa días después no lo puede reconstruir. Una sección «Líneas por función»
+  en «Supuestos» (la hoja de los supuestos del preventa, no la del BOM que ve el cliente) con cada
+  línea marcada y el nombre de su casilla. Cuesta pasar las filas con `por` en `meta.supuestos` de las
+  cinco páginas y una sección en `matrizSupuestos` con su prueba; si se hace mal, la hoja del BOM
+  cambiaría y el cliente vería notas internas, así que la marca no entra en la hoja «BOM». Se decide
+  por el dueño.
+
 - **Encontrar los campos que el recálculo en línea no escucha** (propuesta al cerrar el PR #69). El
   botón «Actualizar» es la salida segura, pero no dice por qué la página no se actualizó sola: cada
   página escucha una lista de campos (en Fortinet, `NUMERICOS` e `INMEDIATOS`), y uno fuera de la
@@ -352,7 +367,8 @@ existen los workflows de transporte. Huawei y HPE niegan además el navegador au
   Evita que un despliegue atascado se avise horas tarde. Cuesta una tarea programada por hora y su
   aprobación; si se hace mal, solo duplica corridas, que el diseño de un aviso por commit ya tolera.
   Se decide por el dueño.
-- **Lo que trajo la función, también en la lista de materiales** (propuesta al cerrar el PR #66).
+- **Lo que trajo la función, también en la lista de materiales** (propuesta al cerrar el PR #66; en
+  parte cubierta por el PR #70, que marca de forma fija la procedencia de esas líneas en cinco páginas).
   La comparación mira la columna de resultados de la rejilla donde está la casilla, y en las siete
   páginas con BOM la lista de materiales va en su propia pestaña: la línea que una función añade al
   BOM (el PIM del respaldo celular, la segunda fuente) no se resalta allí. Propuesta: tomar también

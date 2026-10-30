@@ -296,17 +296,17 @@
       for (const f of (p.filas || [])) {
         if (agregadas.includes(f.cat)) {
           const k = `${v}|${f.cat}`;
-          if (!pools.has(k)) pools.set(k, { ...f, v, qty: 0, nota: o.notaAgregada || f.nota });
+          if (!pools.has(k)) pools.set(k, { ...f, v, qty: 0, nota: o.notaAgregada || f.nota, por: undefined });
           pools.get(k).qty += (f.qty || 0) * sedes;
           continue;
         }
         if (unicas.includes(f.cat)) {
           const k = `${v}|UNICA|${f.cat}|${f.sku || f.desc}`;
-          if (!acum.has(k)) acum.set(k, { ...f, v, qty: 1, nota: o.notaUnica || f.nota });
+          if (!acum.has(k)) acum.set(k, { ...f, v, qty: 1, nota: o.notaUnica || f.nota, por: undefined });
           continue;
         }
         const k = [v, f.cat, f.desc, f.sku || ''].join('|');
-        if (!acum.has(k)) acum.set(k, { ...f, v, qty: 0 });
+        if (!acum.has(k)) acum.set(k, { ...f, v, qty: 0, por: undefined }); // sin «por»: ver renderTabla
         acum.get(k).qty += (f.qty || 1) * sedes;
       }
     }
@@ -500,8 +500,14 @@
       html += `<tr class="bom-grupo"><td colspan="${nCols}">${esc(g.cat)}</td></tr>`;
       for (const f of g.filas) {
         const s = subtotal(f);
-        html += '<tr>'
+        // «por <función>» (2026-10-29, `por-funcion.js`): la fila que existe solo porque se pidió una
+        // función lo dice, con un botón que lleva a su casilla. Sin el módulo, o sin una casilla
+        // marcada que respalde el `por`, no se pinta nada.
+        const PF = typeof window !== 'undefined' && window.POR_FUNCION;
+        const porAttr = PF && f.por ? PF.atributo(f.por) : '';
+        html += (porAttr ? `<tr data-por="${esc(porAttr)}">` : '<tr>')
           + `<td><b>${esc(f.desc)}</b>${f.nota ? `<span class="bom-nota">${esc(f.nota)}</span>` : ''}`
+          + (porAttr ? PF.chip(f.por) : '')
           // Ajuste manual de cantidad (mejora 2026-09-16, Aruba): la PÁGINA es quien aplica
           // el ajuste y deja la cifra del motor en `f.ajuste`; aquí solo se declara. Un
           // ajuste sin esta marca parecería un error de cálculo cuando es una decisión.
