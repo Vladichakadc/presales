@@ -431,8 +431,12 @@ async function toDimensionadorFortinet() {
     .filter((p) => p.specs && p.specs.seg && p.category === 'firewall')
     // elpN habilita el total del BOM: sin el precio numerico la pagina solo puede
     // mostrar la cadena "~ $4,792" y no sumar hardware + licencias + soporte.
+    // `eol` con la regla comun (2026-10-29): un `eolAnnounced` con el ultimo pedido vencido es
+    // fuera de venta para el motor y la pagina, que solo leen `eol`/`hwSku`. Sin esto el 1000F
+    // (ultimo pedido 13-oct-2026, con SKU en la lista firmada) seguiria recomendandose en compra
+    // nueva, y el 60F lo haria despues del 13-ene-2027.
     .map((p) => ({
-      id: p.model, ...p.specs, eol: p.eol,
+      id: p.model, ...p.specs, eol: fueraDeVenta(p.eol, p.specs),
       elp: p.priceDisplay, elpN: p.priceNumeric,
     }));
 

@@ -1,6 +1,6 @@
 # Relevo
 
-Última actualización: 2026-10-29 · PR #72
+Última actualización: 2026-10-29 · PR #68
 
 Informe para continuar el trabajo. Lo pidió el dueño del repositorio el 2026-10-27: «de aquí en
 adelante, un informe de pendientes y mejoras para que la cuenta **servicioiptv2025@gmail.com**
@@ -33,6 +33,10 @@ está en curso no va aquí: lo dice `npm run traspasos` (protocolo en `docs/tras
 
 ## Estado al cerrar esta entrega
 
+- **2026-10-29 · PR #68**: Fortinet con fechas de fin de venta y de soporte en la ficha del equipo
+  elegido. 60F y 61F: último pedido 2027-01-13 (siguen recomendables hasta entonces y caen solos);
+  1000F y 1001F: vencido el 2026-10-13, ya no se recomiendan en compra nueva; 400F y 401F sin fin
+  de venta. Las fechas son de terceros y llevan la nota `confirmar` hasta leerlas en el portal.
 - **2026-10-29 · PR #72**: **la PQC del Gateway 9106, cerrada con documento oficial.** El «What's New» de AOS-8 (traído por Actions) dice «Starting with AOS-8.13.1.0, the 9106 controller is now supported in AOS-8.x»; con la guía de PPK de AOS-8 (desde la 8.10.0.0), el 9106 trae la PPK con AOS-8.13.1.0. Los SKU S0B85A y S0B86A vienen con AOS-10 y no bajan: lo dice su `alcance`. **Queda un retoque**: el texto `#reqPqcHint` de `public/dimensionador-aruba-edgeconnect.html` aún nombra el 9106 entre los que no tienen documento; esa página la tocan los PR #69 y #70 de otra sesión, y se corrige tras su fusión.
 - **2026-10-29 · PR #71**: «↻ Actualizar fuentes» en las siete pestañas de fuentes: el servidor
   vuelve a leer cada documento oficial y dice si sigue siendo el contrastado (columna «Comprobado
@@ -246,6 +250,9 @@ traspaso (el #37, de otra sesión, se fusionó mientras se cerraba esta).
 
 ### Solo los puede hacer el dueño
 
+- **Confirmar en la herramienta Product Life Cycle de Fortinet** (support.fortinet.com, cuenta
+  FortiCloud) las ocho fechas de `EOL_ANNOUNCED` y mirar 4200F, 7081F y 7121F. Al confirmarlas: quitar
+  `confirmar` y declarar la fuente en `fuentes.js` con `campos: ['eolAnnounced']`.
 0. **Borrar las ramas** `claude/leyendas-figuras-cisco`, `claude/leyendas-retoques` y
    `claude/ia-pliego-cisco` (el PR #23 ya está cerrado): el control de permisos de la sesión no deja
    borrar ramas remotas. Sus commits están en `main` o en sus PR cerrados; es solo limpieza.
@@ -321,6 +328,11 @@ existen los workflows de transporte. Huawei y HPE niegan además el navegador au
 
 ## Mejoras propuestas sin decidir
 
+- **Vigía semanal del ciclo de vida de Fortinet** (propuesta al cerrar el PR #68). Un workflow que
+  cada lunes compare los FortiGate del catálogo con un listado de fin de vida y abra un issue si
+  aparece un modelo nuevo. Evita que un anuncio como el del 60F pase sin verse. Cuesta un workflow
+  más; depende de un repertorio de terceros cuyo formato puede cambiar (el issue solo avisa, nunca
+  escribe en `legacyData/`).
 - **Un reloj para la vigilia que no sea el de GitHub** (propuesta al cerrar el PR #64, solo si la
   medición del 2026-11-05 confirma que faltan más de la mitad de las corridas). Una tarea programada
   de Claude (fuera de Actions) que cada hora lance `vigilia-despliegue.yml` por `workflow_dispatch`.
