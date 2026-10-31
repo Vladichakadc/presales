@@ -34,6 +34,10 @@ está en curso no va aquí: lo dice `npm run traspasos` (protocolo en `docs/tras
 ## Estado al cerrar esta entrega
 
 - **2026-10-31 · PR #87**: **el Cisco Secure Firewall entra al catálogo** (decisión del dueño: «Sí, ficha completa»). F1 hecha: los 14 modelos en el portal con el hardware de sus fichas, generados de `SECURE_FIREWALL`, y la calculadora los dimensiona con IPsec, FW + AVC + IPS y TLS. **Faltan F2** (sus figuras oficiales, por Actions) **y F3** (su ficha en el dimensionador Cisco); sin precio. **Criterio que conviene conservar**: una sola copia de cada cifra —el portal se genera de `SECURE_FIREWALL`— y sin `fwd`, porque sus fichas no dan un firewall sin inspección.
+- **2026-10-31 · PR #86**: la batería `e2e-arranque.js` comprueba que los nueve dimensionadores abren
+  al día (vacía, desde un enlace compartido y recargada): 27 de 27 en CI. **Criterio que conviene
+  conservar**: una página nueva entra en `PAGINAS` de `test/e2e/resultados.js` y queda en las dos
+  baterías; la lectura de resultados vive solo ahí.
 - **2026-10-30 · PR #85**: la verificación en navegador que faltó en el PR #84. `test/e2e/e2e-pqc-gestion-huawei.js` abre el dimensionador de Huawei servido por el servidor, elige el AR6710-L26T2X4 y comprueba la fila «Gestión y control» con su documento, el túnel en «no consta» y que «Exigir PQC» lo aparta por «no consta». Verde en CI (`pantallas`).
 - **2026-10-30 · PR #84**: **la PQC de gestión y control** (la mejora propuesta al cerrar el PR #82). Los cuatro AR6710-L llevan `pqcGestion` con el literal de su ficha R26C00 («PQC is supported for SSL, SSH, and SD-WAN DTLS protocols»); la ficha lo dice en su fila «Gestión y control» y el Comparador como «Solo en …; no en el túnel de datos». **Criterio que conviene conservar**: `pqcGestion` nunca es `pqc` y `pqc.js` no lo lee; un canal que no lleva el tráfico no cumple «Exigir PQC» (`test/pqc-gestion.test.js`).
 - **2026-10-30 · PR #83**: tercera corrida de transporte. La ficha oficial del SRX4100/4200 no trae PQC ni PPK, y la ficha de Meraki de los C8111/C8121-G2-MX da «2 x 2.5 mGig RJ45» para WAN sin velocidad mínima (como su guía de instalación): el `velMinSupuesto` sigue. Con esto, los pendientes que esperan documento han pasado por todos los documentos oficiales descargables que se conocen; lo que los cierra está en la tabla de *Esperan un documento oficial*.
@@ -384,16 +388,16 @@ existen los workflows de transporte. Huawei y HPE niegan además el navegador au
   cambiaría y el cliente vería notas internas, así que la marca no entra en la hoja «BOM». Se decide
   por el dueño.
 
-- **Medir el arranque de la página, no solo los cambios** (propuesta al cerrar el PR #79). En 380
-  comprobaciones ningún campo se queda atrás, pero la batería empieza pulsando el botón «Actualizar»
-  para partir de un estado limpio, y con eso tapa justo un desfase posible: la página que abre con
-  un escenario restaurado (el guardado en el navegador, un enlace compartido con parámetros, un
-  perfil multi-sede cargado) y pinta la derecha antes de aplicar lo restaurado. Que la batería
-  compare, en cada página, el texto de resultados recién abierta con el que deja el botón, en tres
-  arranques: vacía, con el escenario guardado de una visita anterior y desde un enlace con
-  parámetros. Evita el «no se actualiza» que no viene de ningún campo. Cuesta tres aperturas más por
-  página; si se hace mal, compara una carga a medias (catálogo sin llegar) y da un falso rojo, así
-  que se espera a `DIMENSIONADOR_ACTUALIZAR` y a `asentar` antes de leer. Se decide por el dueño.
+- **El botón «Actualizar» como detector en producción** (propuesta al cerrar el PR #86). Ni 380
+  cambios de campo ni 27 arranques reproducen el «no se actualiza en línea» que vio el dueño: las
+  baterías recorren escenarios inventados, y el desfase real sale de uno concreto. Que el botón,
+  cuando su recálculo CAMBIA el resultado (la misma comparación de las baterías, antes y después),
+  lo diga junto al botón («El resultado no estaba al día: se recalculó») y deje en la consola el
+  último campo tocado y el enlace del escenario, para que quien lo vea lo pase tal cual. Evita
+  depender de que alguien recuerde en qué página y con qué datos pasó. Cuesta poco (un texto antes y
+  otro después en `actualizar.js`); si se hace mal, avisa en falso cuando la página aún cargaba o
+  cuando una cifra depende de la hora, así que no avisa si el catálogo no llegó y compara el mismo
+  texto que las baterías. No manda nada a ningún servidor. Se decide por el dueño.
 - **Un reloj para la vigilia que no sea el de GitHub** (propuesta al cerrar el PR #64, solo si la
   medición del 2026-11-05 confirma que faltan más de la mitad de las corridas). Una tarea programada
   de Claude (fuera de Actions) que cada hora lance `vigilia-despliegue.yml` por `workflow_dispatch`.

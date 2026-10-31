@@ -737,7 +737,9 @@ Módulos compartidos:
   compara el recálculo en línea con el del botón «Actualizar» (si difieren, el campo se quedó atrás;
   `EXCEPCIONES`, `PREPARAR`; sus líneas `RESUMEN - ` salen como avisos de la comprobación); recorre
   también los campos que aparecen al marcar otro (`PROFUNDIDAD`, `TOPE`), cada opción de los botones
-  segmentados (`.seg`) y los «+ Añadir» con su fila.
+  segmentados (`.seg`) y los «+ Añadir» con su fila. `e2e-arranque.js` compara el resultado recién abierta
+  la página con el del botón, vacía, desde un enlace compartido y recargada; las dos baterías leen los
+  resultados con `test/e2e/resultados.js`.
   `e2e-accesibilidad.js` pasa axe (WCAG 2.1 A/AA) y el
   reflujo a 640 px. **Recorrido de límites** (`npm run limites`, miércoles): los hallazgos van a un
   issue; lo correcto se declara en `EXCEPCIONES` con su motivo.
