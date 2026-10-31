@@ -1656,5 +1656,5 @@ module.exports = [
   { archivo: 'sf-fw4200-ds.html', tipo: 'html', para: 'CISCO', debeContener: '4215', urls: ['https://www.cisco.com/c/en/us/products/collateral/security/firewalls/secure-firewall-4200-ds.html'] },
   { archivo: 'sf-img', tipo: 'imagenes', para: 'CISCO', urls: [],
     descubrirPiezas: { de: ['sf-fw1200-ds.html', 'sf-fw3100-ds.html', 'sf-fw4200-ds.html'], base: 'https://www.cisco.com/',
-      dominios: ['cisco.com'], contiene: ['/renditions/secure-firewall-'], max: 20 } },
+      dominios: ['cisco.com'], relativas: true, contiene: ['/renditions/secure-firewall-'], max: 20 } },
 ];
