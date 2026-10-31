@@ -1,6 +1,6 @@
 # Relevo
 
-Última actualización: 2026-10-31 · PR #91
+Última actualización: 2026-10-31 · PR #93
 
 Informe para continuar el trabajo. Lo pidió el dueño del repositorio el 2026-10-27: «de aquí en
 adelante, un informe de pendientes y mejoras para que la cuenta **servicioiptv2025@gmail.com**
@@ -33,6 +33,12 @@ está en curso no va aquí: lo dice `npm run traspasos` (protocolo en `docs/tras
 
 ## Estado al cerrar esta entrega
 
+- **2026-10-31 · PR #93**: el botón «Actualizar» avisa cuando su recálculo cambia lo que se veía
+  («El resultado no estaba al día…») y deja en la consola el último campo tocado y el enlace. Es la
+  vía para cazar el desfase que el dueño vio y ninguna batería reproduce: **si alguien ve ese aviso,
+  que pase la línea `[actualizar]` de la consola**. **Criterio que conviene conservar**: el botón y
+  las baterías leen el mismo texto de resultados; si cambia la rejilla de una página, se cambia en
+  los dos sitios (la prueba frena que diverjan).
 - **2026-10-31 · PR #91**: el Secure Firewall elegido a mano viaja en el enlace y en el perfil (pendiente del PR #88). **Criterio que conviene conservar**: un desplegable que pinta ficha.js con otro contenedor se declara igual que `verdict-sel` (en `CAMPOS_ENLACE` y en `TARDIOS`), y la página guarda en su variable solo la elección manual, nunca el recomendado.
 - **2026-10-31 · PR #90**: **los fallos del contraste se leen por la API** (la mejora propuesta al cerrar el PR #88). Cada fallo sale como anotación `contraste` de la comprobación `pantallas`, con caso, escenario, campo, esperado y obtenido: `gh api repos/<dueño>/<repo>/check-runs/<id>/annotations`. **Criterio que conviene conservar**: todo lo que puede poner en rojo un paso de CI deja una línea que el workflow convierte en anotación; si no, desde una sesión en la nube solo se ve un código de salida.
 - **2026-10-31 · PR #88**: **el Secure Firewall, con ficha completa** (F2 y F3). Sus figuras oficiales en el catálogo de figuras de Cisco y, con «Firewall dedicado aparte», su ficha debajo de la del router: cifras con su base, hardware, alimentación, figuras y enlace a su ficha oficial; elegir otro cambia el BOM. **Queda**: sin precio (no hay lista oficial) y sin ciclo de vida respaldado; la elección manual en el enlace, cerrada en el PR #91. **Criterio que conviene conservar**: una ficha secundaria con FICHA declara su ciclo de vida (`cicloVida`) en vez de heredar el del fabricante, que respalda a otros equipos.
@@ -391,16 +397,14 @@ existen los workflows de transporte. Huawei y HPE niegan además el navegador au
   cambiaría y el cliente vería notas internas, así que la marca no entra en la hoja «BOM». Se decide
   por el dueño.
 
-- **El botón «Actualizar» como detector en producción** (propuesta al cerrar el PR #86). Ni 380
-  cambios de campo ni 27 arranques reproducen el «no se actualiza en línea» que vio el dueño: las
-  baterías recorren escenarios inventados, y el desfase real sale de uno concreto. Que el botón,
-  cuando su recálculo CAMBIA el resultado (la misma comparación de las baterías, antes y después),
-  lo diga junto al botón («El resultado no estaba al día: se recalculó») y deje en la consola el
-  último campo tocado y el enlace del escenario, para que quien lo vea lo pase tal cual. Evita
-  depender de que alguien recuerde en qué página y con qué datos pasó. Cuesta poco (un texto antes y
-  otro después en `actualizar.js`); si se hace mal, avisa en falso cuando la página aún cargaba o
-  cuando una cifra depende de la hora, así que no avisa si el catálogo no llegó y compara el mismo
-  texto que las baterías. No manda nada a ningún servidor. Se decide por el dueño.
+- **«Copiar informe» en el aviso del botón** (propuesta al cerrar el PR #93). Cuando el botón dice
+  «El resultado no estaba al día», lo útil (página, último campo y su valor, enlace del escenario,
+  hora) queda en la consola, que un preventa no suele abrir. Un botón «Copiar informe» junto al
+  aviso que lleve ese mismo texto al portapapeles, listo para pegarlo en un mensaje. Evita que el
+  aviso se pierda sin dejar rastro, que es lo que ha impedido reproducir el fallo. Cuesta un botón y
+  su manejador en `actualizar.js` (el portapapeles ya lo usa «Copiar enlace»); si se hace mal, copia
+  un enlace sin el escenario, así que se copia `location.href` en el momento del aviso. Nada sale del
+  navegador salvo lo que la persona pegue. Se decide por el dueño.
 - **Un reloj para la vigilia que no sea el de GitHub** (propuesta al cerrar el PR #64, solo si la
   medición del 2026-11-05 confirma que faltan más de la mitad de las corridas). Una tarea programada
   de Claude (fuera de Actions) que cada hora lance `vigilia-despliegue.yml` por `workflow_dispatch`.
