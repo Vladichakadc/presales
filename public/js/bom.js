@@ -858,6 +858,25 @@
     return html;
   }
 
+  // LÍNEAS POR FUNCIÓN (2026-10-31, fase 2.1 del plan de mejora de los dimensionadores; la mejora
+  // propuesta al cerrar el PR #70). En pantalla, la fila que existe solo porque se pidió una función
+  // dice «por <función>» (`por-funcion.js`); el Excel que se archiva con la propuesta no lo decía, y
+  // quien lo revisa días después no podía reconstruir de qué requisito sale cada línea. Misma regla
+  // que la etiqueta: solo casillas que existen y están marcadas (`atributo`), con el nombre que lee
+  // el panel de funciones (`nombre`). Puro sobre las filas y el módulo; sin módulo, nada.
+  function lineasPorFuncion(filas, porFuncion) {
+    const PF = porFuncion || (typeof window !== 'undefined' && window.POR_FUNCION) || null;
+    if (!PF || !PF.atributo || !PF.nombre) return [];
+    const salida = [];
+    for (const f of filas || []) {
+      if (!f || !f.por) continue;
+      const ids = String(PF.atributo(f.por) || '').split(/\s+/).filter(Boolean);
+      if (!ids.length) continue;
+      salida.push({ desc: f.desc || '', sku: f.sku || '', qty: f.qty, funciones: ids.map((id) => PF.nombre(id) || id).join(', ') });
+    }
+    return salida;
+  }
+
   function matrizSupuestos(meta, entorno) {
     const m = meta || {};
     const s = m.supuestos || {};
@@ -922,6 +941,14 @@
       aoa.push([]);
       aoa.push(['CICLO DE VIDA DEL EQUIPO']);
       for (const fila of ciclo.filas) aoa.push(fila);
+    }
+    // Líneas del BOM que existen por una función pedida (la marca «por <función>» de la pantalla).
+    // Va aquí, en la hoja del preventa, y no en la hoja «BOM» que lee el cliente.
+    const porFuncion = Array.isArray(e.porFuncion) ? e.porFuncion : [];
+    if (porFuncion.length) {
+      aoa.push([]);
+      aoa.push(['LÍNEAS POR FUNCIÓN', 'Referencia', 'Cantidad', 'Función que la trae']);
+      for (const l of porFuncion) aoa.push([l.desc, l.sku || '—', l.qty == null ? '—' : l.qty, l.funciones]);
     }
     aoa.push([]);
     aoa.push(['PARÁMETROS ACTIVOS DE LA PANTALLA', 'Valor', 'Cambiado respecto al valor por defecto']);
@@ -1129,7 +1156,9 @@
     // Hoja «Supuestos» (2026-10-19), segunda: el escenario de UNA pantalla. El BOM global
     // consolidado (`sinRefs`) mezcla perfiles de varias, así que no la lleva.
     if (!m.sinRefs) {
-      const sup = matrizSupuestos(m, await entornoSupuestos(m));
+      const entorno = await entornoSupuestos(m);
+      entorno.porFuncion = lineasPorFuncion(filasBase);
+      const sup = matrizSupuestos(m, entorno);
       const hs = libro.addWorksheet('Supuestos');
       hs.columns = sup.cols.map((c) => ({ width: c.wch }));
       for (const fila of sup.aoa) hs.addRow(fila);
@@ -1716,7 +1745,7 @@
     });
   }
 
-  global.BOM = { renderTabla, exportarExcel, comoTexto, matrizExcel, matrizSupuestos, cicloDe, cicloDelEquipo, cicloDePerfiles, avisoCicloConsolidado, refrescarCiclo, refrescarCicloTodos, fuentesDelEquipo, money, esc, claveFila,
+  global.BOM = { renderTabla, exportarExcel, comoTexto, matrizExcel, matrizSupuestos, lineasPorFuncion, cicloDe, cicloDelEquipo, cicloDePerfiles, avisoCicloConsolidado, refrescarCiclo, refrescarCicloTodos, fuentesDelEquipo, money, esc, claveFila,
     enviarACotizador, recogerEntrada, montarBotonCotizador, montarPerfiles, pintarPerfiles: pintarPerfilesMontado, normalizar,
     sincronizar, soltarManual, avisoDesvio, fijarRepintado,
     agregarRef, quitarRef, cantidadRef, refsExtra, fijarVendor,

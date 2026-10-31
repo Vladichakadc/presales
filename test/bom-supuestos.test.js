@@ -175,3 +175,39 @@ test('las siete páginas pasan el ciclo de vida del equipo a la hoja', () => {
   const bom = fs.readFileSync(path.join(__dirname, '..', 'public', 'js', 'bom.js'), 'utf8');
   assert.match(bom, /Atención: \$\{ciclo\.linea\}\. Detalle, sucesor y boletín en la hoja «Supuestos»\./, 'el aviso no llega a la hoja BOM');
 });
+
+// LÍNEAS POR FUNCIÓN (2026-10-31, fase 2.1 del plan; mejora propuesta al cerrar el PR #70): la marca
+// «por <función>» de la pantalla también en «Supuestos», con la misma regla que la etiqueta.
+const PF = {
+  // Igual que `por-funcion.js`: solo las casillas que existen y están marcadas.
+  atributo: (por) => String(por).split(/\s+/).filter((id) => ({ celular: true, psu2: true })[id]).join(' '),
+  nombre: (id) => ({ celular: 'Respaldo celular', psu2: 'Fuente redundante' })[id],
+};
+const FILAS = [
+  { desc: 'Router C8231-G2', sku: 'C8231-G2', qty: 1 },
+  { desc: 'Módulo PIM 5G', sku: 'P-5GS6-GL', qty: 1, por: 'celular' },
+  { desc: 'Segunda fuente', sku: 'PWR-CC1-150WAC', qty: 1, por: ['psu2'] },
+  { desc: 'Licencia de amenazas', sku: 'LIC-SEC', qty: 1, por: 'amenazas' }, // casilla sin marcar
+];
+
+test('las líneas que trae una función pedida, con su nombre; lo no marcado no cuenta', () => {
+  const l = BOM.lineasPorFuncion(FILAS, PF);
+  assert.deepStrictEqual(JSON.parse(JSON.stringify(l.map((x) => [x.sku, x.funciones]))), [['P-5GS6-GL', 'Respaldo celular'], ['PWR-CC1-150WAC', 'Fuente redundante']]);
+  const t = texto(BOM.matrizSupuestos(META, { ...ENTORNO, porFuncion: l }).aoa);
+  assert.match(t, /LÍNEAS POR FUNCIÓN \| Referencia \| Cantidad \| Función que la trae/);
+  assert.match(t, /Módulo PIM 5G \| P-5GS6-GL \| 1 \| Respaldo celular/);
+  assert.doesNotMatch(t, /LIC-SEC/, 'una casilla sin marcar no atribuye la línea');
+  // Va antes de los parámetros: es parte del resultado, no de la entrada.
+  assert.ok(t.indexOf('LÍNEAS POR FUNCIÓN') < t.indexOf('PARÁMETROS ACTIVOS'));
+});
+
+test('sin líneas marcadas, o sin el módulo, la sección no sale', () => {
+  assert.strictEqual(BOM.lineasPorFuncion(FILAS.slice(0, 1), PF).length, 0);
+  assert.strictEqual(BOM.lineasPorFuncion(FILAS, null).length, 0, 'sin `por-funcion.js` cargado no se inventa nada');
+  assert.doesNotMatch(texto(BOM.matrizSupuestos(META, ENTORNO).aoa), /LÍNEAS POR FUNCIÓN/);
+});
+
+test('la hoja «BOM» que lee el cliente no lleva la marca', () => {
+  const t = texto(BOM.matrizExcel(FILAS, { titulo: 'BOM' }).aoa);
+  assert.doesNotMatch(t, /por |Respaldo celular|Función que la trae/);
+});
