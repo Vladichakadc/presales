@@ -12,7 +12,7 @@
 const fs = require('fs');
 const path = require('path');
 const { execSync } = require('child_process');
-const { abrirSesion, correr } = require('./contraste-motor');
+const { abrirSesion, correr, lineaFallo } = require('./contraste-motor');
 const cobertura = require('./ayuda/cobertura');
 
 const DIR = path.join(__dirname, 'contrastes');
@@ -98,7 +98,10 @@ function escribirCobertura(crudo, paginas) {
   // vez de publicar un informe falso en verde.
   if (todos && crudo) {
     const paginas = lista.map((nombre) => require(path.join(DIR, nombre)).pagina);
-    if (!escribirCobertura(crudo, paginas)) fallos++;
+    if (!escribirCobertura(crudo, paginas)) {
+      fallos++;
+      console.log(lineaFallo('cobertura', 'no se escribe', 'la medida da «sin conducir» un módulo de una página que esta corrida condujo (ver el informe)'));
+    }
   }
   if (lista.length > 1) {
     console.log('\n' + '═'.repeat(72));
@@ -107,4 +110,10 @@ function escribirCobertura(crudo, paginas) {
       : `${lista.length} caso(s) de contraste sin discrepancias.`);
   }
   process.exit(fallos ? 1 : 0);
-})();
+})().catch((e) => {
+  // Un caso que revienta (un selector que ya no existe, un tiempo agotado) también se anota: sin
+  // esto, la corrida solo dejaba la traza en un log que las sesiones en la nube no leen.
+  console.error(e && e.stack ? e.stack : e);
+  console.log(lineaFallo('contraste', 'error', e && e.message ? e.message : String(e)));
+  process.exit(1);
+});
