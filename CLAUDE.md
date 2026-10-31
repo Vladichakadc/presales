@@ -733,7 +733,9 @@ Módulos compartidos:
   cambios**, y un 403 no prueba quién bloquea (`npm run candidatas`). Pasadas 4 semanas sin
   contrastar, `verificar` frena (`SEMANAS_TOLERADAS`).
 - **Contraste** (`npm run contraste`, dentro del job de `pantallas`): cada caso de
-  `scripts/contrastes/` declara su línea base embebida y `medidoEn`; la cobertura de módulos se
+  `scripts/contrastes/` declara su línea base embebida y `medidoEn`; cada fallo sale además en una
+  línea `FALLO-CONTRASTE - caso · escenario · detalle` que el workflow publica como anotación
+  `contraste` (`test/contraste-anotaciones.test.js`); la cobertura de módulos se
   **mide** en Chromium (funciones ejecutadas; `ejercitado`, `rozado`, `sin conducir`).
 - **e2e** (`npm run e2e`, en CI): espera a condiciones con `asentar(page)`, nunca con pausas
   fijas; `resumen()` fija el código de salida. `e2e-campos-en-linea.js` cambia cada campo visible de los nueve dimensionadores y
