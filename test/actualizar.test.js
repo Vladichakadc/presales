@@ -38,3 +38,18 @@ test('el botón valida, recalcula y dice el resultado', () => {
     assert.strictEqual((leer(`public/dimensionador-${pag}.html`).match(/<link rel="stylesheet" href="\/actualizar\.css">/g) || []).length, 1, `${pag}: sin su hoja el botón sale sin estilo`);
   }
 });
+
+test('el botón avisa cuando el resultado no estaba al día, sin mandar nada fuera', () => {
+  const js = leer('public/js/actualizar.js');
+  // Compara el texto de resultados antes y después del recálculo, y lo dice.
+  assert.match(js, /const antes = textoResultados\(\);/);
+  assert.match(js, /El resultado no estaba al día/);
+  assert.match(js, /console\.warn\('\[actualizar\]/);
+  // Lee lo mismo que las baterías e2e: sin el panel de funciones activadas ni la barra del botón.
+  const comun = leer('test/e2e/resultados.js');
+  const excl = (txt) => txt.match(/querySelectorAll\('(\.funciones-activas[^']*)'\)/)[1];
+  assert.strictEqual(excl(js), excl(comun), 'el botón y las baterías leen textos distintos');
+  // Nada sale del navegador: ni peticiones ni balizas.
+  assert.doesNotMatch(js, /fetch\(|sendBeacon|XMLHttpRequest/);
+});
+
