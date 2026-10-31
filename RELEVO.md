@@ -1,6 +1,6 @@
 # Relevo
 
-Última actualización: 2026-10-31 · PR #90
+Última actualización: 2026-10-31 · PR #91
 
 Informe para continuar el trabajo. Lo pidió el dueño del repositorio el 2026-10-27: «de aquí en
 adelante, un informe de pendientes y mejoras para que la cuenta **servicioiptv2025@gmail.com**
@@ -33,8 +33,9 @@ está en curso no va aquí: lo dice `npm run traspasos` (protocolo en `docs/tras
 
 ## Estado al cerrar esta entrega
 
+- **2026-10-31 · PR #91**: el Secure Firewall elegido a mano viaja en el enlace y en el perfil (pendiente del PR #88). **Criterio que conviene conservar**: un desplegable que pinta ficha.js con otro contenedor se declara igual que `verdict-sel` (en `CAMPOS_ENLACE` y en `TARDIOS`), y la página guarda en su variable solo la elección manual, nunca el recomendado.
 - **2026-10-31 · PR #90**: **los fallos del contraste se leen por la API** (la mejora propuesta al cerrar el PR #88). Cada fallo sale como anotación `contraste` de la comprobación `pantallas`, con caso, escenario, campo, esperado y obtenido: `gh api repos/<dueño>/<repo>/check-runs/<id>/annotations`. **Criterio que conviene conservar**: todo lo que puede poner en rojo un paso de CI deja una línea que el workflow convierte en anotación; si no, desde una sesión en la nube solo se ve un código de salida.
-- **2026-10-31 · PR #88**: **el Secure Firewall, con ficha completa** (F2 y F3). Sus figuras oficiales en el catálogo de figuras de Cisco y, con «Firewall dedicado aparte», su ficha debajo de la del router: cifras con su base, hardware, alimentación, figuras y enlace a su ficha oficial; elegir otro cambia el BOM. **Queda**: sin precio (no hay lista oficial), sin ciclo de vida respaldado, y el firewall elegido a mano no viaja en el enlace. **Criterio que conviene conservar**: una ficha secundaria con FICHA declara su ciclo de vida (`cicloVida`) en vez de heredar el del fabricante, que respalda a otros equipos.
+- **2026-10-31 · PR #88**: **el Secure Firewall, con ficha completa** (F2 y F3). Sus figuras oficiales en el catálogo de figuras de Cisco y, con «Firewall dedicado aparte», su ficha debajo de la del router: cifras con su base, hardware, alimentación, figuras y enlace a su ficha oficial; elegir otro cambia el BOM. **Queda**: sin precio (no hay lista oficial) y sin ciclo de vida respaldado; la elección manual en el enlace, cerrada en el PR #91. **Criterio que conviene conservar**: una ficha secundaria con FICHA declara su ciclo de vida (`cicloVida`) en vez de heredar el del fabricante, que respalda a otros equipos.
 - **2026-10-31 · PR #87**: **el Cisco Secure Firewall entra al catálogo** (decisión del dueño: «Sí, ficha completa»). F1 hecha: los 14 modelos en el portal con el hardware de sus fichas, generados de `SECURE_FIREWALL`, y la calculadora los dimensiona con IPsec, FW + AVC + IPS y TLS. F2 y F3, en el PR #88; sin precio. **Criterio que conviene conservar**: una sola copia de cada cifra —el portal se genera de `SECURE_FIREWALL`— y sin `fwd`, porque sus fichas no dan un firewall sin inspección.
 - **2026-10-31 · PR #86**: la batería `e2e-arranque.js` comprueba que los nueve dimensionadores abren
   al día (vacía, desde un enlace compartido y recargada): 27 de 27 en CI. **Criterio que conviene
@@ -350,7 +351,7 @@ traspaso (el #37, de otra sesión, se fusionó mientras se cerraba esta).
   consta» y el requisito los aparta con ese motivo. El ASR 1001-X no es un hueco: su boletín lo deja en la
   17.9, anterior a la PPK, y la ficha dice «no la trae» (`pqcNo`). Si un documento oficial dice que
   otro equipo no la trae, entra igual: `pqcNo` con su fuente en `fuentes.js` (`campos: ['pqcNo']`).
-- **Cisco**: precio del Secure Firewall (sin lista oficial) y su elección a mano en el enlace, precio de Secure
+- **Cisco**: precio del Secure Firewall (sin lista oficial), precio de Secure
   Access por usuario (CCW), velocidad mínima de los mGig de los C8111/C8121-G2-MX, 10GBASE-T en
   SFP+ fuera de la serie 8300 y de las 8100 VAI/VAP, módulos del ASR (fuera de venta), breakout
   4x10G (pide su cable u óptica en el catálogo).
