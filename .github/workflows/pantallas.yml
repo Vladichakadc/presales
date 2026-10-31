@@ -255,8 +255,9 @@ jobs:
           grep -E '^(FALLO|ERROR E2E)|RESULTADO: [0-9]+ FALLO' e2e.txt | head -40 | sed 's/%/%25/g' \
             | while IFS= read -r linea; do echo "::error title=e2e::$linea"; done || true
           # Y lo que una bateria mide sin fallar, si lo declara con `RESUMEN - ` (2026-10-29: la de
-          # campos en linea cuenta cuantos campos probo por pagina; sin esto, un verde no distingue
-          # «lo midio y estaba bien» de «no midio nada»). GitHub publica 10 avisos por paso.
+          # campos en linea cuenta cuantos campos probo; sin esto, un verde no distingue «lo midio y
+          # estaba bien» de «no midio nada»). GitHub publica 10 avisos por paso: cada bateria deja una
+          # sola linea `RESUMEN - `.
           grep -E '^RESUMEN - ' e2e.txt | head -10 | sed 's/%/%25/g' \
             | while IFS= read -r linea; do echo "::notice title=e2e::$linea"; done || true
 
