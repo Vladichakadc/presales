@@ -993,6 +993,13 @@ const HW4200 = (extra) => ({ports:'8x 1/10/25G (SFP28) + 2 ranuras de módulo de
   gestion:'2x 1/10/25G (SFP28)', psu:{watts:null, tipo:'Dos fuentes AC (1.900 W a 220 V, 1.200 W a 110 V)'},
   formato:'1U en rack', seg:'Gran empresa, data center y operador', ...(extra || {})});
 const SECURE_FIREWALL = {
+  // La ficha oficial de cada serie (2026-10-31): la misma URL que su entrada de fuentes.js, que la
+  // prueba casa; la ficha del firewall dedicado en la página la enlaza.
+  fichas:{
+    1200:'https://www.cisco.com/c/en/us/products/collateral/security/firewalls/secure-firewall-1200-series-ds.html',
+    3100:'https://www.cisco.com/c/en/us/products/collateral/security/firewalls/secure-firewall-3100-series-ds.html',
+    4200:'https://www.cisco.com/c/en/us/products/collateral/security/firewalls/secure-firewall-4200-ds.html',
+  },
   bases:{fwAvc:'FW + AVC, 1.024 B', ips:'FW + AVC + IPS, 1.024 B', vpn:'IPsec, TCP de 1.024 B con Fastpath', tls:'50 % de TLS 1.2, AES256-SHA, RSA de 2.048'},
   modelos:[
     FW('Secure Firewall 1210CE', '1200', 'CSF1210CE-TD-K9', 'CSF1210CET-TMC', 6000, 6000, 5000, 1000, 200000, 35000, 200, HW1200C('8x 1000BASE-T', false)),

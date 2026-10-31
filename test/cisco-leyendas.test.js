@@ -35,6 +35,10 @@ const SIN_NUMEROS = new Set([
   'cs-mx105-rear', 'cs-mx250-front', 'cs-mx250-mx450-rear', 'cs-mx450-front',
   // Las vistas de frente de los ASR (2026-10-28) son fotos de la página de la serie, sin números.
   'cs-asr1001x-front', 'cs-asr1002hx-front', 'cs-asr1006x-front',
+  // Los Secure Firewall (2026-10-31): el dibujo numera los puertos, pero la ficha no trae una tabla
+  // de llamadas que los explique; no hay leyenda que transcribir.
+  'cs-sf1210ce-front', 'cs-sf1210cp-front', 'cs-sf1220cx-front', 'cs-sf1230-1240-1250-front',
+  'cs-sf3100-front', 'cs-sf3100-rear', 'cs-sf4200-front', 'cs-sf4200-rear',
 ]);
 const nombre = (ruta) => path.basename(ruta, '.webp');
 

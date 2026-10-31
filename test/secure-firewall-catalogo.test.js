@@ -59,3 +59,27 @@ test('el comparador da sus cifras como dato y lo no publicado como «sin dato»'
   assert.match(celda('redund').txt, /^Sí — de serie/);
   assert.match(celda('ports').txt, /SFP28/);
 });
+
+// Fase 3 (2026-10-31): la ficha del firewall dedicado enlaza la ficha oficial de su serie. La URL es
+// la misma que su entrada de fuentes.js: un enlace que se desvía de la fuente declarada no se nota.
+test('cada serie de Secure Firewall enlaza la ficha oficial que declara fuentes.js', () => {
+  const { FUENTES } = require('../server/seed/legacyData/fuentes');
+  const urls = new Set(Object.values(FUENTES).flat().map((f) => f.url));
+  const series = [...new Set(SECURE_FIREWALL.modelos.map((m) => m.serie))];
+  assert.deepStrictEqual(Object.keys(SECURE_FIREWALL.fichas).sort(), series.sort());
+  for (const [serie, url] of Object.entries(SECURE_FIREWALL.fichas)) {
+    assert.match(url, /^https:\/\/www\.cisco\.com\//, `${serie}: solo https de cisco.com`);
+    assert.ok(urls.has(url), `${serie}: ${url} no es la URL de ninguna entrada de fuentes.js`);
+  }
+});
+
+test('la página pinta la ficha del firewall dedicado con FICHA y sin afirmar su ciclo de vida', () => {
+  const fs = require('node:fs');
+  const path = require('node:path');
+  const js = fs.readFileSync(path.join(__dirname, '../public/js/dimensionador-cisco-catalyst8k.js'), 'utf8');
+  const html = fs.readFileSync(path.join(__dirname, '../public/dimensionador-cisco-catalyst8k.html'), 'utf8');
+  assert.match(html, /<div class="verdict" id="fichaFw" hidden/, 'el contenedor existe y nace oculto');
+  assert.match(js, /FICHA\.render\(\{contenedor:'fichaFw'/);
+  assert.match(js, /cicloVida:CICLO_FW/, 'el ciclo de vida del firewall se declara sin respaldo, no se hereda el de los routers');
+  assert.match(js, /pintarAvisos\(ev, p\);\n {2}pintarFichaFw\(ev, p\);/, 'se pinta en cada recálculo, antes de la salida sin router');
+});
