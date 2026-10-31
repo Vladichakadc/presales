@@ -19,7 +19,7 @@ const path = require('path');
 
 const RAIZ = path.join(__dirname, '..');
 const VISTAS = JSON.parse(fs.readFileSync(path.join(RAIZ, 'public/data/cisco-vistas-equipos.json'), 'utf8'));
-const { MODELS } = require('../server/seed/legacyData/cisco.js');
+const { MODELS, SECURE_FIREWALL } = require('../server/seed/legacyData/cisco.js');
 const entradas = Object.entries(VISTAS).filter(([k]) => !k.startsWith('_'));
 
 function lienzo(buf) {
@@ -73,8 +73,11 @@ test('cada cara cita su documento, su figura o panel y el rótulo literal', () =
 });
 
 test('cada modelo con figura está en el catálogo y los que no la tienen están declarados', () => {
-  const ids = new Set(MODELS.map((m) => m.id));
+  // Los Secure Firewall (2026-10-31) no son routers del dimensionador: viven en SECURE_FIREWALL
+  // y en el portal, y cada uno tiene figura.
+  const ids = new Set([...MODELS, ...SECURE_FIREWALL.modelos].map((m) => m.id));
   for (const [modelo] of entradas) assert.ok(ids.has(modelo), `${modelo} tiene figura pero no está en el catálogo`);
+  for (const m of SECURE_FIREWALL.modelos) assert.ok(VISTAS[m.id] && VISTAS[m.id].front, `${m.id}: sin figura frontal`);
   for (const m of MODELS) {
     if (SIN_FIGURA.has(m.id)) { assert.ok(!VISTAS[m.id], `${m.id}: declarado sin figura y la tiene`); continue; }
     if (SOLO_TRASERA.has(m.id)) { assert.ok(VISTAS[m.id] && VISTAS[m.id].rear && VISTAS[m.id].frontNota, `${m.id}: sin trasera o sin decir por qué no hay frontal`); continue; }

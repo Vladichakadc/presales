@@ -236,6 +236,14 @@ const TARDIOS = {
     ancla: '<select id="${cid}-sel"',
     porque: 'lo pinta ficha.js despues del primer render (el desplegable de equipo)',
   },
+  // El desplegable del Secure Firewall dedicado (Cisco, 2026-10-31): la misma plantilla de ficha.js
+  // con `contenedor: 'fichaFw'`, pintada solo con un firewall dedicado en el escenario.
+  'fichaFw-sel': {
+    modulo: 'public/js/ficha.js',
+    // eslint-disable-next-line no-template-curly-in-string
+    ancla: '<select id="${cid}-sel"',
+    porque: 'lo pinta ficha.js en la ficha del firewall dedicado de Cisco (contenedor fichaFw)',
+  },
 };
 
 // Paginas que a proposito no comparten estado por URL/localStorage via `ESTADO.vincular`.

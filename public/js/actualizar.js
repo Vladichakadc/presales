@@ -16,7 +16,8 @@
 //      (su render + BOM; en Fortinet, la evaluación del motor). La página decide qué es
 //      «recalcular todo»: este módulo no conoce el motor de nadie. Si devuelve `false`, el
 //      catálogo todavía no ha llegado y se dice eso en vez de fingir un cálculo.
-//   3. Dice el resultado junto al botón (región `role="status"`, la lee el lector de pantalla).
+//   3. Dice el resultado junto al botón (región `role="status"`, la lee el lector de pantalla); si el
+//      recálculo cambió lo que se veía, lo dice como aviso: la página no estaba al día (ver abajo).
 //
 // UNA SOLA PIEZA PARA LAS NUEVE PÁGINAS. Pone una barra con el botón arriba de la columna de
 // parámetros de cada rejilla (`.cols`; Fortinet, `.dim`) que tenga campos, y en Starlink en la
@@ -61,6 +62,42 @@
     return malos;
   }
 
+  // EL BOTÓN COMO DETECTOR (mejora propuesta al cerrar el PR #86, aprobada por el dueño el
+  // 2026-10-31). Las baterías `e2e-campos-en-linea.js` y `e2e-arranque.js` no reproducen el «no se
+  // actualiza en línea» del dueño: recorren escenarios inventados, y el desfase real sale de uno
+  // concreto. Si el recálculo del botón CAMBIA el texto de los resultados, la página no estaba al
+  // día: se dice junto al botón y queda en la consola el último campo tocado y el enlace del
+  // escenario, para pasarlo tal cual. Se compara el MISMO texto que leen las baterías
+  // (test/e2e/resultados.js): la columna de resultados sin el panel de funciones activadas.
+  // No se manda nada a ningún servidor. Sin catálogo (la función devuelve false) no se compara: una
+  // carga a medias no es un desfase.
+  function textoResultados() {
+    const partes = [];
+    const tomar = (el) => {
+      if (!(el.checkVisibility ? el.checkVisibility() : el.getClientRects().length)) return;
+      const c = el.cloneNode(true);
+      c.querySelectorAll('.funciones-activas, .barra-actualizar, script, style').forEach((x) => x.remove());
+      partes.push(c.textContent.replace(/\s+/g, ' ').trim());
+    };
+    document.querySelectorAll('.cols, .dim').forEach((g) => [...g.children].slice(1).forEach(tomar));
+    document.querySelectorAll('.results-panel').forEach(tomar);
+    return partes.join(' ‖ ');
+  }
+
+  // El último campo de parámetros que tocó alguien: su id (o nombre, o texto de su etiqueta) y cuándo.
+  let ultimo = null;
+  function anotarCampo(e) {
+    const el = e.target;
+    if (!el || !el.matches || !el.matches(CAMPOS) || el.closest('.barra-actualizar')) return;
+    if (!columnas().some((c) => c.contains(el))) return;
+    const lab = el.closest('label');
+    ultimo = {
+      campo: el.id || el.name || (lab ? lab.textContent.replace(/\s+/g, ' ').trim().slice(0, 60) : el.tagName.toLowerCase()),
+      valor: el.type === 'checkbox' || el.type === 'radio' ? String(el.checked) : String(el.value).slice(0, 60),
+      hora: hora(),
+    };
+  }
+
   const estados = [];
   function decir(texto, tipo) {
     estados.forEach((s) => { s.textContent = texto; s.dataset.tipo = tipo; });
@@ -75,6 +112,7 @@
       return;
     }
     boton.disabled = true;
+    const antes = textoResultados();
     try {
       if (fn() === false) {
         decir('El catálogo aún está cargando; vuelve a pulsar en un momento.', 'aviso');
@@ -86,6 +124,17 @@
       return;
     } finally {
       boton.disabled = false;
+    }
+    if (textoResultados() !== antes) {
+      console.warn('[actualizar] El resultado no estaba al día: el botón lo cambió.', {
+        pagina: location.pathname,
+        ultimoCampo: ultimo,
+        enlace: location.href,
+        hora: hora(),
+      });
+      decir(`El resultado no estaba al día: se recalculó a las ${hora()}.${ultimo ? ` Último campo tocado: ${ultimo.campo}.` : ''}`
+        + (malos.length ? ` Además, ${malos.length === 1 ? 'un campo está' : `${malos.length} campos están`} fuera de rango (en rojo).` : ''), 'aviso');
+      return;
     }
     if (malos.length) {
       decir(`Recalculado a las ${hora()}, pero ${malos.length === 1 ? 'un campo está' : `${malos.length} campos están`} fuera de rango (en rojo).`, 'aviso');
@@ -115,6 +164,8 @@
       if (!izq || g.children.length < 2 || !izq.querySelector(CAMPOS)) return;
       izq.prepend(barra());
     });
+    document.addEventListener('input', anotarCampo, true);
+    document.addEventListener('change', anotarCampo, true);
     // Un campo corregido deja de estar en rojo en cuanto vuelve a cumplir su regla.
     document.addEventListener('input', (e) => {
       const el = e.target;

@@ -192,3 +192,24 @@ tr.fa-nuevo > :first-child { box-shadow: inset 3px 0 0 var(--red, #0E1A2B) !impo
 .fa-por-b:focus-visible { outline: 2px solid var(--red, #0E1A2B); outline-offset: 1px; }
 label.fa-por-destino { outline: 2px solid var(--red, #0E1A2B); outline-offset: 2px; }
 @media (forced-colors: active) { .fa-por-b { outline: 1px solid ButtonText; } }
+
+/* 6 · La ventana del consolidado multi-sede (2026-10-31; la mejora propuesta al cerrar el PR #67).
+   El marcado lo pone `BOM.montarPerfiles` en las siete páginas con perfiles; su estilo vive aquí,
+   una sola vez. Antes cada hoja lo repetía con dos velos distintos (rgba(28,25,23) en Aruba,
+   Fortinet y Huawei; rgba(14,26,43) en las demás): el velo sale ahora de la tinta de la página.
+   La ventana de ópticas y accesorios de Aruba (`#accModal`) usa la misma regla desde el 2026-10-31
+   (la mejora propuesta al cerrar el PR #89): su hoja solo conserva su ancho de 640 px. */
+#modalConsolidado, #accModal {
+  position: fixed; inset: 0; z-index: 60;
+  display: flex; align-items: center; justify-content: center; padding: 20px;
+  background: color-mix(in srgb, var(--ink, #0E1A2B) 45%, transparent);
+}
+#modalConsolidado[hidden], #accModal[hidden] { display: none; }
+#modalConsolidado .acc-caja, #accModal .acc-caja {
+  width: 100%; max-height: 86vh; overflow: auto; padding: 20px;
+  background: var(--card, #FFF); border: 1px solid var(--rule, #C6CFDA); border-radius: 6px;
+}
+#modalConsolidado .acc-caja h3, #accModal .acc-caja h3 {
+  margin: 0 0 8px; font-family: 'IBM Plex Mono', monospace; font-size: 12px;
+  letter-spacing: .1em; text-transform: uppercase; color: var(--steel, #5C6E85);
+}

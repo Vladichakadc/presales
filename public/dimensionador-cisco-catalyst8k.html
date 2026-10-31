@@ -144,9 +144,6 @@ tr.sel td{background:rgba(4,159,217,.07);font-weight:600}
 .tco-tabla{width:100%;border-collapse:collapse;margin-top:6px}
 .tco-tabla th,.tco-tabla td{font-family:'IBM Plex Mono',monospace;font-size:11.5px;padding:6px 8px;border-bottom:1px solid var(--rule);text-align:right}
 .tco-tabla th:first-child,.tco-tabla td:first-child{text-align:left}
-.acc-caja{background:var(--card);border:1px solid var(--rule);border-radius:6px;padding:20px;max-height:86vh;overflow:auto}
-#modalConsolidado{position:fixed;inset:0;background:rgba(14,26,43,.45);z-index:60;display:flex;align-items:center;justify-content:center;padding:20px}
-#modalConsolidado[hidden]{display:none}
 @media(prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 <script src="/js/fuentes.js" defer></script>
@@ -362,6 +359,7 @@ tr.sel td{background:rgba(4,159,217,.07);font-weight:600}
   <div id="avisosMotor"></div>
   <section class="panel" id="distrib" hidden aria-live="polite"></section>
   <div class="verdict" id="verdict"></div>
+  <div class="verdict" id="fichaFw" hidden aria-label="Ficha del firewall dedicado"></div>
   <section class="panel" id="cgnatBox" hidden></section>
   <section class="panel">
     <h2>Licencias a considerar</h2>

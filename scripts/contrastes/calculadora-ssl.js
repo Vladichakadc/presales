@@ -35,12 +35,16 @@ const BASE_LINEA = [
   // recomendado no cambia, que es lo que estas filas controlan.
   { n: 'TP 175 Mbps — la respuesta que se quedaba corta', bw: '175', perfil: 'tp',
     recomendado: 'FortiGate 30G', capa: 'Threat Protection', fabricantes: 3 },
+  // 2026-10-31 (PR #87): los Cisco Secure Firewall entran al portal con la cifra de descifrado TLS
+  // de su ficha. `fabricantes` cuenta los paneles con algún equipo que cumple: pasa a 2 a 175 y a
+  // 500 Mbps, y sigue en 1 a 20 Gbps (52 Gbps pedidos; el mayor, el 4245, da 45). En los tres el
+  // FortiGate sigue siendo el más pequeño que cumple, así que el recomendado no cambia.
   { n: 'TLS 175 Mbps — con su cifra propia sube al 60F', bw: '175', perfil: 'ssl',
-    recomendado: 'FortiGate 60F', capa: 'SSL Inspection', fabricantes: 1 },
+    recomendado: 'FortiGate 60F', capa: 'SSL Inspection', fabricantes: 2 },
   { n: 'TP 500 Mbps — la respuesta que sobredimensionaba', bw: '500', perfil: 'tp',
     recomendado: 'FortiGate 70G', capa: 'Threat Protection', fabricantes: 3 },
   { n: 'TLS 500 Mbps — el 50G aguanta MÁS TLS que TP y cumple', bw: '500', perfil: 'ssl',
-    recomendado: 'FortiGate 50G', capa: 'SSL Inspection', fabricantes: 1 },
+    recomendado: 'FortiGate 50G', capa: 'SSL Inspection', fabricantes: 2 },
   { n: 'TLS 20 Gbps — la gama alta responde sin caer a otra capa', bw: '20000', perfil: 'ssl',
     recomendado: 'FortiGate 3500F', capa: 'SSL Inspection', fabricantes: 1 },
   // 2026-10-13: era el RB4011iGS+ con 5,6 Gbps. Ese equipo salio del catalogo (sin ficha
@@ -117,7 +121,9 @@ module.exports = {
         antes: !!(c && c.closest('.calc-result')),
       };
     });
-    const declara = /1 de los \d+ fabricantes/.test(cob.texto) && /Fortinet/.test(cob.texto);
+    // Desde el 2026-10-31 la publican dos (Fortinet y los Cisco Secure Firewall): la frase dice
+    // cuántos y cuáles, y la lista sigue saliendo corta frente a los siete.
+    const declara = /2 de los \d+ fabricantes/.test(cob.texto) && /Fortinet/.test(cob.texto) && /Cisco/.test(cob.texto);
     out.push({ n: 'la pantalla declara cuántos fabricantes publican la capa', ok: declara,
       detalle: declara ? cob.texto.slice(0, 90) : `no lo declara (${cob.texto.slice(0, 90) || 'sin línea'})` });
     out.push({ n: 'y lo dice ANTES de la lista, no después', ok: cob.antes,

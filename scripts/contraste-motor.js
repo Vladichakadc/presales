@@ -60,6 +60,23 @@ function comparar(esperado, obtenido, claves) {
 
 const corto = (v) => (Array.isArray(v) ? `[${v.length}] ${v.slice(0, 4).join(', ')}${v.length > 4 ? '…' : ''}` : String(v));
 
+/* UNA LÍNEA POR FALLO, PARA LAS ANOTACIONES (2026-10-31, mejora propuesta al cerrar el PR #88).
+   El informe de arriba reparte un fallo en varias líneas (el escenario y, debajo, cada campo), sin
+   el nombre del caso; sirve a quien lee la corrida entera. Pero los logs, el resumen y los
+   artefactos de Actions viven en un dominio que el proxy de las sesiones en la nube deniega: el
+   PR #87 falló dos veces en el contraste con solo «exit code 1» a la vista, y hubo que reproducir
+   el cálculo a mano para saber qué caso era. Esta línea lleva todo en una pieza —caso, escenario,
+   campo, esperado y obtenido— y pantallas.yml la publica como anotación, que se lee por la API.
+   Una sola línea física: los saltos de línea se aplanan (una anotación es una línea). */
+const PREFIJO_FALLO = 'FALLO-CONTRASTE - ';
+const plano = (t) => String(t == null ? '' : t).replace(/\s+/g, ' ').trim();
+function lineaFallo(caso, escenario, detalle) {
+  return PREFIJO_FALLO + [caso, escenario, detalle].map(plano).filter(Boolean).join(' · ');
+}
+function detalleDifs(difs) {
+  return difs.map((d) => `${d.campo}: esperado ${corto(d.esperado)}, obtenido ${corto(d.obtenido)}`).join('; ');
+}
+
 /* UNA SESION PARA TODOS LOS CASOS. Abrir Chromium y volver a entrar por el muro de acceso
  * en cada caso cuesta minutos en un ejecutor, y no aporta aislamiento: cada caso empieza con
  * un `goto` a su pantalla, que es un estado limpio. `cerrar()` la suelta al final. */
@@ -133,6 +150,7 @@ async function correr(caso, sesion) {
       console.log(`      ${d.campo}: esperado ${corto(d.esperado)}`);
       console.log(`      ${' '.repeat(d.campo.length)}  obtenido ${corto(d.obtenido)}`);
     }
+    if (difs.length) console.log(lineaFallo(caso.nombre, esc.n, detalleDifs(difs)));
   }
 
   if (caso.extra) {
@@ -140,6 +158,7 @@ async function correr(caso, sesion) {
     for (const r of await caso.extra(p, { base, pausa })) {
       if (!r.ok) fallos++;
       console.log(`${r.ok ? ' ok ' : 'MAL '} ${r.n}${r.detalle ? ' — ' + r.detalle : ''}`);
+      if (!r.ok) console.log(lineaFallo(caso.nombre, r.n, r.detalle));
     }
   }
 
@@ -149,4 +168,4 @@ async function correr(caso, sesion) {
   return fallos;
 }
 
-module.exports = { abrirSesion, correr, pausa, comparar };
+module.exports = { abrirSesion, correr, pausa, comparar, lineaFallo, detalleDifs, PREFIJO_FALLO };

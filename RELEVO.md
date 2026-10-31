@@ -1,6 +1,6 @@
 # Relevo
 
-Última actualización: 2026-10-30 · PR #85
+Última actualización: 2026-10-31 · PR #93
 
 Informe para continuar el trabajo. Lo pidió el dueño del repositorio el 2026-10-27: «de aquí en
 adelante, un informe de pendientes y mejoras para que la cuenta **servicioiptv2025@gmail.com**
@@ -33,6 +33,22 @@ está en curso no va aquí: lo dice `npm run traspasos` (protocolo en `docs/tras
 
 ## Estado al cerrar esta entrega
 
+- **2026-10-31 · PR #93**: el botón «Actualizar» avisa cuando su recálculo cambia lo que se veía
+  («El resultado no estaba al día…») y deja en la consola el último campo tocado y el enlace. Es la
+  vía para cazar el desfase que el dueño vio y ninguna batería reproduce: **si alguien ve ese aviso,
+  que pase la línea `[actualizar]` de la consola**. **Criterio que conviene conservar**: el botón y
+  las baterías leen el mismo texto de resultados; si cambia la rejilla de una página, se cambia en
+  los dos sitios (la prueba frena que diverjan).
+- **2026-10-31 · PR #95**: la ventana de ópticas de Aruba (`#accModal`) usa la regla común de las ventanas (la mejora propuesta al cerrar el PR #89): un solo velo, el de la tinta, en las dos ventanas de la página. **Criterio que conviene conservar**: una ventana nueva añade su id a los selectores de la sección 6 de `controles.css`; en su hoja solo va lo que de verdad es suyo (el ancho), y `test/consolidado-estilos.test.js` frena el resto.
+- **2026-10-31 · PR #89**: la ventana del consolidado multi-sede, una sola regla en la sección 6 de `controles.css` (la mejora propuesta al cerrar el PR #67), con el velo de la tinta de la página. Es la fase 1.2 del **plan de mejora de los dimensionadores**, aprobado el 2026-10-31 con las opciones recomendadas: un PR por mejora, Aruba antes que Fortinet en la fase 3, y la 7220 IXR y Starlink fuera. **Criterio que conviene conservar**: un estilo de la ventana del consolidado va en `controles.css`, nunca en la hoja de una página (`test/consolidado-estilos.test.js`). Lo que queda del plan (2.1, 2.2, 3.1 y 3.2, ya aprobado y en orden) está al principio de *Mejoras propuestas sin decidir*.
+- **2026-10-31 · PR #91**: el Secure Firewall elegido a mano viaja en el enlace y en el perfil (pendiente del PR #88). **Criterio que conviene conservar**: un desplegable que pinta ficha.js con otro contenedor se declara igual que `verdict-sel` (en `CAMPOS_ENLACE` y en `TARDIOS`), y la página guarda en su variable solo la elección manual, nunca el recomendado.
+- **2026-10-31 · PR #90**: **los fallos del contraste se leen por la API** (la mejora propuesta al cerrar el PR #88). Cada fallo sale como anotación `contraste` de la comprobación `pantallas`, con caso, escenario, campo, esperado y obtenido: `gh api repos/<dueño>/<repo>/check-runs/<id>/annotations`. **Criterio que conviene conservar**: todo lo que puede poner en rojo un paso de CI deja una línea que el workflow convierte en anotación; si no, desde una sesión en la nube solo se ve un código de salida.
+- **2026-10-31 · PR #88**: **el Secure Firewall, con ficha completa** (F2 y F3). Sus figuras oficiales en el catálogo de figuras de Cisco y, con «Firewall dedicado aparte», su ficha debajo de la del router: cifras con su base, hardware, alimentación, figuras y enlace a su ficha oficial; elegir otro cambia el BOM. **Queda**: sin precio (no hay lista oficial) y sin ciclo de vida respaldado; la elección manual en el enlace, cerrada en el PR #91. **Criterio que conviene conservar**: una ficha secundaria con FICHA declara su ciclo de vida (`cicloVida`) en vez de heredar el del fabricante, que respalda a otros equipos.
+- **2026-10-31 · PR #87**: **el Cisco Secure Firewall entra al catálogo** (decisión del dueño: «Sí, ficha completa»). F1 hecha: los 14 modelos en el portal con el hardware de sus fichas, generados de `SECURE_FIREWALL`, y la calculadora los dimensiona con IPsec, FW + AVC + IPS y TLS. F2 y F3, en el PR #88; sin precio. **Criterio que conviene conservar**: una sola copia de cada cifra —el portal se genera de `SECURE_FIREWALL`— y sin `fwd`, porque sus fichas no dan un firewall sin inspección.
+- **2026-10-31 · PR #86**: la batería `e2e-arranque.js` comprueba que los nueve dimensionadores abren
+  al día (vacía, desde un enlace compartido y recargada): 27 de 27 en CI. **Criterio que conviene
+  conservar**: una página nueva entra en `PAGINAS` de `test/e2e/resultados.js` y queda en las dos
+  baterías; la lectura de resultados vive solo ahí.
 - **2026-10-30 · PR #85**: la verificación en navegador que faltó en el PR #84. `test/e2e/e2e-pqc-gestion-huawei.js` abre el dimensionador de Huawei servido por el servidor, elige el AR6710-L26T2X4 y comprueba la fila «Gestión y control» con su documento, el túnel en «no consta» y que «Exigir PQC» lo aparta por «no consta». Verde en CI (`pantallas`).
 - **2026-10-30 · PR #84**: **la PQC de gestión y control** (la mejora propuesta al cerrar el PR #82). Los cuatro AR6710-L llevan `pqcGestion` con el literal de su ficha R26C00 («PQC is supported for SSL, SSH, and SD-WAN DTLS protocols»); la ficha lo dice en su fila «Gestión y control» y el Comparador como «Solo en …; no en el túnel de datos». **Criterio que conviene conservar**: `pqcGestion` nunca es `pqc` y `pqc.js` no lo lee; un canal que no lleva el tráfico no cumple «Exigir PQC» (`test/pqc-gestion.test.js`).
 - **2026-10-30 · PR #83**: tercera corrida de transporte. La ficha oficial del SRX4100/4200 no trae PQC ni PPK, y la ficha de Meraki de los C8111/C8121-G2-MX da «2 x 2.5 mGig RJ45» para WAN sin velocidad mínima (como su guía de instalación): el `velMinSupuesto` sigue. Con esto, los pendientes que esperan documento han pasado por todos los documentos oficiales descargables que se conocen; lo que los cierra está en la tabla de *Esperan un documento oficial*.
@@ -330,7 +346,7 @@ traspaso (el #37, de otra sesión, se fusionó mientras se cerraba esta).
 | PQC de los Meraki MX y G2-MX | Búsqueda de PPK / RFC 8784 en Meraki y, el 2026-10-30, su página «IPsec VPN Configuration Settings» | Solo la norma y sus borradores en el IETF; el roadmap quantum-safe de Cisco (ago-2026) cita el TLS del Dashboard; la página de VPN da IKEv1/IKEv2 y los grupos DH 1, 2, 5, 14, 15 y 21, sin PPK ni ML-KEM | Lo cierra una página de Meraki que dé PPK o ML-KEM en Auto VPN o en la VPN de terceros |
 | PQC de los Nokia 7250 IXR y 7220 IXR | El 2026-10-30, por `traer-cisco-huawei.yml` (corrida 41050590900, rama `fuente/pqc-nokia-2026-10-30`): la nota de aplicación «ANYsec quantum-safe network cryptography» y las fichas R26 de las 7250 IXR-X, IXR-R, IXR-6e/10e/18e (edición SR Linux) y 7220 IXR-D | La nota ofrece ANYsec quantum-safe en «7250 IXR series» sin nombrar modelos; las fichas no lo llaman quantum-safe (IXR-R y 6e/10e dan MACsec; la IXR-X no lo nombra); la 7220 IXR-D no nombra MACsec | Lo cierra una ficha o guía de Nokia que lo diga |
 | PQC y ciclo de vida de Huawei | El 2026-10-30, por transporte (corrida 41060887530, rama `fuente/pendientes-2-2026-10-30`): las fichas oficiales de AR6000 R26C00, AR8000 R25C10, AR6710-L R26C00, AR6710-H R25C10 y AR6700V-L R26C00 | Solo la AR6710-L R26C00 (sep-2026) nombra PQC: «PQC is supported for SSL, SSH, and SD-WAN DTLS protocols», es decir, gestión y canal de control del SD-WAN, no el IPsec que lleva el tráfico, y sin algoritmo ni versión. No satisface «Exigir PQC» | La PQC del IPsec la cierra un documento que la dé para el túnel de datos; el ciclo de vida, la cuenta Huawei del dueño (Info-Finder pide sesión) |
-| Datos sueltos de Cisco (ficha del Secure Firewall dedicado, precio de Secure Access, velocidad mínima del mGig de los C8111/C8121-G2-MX, módulos del ASR, breakout 4x10G) | Sin documento nuevo | — | Cada uno, su documento por el transporte; el precio de Secure Access, CCW (sin acceso desde la sesión) |
+| Datos sueltos de Cisco (precio del Secure Firewall, precio de Secure Access, velocidad mínima del mGig de los C8111/C8121-G2-MX, módulos del ASR, breakout 4x10G) | Sin documento nuevo | — | Cada uno, su documento por el transporte; el precio de Secure Access, CCW (sin acceso desde la sesión) |
 
 
 - **Criptografía post-cuántica sin documento**: Huawei (pide la cuenta); de los gateways AOS de
@@ -343,7 +359,7 @@ traspaso (el #37, de otra sesión, se fusionó mientras se cerraba esta).
   consta» y el requisito los aparta con ese motivo. El ASR 1001-X no es un hueco: su boletín lo deja en la
   17.9, anterior a la PPK, y la ficha dice «no la trae» (`pqcNo`). Si un documento oficial dice que
   otro equipo no la trae, entra igual: `pqcNo` con su fuente en `fuentes.js` (`campos: ['pqcNo']`).
-- **Cisco**: ficha del Secure Firewall dedicado (y decidir si entra al portal), precio de Secure
+- **Cisco**: precio del Secure Firewall (sin lista oficial), precio de Secure
   Access por usuario (CCW), velocidad mínima de los mGig de los C8111/C8121-G2-MX, 10GBASE-T en
   SFP+ fuera de la serie 8300 y de las 8100 VAI/VAP, módulos del ASR (fuera de venta), breakout
   4x10G (pide su cable u óptica en el catálogo).
@@ -369,6 +385,8 @@ existen los workflows de transporte. Huawei y HPE niegan además el navegador au
 
 ## Mejoras propuestas sin decidir
 
+- **La ventana de ópticas de Aruba, accesible como la del consolidado** (propuesta al cerrar el PR #95). `#accModal` ya se ve igual que el consolidado, pero no se porta igual: no se cierra con Escape, su caja no lleva `role="dialog"`, `aria-modal` ni título enlazado, y al cerrar el foco no vuelve al botón que la abrió (solo el clic fuera o «Cerrar»). La del consolidado hace las tres cosas desde el PR #62. Evita que quien navega con teclado o lector de pantalla quede atrapado o perdido en la lista de ópticas. Cuesta unas diez líneas en `dimensionador-aruba-edgeconnect.js` y el marcado de la caja, más un caso en `e2e-accesibilidad.js` (abrir, Escape, foco de vuelta); si se hace mal, Escape podría cerrar también otra ventana abierta o el foco saltar al principio de la página. Se decide por el dueño.
+- **Plan de mejora de los dimensionadores, aprobado el 2026-10-31**: lo que queda, en orden. 2.1 «Líneas por función» en la hoja «Supuestos» (abajo, «Por función» en el Excel); 2.2 lo que trajo la función también en el BOM (abajo); 3.1 sacar el cálculo de la página de Aruba (3.673 líneas) a módulos puros con prueba en Node, con `contraste` antes y después de cada PR; 3.2 lo mismo en la página de Fortinet (2.141 líneas) sin tocar el motor aprobado. La 1.1 (medir el arranque) se hizo en el PR #86.
 - **Vigía semanal del ciclo de vida de Fortinet** (propuesta al cerrar el PR #68). Un workflow que
   cada lunes compare los FortiGate del catálogo con un listado de fin de vida y abra un issue si
   aparece un modelo nuevo. Evita que un anuncio como el del 60F pase sin verse. Cuesta un workflow
@@ -383,16 +401,14 @@ existen los workflows de transporte. Huawei y HPE niegan además el navegador au
   cambiaría y el cliente vería notas internas, así que la marca no entra en la hoja «BOM». Se decide
   por el dueño.
 
-- **Medir el arranque de la página, no solo los cambios** (propuesta al cerrar el PR #79). En 380
-  comprobaciones ningún campo se queda atrás, pero la batería empieza pulsando el botón «Actualizar»
-  para partir de un estado limpio, y con eso tapa justo un desfase posible: la página que abre con
-  un escenario restaurado (el guardado en el navegador, un enlace compartido con parámetros, un
-  perfil multi-sede cargado) y pinta la derecha antes de aplicar lo restaurado. Que la batería
-  compare, en cada página, el texto de resultados recién abierta con el que deja el botón, en tres
-  arranques: vacía, con el escenario guardado de una visita anterior y desde un enlace con
-  parámetros. Evita el «no se actualiza» que no viene de ningún campo. Cuesta tres aperturas más por
-  página; si se hace mal, compara una carga a medias (catálogo sin llegar) y da un falso rojo, así
-  que se espera a `DIMENSIONADOR_ACTUALIZAR` y a `asentar` antes de leer. Se decide por el dueño.
+- **«Copiar informe» en el aviso del botón** (propuesta al cerrar el PR #93). Cuando el botón dice
+  «El resultado no estaba al día», lo útil (página, último campo y su valor, enlace del escenario,
+  hora) queda en la consola, que un preventa no suele abrir. Un botón «Copiar informe» junto al
+  aviso que lleve ese mismo texto al portapapeles, listo para pegarlo en un mensaje. Evita que el
+  aviso se pierda sin dejar rastro, que es lo que ha impedido reproducir el fallo. Cuesta un botón y
+  su manejador en `actualizar.js` (el portapapeles ya lo usa «Copiar enlace»); si se hace mal, copia
+  un enlace sin el escenario, así que se copia `location.href` en el momento del aviso. Nada sale del
+  navegador salvo lo que la persona pegue. Se decide por el dueño.
 - **Un reloj para la vigilia que no sea el de GitHub** (propuesta al cerrar el PR #64, solo si la
   medición del 2026-11-05 confirma que faltan más de la mitad de las corridas). Una tarea programada
   de Claude (fuera de Actions) que cada hora lance `vigilia-despliegue.yml` por `workflow_dispatch`.
@@ -410,14 +426,6 @@ existen los workflows de transporte. Huawei y HPE niegan además el navegador au
   `funciones-activas.js` y su caso en `e2e-funciones-activas.js`; si se hace mal, una pestaña que se
   repinta al abrirse (y no al recalcular) se compararía con una foto vieja y marcaría filas de más:
   la prueba tiene que abrir la pestaña después de marcar. Se decide por el dueño.
-- **Los estilos de la ventana del consolidado, en la hoja común** (propuesta al cerrar el PR #67).
-  El marcado ya es uno, pero `#modalConsolidado`, `.acc-caja` y sus `h3` siguen escritos en la hoja
-  de cada una de las siete páginas, con diferencias (el tono del velo, rgba(28,25,23) en cuatro y
-  rgba(14,26,43) en tres). Moverlos a `controles.css` con las variables de cada página (`--card`,
-  `--rule`) deja una sola regla. Evita que la próxima mejora de la ventana se escriba siete veces.
-  Cuesta quitar unas cuatro líneas de cada hoja; si se hace mal, la ventana sale sin velo o sin
-  desplazamiento en alguna página, y lo verían el contraste de pantallas y `e2e-accesibilidad.js`
-  (que ya abre la ventana). Se decide por el dueño.
 - **Comprobar las fuentes de los siete fabricantes desde el portal** (propuesta al cerrar el PR #71).
   Hoy «Actualizar fuentes» va pestaña por pestaña: saber si algún documento de cualquier fabricante
   cambió pide abrir siete páginas. Un panel en el portal que llame a la misma ruta para los siete (en
@@ -425,7 +433,7 @@ existen los workflows de transporte. Huawei y HPE niegan además el navegador au
   enlace a su pestaña, daría la vista del vigía del lunes en el momento. Cuesta una sección del
   portal y su script, sin tocar el servidor; si se hace mal, siete corridas a la vez pegarían a los
   fabricantes (la prueba tiene que fijar que van de una en una). Se decide por el dueño.
-- (Hecha en el PR #84: la PQC de gestión y control, `pqcGestion`. Hecha en el PR #81: el tier de Aruba en el enlace. Hecha en el PR #80: el modelo de Aruba por `opcionesTarde`. Hecha en el PR #77: el modelo de AP de MikroTik en el enlace. Hecha en el PR #75: los campos del perfil, de los del enlace. Hecha en el PR #71: «Actualizar fuentes» en vivo. Hecha en el PR #67: el marcado del panel de perfiles, generado por el módulo. Hecha en el PR #66: lo que trajo cada función, resaltado en el resultado. Hecha en el PR #62: el panel de perfiles, un solo módulo. Hecha en el PR #60: la licencia FortiGuard única del par en el BOM. Hecha en el PR #59: la vigilia del despliegue. Hecha en el PR #58: del override por ciclo de vida a ampliación o renovación en un clic. Hecha en el PR #57: el transporte probado sin red. Hecha en el PR #55: los perfiles multi-sede en Juniper y Nokia 7750. Hecha en el PR #54: la foto desde la página de cada modelo, hasta donde Cisco la publica, y el transporte fuera del YAML. Hecha en el PR #50: los perfiles de otros fabricantes al día al consolidar. Hecha en el PR #46: el ciclo del perfil al día al consolidar. Hecha en el PR #45: la fuente de la PQC enlazada a `fuentes.js`. Hecha en el PR #44: el ciclo en el consolidado multi-sede. Hecha en el PR #41: el fin de venta en el Excel. Hecha en el PR #40: la foto de producto en el Excel. Hecha en la septuagesimoprimera: el «no la trae» documentado, `pqcNo`. Hecha en la sexagesimoctava: la
+- (Hecha en el PR #95: las dos ventanas de Aruba con el mismo velo. Hecha en el PR #89: los estilos de la ventana del consolidado, en la hoja común. Hecha en el PR #84: la PQC de gestión y control, `pqcGestion`. Hecha en el PR #81: el tier de Aruba en el enlace. Hecha en el PR #80: el modelo de Aruba por `opcionesTarde`. Hecha en el PR #77: el modelo de AP de MikroTik en el enlace. Hecha en el PR #75: los campos del perfil, de los del enlace. Hecha en el PR #71: «Actualizar fuentes» en vivo. Hecha en el PR #67: el marcado del panel de perfiles, generado por el módulo. Hecha en el PR #66: lo que trajo cada función, resaltado en el resultado. Hecha en el PR #62: el panel de perfiles, un solo módulo. Hecha en el PR #60: la licencia FortiGuard única del par en el BOM. Hecha en el PR #59: la vigilia del despliegue. Hecha en el PR #58: del override por ciclo de vida a ampliación o renovación en un clic. Hecha en el PR #57: el transporte probado sin red. Hecha en el PR #55: los perfiles multi-sede en Juniper y Nokia 7750. Hecha en el PR #54: la foto desde la página de cada modelo, hasta donde Cisco la publica, y el transporte fuera del YAML. Hecha en el PR #50: los perfiles de otros fabricantes al día al consolidar. Hecha en el PR #46: el ciclo del perfil al día al consolidar. Hecha en el PR #45: la fuente de la PQC enlazada a `fuentes.js`. Hecha en el PR #44: el ciclo en el consolidado multi-sede. Hecha en el PR #41: el fin de venta en el Excel. Hecha en el PR #40: la foto de producto en el Excel. Hecha en la septuagesimoprimera: el «no la trae» documentado, `pqcNo`. Hecha en la sexagesimoctava: la
   versión mínima de la PQC en la hoja «Supuestos».)
 
 ## Decisiones del dueño abiertas

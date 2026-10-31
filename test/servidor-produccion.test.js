@@ -301,9 +301,9 @@ test('la calculadora no aparta un fabricante por un dato que el catálogo SI pub
     fwd: { hw_ar: ['fwd'], hw_wan: ['cap'], cisco: ['fwd', 'cap'], nokia: ['cap'], fortinet: ['fw'], juniper: ['fw', 'cap'], mikrotik: ['fwd'], aruba: ['fw', 'fwd'] },
     ipsec: { hw_ar: ['ipsec'], cisco: ['ipsec'], fortinet: ['vpn'], juniper: ['vpn'], mikrotik: ['ipsec'], aruba: ['ipsec'] },
     sdwan: { hw_ar: ['sdwan'], cisco: ['sdwan'], aruba: ['wanMax'] },
-    ngfw: { fortinet: ['ngfw'], juniper: ['ips'] },
+    ngfw: { fortinet: ['ngfw'], juniper: ['ips'], cisco: ['ips'] },
     tp: { fortinet: ['tp'], juniper: ['atp'] },
-    ssl: { fortinet: ['ssl'] },
+    ssl: { fortinet: ['ssl'], cisco: ['tls'] },
   };
   for (const perfil of Object.keys(CALC.PERFILES)) {
     for (const a of CALC.evaluar(devs, perfil, 1).apartados) {
@@ -341,20 +341,23 @@ test('la calculadora no aparta un fabricante por un dato que el catálogo SI pub
      apartaria entero y esta prueba es lo unico que lo dice. */
   assert.ok(conCifra('ssl', 'fortinet') >= 15, 'Fortinet publica SSL Inspection por modelo');
 
-  // LA REGLA, Y NO SOLO EL CONTEO: en inspeccion TLS no puede aparecer NINGUN equipo de otro
-  // fabricante, porque ninguno publica esa cifra. Si apareciera, el mapa estaria leyendo el
-  // campo de otra capa — que es el derate que este repositorio retiro del dimensionador.
+  // LA REGLA, Y NO SOLO EL CONTEO: en inspeccion TLS solo puede aparecer quien publica esa
+  // cifra: Fortinet y, desde el PR #87, los Cisco Secure Firewall (su ficha da el TLS con 50 %
+  // de TLS 1.2). Un router de Cisco que apareciera querria decir que el mapa lee el campo de
+  // otra capa — que es el derate que este repositorio retiro del dimensionador.
   const otrosEnSsl = CALC.evaluar(devs, 'ssl', 1).candidatos
     .concat(CALC.evaluar(devs, 'ssl', 1).cortos)
-    .filter((f) => f.d.grupo !== 'fortinet');
+    .filter((f) => f.d.grupo !== 'fortinet' && !/^Secure Firewall /.test(f.d.raw.ser || ''));
   assert.strictEqual(otrosEnSsl.length, 0,
     `en inspeccion TLS solo compite quien publica la cifra; aparecieron ${otrosEnSsl.map((f) => f.d.model).join(', ')}`);
+  assert.ok(CALC.evaluar(devs, 'ssl', 1).candidatos.some((f) => /^Secure Firewall /.test(f.d.raw.ser || '')),
+    'los Secure Firewall llegan a la inspeccion TLS con la cifra de su ficha');
 
   // Y LA COBERTURA SE MIDE CONTRA EL CATALOGO, NO SE DECLARA. Es lo que la pantalla pinta
   // encima de la lista para que una lista corta se lea como «falta el dato» y no como «falta
   // el equipo»; una lista de fabricantes escrita a mano se quedaria con los de ayer.
   const cob = CALC.cobertura(devs, 'ssl');
-  assert.strictEqual(cob.conCifra, 1, 'hoy solo un fabricante publica la inspeccion TLS');
+  assert.strictEqual(cob.conCifra, 2, 'hoy publican la inspeccion TLS Fortinet y Cisco (sus Secure Firewall)');
   assert.ok(cob.fabricantes >= 7, 'y se compara contra los fabricantes que trae el catalogo');
   assert.ok(cob.con > 0 && cob.con < cob.total, 'con cifra son algunos, no todos ni ninguno');
   // El perfil de reenvio es el control: ahi lo publican todos, y la frase de la pantalla

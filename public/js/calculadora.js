@@ -78,6 +78,10 @@
   // Cisco trae una sola cifra de seguridad, `amenazas`, y su base dice qué prueba es:
   // en los Secure Router y los Catalyst es Threat Protection; en Meraki, su NGFW.
   const esMeraki = (d) => d.ser === 'Meraki MX';
+  // Cisco Secure Firewall 1200, 3100 y 4200 (2026-10-31): sus fichas publican Threat Defense con
+  // paquetes de 1.024 B (FW + AVC + IPS), IPsec con TCP de 1.024 B y TLS propio; no un firewall sin
+  // inspección ni Threat Protection. Cada perfil lee la cifra de SU capa o los aparta.
+  const esSecureFirewall = (d) => /^Secure Firewall /.test(d.ser || '');
   function rotuloMeraki(d) {
     const base = d.bases && d.bases.amenazas;
     if (/detección/.test(base || '')) return 'NGFW Meraki (detección, IDS)';
@@ -119,7 +123,7 @@
       capa: {
         hw_ar: (d) => ({ n: 'Forwarding', v: d.fwd }),
         hw_wan: (d) => ({ n: 'Capacidad de conmutación', v: d.cap }),
-        cisco: (d) => ({ n: 'Forwarding', v: d.fwd != null ? d.fwd : d.cap }),
+        cisco: (d) => (esSecureFirewall(d) ? { n: null, v: null } : { n: 'Forwarding', v: d.fwd != null ? d.fwd : d.cap }),
         nokia: (d) => ({ n: 'Capacidad de conmutación', v: d.cap }),
         fortinet: (d) => ({ n: 'Firewall (paquetes grandes)', v: d.fw }),
         juniper: capaJuniper,
@@ -135,7 +139,7 @@
       falta: 'el catálogo no publica su cifra de IPsec',
       capa: {
         hw_ar: (d) => ({ n: 'IPsec', v: d.ipsec }),
-        cisco: (d) => ({ n: 'IPsec', v: d.ipsec }),
+        cisco: (d) => (esSecureFirewall(d) ? { n: 'IPsec (Secure Firewall, TCP de 1.024 B)', v: d.ipsec } : { n: 'IPsec', v: d.ipsec }),
         fortinet: (d) => ({ n: 'IPsec VPN', v: d.vpn }),
         // Solo los SRX que traen cifra propia. Uno sin `vpn` no se dimensiona con
         // su firewall: en el SRX380 son 20 Gbps de firewall frente a 4,4 de IPsec.
@@ -168,7 +172,8 @@
         juniper: (d) => ({ n: 'IPS', v: d.ips }),
         // Meraki publica su NGFW en modo detección (MX67 a MX105) o prevención (MX250,
         // MX450); el rótulo lo dice, porque no es la misma carga.
-        cisco: (d) => (esMeraki(d) ? { n: rotuloMeraki(d), v: d.amenazas } : { n: null, v: null }),
+        cisco: (d) => (esMeraki(d) ? { n: rotuloMeraki(d), v: d.amenazas }
+          : (esSecureFirewall(d) ? { n: 'FW + AVC + IPS (Secure Firewall, 1.024 B)', v: d.ips } : { n: null, v: null })),
       },
     },
     tp: {
@@ -180,7 +185,7 @@
         juniper: (d) => ({ n: 'ATP', v: d.atp }),
         // Secure Router (G2) y Catalyst 8000: Threat Protection en EMIX con DIA-NAT, NGFW,
         // IPS, URLF y AMP a la vez. Los ISR 1000 no la publican y se apartan.
-        cisco: (d) => (esMeraki(d) ? { n: null, v: null } : { n: 'Threat Protection', v: d.amenazas }),
+        cisco: (d) => (esMeraki(d) || esSecureFirewall(d) ? { n: null, v: null } : { n: 'Threat Protection', v: d.amenazas }),
       },
     },
     // INSPECCIÓN TLS — VA AL FINAL, PERO NO ES EL ÚLTIMO PELDAÑO DE LA ESCALERA.
@@ -198,12 +203,14 @@
     // lista), y con eso el perfil deja de ser un hueco lleno de apartados.
     ssl: {
       etq: 'Inspección TLS / SSL (descifrado en línea)',
-      mide: 'Lo que el equipo aguanta descifrando HTTPS en línea, con IPS activo y una mezcla de suites criptográficas. NO es un peldaño más de la escalera anterior ni una fracción de Threat Protection: es otra ruta de proceso y otra medición, y en varios modelos de este catálogo la cifra es MAYOR que la de Threat Protection. Hoy solo Fortinet la publica por modelo.',
+      mide: 'Lo que el equipo aguanta descifrando HTTPS en línea, con IPS activo y una mezcla de suites criptográficas. NO es un peldaño más de la escalera anterior ni una fracción de Threat Protection: es otra ruta de proceso y otra medición, y en varios modelos de este catálogo la cifra es MAYOR que la de Threat Protection. La publican por modelo Fortinet y los Cisco Secure Firewall, cada uno con su metodología.',
       falta: 'el catálogo no publica su cifra de inspección TLS',
       capa: {
-        // Un solo lector a propósito. Añadir aquí a los otros siete con la cifra
+        // Solo quien publica su propia cifra de descifrado. Añadir a los demás con la cifra
         // de otra capa sería exactamente el derate que este repositorio retiró.
         fortinet: (d) => ({ n: 'SSL Inspection', v: d.ssl }),
+        // Los Secure Firewall miden TLS por su cuenta (50 % de TLS 1.2, AES256-SHA, RSA de 2.048).
+        cisco: (d) => (esSecureFirewall(d) ? { n: 'TLS (Secure Firewall, 50 % TLS 1.2)', v: d.tls } : { n: null, v: null }),
       },
     },
   };
