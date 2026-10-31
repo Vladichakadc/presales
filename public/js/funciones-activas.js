@@ -33,6 +33,14 @@
 // mentir; por eso tampoco toca el código de ninguna página. Se borra con el siguiente cambio de
 // cualquier control; al desmarcar no se marca nada.
 //
+// TAMBIÉN EN LA LISTA DE MATERIALES (2026-10-31, fase 2.2 del plan de mejora de los dimensionadores;
+// la mejora propuesta al cerrar el PR #66). En las páginas con BOM, la tabla `#bomTabla` vive en su
+// propia pestaña, fuera de la columna de resultados: la línea que una función añade (el PIM del
+// respaldo celular, la segunda fuente) no se resaltaba. Sus filas entran en la misma foto —solo las
+// líneas, no los rótulos de grupo ni el total— y el panel las cuenta aparte. La tabla se repinta al
+// recalcular aunque su pestaña esté cerrada (`BOM.sincronizar` repinta siempre), así que la foto
+// del `click` es la de antes; «Ver» abre la pestaña si lo primero resaltado está en ella.
+//
 // CUÁNDO SE ACTUALIZA. Con cada `change` o `input` de la página y, además, cada vez que la
 // columna de resultados cambia: las páginas marcan casillas por programa (un perfil guardado, el
 // pliego, «restablecer») sin disparar eventos, pero siempre recalculan y repintan la derecha. El
@@ -101,9 +109,20 @@
     });
     return [...vistas];
   }
+  // Las líneas del BOM, si su tabla no está ya dentro de la columna de resultados.
+  function bomDe(r) {
+    const t = document.getElementById('bomTabla');
+    return t && !r.der.contains(t) ? t : null;
+  }
+  function lineasBom(r) {
+    const t = bomDe(r);
+    return t ? [...t.querySelectorAll('tbody tr:not(.bom-grupo)')] : [];
+  }
+  const todas = (r) => unidades(r).concat(lineasBom(r));
+  const enBom = (r, el) => { const t = bomDe(r); return !!t && t.contains(el); };
   function foto(r) {
     const cuenta = new Map();
-    for (const u of unidades(r)) { const k = clave(u); if (k) cuenta.set(k, (cuenta.get(k) || 0) + 1); }
+    for (const u of todas(r)) { const k = clave(u); if (k) cuenta.set(k, (cuenta.get(k) || 0) + 1); }
     return cuenta;
   }
   function limpiar(r) {
@@ -116,7 +135,7 @@
   function marcar(r, antes, cb) {
     const quedan = new Map(antes);
     const nuevas = [];
-    for (const u of unidades(r)) {
+    for (const u of todas(r)) {
       const k = clave(u);
       if (!k) continue;
       const n = quedan.get(k) || 0;
@@ -146,7 +165,7 @@
     const faltan = new Map();
     c.claves.forEach((k) => faltan.set(k, (faltan.get(k) || 0) + 1));
     const els = [];
-    for (const u of unidades(r)) {
+    for (const u of todas(r)) {
       const k = clave(u);
       const n = faltan.get(k) || 0;
       if (n > 0 && !els.some((o) => o.contains(u))) { faltan.set(k, n - 1); els.push(u); }
@@ -174,6 +193,8 @@
     function fin() { cancelar(); if (cb.checked) marcar(r, antes, cb); }
     r.espera = { cancelar };
     obs.observe(r.der, { childList: true, subtree: true, characterData: true });
+    const t = bomDe(r);
+    if (t) obs.observe(t, { childList: true, subtree: true, characterData: true });
   }
 
   function pintar(r) {
@@ -191,8 +212,14 @@
     }).join('');
     let cambio = '';
     if (c) {
-      cambio = c.els.length
-        ? `<p class="fa-cambio">Al activar <b>${esc(c.nombre)}</b> cambi${c.els.length === 1 ? 'ó 1 punto del resultado: va resaltado' : `aron ${c.els.length} puntos del resultado: van resaltados`}. <button type="button" class="fa-ver">Ver ${c.els.length === 1 ? 'dónde' : 'el primero'}</button></p>`
+      const nBom = c.els.filter((el) => enBom(r, el)).length;
+      const nRes = c.els.length - nBom;
+      const partes = [];
+      if (nRes) partes.push(nRes === 1 ? '1 punto del resultado' : `${nRes} puntos del resultado`);
+      if (nBom) partes.push(nBom === 1 ? '1 línea de la lista de materiales' : `${nBom} líneas de la lista de materiales`);
+      const total = c.els.length;
+      cambio = total
+        ? `<p class="fa-cambio">Al activar <b>${esc(c.nombre)}</b> cambi${total === 1 ? 'ó' : 'aron'} ${partes.join(' y ')}: ${total === 1 ? 'va resaltado' : 'van resaltados'}. <button type="button" class="fa-ver">Ver ${total === 1 ? 'dónde' : 'el primero'}</button></p>`
         : `<p class="fa-cambio">Al activar <b>${esc(c.nombre)}</b> no cambió nada visible del resultado.</p>`;
     }
     r.panel.innerHTML = `<p class="fa-tit">Funciones activadas <span class="fa-n">${activas.length}</span></p>`
@@ -218,8 +245,15 @@
       const r = { izq, der, panel, firma: null, casillas: () => casillasDe(izq) };
       panel.addEventListener('click', (e) => {
         if (e.target.closest('.fa-ver')) {
-          // El primero que se ve (una pestaña oculta guarda los suyos para cuando se abra).
-          const el = r.cambio && r.cambio.els.find((x) => x.isConnected && x.getClientRects().length);
+          // El primero que se ve; si todo lo resaltado está en una pestaña cerrada (la del BOM), se
+          // abre con su propio botón (`[role=tab][data-tab=X]`, la convención de las páginas).
+          let el = r.cambio && r.cambio.els.find((x) => x.isConnected && x.getClientRects().length);
+          if (!el && r.cambio) {
+            const oculto = r.cambio.els.find((x) => x.isConnected);
+            const pane = oculto && oculto.closest('.tabpane');
+            const tab = pane && document.querySelector(`[role="tab"][data-tab="${pane.id.replace(/^pane-/, '')}"]`);
+            if (tab) { tab.click(); el = oculto.isConnected && oculto.getClientRects().length ? oculto : null; }
+          }
           if (el) {
             el.scrollIntoView({ block: 'center', behavior: 'smooth' });
             if (!el.hasAttribute('tabindex')) el.setAttribute('tabindex', '-1');
@@ -237,6 +271,8 @@
       pintar(r);
       // La derecha se repinta tras cada recálculo; la izquierda muestra u oculta bloques.
       new MutationObserver(() => { if (!r.espera) reponer(r); pintar(r); }).observe(der, { childList: true, subtree: true });
+      const tb = bomDe(r);
+      if (tb) new MutationObserver(() => { if (!r.espera) reponer(r); }).observe(tb, { childList: true, subtree: true });
       new MutationObserver(() => pintar(r)).observe(izq, { subtree: true, attributes: true, attributeFilter: ['hidden', 'class', 'disabled'] });
     });
     if (!rejillas.length) return;

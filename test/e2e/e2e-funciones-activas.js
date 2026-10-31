@@ -91,16 +91,22 @@ const estado = (page, id) => page.evaluate((idCasilla) => {
         const d = globalThis.document;
         const panel = d.querySelector('.funciones-activas');
         const msg = panel.querySelector('.fa-cambio').textContent.replace(/\s+/g, ' ');
-        const m = /cambi(?:ó 1 punto|aron (\d+) puntos)/.exec(msg);
+        // «N puntos del resultado» y, desde la fase 2.2 (2026-10-31), «M líneas de la lista de materiales».
+        const num = (re) => { const x = re.exec(msg); return x ? Number(x[1]) : 0; };
+        const nRes = num(/(\d+) puntos? del resultado/);
+        const nBom = num(/(\d+) líneas? de la lista de materiales/);
         const marcas = [...d.querySelectorAll('.fa-nuevo')];
+        const bom = d.getElementById('bomTabla');
         const rejilla = panel.closest('.cols, .dim') || panel.parentElement.closest('.cols, .dim');
         const izq = rejilla.firstElementChild;
-        return { msg, n: m ? (m[1] ? Number(m[1]) : 1) : 0, marcas: marcas.length,
+        return { msg, n: nRes + nBom, marcas: marcas.length,
+          bomBien: !bom || marcas.filter((e) => bom.contains(e)).length === nBom,
           fuera: marcas.filter((e) => izq.contains(e) || panel.contains(e)).length,
           sinTitulo: marcas.filter((e) => !/^Apareció al activar «.+»$/.test(e.title)).length,
           visible: marcas.some((e) => e.getClientRects().length) };
       });
-      t.ok(c.n === c.marcas, `${pag}: el número del panel es el de lo resaltado (${c.n} = ${c.marcas}: «${c.msg.slice(0, 80)}»)`);
+      t.ok(c.n === c.marcas, `${pag}: el número del panel es el de lo resaltado (${c.n} = ${c.marcas}: «${c.msg.slice(0, 120)}»)`);
+      t.ok(c.bomBien, `${pag}: las líneas del BOM que cuenta el panel son las resaltadas en su tabla`);
       t.ok(c.fuera === 0 && c.sinTitulo === 0, `${pag}: lo resaltado está en el resultado y dice de qué función salió`);
       if (c.marcas) conCambios += 1;
       if (c.visible) {
@@ -122,6 +128,39 @@ const estado = (page, id) => page.evaluate((idCasilla) => {
     t.ok(await page.evaluate(() => !globalThis.document.querySelector('.fa-nuevo, .funciones-activas .fa-cambio')),
       `${pag}: al desmarcarla no queda nada resaltado como si lo hubiera traído`);
   }
+  // La línea que una función añade a la lista de materiales, resaltada en su pestaña (fase 2.2,
+  // 2026-10-31): en MikroTik, «Capacitación» trae su línea (`data-por="chkTraining"`).
+  await trasNavegar(page, () => page.goto(`${BASE}/dimensionador-mikrotik-routeros.html`, { waitUntil: 'domcontentloaded' }), { selector: '#bw' });
+  await asentar(page);
+  await page.$eval('#bw', (el) => { el.value = '200'; el.dispatchEvent(new globalThis.Event('input', { bubbles: true })); el.dispatchEvent(new globalThis.Event('change', { bubbles: true })); });
+  await asentar(page);
+  if (await page.$eval('#chkTraining', (cb) => cb.checked)) { await page.click('#chkTraining'); await asentar(page); }
+  await page.click('#chkTraining');
+  const vino = await page.waitForSelector('.funciones-activas .fa-cambio', { timeout: 8000 }).then(() => true, () => false);
+  const b = vino ? await page.evaluate(() => {
+    const d = globalThis.document;
+    const fila = d.querySelector('#bomTabla tr[data-por~="chkTraining"]');
+    return { msg: d.querySelector('.funciones-activas .fa-cambio').textContent.replace(/\s+/g, ' '), marcada: !!(fila && fila.classList.contains('fa-nuevo')),
+      titulo: fila ? fila.title : '' };
+  }) : null;
+  t.ok(b && b.marcada && /^Apareció al activar «.+»$/.test(b.titulo),
+    `MikroTik: la línea de la capacitación se resalta en la lista de materiales (${b ? `marcada=${b.marcada}, «${b.titulo}»` : 'sin aviso del panel'})`);
+  t.ok(b && /1 línea de la lista de materiales/.test(b.msg), `MikroTik: el panel la cuenta como línea del BOM («${b ? b.msg.slice(0, 140) : ''}»)`);
+  if (b && b.marcada) {
+    await page.click('.funciones-activas .fa-ver');
+    await asentar(page);
+    const v = await page.evaluate(() => {
+      const d = globalThis.document;
+      const a = d.activeElement;
+      return { foco: !!(a && a.matches('#bomTabla tr.fa-nuevo')), visible: !!(a && a.getClientRects().length) };
+    });
+    // Si lo resaltado del resultado se ve, «Ver» va primero a eso; si no, abre la pestaña del BOM.
+    t.ok(v.visible, `MikroTik: «Ver» lleva a algo resaltado y visible (${JSON.stringify(v)})`);
+  }
+  await page.click('#chkTraining');
+  await asentar(page);
+  t.ok(await page.evaluate(() => !globalThis.document.querySelector('#bomTabla .fa-nuevo')), 'MikroTik: al desmarcarla, nada queda resaltado en el BOM');
+
   t.ok(conCambios > 0, `al menos en una página la función activada cambia algo visible del resultado (${conCambios} de ${PAGINAS.length})`);
 
   t.ok(errores.length === 0, 'sin errores de JS' + (errores.length ? ': ' + errores.join(' | ') : ''));
