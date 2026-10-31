@@ -7,7 +7,11 @@
      «Dimensionar»; al desmarcarla, la línea se va. El equipo y el bundle no llevan marca.
    - Cisco: con la seguridad en la nube (SSE), «Acceso privado a aplicaciones» trae su línea de Secure
      Private Access, marcada con `saPrivado`; la de Secure Internet Access, que va siempre, no.
-   - MikroTik: «Capacitación» trae su línea, marcada con `chkTraining`, y se va al desmarcarla. */
+   - MikroTik: «Capacitación» trae su línea, marcada con `chkTraining`, y se va al desmarcarla; en el
+     Excel, la hoja «Supuestos» la lista en «Líneas por función» y la hoja «BOM» no lleva la marca
+     (2026-10-31, fase 2.1 del plan). */
+const fs = require('fs');
+const XLSX = require('xlsx');
 const { cargarPlaywright, BASE, abrirSesion, asentar, trasNavegar, contador } = require('./ayuda');
 
 const filasPor = (page) => page.$$eval('#bomTabla tbody tr', (trs) => trs.map((tr) => ({
@@ -24,7 +28,7 @@ const valor = (page, sel, v) => page.$eval(sel, (el, x) => {
 (async () => {
   const { chromium } = cargarPlaywright();
   const browser = await chromium.launch();
-  const page = await browser.newPage({ viewport: { width: 1400, height: 900 } });
+  const page = await browser.newPage({ viewport: { width: 1400, height: 900 }, acceptDownloads: true });
   page.on('dialog', (d) => d.accept());
   const errores = [];
   page.on('pageerror', (e) => errores.push(e.message));
@@ -103,6 +107,27 @@ const valor = (page, sel, v) => page.$eval(sel, (el, x) => {
   f = await filasPor(page);
   const cap = f.filter((x) => x.por === 'chkTraining');
   t.ok(cap.length === 1 && /^por /.test(cap[0].chip), `MikroTik: la capacitación dice de qué casilla sale (${cap.length ? `«${cap[0].chip}»` : 'sin la marca'})`);
+  // El Excel: la marca viaja a «Supuestos», no a la hoja que lee el cliente.
+  let libro = null;
+  try {
+    const [descarga] = await Promise.all([page.waitForEvent('download', { timeout: 30000 }), page.click('#xlsBtn')]);
+    libro = XLSX.read(fs.readFileSync(await descarga.path()), { type: 'buffer' });
+  } catch (e) {
+    t.ok(false, `MikroTik: el Excel se descarga (${e.message})`);
+  }
+  if (libro) {
+    const hoja = (n) => (libro.Sheets[n] ? XLSX.utils.sheet_to_json(libro.Sheets[n], { header: 1 }).map((r) => r.join(' | ')) : []);
+    const sup = hoja('Supuestos');
+    const casilla = cap.length ? cap[0].chip.replace(/^por\s+/, '') : null;
+    t.ok(sup.includes('LÍNEAS POR FUNCIÓN | Referencia | Cantidad | Función que la trae'),
+      'MikroTik: «Supuestos» trae la sección «Líneas por función»');
+    t.ok(!!casilla && sup.some((l) => l.endsWith(` | ${casilla}`)),
+      `MikroTik: la línea de la capacitación, con el nombre de su casilla («${casilla}»)`);
+    // «por <casilla>» es la etiqueta de la pantalla; «por» a secas sale en textos normales del BOM.
+    t.ok(!hoja('BOM').some((l) => l.includes('Función que la trae') || (casilla && l.includes(`por ${casilla}`))),
+      'MikroTik: la hoja «BOM» que lee el cliente no lleva la marca');
+  }
+
   await page.uncheck('#chkTraining');
   await asentar(page);
   f = await filasPor(page);

@@ -1,6 +1,6 @@
 # Relevo
 
-Última actualización: 2026-10-31 · PR #93
+Última actualización: 2026-10-31 · PR #96
 
 Informe para continuar el trabajo. Lo pidió el dueño del repositorio el 2026-10-27: «de aquí en
 adelante, un informe de pendientes y mejoras para que la cuenta **servicioiptv2025@gmail.com**
@@ -33,6 +33,8 @@ está en curso no va aquí: lo dice `npm run traspasos` (protocolo en `docs/tras
 
 ## Estado al cerrar esta entrega
 
+- **2026-10-31 · PR #96**: «Líneas por función» en la hoja «Supuestos» del Excel (fase 2.1 del plan aprobado). **Criterio que conviene conservar**: la procedencia de una línea sale de su `por`, el mismo dato que pinta la etiqueta en pantalla; nunca un mapa aparte, y nunca en la hoja «BOM» del cliente.
+- **2026-10-31 · PR #92**: axe y el reflujo a 640 px recorren también la ficha del firewall dedicado de Cisco, sin hallazgos. **Criterio que conviene conservar**: una parte de la pantalla que solo aparece con un escenario entra en `e2e-accesibilidad.js` con su ruta y un `preparar` que espera a verla; sin la espera, axe pasaría en verde sin haberla recorrido.
 - **2026-10-31 · PR #93**: el botón «Actualizar» avisa cuando su recálculo cambia lo que se veía
   («El resultado no estaba al día…») y deja en la consola el último campo tocado y el enlace. Es la
   vía para cazar el desfase que el dueño vio y ninguna batería reproduce: **si alguien ve ese aviso,
@@ -386,21 +388,12 @@ existen los workflows de transporte. Huawei y HPE niegan además el navegador au
 ## Mejoras propuestas sin decidir
 
 - **La ventana de ópticas de Aruba, accesible como la del consolidado** (propuesta al cerrar el PR #95). `#accModal` ya se ve igual que el consolidado, pero no se porta igual: no se cierra con Escape, su caja no lleva `role="dialog"`, `aria-modal` ni título enlazado, y al cerrar el foco no vuelve al botón que la abrió (solo el clic fuera o «Cerrar»). La del consolidado hace las tres cosas desde el PR #62. Evita que quien navega con teclado o lector de pantalla quede atrapado o perdido en la lista de ópticas. Cuesta unas diez líneas en `dimensionador-aruba-edgeconnect.js` y el marcado de la caja, más un caso en `e2e-accesibilidad.js` (abrir, Escape, foco de vuelta); si se hace mal, Escape podría cerrar también otra ventana abierta o el foco saltar al principio de la página. Se decide por el dueño.
-- **Plan de mejora de los dimensionadores, aprobado el 2026-10-31**: lo que queda, en orden. 2.1 «Líneas por función» en la hoja «Supuestos» (abajo, «Por función» en el Excel); 2.2 lo que trajo la función también en el BOM (abajo); 3.1 sacar el cálculo de la página de Aruba (3.673 líneas) a módulos puros con prueba en Node, con `contraste` antes y después de cada PR; 3.2 lo mismo en la página de Fortinet (2.141 líneas) sin tocar el motor aprobado. La 1.1 (medir el arranque) se hizo en el PR #86.
+- **Plan de mejora de los dimensionadores, aprobado el 2026-10-31**: lo que queda, en orden. 2.2 lo que trajo la función también en el BOM (abajo); 3.1 sacar el cálculo de la página de Aruba (3.673 líneas) a módulos puros con prueba en Node, con `contraste` antes y después de cada PR; 3.2 lo mismo en la página de Fortinet (2.141 líneas) sin tocar el motor aprobado. La 1.1 (medir el arranque) se hizo en el PR #86.
 - **Vigía semanal del ciclo de vida de Fortinet** (propuesta al cerrar el PR #68). Un workflow que
   cada lunes compare los FortiGate del catálogo con un listado de fin de vida y abra un issue si
   aparece un modelo nuevo. Evita que un anuncio como el del 60F pase sin verse. Cuesta un workflow
   más; depende de un repertorio de terceros cuyo formato puede cambiar (el issue solo avisa, nunca
   escribe en `legacyData/`).
-- **«Por función» también en la hoja «Supuestos» del Excel** (propuesta al cerrar el PR #70). La
-  marca vive solo en pantalla: el Excel que se archiva con la propuesta no dice qué línea trajo cada
-  función, y quien la revisa días después no lo puede reconstruir. Una sección «Líneas por función»
-  en «Supuestos» (la hoja de los supuestos del preventa, no la del BOM que ve el cliente) con cada
-  línea marcada y el nombre de su casilla. Cuesta pasar las filas con `por` en `meta.supuestos` de las
-  cinco páginas y una sección en `matrizSupuestos` con su prueba; si se hace mal, la hoja del BOM
-  cambiaría y el cliente vería notas internas, así que la marca no entra en la hoja «BOM». Se decide
-  por el dueño.
-
 - **«Copiar informe» en el aviso del botón** (propuesta al cerrar el PR #93). Cuando el botón dice
   «El resultado no estaba al día», lo útil (página, último campo y su valor, enlace del escenario,
   hora) queda en la consola, que un preventa no suele abrir. Un botón «Copiar informe» junto al
@@ -433,7 +426,7 @@ existen los workflows de transporte. Huawei y HPE niegan además el navegador au
   enlace a su pestaña, daría la vista del vigía del lunes en el momento. Cuesta una sección del
   portal y su script, sin tocar el servidor; si se hace mal, siete corridas a la vez pegarían a los
   fabricantes (la prueba tiene que fijar que van de una en una). Se decide por el dueño.
-- (Hecha en el PR #95: las dos ventanas de Aruba con el mismo velo. Hecha en el PR #89: los estilos de la ventana del consolidado, en la hoja común. Hecha en el PR #84: la PQC de gestión y control, `pqcGestion`. Hecha en el PR #81: el tier de Aruba en el enlace. Hecha en el PR #80: el modelo de Aruba por `opcionesTarde`. Hecha en el PR #77: el modelo de AP de MikroTik en el enlace. Hecha en el PR #75: los campos del perfil, de los del enlace. Hecha en el PR #71: «Actualizar fuentes» en vivo. Hecha en el PR #67: el marcado del panel de perfiles, generado por el módulo. Hecha en el PR #66: lo que trajo cada función, resaltado en el resultado. Hecha en el PR #62: el panel de perfiles, un solo módulo. Hecha en el PR #60: la licencia FortiGuard única del par en el BOM. Hecha en el PR #59: la vigilia del despliegue. Hecha en el PR #58: del override por ciclo de vida a ampliación o renovación en un clic. Hecha en el PR #57: el transporte probado sin red. Hecha en el PR #55: los perfiles multi-sede en Juniper y Nokia 7750. Hecha en el PR #54: la foto desde la página de cada modelo, hasta donde Cisco la publica, y el transporte fuera del YAML. Hecha en el PR #50: los perfiles de otros fabricantes al día al consolidar. Hecha en el PR #46: el ciclo del perfil al día al consolidar. Hecha en el PR #45: la fuente de la PQC enlazada a `fuentes.js`. Hecha en el PR #44: el ciclo en el consolidado multi-sede. Hecha en el PR #41: el fin de venta en el Excel. Hecha en el PR #40: la foto de producto en el Excel. Hecha en la septuagesimoprimera: el «no la trae» documentado, `pqcNo`. Hecha en la sexagesimoctava: la
+- (Hecha en el PR #96: «Por función» en «Supuestos». Hecha en el PR #95: las dos ventanas de Aruba con el mismo velo. Hecha en el PR #89: los estilos de la ventana del consolidado, en la hoja común. Hecha en el PR #84: la PQC de gestión y control, `pqcGestion`. Hecha en el PR #81: el tier de Aruba en el enlace. Hecha en el PR #80: el modelo de Aruba por `opcionesTarde`. Hecha en el PR #77: el modelo de AP de MikroTik en el enlace. Hecha en el PR #75: los campos del perfil, de los del enlace. Hecha en el PR #71: «Actualizar fuentes» en vivo. Hecha en el PR #67: el marcado del panel de perfiles, generado por el módulo. Hecha en el PR #66: lo que trajo cada función, resaltado en el resultado. Hecha en el PR #62: el panel de perfiles, un solo módulo. Hecha en el PR #60: la licencia FortiGuard única del par en el BOM. Hecha en el PR #59: la vigilia del despliegue. Hecha en el PR #58: del override por ciclo de vida a ampliación o renovación en un clic. Hecha en el PR #57: el transporte probado sin red. Hecha en el PR #55: los perfiles multi-sede en Juniper y Nokia 7750. Hecha en el PR #54: la foto desde la página de cada modelo, hasta donde Cisco la publica, y el transporte fuera del YAML. Hecha en el PR #50: los perfiles de otros fabricantes al día al consolidar. Hecha en el PR #46: el ciclo del perfil al día al consolidar. Hecha en el PR #45: la fuente de la PQC enlazada a `fuentes.js`. Hecha en el PR #44: el ciclo en el consolidado multi-sede. Hecha en el PR #41: el fin de venta en el Excel. Hecha en el PR #40: la foto de producto en el Excel. Hecha en la septuagesimoprimera: el «no la trae» documentado, `pqcNo`. Hecha en la sexagesimoctava: la
   versión mínima de la PQC en la hoja «Supuestos».)
 
 ## Decisiones del dueño abiertas
