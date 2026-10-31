@@ -1649,4 +1649,12 @@ module.exports = [
   //   no se guardo en la segunda) y la ficha de Meraki de los C8111/C8121-G2-MX.
   { archivo: 'juniper-srx4100-srx4200-ds.html', tipo: 'html', para: 'JUNIPER', debeContener: 'SRX4100', urls: ['https://www.juniper.net/gb/en/products/security/srx-series/srx4100-srx4200-firewall-datasheet.html'] },
   { archivo: 'meraki-c8111-c8121-g2-mx-ficha.html', tipo: 'html', para: 'CISCO', debeContener: 'C8121', urls: ['https://documentation.meraki.com/SASE_and_SD-WAN/MX/Product_Information/Overviews_and_Datasheets/C8111-G2-MX_and_C8121-G2-MX_Data_Sheet'] },
+  // 2026-10-31, corrida de una sola vez (F2 del Secure Firewall): sus tres fichas y las imágenes
+  //   que publican (renditions de cisco.com).
+  { archivo: 'sf-fw1200-ds.html', tipo: 'html', para: 'CISCO', debeContener: '1210CE', urls: ['https://www.cisco.com/c/en/us/products/collateral/security/firewalls/secure-firewall-1200-series-ds.html'] },
+  { archivo: 'sf-fw3100-ds.html', tipo: 'html', para: 'CISCO', debeContener: '3105', urls: ['https://www.cisco.com/c/en/us/products/collateral/security/firewalls/secure-firewall-3100-series-ds.html'] },
+  { archivo: 'sf-fw4200-ds.html', tipo: 'html', para: 'CISCO', debeContener: '4215', urls: ['https://www.cisco.com/c/en/us/products/collateral/security/firewalls/secure-firewall-4200-ds.html'] },
+  { archivo: 'sf-img', tipo: 'imagenes', para: 'CISCO', urls: [],
+    descubrirPiezas: { de: ['sf-fw1200-ds.html', 'sf-fw3100-ds.html', 'sf-fw4200-ds.html'], base: 'https://www.cisco.com/',
+      dominios: ['cisco.com'], contiene: ['/renditions/secure-firewall-'], max: 20 } },
 ];
