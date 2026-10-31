@@ -1,6 +1,6 @@
 # Relevo
 
-Última actualización: 2026-10-31 · PR #96
+Última actualización: 2026-10-31 · PR #97
 
 Informe para continuar el trabajo. Lo pidió el dueño del repositorio el 2026-10-27: «de aquí en
 adelante, un informe de pendientes y mejoras para que la cuenta **servicioiptv2025@gmail.com**
@@ -33,6 +33,7 @@ está en curso no va aquí: lo dice `npm run traspasos` (protocolo en `docs/tras
 
 ## Estado al cerrar esta entrega
 
+- **2026-10-31 · PR #97**: lo que trae una función, resaltado también en la lista de materiales (fase 2.2 del plan aprobado). **Criterio que conviene conservar**: el resaltado sale de comparar la pantalla antes y después del clic, nunca de un mapa función→línea; una tabla nueva fuera de la columna de resultados entra en la foto como `#bomTabla` (`lineasBom`), y su prueba abre la pestaña después de marcar.
 - **2026-10-31 · PR #96**: «Líneas por función» en la hoja «Supuestos» del Excel (fase 2.1 del plan aprobado). **Criterio que conviene conservar**: la procedencia de una línea sale de su `por`, el mismo dato que pinta la etiqueta en pantalla; nunca un mapa aparte, y nunca en la hoja «BOM» del cliente.
 - **2026-10-31 · PR #92**: axe y el reflujo a 640 px recorren también la ficha del firewall dedicado de Cisco, sin hallazgos. **Criterio que conviene conservar**: una parte de la pantalla que solo aparece con un escenario entra en `e2e-accesibilidad.js` con su ruta y un `preparar` que espera a verla; sin la espera, axe pasaría en verde sin haberla recorrido.
 - **2026-10-31 · PR #93**: el botón «Actualizar» avisa cuando su recálculo cambia lo que se veía
@@ -387,8 +388,9 @@ existen los workflows de transporte. Huawei y HPE niegan además el navegador au
 
 ## Mejoras propuestas sin decidir
 
+- **«Por <función>» también en Juniper y Nokia 7750** (propuesta al cerrar el PR #97). Desde el PR #97 las dos resaltan la línea del BOM que aparece al marcar una función, pero ese resaltado se borra con el siguiente cambio; la etiqueta fija «por <función>» (`por-funcion.js`) y su sección en «Supuestos» (PR #96) solo existen en Cisco, Fortinet, Huawei, Aruba y MikroTik. Propuesta: cargar `por-funcion.js` en las dos y poner `por` en el mismo `if` que crea cada línea opcional (en Juniper, las de seguridad desacoplada y licencias; en Nokia, lo que traiga cada casilla). Evita que en esas dos páginas el Excel archivado no diga de qué requisito sale una línea. Cuesta revisar los `if` de dos páginas y ampliar `test/por-funcion.test.js`, que ya frena un `por` que no es una casilla; si se hace mal, una línea que va siempre quedaría atribuida a una función, que es peor que no decir nada. Se decide por el dueño.
 - **La ventana de ópticas de Aruba, accesible como la del consolidado** (propuesta al cerrar el PR #95). `#accModal` ya se ve igual que el consolidado, pero no se porta igual: no se cierra con Escape, su caja no lleva `role="dialog"`, `aria-modal` ni título enlazado, y al cerrar el foco no vuelve al botón que la abrió (solo el clic fuera o «Cerrar»). La del consolidado hace las tres cosas desde el PR #62. Evita que quien navega con teclado o lector de pantalla quede atrapado o perdido en la lista de ópticas. Cuesta unas diez líneas en `dimensionador-aruba-edgeconnect.js` y el marcado de la caja, más un caso en `e2e-accesibilidad.js` (abrir, Escape, foco de vuelta); si se hace mal, Escape podría cerrar también otra ventana abierta o el foco saltar al principio de la página. Se decide por el dueño.
-- **Plan de mejora de los dimensionadores, aprobado el 2026-10-31**: lo que queda, en orden. 2.2 lo que trajo la función también en el BOM (abajo); 3.1 sacar el cálculo de la página de Aruba (3.673 líneas) a módulos puros con prueba en Node, con `contraste` antes y después de cada PR; 3.2 lo mismo en la página de Fortinet (2.141 líneas) sin tocar el motor aprobado. La 1.1 (medir el arranque) se hizo en el PR #86.
+- **Plan de mejora de los dimensionadores, aprobado el 2026-10-31**: lo que queda, en orden. 3.1 sacar el cálculo de la página de Aruba (3.673 líneas) a módulos puros con prueba en Node, con `contraste` antes y después de cada PR; 3.2 lo mismo en la página de Fortinet (2.141 líneas) sin tocar el motor aprobado. La 1.1 (medir el arranque) se hizo en el PR #86.
 - **Vigía semanal del ciclo de vida de Fortinet** (propuesta al cerrar el PR #68). Un workflow que
   cada lunes compare los FortiGate del catálogo con un listado de fin de vida y abra un issue si
   aparece un modelo nuevo. Evita que un anuncio como el del 60F pase sin verse. Cuesta un workflow
@@ -408,17 +410,6 @@ existen los workflows de transporte. Huawei y HPE niegan además el navegador au
   Evita que un despliegue atascado se avise horas tarde. Cuesta una tarea programada por hora y su
   aprobación; si se hace mal, solo duplica corridas, que el diseño de un aviso por commit ya tolera.
   Se decide por el dueño.
-- **Lo que trajo la función, también en la lista de materiales** (propuesta al cerrar el PR #66; en
-  parte cubierta por el PR #70, que marca de forma fija la procedencia de esas líneas en cinco páginas).
-  La comparación mira la columna de resultados de la rejilla donde está la casilla, y en las siete
-  páginas con BOM la lista de materiales va en su propia pestaña: la línea que una función añade al
-  BOM (el PIM del respaldo celular, la segunda fuente) no se resalta allí. Propuesta: tomar también
-  la foto de la tabla del BOM (`#bomTabla`) al pulsar la casilla y marcar sus filas nuevas con la
-  misma regla, y que el aviso del panel diga «y N líneas en la lista de materiales». Evita que quien
-  revisa el BOM no sepa de qué requisito sale una línea. Cuesta un segundo origen de la foto en
-  `funciones-activas.js` y su caso en `e2e-funciones-activas.js`; si se hace mal, una pestaña que se
-  repinta al abrirse (y no al recalcular) se compararía con una foto vieja y marcaría filas de más:
-  la prueba tiene que abrir la pestaña después de marcar. Se decide por el dueño.
 - **Comprobar las fuentes de los siete fabricantes desde el portal** (propuesta al cerrar el PR #71).
   Hoy «Actualizar fuentes» va pestaña por pestaña: saber si algún documento de cualquier fabricante
   cambió pide abrir siete páginas. Un panel en el portal que llame a la misma ruta para los siete (en
@@ -426,7 +417,7 @@ existen los workflows de transporte. Huawei y HPE niegan además el navegador au
   enlace a su pestaña, daría la vista del vigía del lunes en el momento. Cuesta una sección del
   portal y su script, sin tocar el servidor; si se hace mal, siete corridas a la vez pegarían a los
   fabricantes (la prueba tiene que fijar que van de una en una). Se decide por el dueño.
-- (Hecha en el PR #96: «Por función» en «Supuestos». Hecha en el PR #95: las dos ventanas de Aruba con el mismo velo. Hecha en el PR #89: los estilos de la ventana del consolidado, en la hoja común. Hecha en el PR #84: la PQC de gestión y control, `pqcGestion`. Hecha en el PR #81: el tier de Aruba en el enlace. Hecha en el PR #80: el modelo de Aruba por `opcionesTarde`. Hecha en el PR #77: el modelo de AP de MikroTik en el enlace. Hecha en el PR #75: los campos del perfil, de los del enlace. Hecha en el PR #71: «Actualizar fuentes» en vivo. Hecha en el PR #67: el marcado del panel de perfiles, generado por el módulo. Hecha en el PR #66: lo que trajo cada función, resaltado en el resultado. Hecha en el PR #62: el panel de perfiles, un solo módulo. Hecha en el PR #60: la licencia FortiGuard única del par en el BOM. Hecha en el PR #59: la vigilia del despliegue. Hecha en el PR #58: del override por ciclo de vida a ampliación o renovación en un clic. Hecha en el PR #57: el transporte probado sin red. Hecha en el PR #55: los perfiles multi-sede en Juniper y Nokia 7750. Hecha en el PR #54: la foto desde la página de cada modelo, hasta donde Cisco la publica, y el transporte fuera del YAML. Hecha en el PR #50: los perfiles de otros fabricantes al día al consolidar. Hecha en el PR #46: el ciclo del perfil al día al consolidar. Hecha en el PR #45: la fuente de la PQC enlazada a `fuentes.js`. Hecha en el PR #44: el ciclo en el consolidado multi-sede. Hecha en el PR #41: el fin de venta en el Excel. Hecha en el PR #40: la foto de producto en el Excel. Hecha en la septuagesimoprimera: el «no la trae» documentado, `pqcNo`. Hecha en la sexagesimoctava: la
+- (Hecha en el PR #97: lo que trajo la función, también en la lista de materiales. Hecha en el PR #96: «Por función» en «Supuestos». Hecha en el PR #95: las dos ventanas de Aruba con el mismo velo. Hecha en el PR #89: los estilos de la ventana del consolidado, en la hoja común. Hecha en el PR #84: la PQC de gestión y control, `pqcGestion`. Hecha en el PR #81: el tier de Aruba en el enlace. Hecha en el PR #80: el modelo de Aruba por `opcionesTarde`. Hecha en el PR #77: el modelo de AP de MikroTik en el enlace. Hecha en el PR #75: los campos del perfil, de los del enlace. Hecha en el PR #71: «Actualizar fuentes» en vivo. Hecha en el PR #67: el marcado del panel de perfiles, generado por el módulo. Hecha en el PR #66: lo que trajo cada función, resaltado en el resultado. Hecha en el PR #62: el panel de perfiles, un solo módulo. Hecha en el PR #60: la licencia FortiGuard única del par en el BOM. Hecha en el PR #59: la vigilia del despliegue. Hecha en el PR #58: del override por ciclo de vida a ampliación o renovación en un clic. Hecha en el PR #57: el transporte probado sin red. Hecha en el PR #55: los perfiles multi-sede en Juniper y Nokia 7750. Hecha en el PR #54: la foto desde la página de cada modelo, hasta donde Cisco la publica, y el transporte fuera del YAML. Hecha en el PR #50: los perfiles de otros fabricantes al día al consolidar. Hecha en el PR #46: el ciclo del perfil al día al consolidar. Hecha en el PR #45: la fuente de la PQC enlazada a `fuentes.js`. Hecha en el PR #44: el ciclo en el consolidado multi-sede. Hecha en el PR #41: el fin de venta en el Excel. Hecha en el PR #40: la foto de producto en el Excel. Hecha en la septuagesimoprimera: el «no la trae» documentado, `pqcNo`. Hecha en la sexagesimoctava: la
   versión mínima de la PQC en la hoja «Supuestos».)
 
 ## Decisiones del dueño abiertas
