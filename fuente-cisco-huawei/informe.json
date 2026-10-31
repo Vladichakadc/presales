@@ -1,0 +1,59 @@
+[
+  {
+    "archivo": "sf-fw1200-ds.html",
+    "para": "CISCO",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://www.cisco.com/c/en/us/products/collateral/security/firewalls/secure-firewall-1200-series-ds.html",
+        "status": 200,
+        "bytes": 229719,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "sf-fw3100-ds.html",
+    "para": "CISCO",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://www.cisco.com/c/en/us/products/collateral/security/firewalls/secure-firewall-3100-series-ds.html",
+        "status": 200,
+        "bytes": 254646,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "sf-fw4200-ds.html",
+    "para": "CISCO",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://www.cisco.com/c/en/us/products/collateral/security/firewalls/secure-firewall-4200-ds.html",
+        "status": 200,
+        "bytes": 194919,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "sf-img",
+    "para": "CISCO",
+    "guardado": false,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "sf-fw1200-ds.html, sf-fw3100-ds.html, sf-fw4200-ds.html",
+        "error": "no se encontro ninguna pieza"
+      }
+    ]
+  }
+]
