@@ -939,8 +939,11 @@ $('memoriaBtn').addEventListener('click', () => {
    marcas. Cargar es de Cisco (los campos son ids de ESTA página); consolidar no. */
 // Lo que viaja en el enlace (ESTADO.vincular). Los campos del perfil salen de esta lista
 // (2026-10-30): se declara solo lo que el perfil no guarda y lo que solo guarda él.
-const CAMPOS_ENLACE = [...ENTRADAS, 'critSeg', 'dirSeg', 'modeSeg', 'qty', 'termYears', 'licGestion', 'licNivel', 'licVpns', 'secUrl', 'secMalware', ...CAMPOS_SA, 'optQty', 'verdict-sel'];
+const CAMPOS_ENLACE = [...ENTRADAS, 'critSeg', 'dirSeg', 'modeSeg', 'qty', 'termYears', 'licGestion', 'licNivel', 'licVpns', 'secUrl', 'secMalware', ...CAMPOS_SA, 'optQty', 'verdict-sel', 'fichaFw-sel'];
 // `verdict-sel`: el equipo lo guarda el perfil aparte, en `modelo`.
+// `fichaFw-sel` (2026-10-31): el Secure Firewall elegido a mano en su ficha. Lo pinta ficha.js después
+// del primer render, como `verdict-sel`: ESTADO lo repone al aparecer y dispara su `change`, que fija
+// `FW_ELEGIDO` por `alCambiar` (el recomendado deja `FW_ELEGIDO` en null, sigue al escenario).
 const PERFIL_SIN = ['verdict-sel'];
 const PERFIL_EXTRA = [];
 const SEGS_PERFIL = ['modeSeg', 'dirSeg', 'critSeg'];
@@ -950,6 +953,8 @@ function capturarCampos(){
   const v = {};
   CAMPOS_PERFIL.forEach(id => { const n = $(id); if(n) v[id] = n.type === 'checkbox' ? n.checked : n.value; });
   SEGS_PERFIL.forEach(id => { const a = $(id).querySelector('[aria-pressed="true"]'); v[id] = a ? a.dataset.v : null; });
+  // El perfil guarda el firewall solo si se eligió a mano: el recomendado sigue al escenario.
+  v['fichaFw-sel'] = FW_ELEGIDO || null;
   return v;
 }
 function aplicarCampos(v){
@@ -960,6 +965,9 @@ function aplicarCampos(v){
   });
   // Los grupos .seg guardan su valor en una variable de la página: solo su manejador la actualiza.
   SEGS_PERFIL.forEach(id => { const b = v[id] != null && $(id).querySelector(`[data-v="${v[id]}"]`); if(b) b.click(); });
+  // El desplegable del firewall se repinta en el render: lo que manda es `FW_ELEGIDO`, y firewallDe lo
+  // descarta si el firewall ya no cumple el escenario del perfil.
+  FW_ELEGIDO = v['fichaFw-sel'] || null;
   render();
 }
 // Guardar, cargar, consolidar y la ventana: el módulo común de bom.js (2026-10-28).

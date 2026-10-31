@@ -73,6 +73,28 @@ const texto = (page, sel) => page.evaluate((s) => {
     const aviso = await texto(page, '#avisosMotor');
     t.ok(/elegido a mano en su ficha/.test(aviso), 'el aviso del firewall dice que se eligió a mano');
 
+    // El enlace lleva la elección (2026-10-31): `fichaFw-sel` viaja en CAMPOS_ENLACE y ESTADO lo repone
+    // cuando ficha.js pinta el desplegable. Se abre el enlace en otra pestaña, sin almacenamiento compartido
+    // que lo disimule (un contexto nuevo).
+    await page.waitForFunction((v) => new globalThis.URL(globalThis.location.href).searchParams.get('fichaFw-sel') === v, otro, { timeout: 5000 }).catch(() => {});
+    const enlace2 = page.url();
+    t.ok(new URL(enlace2).searchParams.get('fichaFw-sel') === otro, `el enlace lleva el firewall elegido (${otro})`);
+    const ctx2 = await browser.newContext();
+    const otra = await ctx2.newPage();
+    otra.on('pageerror', (e) => errores.push(e.message));
+    await abrirSesion(otra);
+    await trasNavegar(otra, () => otra.goto(enlace2, { waitUntil: 'domcontentloaded' }), { selector: '#fichaFw-sel' });
+    await asentar(otra);
+    await otra.waitForFunction((v) => {
+      const s = globalThis.document.getElementById('fichaFw-sel');
+      return s && s.value === v;
+    }, otro, { timeout: 8000 }).catch(() => {});
+    const repuesto = await otra.evaluate(() => globalThis.document.getElementById('fichaFw-sel').value);
+    t.ok(repuesto === otro, `al abrir el enlace, la ficha repone el ${otro} (está ${repuesto})`);
+    const bomOtra = await texto(otra, '#bomTabla');
+    t.ok(bomOtra.includes(`${otro} — firewall dedicado`), 'y su BOM lleva ese firewall');
+    await ctx2.close();
+
     const volver = await page.$('#fichaFw .ficha-volver');
     t.ok(!!volver, 'la ficha ofrece «Volver al recomendado»');
     if (volver) {
