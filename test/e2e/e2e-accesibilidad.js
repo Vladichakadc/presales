@@ -46,6 +46,9 @@ const PANTALLAS = [
   { n: 'Aruba con escenario · lista de materiales', ruta: '/dimensionador-aruba-edgeconnect.html?users=120&perUser=2&wanLinksData='
     + encodeURIComponent(JSON.stringify({ v: 2, wanLinks: [{ id: 1, tipo: 'DIA', medio: 'RJ45', down: 500, up: 500, simetrico: true }] })), pestana: 'bom' },
   { n: 'Cisco con escenario', ruta: '/dimensionador-cisco-catalyst8k.html?bw=800' },
+  // La ficha del Secure Firewall dedicado (2026-10-31, PR #88): solo existe con «Firewall dedicado aparte»
+  // y salida local, así que la ruta de arriba no la ve: desplegable, pestañas de figuras, lupa y enlaces.
+  { n: 'Cisco con firewall dedicado', ruta: '/dimensionador-cisco-catalyst8k.html?bw=1000&diaPct=60&seguridad=desacoplada' },
   // Starlink no tiene pestañas: el cálculo, la arquitectura y la lista de materiales se ven a la
   // vez. Lo que la vista inicial no enseña son las tarjetas de carga desplegadas (cada una abre
   // sus campos al activarla) y el diálogo de metodología, así que la segunda entrada los abre.
