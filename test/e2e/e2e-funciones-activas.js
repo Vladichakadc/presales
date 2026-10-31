@@ -129,37 +129,40 @@ const estado = (page, id) => page.evaluate((idCasilla) => {
       `${pag}: al desmarcarla no queda nada resaltado como si lo hubiera traído`);
   }
   // La línea que una función añade a la lista de materiales, resaltada en su pestaña (fase 2.2,
-  // 2026-10-31): en MikroTik, «Capacitación» trae su línea (`data-por="chkTraining"`).
-  await trasNavegar(page, () => page.goto(`${BASE}/dimensionador-mikrotik-routeros.html`, { waitUntil: 'domcontentloaded' }), { selector: '#bw' });
+  // 2026-10-31). En Fortinet, «FortiConverter» está en la pestaña de cálculo y su línea del BOM
+  // (`data-por="chkConverter"`) vive en la pestaña «BOM», fuera de la columna de resultados: es el
+  // caso que antes no se resaltaba. (Una casilla de la propia pestaña del BOM, como «Capacitación»
+  // de MikroTik, ya tenía la tabla en su columna de resultados.)
+  await trasNavegar(page, () => page.goto(`${BASE}/dimensionador-fortinet-fortigate.html`, { waitUntil: 'domcontentloaded' }),
+    { selector: '#wanBuilderFilas [data-campo=down]' });
   await asentar(page);
-  await page.$eval('#bw', (el) => { el.value = '200'; el.dispatchEvent(new globalThis.Event('input', { bubbles: true })); el.dispatchEvent(new globalThis.Event('change', { bubbles: true })); });
+  await page.fill('#wanBuilderFilas [data-campo=down] >> nth=0', '300');
+  await page.dispatchEvent('#wanBuilderFilas [data-campo=down] >> nth=0', 'input');
   await asentar(page);
-  if (await page.$eval('#chkTraining', (cb) => cb.checked)) { await page.click('#chkTraining'); await asentar(page); }
-  await page.click('#chkTraining');
+  await page.selectOption('#licBundle', 'utp');
+  await asentar(page);
+  if (await page.$eval('#chkConverter', (cb) => cb.checked)) { await page.click('#chkConverter'); await asentar(page); }
+  await page.click('#chkConverter');
   const vino = await page.waitForSelector('.funciones-activas .fa-cambio', { timeout: 8000 }).then(() => true, () => false);
   const b = vino ? await page.evaluate(() => {
     const d = globalThis.document;
-    const fila = d.querySelector('#bomTabla tr[data-por~="chkTraining"]');
-    return { msg: d.querySelector('.funciones-activas .fa-cambio').textContent.replace(/\s+/g, ' '), marcada: !!(fila && fila.classList.contains('fa-nuevo')),
-      titulo: fila ? fila.title : '' };
+    const fila = d.querySelector('#bomTabla tr[data-por~="chkConverter"]');
+    const panel = [...d.querySelectorAll('.funciones-activas .fa-cambio')].find((p) => p.getClientRects().length) || d.querySelector('.funciones-activas .fa-cambio');
+    return { msg: panel.textContent.replace(/\s+/g, ' '), marcada: !!(fila && fila.classList.contains('fa-nuevo')), titulo: fila ? fila.title : '',
+      bomOculta: !!(fila && !fila.getClientRects().length) };
   }) : null;
   t.ok(b && b.marcada && /^Apareció al activar «.+»$/.test(b.titulo),
-    `MikroTik: la línea de la capacitación se resalta en la lista de materiales (${b ? `marcada=${b.marcada}, «${b.titulo}»` : 'sin aviso del panel'})`);
-  t.ok(b && /1 línea de la lista de materiales/.test(b.msg), `MikroTik: el panel la cuenta como línea del BOM («${b ? b.msg.slice(0, 140) : ''}»)`);
-  if (b && b.marcada) {
-    await page.click('.funciones-activas .fa-ver');
-    await asentar(page);
-    const v = await page.evaluate(() => {
-      const d = globalThis.document;
-      const a = d.activeElement;
-      return { foco: !!(a && a.matches('#bomTabla tr.fa-nuevo')), visible: !!(a && a.getClientRects().length) };
-    });
-    // Si lo resaltado del resultado se ve, «Ver» va primero a eso; si no, abre la pestaña del BOM.
-    t.ok(v.visible, `MikroTik: «Ver» lleva a algo resaltado y visible (${JSON.stringify(v)})`);
-  }
-  await page.click('#chkTraining');
+    `Fortinet: la línea de FortiConverter se resalta en la lista de materiales con su pestaña cerrada (${b ? `marcada=${b.marcada}, oculta=${b.bomOculta}, «${b.titulo}»` : 'sin aviso del panel'})`);
+  t.ok(b && /\d+ líneas? de la lista de materiales/.test(b.msg), `Fortinet: el panel la cuenta como línea del BOM («${b ? b.msg.slice(0, 160) : ''}»)`);
+  await page.click('[data-tab=bom]');
   await asentar(page);
-  t.ok(await page.evaluate(() => !globalThis.document.querySelector('#bomTabla .fa-nuevo')), 'MikroTik: al desmarcarla, nada queda resaltado en el BOM');
+  t.ok(await page.evaluate(() => { const f = globalThis.document.querySelector('#bomTabla tr[data-por~="chkConverter"]'); return !!(f && f.classList.contains('fa-nuevo') && f.getClientRects().length); }),
+    'Fortinet: al abrir la pestaña del BOM, la línea sigue resaltada');
+  await page.click('[data-tab=calc]');
+  await asentar(page);
+  await page.click('#chkConverter');
+  await asentar(page);
+  t.ok(await page.evaluate(() => !globalThis.document.querySelector('#bomTabla .fa-nuevo')), 'Fortinet: al desmarcarla, nada queda resaltado en el BOM');
 
   t.ok(conCambios > 0, `al menos en una página la función activada cambia algo visible del resultado (${conCambios} de ${PAGINAS.length})`);
 
