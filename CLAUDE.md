@@ -625,7 +625,10 @@ Módulos compartidos:
   de su capa (`SECURE_FIREWALL`, `firewallDedicado`: FW + AVC, con IPS o TLS, nunca otra) y su
   licencia TMC; desde el 2026-10-31 (decisión del dueño, «ficha completa») los 14 están también en el
   portal, generados de `SECURE_FIREWALL` con el hardware de sus fichas y sin `fwd`, y la calculadora los
-  lee por IPsec, FW + AVC + IPS y TLS (`test/secure-firewall-catalogo.test.js`). La cifra de Threat Protection ya incluye URLF y AMP. En SD-WAN un modelo sin
+  lee por IPsec, FW + AVC + IPS y TLS (`test/secure-firewall-catalogo.test.js`); con «Firewall dedicado
+  aparte», su ficha va debajo de la del router (`#fichaFw`, `pintarFichaFw`, con FICHA y sus figuras de
+  `cisco-vistas-equipos.json`): elegir otro cambia el BOM, y su ciclo de vida se declara sin respaldo
+  (`CICLO_FW`), nunca el de los routers (`e2e-secure-firewall-ficha.js`). La cifra de Threat Protection ya incluye URLF y AMP. En SD-WAN un modelo sin
   cifra propia cae a IPsec y la lista lo marca. Licencias G2 por `clase` (S…2XL, guía de pedido) y
   segunda fuente `psu2`; los LIC-SEC no se proponen donde la guía los niega (`secAddon: false`), y en
   autónomo piden Routing Advantage y LIC-R-OP-SWM. **DNA** (`LICENCIAS_DNA`, FAQ de DNA y guía de

@@ -1,6 +1,6 @@
 # Relevo
 
-Última actualización: 2026-10-31 · PR #87
+Última actualización: 2026-10-31 · PR #88
 
 Informe para continuar el trabajo. Lo pidió el dueño del repositorio el 2026-10-27: «de aquí en
 adelante, un informe de pendientes y mejoras para que la cuenta **servicioiptv2025@gmail.com**
@@ -33,7 +33,8 @@ está en curso no va aquí: lo dice `npm run traspasos` (protocolo en `docs/tras
 
 ## Estado al cerrar esta entrega
 
-- **2026-10-31 · PR #87**: **el Cisco Secure Firewall entra al catálogo** (decisión del dueño: «Sí, ficha completa»). F1 hecha: los 14 modelos en el portal con el hardware de sus fichas, generados de `SECURE_FIREWALL`, y la calculadora los dimensiona con IPsec, FW + AVC + IPS y TLS. **Faltan F2** (sus figuras oficiales, por Actions) **y F3** (su ficha en el dimensionador Cisco); sin precio. **Criterio que conviene conservar**: una sola copia de cada cifra —el portal se genera de `SECURE_FIREWALL`— y sin `fwd`, porque sus fichas no dan un firewall sin inspección.
+- **2026-10-31 · PR #88**: **el Secure Firewall, con ficha completa** (F2 y F3). Sus figuras oficiales en el catálogo de figuras de Cisco y, con «Firewall dedicado aparte», su ficha debajo de la del router: cifras con su base, hardware, alimentación, figuras y enlace a su ficha oficial; elegir otro cambia el BOM. **Queda**: sin precio (no hay lista oficial), sin ciclo de vida respaldado, y el firewall elegido a mano no viaja en el enlace. **Criterio que conviene conservar**: una ficha secundaria con FICHA declara su ciclo de vida (`cicloVida`) en vez de heredar el del fabricante, que respalda a otros equipos.
+- **2026-10-31 · PR #87**: **el Cisco Secure Firewall entra al catálogo** (decisión del dueño: «Sí, ficha completa»). F1 hecha: los 14 modelos en el portal con el hardware de sus fichas, generados de `SECURE_FIREWALL`, y la calculadora los dimensiona con IPsec, FW + AVC + IPS y TLS. F2 y F3, en el PR #88; sin precio. **Criterio que conviene conservar**: una sola copia de cada cifra —el portal se genera de `SECURE_FIREWALL`— y sin `fwd`, porque sus fichas no dan un firewall sin inspección.
 - **2026-10-31 · PR #86**: la batería `e2e-arranque.js` comprueba que los nueve dimensionadores abren
   al día (vacía, desde un enlace compartido y recargada): 27 de 27 en CI. **Criterio que conviene
   conservar**: una página nueva entra en `PAGINAS` de `test/e2e/resultados.js` y queda en las dos
@@ -335,7 +336,7 @@ traspaso (el #37, de otra sesión, se fusionó mientras se cerraba esta).
 | PQC de los Meraki MX y G2-MX | Búsqueda de PPK / RFC 8784 en Meraki y, el 2026-10-30, su página «IPsec VPN Configuration Settings» | Solo la norma y sus borradores en el IETF; el roadmap quantum-safe de Cisco (ago-2026) cita el TLS del Dashboard; la página de VPN da IKEv1/IKEv2 y los grupos DH 1, 2, 5, 14, 15 y 21, sin PPK ni ML-KEM | Lo cierra una página de Meraki que dé PPK o ML-KEM en Auto VPN o en la VPN de terceros |
 | PQC de los Nokia 7250 IXR y 7220 IXR | El 2026-10-30, por `traer-cisco-huawei.yml` (corrida 41050590900, rama `fuente/pqc-nokia-2026-10-30`): la nota de aplicación «ANYsec quantum-safe network cryptography» y las fichas R26 de las 7250 IXR-X, IXR-R, IXR-6e/10e/18e (edición SR Linux) y 7220 IXR-D | La nota ofrece ANYsec quantum-safe en «7250 IXR series» sin nombrar modelos; las fichas no lo llaman quantum-safe (IXR-R y 6e/10e dan MACsec; la IXR-X no lo nombra); la 7220 IXR-D no nombra MACsec | Lo cierra una ficha o guía de Nokia que lo diga |
 | PQC y ciclo de vida de Huawei | El 2026-10-30, por transporte (corrida 41060887530, rama `fuente/pendientes-2-2026-10-30`): las fichas oficiales de AR6000 R26C00, AR8000 R25C10, AR6710-L R26C00, AR6710-H R25C10 y AR6700V-L R26C00 | Solo la AR6710-L R26C00 (sep-2026) nombra PQC: «PQC is supported for SSL, SSH, and SD-WAN DTLS protocols», es decir, gestión y canal de control del SD-WAN, no el IPsec que lleva el tráfico, y sin algoritmo ni versión. No satisface «Exigir PQC» | La PQC del IPsec la cierra un documento que la dé para el túnel de datos; el ciclo de vida, la cuenta Huawei del dueño (Info-Finder pide sesión) |
-| Datos sueltos de Cisco (ficha del Secure Firewall dedicado, precio de Secure Access, velocidad mínima del mGig de los C8111/C8121-G2-MX, módulos del ASR, breakout 4x10G) | Sin documento nuevo | — | Cada uno, su documento por el transporte; el precio de Secure Access, CCW (sin acceso desde la sesión) |
+| Datos sueltos de Cisco (precio del Secure Firewall, precio de Secure Access, velocidad mínima del mGig de los C8111/C8121-G2-MX, módulos del ASR, breakout 4x10G) | Sin documento nuevo | — | Cada uno, su documento por el transporte; el precio de Secure Access, CCW (sin acceso desde la sesión) |
 
 
 - **Criptografía post-cuántica sin documento**: Huawei (pide la cuenta); de los gateways AOS de
@@ -348,7 +349,7 @@ traspaso (el #37, de otra sesión, se fusionó mientras se cerraba esta).
   consta» y el requisito los aparta con ese motivo. El ASR 1001-X no es un hueco: su boletín lo deja en la
   17.9, anterior a la PPK, y la ficha dice «no la trae» (`pqcNo`). Si un documento oficial dice que
   otro equipo no la trae, entra igual: `pqcNo` con su fuente en `fuentes.js` (`campos: ['pqcNo']`).
-- **Cisco**: las figuras y la ficha del Secure Firewall dedicado (F2 y F3 del PR #87; entra al portal por decisión del dueño), precio de Secure
+- **Cisco**: precio del Secure Firewall (sin lista oficial) y su elección a mano en el enlace, precio de Secure
   Access por usuario (CCW), velocidad mínima de los mGig de los C8111/C8121-G2-MX, 10GBASE-T en
   SFP+ fuera de la serie 8300 y de las 8100 VAI/VAP, módulos del ASR (fuera de venta), breakout
   4x10G (pide su cable u óptica en el catálogo).
