@@ -1069,6 +1069,17 @@
     return L.length === 1 ? ['Documento oficial', a(L[0], 'abrir el documento')]
       : ['Documentos oficiales', L.map((u, i) => a(u, `documento ${i + 1} de ${L.length}`)).join(' · ')];
   }
+  // PQC de gestión y control (`pqcGestion`, 2026-10-30): un documento la da en SSL, SSH o el canal de
+  // control del SD-WAN, no en el túnel que lleva el tráfico. Se dice en su fila, aparte del «Soporte»,
+  // y «Exigir PQC» (pqc.js) no la lee: un canal que no lleva el tráfico no cumple el requisito.
+  function filaGestion(m) {
+    const g = m && m.pqcGestion;
+    if (!g || !g.donde || !g.fuente) return [];
+    const filas = [['Gestión y control', esc(g.donde) + (g.literal ? ' («' + esc(g.literal) + '»)' : '') + '; no es el túnel de datos y no cuenta para «Exigir PQC»']];
+    const doc = filaDocumentos(g.urls);
+    if (doc) filas.push([doc[0] + ' (gestión)', doc[1]]);
+    return filas;
+  }
   function seccionPqc(m) {
     const titulo = 'Criptografía post-cuántica (PQC)';
     const p = m && m.pqc;
@@ -1081,8 +1092,12 @@
       return { titulo, filas, nota: 'Un documento oficial dice que este equipo no la trae. Fuente: ' + esc(no.fuente) + '.' };
     }
     if (!p || !PQC_TIPO[p.tipo]) {
-      return { titulo, filas: [['Soporte', '<span class="warn">no consta</span>']],
-        nota: 'Ningún documento oficial del catálogo dice que este equipo la traiga; eso no prueba que no la tenga. Confirmarlo con el fabricante antes de comprometerlo en la propuesta.' };
+      const gestion = filaGestion(m);
+      return { titulo, filas: [['Soporte', '<span class="warn">no consta</span>'], ...gestion],
+        nota: (gestion.length
+          ? 'Ningún documento oficial del catálogo dice que este equipo la traiga en el túnel de datos; su ficha solo la da en gestión y control (fuente: ' + esc(m.pqcGestion.fuente) + '). '
+          : 'Ningún documento oficial del catálogo dice que este equipo la traiga; ')
+          + 'eso no prueba que no la tenga. Confirmarlo con el fabricante antes de comprometerlo en la propuesta.' };
     }
     const filas = [
       ['Soporte', esc(PQC_TIPO[p.tipo])],
@@ -1093,6 +1108,7 @@
     if (p.alcance) filas.push(['Alcance', esc(p.alcance)]);
     const doc = filaDocumentos(p.urls);
     if (doc) filas.push(doc);
+    filas.push(...filaGestion(m));
     return { titulo, filas, nota: 'Fuente: ' + esc(p.fuente) + '.' };
   }
 

@@ -373,7 +373,9 @@ Módulos compartidos:
   documento, «no consta»; **cada `pqc`/`pqcNo` cita su documento por la URL de su entrada en
   `fuentes.js` (`urls`)**, la prueba exige que esa entrada respalde el campo y declare al equipo, y
   la ficha («Documento oficial», solo `https`) y «Supuestos» la enlazan; el Comparador del portal lo
-  da en una línea), licenciamiento, software,
+  da en una línea; **la PQC de gestión y control** —`pqcGestion`, 2026-10-30: los AR6710-L la dan en SSL,
+  SSH y el DTLS del SD-WAN— va en su fila «Gestión y control» y en el Comparador como «Solo en …», nunca
+  es `pqc` y «Exigir PQC» no la lee, `test/pqc-gestion.test.js`), licenciamiento, software,
   soporte, referencias de pedido (bajo demanda por modelo) y figuras con su página y rótulo literal
   (frontal, trasera y, opt-in `foto` + `fotoFuente`, una tercera pestaña con la foto de producto a
   color y su propio pie; Juniper y los Cisco que la tienen en su ficha —Catalyst 8500, ISR, ASR, siete
