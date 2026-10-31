@@ -1,6 +1,6 @@
 # Relevo
 
-Última actualización: 2026-10-31 · PR #93
+Última actualización: 2026-10-31 · PR #94
 
 Informe para continuar el trabajo. Lo pidió el dueño del repositorio el 2026-10-27: «de aquí en
 adelante, un informe de pendientes y mejoras para que la cuenta **servicioiptv2025@gmail.com**
@@ -33,6 +33,7 @@ está en curso no va aquí: lo dice `npm run traspasos` (protocolo en `docs/tras
 
 ## Estado al cerrar esta entrega
 
+- **2026-10-31 · PR #94**: la sesión corre en Sonnet 5.5 con Opus 5.5 de asesor, y hay tres subagentes Haiku 5.5 de solo lectura (`search`, `grep`, `docs`) en `.claude/agents/`, versionados. **Criterio que conviene conservar**: el «solo lectura» de un subagente lo impone su `disallowedTools`, no su prompt; y quien quiera otro modelo lo pone en su `settings.local.json`, no en el `settings.json` del proyecto.
 - **2026-10-31 · PR #93**: el botón «Actualizar» avisa cuando su recálculo cambia lo que se veía
   («El resultado no estaba al día…») y deja en la consola el último campo tocado y el enlace. Es la
   vía para cazar el desfase que el dueño vio y ninguna batería reproduce: **si alguien ve ese aviso,
@@ -385,6 +386,7 @@ existen los workflows de transporte. Huawei y HPE niegan además el navegador au
 
 ## Mejoras propuestas sin decidir
 
+- **Una prueba que frene un subagente que deja de ser de solo lectura** (propuesta al cerrar el PR #94). `test/claude-agentes.test.js` leería el frontmatter de cada `.claude/agents/*.md` y exigiría `model`, que `disallowedTools` lleve Write, Edit, NotebookEdit y Bash, y que `tools` no los nombre; y que `advisorModel` en `.claude/settings.json` sea de la misma gama o superior a `model` (la API rechaza la pareja en la primera petición, no al guardar). Evita que un agente de búsqueda acabe con permiso de escribir sin que nadie lo vea. Cuesta una prueba de unas 40 líneas; si se hace mal, frena un agente nuevo que sí debe escribir (se declararía en una lista de excepciones con su motivo).
 - **La ventana de ópticas de Aruba, accesible como la del consolidado** (propuesta al cerrar el PR #95). `#accModal` ya se ve igual que el consolidado, pero no se porta igual: no se cierra con Escape, su caja no lleva `role="dialog"`, `aria-modal` ni título enlazado, y al cerrar el foco no vuelve al botón que la abrió (solo el clic fuera o «Cerrar»). La del consolidado hace las tres cosas desde el PR #62. Evita que quien navega con teclado o lector de pantalla quede atrapado o perdido en la lista de ópticas. Cuesta unas diez líneas en `dimensionador-aruba-edgeconnect.js` y el marcado de la caja, más un caso en `e2e-accesibilidad.js` (abrir, Escape, foco de vuelta); si se hace mal, Escape podría cerrar también otra ventana abierta o el foco saltar al principio de la página. Se decide por el dueño.
 - **Plan de mejora de los dimensionadores, aprobado el 2026-10-31**: lo que queda, en orden. 2.1 «Líneas por función» en la hoja «Supuestos» (abajo, «Por función» en el Excel); 2.2 lo que trajo la función también en el BOM (abajo); 3.1 sacar el cálculo de la página de Aruba (3.673 líneas) a módulos puros con prueba en Node, con `contraste` antes y después de cada PR; 3.2 lo mismo en la página de Fortinet (2.141 líneas) sin tocar el motor aprobado. La 1.1 (medir el arranque) se hizo en el PR #86.
 - **Vigía semanal del ciclo de vida de Fortinet** (propuesta al cerrar el PR #68). Un workflow que
@@ -438,6 +440,7 @@ existen los workflows de transporte. Huawei y HPE niegan además el navegador au
 
 ## Decisiones del dueño abiertas
 
+- **Enrutar micro-forks con Jev** (punto 4 del encargo del PR #94: «Enruta forks determinísticos rápidos —elección de herramienta, selección de ruta, reintentos— a través de JEV»). Falta saber cómo se accede a Jev (clave de TypeSafe u OpenRouter) y el alcance: los routers de Jev que existen eligen el modelo por turno y romperían Sonnet fijo con asesor; lo compatible es un hook que decida reintentar o parar tras un fallo y valide la llamada que propone la sesión.
 - La protección de `main` (aprobada, falta configurarla) y el aviso de Railway (ver arriba).
-- Nada más: las dos de la IA y la de las variantes fuera del catálogo se tomaron el 2026-10-27 por
+- Tomadas: las dos de la IA y la de las variantes fuera del catálogo se tomaron el 2026-10-27 por
   la opción recomendada (ver *Decisiones* en `PENDIENTES.md`).
