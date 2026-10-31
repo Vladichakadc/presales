@@ -163,6 +163,8 @@
         const p = d.pqc;
         // Un «no» con su documento (`pqcNo`) es un dato, no un hueco.
         if (!p && d.pqcNo && d.pqcNo.fuente) return `No — ${d.pqcNo.corto || d.pqcNo.motivo}`;
+        // Solo en gestión y control (`pqcGestion`, 2026-10-30): un dato, dicho como tal; no es el túnel.
+        if ((!p || !PQC_CORTO[p.tipo]) && d.pqcGestion && d.pqcGestion.fuente) return `Solo en ${d.pqcGestion.donde}; no en el túnel de datos`;
         if (!p || !PQC_CORTO[p.tipo]) return null;
         return PQC_CORTO[p.tipo] + (p.desde ? ` — desde ${p.desde.split(' (')[0]}` : '');
       } },

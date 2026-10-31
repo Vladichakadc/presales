@@ -796,4 +796,19 @@ for (const m of MODELS) {
 }
 
 
+// PQC DE GESTIÓN Y CONTROL (2026-10-30, mejora aprobada por el dueño: «ejecuta pendientes y mejora
+// propuesta»). La ficha AR6710-L R26C00 (sep-2026; traída por traer-cisco-huawei.yml, rama
+// fuente/pendientes-2-2026-10-30, con la misma huella que verificó el vigía) dice, para toda la serie:
+// «PQC is supported for SSL, SSH, and SD-WAN DTLS protocols». Es la gestión (SSL, SSH) y el canal de
+// control del SD-WAN (DTLS), no el IPsec que lleva el tráfico, y no da algoritmo ni versión. Por eso NO
+// es `pqc`: «Exigir PQC» (pqc.js) no lo lee y el equipo se sigue apartando con «no consta». La ficha y
+// el Comparador lo dicen aparte, como lo que es.
+const PQC_GESTION_AR6710L = {
+  donde: 'SSL, SSH y DTLS del SD-WAN (gestión y canal de control)',
+  literal: 'PQC is supported for SSL, SSH, and SD-WAN DTLS protocols',
+  fuente: 'Huawei NetEngine AR6710-L Series Enterprise Router Data Sheet-R26C00',
+  urls: ['https://e-file.huawei.com/marketingcloud/pep/asset/20000001/Material/04c9821faf16492ea6cadb03722f97ce/M3T1A590N1311283223945314586/Huawei%20NetEngine%20AR6710-L%20Series%20Enterprise%20Router%20Data%20Sheet-R26C00.pdf'],
+};
+for (const m of MODELS) if (m.ser === 'AR6700-L') m.pqcGestion = PQC_GESTION_AR6710L;
+
 module.exports = { OPTICS, OPTIC_LABEL, PARTS, MODELS, HICARE };
