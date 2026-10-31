@@ -34,6 +34,7 @@ está en curso no va aquí: lo dice `npm run traspasos` (protocolo en `docs/tras
 ## Estado al cerrar esta entrega
 
 - **2026-10-31 · PR #96**: «Líneas por función» en la hoja «Supuestos» del Excel (fase 2.1 del plan aprobado). **Criterio que conviene conservar**: la procedencia de una línea sale de su `por`, el mismo dato que pinta la etiqueta en pantalla; nunca un mapa aparte, y nunca en la hoja «BOM» del cliente.
+- **2026-10-31 · PR #92**: axe y el reflujo a 640 px recorren también la ficha del firewall dedicado de Cisco, sin hallazgos. **Criterio que conviene conservar**: una parte de la pantalla que solo aparece con un escenario entra en `e2e-accesibilidad.js` con su ruta y un `preparar` que espera a verla; sin la espera, axe pasaría en verde sin haberla recorrido.
 - **2026-10-31 · PR #93**: el botón «Actualizar» avisa cuando su recálculo cambia lo que se veía
   («El resultado no estaba al día…») y deja en la consola el último campo tocado y el enlace. Es la
   vía para cazar el desfase que el dueño vio y ninguna batería reproduce: **si alguien ve ese aviso,
