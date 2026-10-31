@@ -1,6 +1,6 @@
 # Relevo
 
-Última actualización: 2026-10-30 · PR #83
+Última actualización: 2026-10-30 · PR #84
 
 Informe para continuar el trabajo. Lo pidió el dueño del repositorio el 2026-10-27: «de aquí en
 adelante, un informe de pendientes y mejoras para que la cuenta **servicioiptv2025@gmail.com**
@@ -33,6 +33,7 @@ está en curso no va aquí: lo dice `npm run traspasos` (protocolo en `docs/tras
 
 ## Estado al cerrar esta entrega
 
+- **2026-10-30 · PR #84**: **la PQC de gestión y control** (la mejora propuesta al cerrar el PR #82). Los cuatro AR6710-L llevan `pqcGestion` con el literal de su ficha R26C00 («PQC is supported for SSL, SSH, and SD-WAN DTLS protocols»); la ficha lo dice en su fila «Gestión y control» y el Comparador como «Solo en …; no en el túnel de datos». **Criterio que conviene conservar**: `pqcGestion` nunca es `pqc` y `pqc.js` no lo lee; un canal que no lleva el tráfico no cumple «Exigir PQC» (`test/pqc-gestion.test.js`).
 - **2026-10-30 · PR #83**: tercera corrida de transporte. La ficha oficial del SRX4100/4200 no trae PQC ni PPK, y la ficha de Meraki de los C8111/C8121-G2-MX da «2 x 2.5 mGig RJ45» para WAN sin velocidad mínima (como su guía de instalación): el `velMinSupuesto` sigue. Con esto, los pendientes que esperan documento han pasado por todos los documentos oficiales descargables que se conocen; lo que los cierra está en la tabla de *Esperan un documento oficial*.
 - **2026-10-30 · PR #81**: el tier de caudal de Aruba viaja en el enlace (`selTier` en `opcionesTarde`;
   medido antes en CI: se perdía). **Criterio que conviene conservar**: un `<select>` vacío en el HTML
@@ -367,7 +368,6 @@ existen los workflows de transporte. Huawei y HPE niegan además el navegador au
 
 ## Mejoras propuestas sin decidir
 
-- **La PQC de gestión y control, dicha en la ficha sin contar para «Exigir PQC»** (propuesta al cerrar el PR #82). Huawei AR6710-L R26C00 documenta PQC en SSL, SSH y el DTLS del SD-WAN; hoy la ficha dice «no consta» sin más. Un campo aparte (`pqcGestion: {donde, fuente, urls}`) que la ficha y el Comparador enseñen como «PQC en gestión y control, no en el túnel de datos», y que `pqc.js` ignore a propósito. Evita que un preventa descarte el equipo por desconocer ese dato, o que lo dé por quantum-safe en sus túneles. Cuesta el campo, una línea en `seccionPqc` y su prueba; si se hace mal y `pqc.js` lo leyera, cumpliría el requisito con un canal que no lleva el tráfico. Se decide por el dueño.
 - **Vigía semanal del ciclo de vida de Fortinet** (propuesta al cerrar el PR #68). Un workflow que
   cada lunes compare los FortiGate del catálogo con un listado de fin de vida y abra un issue si
   aparece un modelo nuevo. Evita que un anuncio como el del 60F pase sin verse. Cuesta un workflow
@@ -424,7 +424,7 @@ existen los workflows de transporte. Huawei y HPE niegan además el navegador au
   enlace a su pestaña, daría la vista del vigía del lunes en el momento. Cuesta una sección del
   portal y su script, sin tocar el servidor; si se hace mal, siete corridas a la vez pegarían a los
   fabricantes (la prueba tiene que fijar que van de una en una). Se decide por el dueño.
-- (Hecha en el PR #81: el tier de Aruba en el enlace. Hecha en el PR #80: el modelo de Aruba por `opcionesTarde`. Hecha en el PR #77: el modelo de AP de MikroTik en el enlace. Hecha en el PR #75: los campos del perfil, de los del enlace. Hecha en el PR #71: «Actualizar fuentes» en vivo. Hecha en el PR #67: el marcado del panel de perfiles, generado por el módulo. Hecha en el PR #66: lo que trajo cada función, resaltado en el resultado. Hecha en el PR #62: el panel de perfiles, un solo módulo. Hecha en el PR #60: la licencia FortiGuard única del par en el BOM. Hecha en el PR #59: la vigilia del despliegue. Hecha en el PR #58: del override por ciclo de vida a ampliación o renovación en un clic. Hecha en el PR #57: el transporte probado sin red. Hecha en el PR #55: los perfiles multi-sede en Juniper y Nokia 7750. Hecha en el PR #54: la foto desde la página de cada modelo, hasta donde Cisco la publica, y el transporte fuera del YAML. Hecha en el PR #50: los perfiles de otros fabricantes al día al consolidar. Hecha en el PR #46: el ciclo del perfil al día al consolidar. Hecha en el PR #45: la fuente de la PQC enlazada a `fuentes.js`. Hecha en el PR #44: el ciclo en el consolidado multi-sede. Hecha en el PR #41: el fin de venta en el Excel. Hecha en el PR #40: la foto de producto en el Excel. Hecha en la septuagesimoprimera: el «no la trae» documentado, `pqcNo`. Hecha en la sexagesimoctava: la
+- (Hecha en el PR #84: la PQC de gestión y control, `pqcGestion`. Hecha en el PR #81: el tier de Aruba en el enlace. Hecha en el PR #80: el modelo de Aruba por `opcionesTarde`. Hecha en el PR #77: el modelo de AP de MikroTik en el enlace. Hecha en el PR #75: los campos del perfil, de los del enlace. Hecha en el PR #71: «Actualizar fuentes» en vivo. Hecha en el PR #67: el marcado del panel de perfiles, generado por el módulo. Hecha en el PR #66: lo que trajo cada función, resaltado en el resultado. Hecha en el PR #62: el panel de perfiles, un solo módulo. Hecha en el PR #60: la licencia FortiGuard única del par en el BOM. Hecha en el PR #59: la vigilia del despliegue. Hecha en el PR #58: del override por ciclo de vida a ampliación o renovación en un clic. Hecha en el PR #57: el transporte probado sin red. Hecha en el PR #55: los perfiles multi-sede en Juniper y Nokia 7750. Hecha en el PR #54: la foto desde la página de cada modelo, hasta donde Cisco la publica, y el transporte fuera del YAML. Hecha en el PR #50: los perfiles de otros fabricantes al día al consolidar. Hecha en el PR #46: el ciclo del perfil al día al consolidar. Hecha en el PR #45: la fuente de la PQC enlazada a `fuentes.js`. Hecha en el PR #44: el ciclo en el consolidado multi-sede. Hecha en el PR #41: el fin de venta en el Excel. Hecha en el PR #40: la foto de producto en el Excel. Hecha en la septuagesimoprimera: el «no la trae» documentado, `pqcNo`. Hecha en la sexagesimoctava: la
   versión mínima de la PQC en la hoja «Supuestos».)
 
 ## Decisiones del dueño abiertas
