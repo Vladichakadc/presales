@@ -35,8 +35,9 @@ const BASE_LINEA = [
   // recomendado no cambia, que es lo que estas filas controlan.
   { n: 'TP 175 Mbps — la respuesta que se quedaba corta', bw: '175', perfil: 'tp',
     recomendado: 'FortiGate 30G', capa: 'Threat Protection', fabricantes: 3 },
-  // 2026-10-31 (PR #87): `fabricantes` pasa de 1 a 2 en las tres filas de TLS. Los Cisco Secure
-  // Firewall entran al portal con la cifra de descifrado TLS de su ficha; en los tres escenarios el
+  // 2026-10-31 (PR #87): los Cisco Secure Firewall entran al portal con la cifra de descifrado TLS
+  // de su ficha. `fabricantes` cuenta los paneles con algún equipo que cumple: pasa a 2 a 175 y a
+  // 500 Mbps, y sigue en 1 a 20 Gbps (52 Gbps pedidos; el mayor, el 4245, da 45). En los tres el
   // FortiGate sigue siendo el más pequeño que cumple, así que el recomendado no cambia.
   { n: 'TLS 175 Mbps — con su cifra propia sube al 60F', bw: '175', perfil: 'ssl',
     recomendado: 'FortiGate 60F', capa: 'SSL Inspection', fabricantes: 2 },
@@ -45,7 +46,7 @@ const BASE_LINEA = [
   { n: 'TLS 500 Mbps — el 50G aguanta MÁS TLS que TP y cumple', bw: '500', perfil: 'ssl',
     recomendado: 'FortiGate 50G', capa: 'SSL Inspection', fabricantes: 2 },
   { n: 'TLS 20 Gbps — la gama alta responde sin caer a otra capa', bw: '20000', perfil: 'ssl',
-    recomendado: 'FortiGate 3500F', capa: 'SSL Inspection', fabricantes: 2 },
+    recomendado: 'FortiGate 3500F', capa: 'SSL Inspection', fabricantes: 1 },
   // 2026-10-13: era el RB4011iGS+ con 5,6 Gbps. Ese equipo salio del catalogo (sin ficha
   // oficial) y el RM paso a su cifra de la ficha (9,8 Gbps de fast path): el mas pequeno que
   // cumple los 5,2 Gbps pedidos es ahora el Gateway 9012. Lo que esta fila controla —que con
