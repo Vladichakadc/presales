@@ -460,7 +460,10 @@ Módulos compartidos:
   del panel), valida los campos visibles con sus reglas del HTML (`min`, `max`, `step`, `required`),
   recalcula con la función que cada página registra en `window.DIMENSIONADOR_ACTUALIZAR` (devuelve
   `false` si el catálogo no llegó, y el botón lo dice) y lo anuncia en `role="status"`. Una página
-  nueva registra su recálculo completo y carga los dos archivos (`test/actualizar.test.js`).
+  nueva registra su recálculo completo y carga los dos archivos (`test/actualizar.test.js`). **Detector**
+  (2026-10-31): si su recálculo cambia el texto de resultados (el mismo que leen las baterías e2e), dice
+  «El resultado no estaba al día…» con el último campo tocado y deja `[actualizar]` en la consola con
+  página, campo, enlace y hora; nada sale del navegador (`e2e-boton-detector.js`).
 - `por-funcion.js` — **«por <función>» en la fila del BOM** (2026-10-29, PR #70; complementa el
   resaltado de `funciones-activas.js`): la fila que existe solo porque se pidió una función lleva
   `por` (id de su casilla), puesto en el mismo `if` que la crea o traducido del `req` del motor con

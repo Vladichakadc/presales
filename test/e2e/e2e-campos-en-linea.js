@@ -143,6 +143,10 @@ let donde = 'al empezar';
   const t = contador();
   await abrirSesion(page);
 
+  // GitHub publica 10 avisos por paso, que se reparten las baterías: esta deja uno solo con el total
+  // y el recuento por página; el detalle de cada página queda en la salida.
+  const totales = [];
+  let totalProbados = 0, totalAtras = 0;
   for (const pag of PAGINAS) {
     donde = `${pag}, al abrir`;
     await trasNavegar(page, () => page.goto(`${BASE}/dimensionador-${pag}.html`, { waitUntil: 'domcontentloaded' }), { selector: '.btn-actualizar' });
@@ -292,12 +296,15 @@ let donde = 'al empezar';
       }
     }
     const { probados, enLinea, sinEfecto, revelados, filas, opciones } = cuenta;
-    console.log(`RESUMEN - ${pag}: ${probados} probados (${opciones} opciones de botones segmentados; ${revelados} campos aparecieron al marcar otro o al añadir ${filas} fila(s)) · ${enLinea} recalculan en línea · ${sinEfecto} sin efecto en este escenario · ${malos.length} se quedan atrás`);
+    totales.push(`${pag.split('-')[0]}${pag === 'nokia-7220ixr' ? ' 7220' : pag === 'nokia-7750sr' ? ' 7750' : ''} ${probados}`);
+    totalProbados += probados; totalAtras += malos.length;
+    console.log(`  ${pag}: ${probados} probados (${opciones} opciones de botones segmentados; ${revelados} campos aparecieron al marcar otro o al añadir ${filas} fila(s)) · ${enLinea} recalculan en línea · ${sinEfecto} sin efecto en este escenario · ${malos.length} se quedan atrás`);
     t.ok(probados > 0, `${pag}: hay campos que probar`);
     for (const m of malos) t.ok(false, `${pag}: ${m}`);
     if (!malos.length) t.ok(true, `${pag}: todos los campos que mueven el resultado lo mueven en línea`);
   }
 
+  console.log(`RESUMEN - campos en línea: ${totalProbados} comprobaciones (${totales.join(', ')}) · ${totalAtras} se quedan atrás`);
   t.ok(errores.length === 0, 'sin errores de JS' + (errores.length ? ': ' + [...new Set(errores)].slice(0, 5).join(' | ') : ''));
   await browser.close();
   process.exit(t.resumen('e2e-campos-en-linea'));
