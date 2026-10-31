@@ -38,10 +38,18 @@ const texto = (page, sel) => page.evaluate((s) => {
 
   const img = await page.evaluate(() => {
     const i = globalThis.document.querySelector('#fichaFw .ficha-vista-img img');
-    return i ? { src: i.getAttribute('src') || '', ok: i.complete && i.naturalWidth > 0 } : null;
+    return i ? { src: i.getAttribute('src') || '' } : null;
   });
+  // La tarjeta carga la figura en diferido (`loading="lazy"`): se pide al servidor, como el navegador.
+  if (img) {
+    img.ok = await page.evaluate(async (src) => {
+      const r = await globalThis.fetch(src);
+      const b = new Uint8Array(await r.arrayBuffer());
+      return r.ok && String.fromCharCode(...b.slice(8, 12)) === 'WEBP';
+    }, img.src);
+  }
   t.ok(!!img && /\/img\/equipos\/cs-sf[a-z0-9-]+-front(\.prev)?\.webp$/.test(img.src), `la tarjeta pinta la figura oficial (${img ? img.src : 'ninguna'})`);
-  t.ok(!!img && img.ok, 'y la figura carga');
+  t.ok(!!img && img.ok, 'y el servidor sirve la figura como WebP');
 
   const enlace = await page.evaluate(() => {
     const a = [...globalThis.document.querySelectorAll('#fichaFw a')].find((x) => /secure-firewall-/.test(x.getAttribute('href') || ''));
@@ -58,7 +66,8 @@ const texto = (page, sel) => page.evaluate((s) => {
   if (otro) {
     await page.selectOption('#fichaFw-sel', otro);
     await asentar(page);
-    const bom = await texto(page, '#bomBody');
+    const bom = await texto(page, '#bomTabla');
+    t.ok(bom.length > 0, 'la tabla del BOM está pintada');
     t.ok(bom.includes(`${otro} — firewall dedicado`), `el BOM lleva el ${otro} elegido a mano`);
     t.ok(!bom.includes(`${rec} — firewall dedicado`), 'y ya no el recomendado');
     const aviso = await texto(page, '#avisosMotor');
@@ -69,7 +78,7 @@ const texto = (page, sel) => page.evaluate((s) => {
     if (volver) {
       await volver.click();
       await asentar(page);
-      const bom2 = await texto(page, '#bomBody');
+      const bom2 = await texto(page, '#bomTabla');
       t.ok(bom2.includes(`${rec} — firewall dedicado`) && !bom2.includes(`${otro} — firewall dedicado`), 'y al volver, el BOM lleva otra vez el recomendado');
     }
   }
