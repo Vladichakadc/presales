@@ -4,7 +4,7 @@
 - **Rama:** claude/secure-firewall-figuras
 - **Cuenta:** servicioiptv2025@gmail.com (sesión 01V8T7S92WvujFK1KCusavSu)
 - **Estado:** en curso
-- **Actualizado:** 2026-10-31 08:10
+- **Actualizado:** 2026-10-31 08:55
 - **Archivos que toca:** public/data/cisco-vistas-equipos.json, public/img/equipos/cs-sf*.webp, server/seed/legacyData/cisco.js (SECURE_FIREWALL.fichas), public/js/dimensionador-cisco-catalyst8k.js, public/dimensionador-cisco-catalyst8k.html, test/cisco-vistas-equipos.test.js, test/cisco-leyendas.test.js, test/secure-firewall-catalogo.test.js, test/e2e/e2e-secure-firewall-ficha.js
 - **Siguiente paso:** CI verde (verificar y pantallas, con la batería e2e-secure-firewall-ficha), commit de cierre con el número del PR y fusión
 
