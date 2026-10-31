@@ -209,6 +209,13 @@ jobs:
             cat contraste.txt
             echo '```'
           } >> "$GITHUB_STEP_SUMMARY"
+          # Cada fallo, tambien como anotacion de la comprobacion (2026-10-31): como en la bateria
+          # e2e de abajo, las sesiones en la nube no leen el resumen ni los logs, y el PR #87 fallo
+          # dos veces aqui con solo un codigo de salida a la vista. `contraste-motor.js` escribe cada
+          # fallo en una linea `FALLO-CONTRASTE - caso · escenario · detalle`. GitHub publica 10
+          # errores por paso; el % se escapa como pide la sintaxis de los comandos.
+          grep -E '^FALLO-CONTRASTE - ' contraste.txt | head -10 | sed 's/%/%25/g' \
+            | while IFS= read -r linea; do echo "::error title=contraste::$linea"; done || true
 
       # LA BATERIA E2E (2026-09-24). Levanta su PROPIO servidor (puerto 4131, base y usuarios en
       # un directorio temporal de la corrida) y conduce los flujos completos, uno por script.
