@@ -1,6 +1,6 @@
 # Relevo
 
-Última actualización: 2026-10-31 · PR #86
+Última actualización: 2026-10-31 · PR #87
 
 Informe para continuar el trabajo. Lo pidió el dueño del repositorio el 2026-10-27: «de aquí en
 adelante, un informe de pendientes y mejoras para que la cuenta **servicioiptv2025@gmail.com**
@@ -33,6 +33,7 @@ está en curso no va aquí: lo dice `npm run traspasos` (protocolo en `docs/tras
 
 ## Estado al cerrar esta entrega
 
+- **2026-10-31 · PR #87**: **el Cisco Secure Firewall entra al catálogo** (decisión del dueño: «Sí, ficha completa»). F1 hecha: los 14 modelos en el portal con el hardware de sus fichas, generados de `SECURE_FIREWALL`, y la calculadora los dimensiona con IPsec, FW + AVC + IPS y TLS. **Faltan F2** (sus figuras oficiales, por Actions) **y F3** (su ficha en el dimensionador Cisco); sin precio. **Criterio que conviene conservar**: una sola copia de cada cifra —el portal se genera de `SECURE_FIREWALL`— y sin `fwd`, porque sus fichas no dan un firewall sin inspección.
 - **2026-10-31 · PR #86**: la batería `e2e-arranque.js` comprueba que los nueve dimensionadores abren
   al día (vacía, desde un enlace compartido y recargada): 27 de 27 en CI. **Criterio que conviene
   conservar**: una página nueva entra en `PAGINAS` de `test/e2e/resultados.js` y queda en las dos
@@ -347,7 +348,7 @@ traspaso (el #37, de otra sesión, se fusionó mientras se cerraba esta).
   consta» y el requisito los aparta con ese motivo. El ASR 1001-X no es un hueco: su boletín lo deja en la
   17.9, anterior a la PPK, y la ficha dice «no la trae» (`pqcNo`). Si un documento oficial dice que
   otro equipo no la trae, entra igual: `pqcNo` con su fuente en `fuentes.js` (`campos: ['pqcNo']`).
-- **Cisco**: ficha del Secure Firewall dedicado (y decidir si entra al portal), precio de Secure
+- **Cisco**: las figuras y la ficha del Secure Firewall dedicado (F2 y F3 del PR #87; entra al portal por decisión del dueño), precio de Secure
   Access por usuario (CCW), velocidad mínima de los mGig de los C8111/C8121-G2-MX, 10GBASE-T en
   SFP+ fuera de la serie 8300 y de las 8100 VAI/VAP, módulos del ASR (fuera de venta), breakout
   4x10G (pide su cable u óptica en el catálogo).

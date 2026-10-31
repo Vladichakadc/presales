@@ -4,7 +4,8 @@ Registro vivo de lo que falta. **Al empezar una tarea se buscan aquí los puntos
 tocan, y al terminarla se actualiza**, y su contenido se resume al usuario al cerrar cada entrega — esa es la instrucción
 permanente que lo justifica (ver `CLAUDE.md`, sección *Instrucciones permanentes del dueño*).
 
-Última revisión: 2026-10-31 · PR #86 (**El resultado al abrir la página, en tres arranques.** Encargo del dueño: «ejecuta la mejora propuesta», la del cierre del PR #79. Ver *Cerrado recientemente*.)
+Última revisión: 2026-10-31 · PR #87 (**Cisco Secure Firewall en el portal, con el hardware de sus fichas (F1).** Decisión del dueño: «Sí, ficha completa». Ver *Cerrado recientemente*.)
+Revisión anterior: 2026-10-31 · PR #86 (**El resultado al abrir la página, en tres arranques.** Encargo del dueño: «ejecuta la mejora propuesta», la del cierre del PR #79. Ver *Cerrado recientemente*.)
 Revisión anterior: 2026-10-30 · PR #85 (**La PQC de gestión y control, conducida en el navegador.** Encargo del dueño: «Ejecuta pendientes y mejora propuesta». Ver *Cerrado recientemente*.)
 Revisión anterior: 2026-10-30 · PR #84 (**La PQC de gestión y control, dicha en la ficha sin contar para «Exigir PQC».** Encargo del dueño: «Ejecuta pendientes y mejora propuesta». Ver *Cerrado recientemente*.)
 Revisión anterior: 2026-10-30 · PR #83 (**SRX4100 y mGig de los C8111/C8121-G2-MX: la tercera corrida de transporte, registrada.** Encargo del dueño: «ejecuta los pendientes que puedas cerrar». Ver *Cerrado recientemente*.)
@@ -2203,7 +2204,9 @@ enlace XGS-PON, el túnel de Secure Access por sentido, el mGig del MX95/MX105 y
 - **El cobre sin cifra de su guía** (ISR 1000, ASR, Meraki) va contra los 100 m de la norma 802.3,
   marcado como supuesto en la ficha del enlace.
 - **El Secure Firewall dedicado** sale como recomendación (tres candidatos, cifra de su capa, BOM con
-  su licencia TMC) pero no tiene ficha, figuras ni precio en el catálogo: sus cifras viven en
+  su licencia TMC). **El dueño decidió el 2026-10-31 darle ficha completa** («Sí, ficha completa»): desde el
+  PR #87 está en el portal con su hardware (F1); faltan sus figuras (F2) y su ficha en el dimensionador
+  Cisco (F3), y sigue sin precio (no hay lista oficial). Sus cifras viven en
   `SECURE_FIREWALL` y no en `Product`. La ficha no dice si su caudal es de un sentido o la suma: se
   compara con la suma de los dos (lo prudente). Malware Defense y URL Filtering no tienen cifra
   propia. Darle ficha completa pide sus guías de hardware (figuras) y decidir si entra al portal.
@@ -2518,6 +2521,7 @@ que ya se comprobó y lo que cuesta cada opción.
 
 ## Cerrado recientemente
 
+- **2026-10-31 · PR #87 · Cisco Secure Firewall en el portal (F1 de «ficha completa»).** El dueño decidió que el Secure Firewall entra al catálogo con ficha completa. Los 14 modelos de `SECURE_FIREWALL` (`cisco.js`) llevan ahora su hardware de las fichas traídas el 2026-10-21 —interfaces, gestión, PoE, formato, redundancia, fuente y consumo típico donde la ficha lo da— y el portal los lista en Cisco generados de esa misma lista (`indexPR.js`), sin `fwd` y a «Consultar». La calculadora los dimensiona con IPsec, FW + AVC + IPS y TLS, y los aparta del reenvío y de Threat Protection (`test/secure-firewall-catalogo.test.js`). Faltan F2 (figuras) y F3 (ficha en el dimensionador).
 - **2026-10-31 · PR #86 · El resultado al abrir la página, en tres arranques.** Mejora propuesta al cerrar el PR #79, aprobada por el dueño («ejecuta la mejora propuesta»). `test/e2e/e2e-arranque.js` compara, en los nueve dimensionadores, el texto de resultados recién abierta la página (asentada y con `DIMENSIONADOR_ACTUALIZAR` registrada) con el que deja el botón «Actualizar», en tres arranques: vacía, desde un enlace compartido (caudal de sucursal, la primera casilla de función y la segunda opción del primer botón segmentado, que `estado.js` repone por clic sintético) y recargada. **Medido en CI: 27 de 27 al día al abrir.** Sabotaje en local (un valor puesto tras el `load` sin eventos): los tres arranques salen en rojo. Las piezas comunes con `e2e-campos-en-linea.js` pasan a `test/e2e/resultados.js`, y la batería publica un solo aviso `RESUMEN - ` (GitHub publica 10 por paso). El perfil multi-sede cargado no es un arranque sino una acción: queda fuera. Con esto, ni los 380 cambios ni los 27 arranques reproducen el «no se actualiza en línea» del dueño (ver la mejora propuesta en `RELEVO.md`).
 - **2026-10-30 · PR #85 · La PQC de gestión y control, conducida en el navegador.** El PR #84 cambió la ficha sin recorrerla en Chromium (`CLAUDE.md`, *Antes de fusionar*; este entorno no instala las dependencias). `test/e2e/e2e-pqc-gestion-huawei.js` lo hace en la batería de CI: la ficha del AR6710-L26T2X4 servida por el servidor dice «Gestión y control» con el enlace a su ficha oficial y el túnel en «no consta», y con «Exigir PQC» se aparta por «no consta».
 - **2026-10-30 · PR #84 · La PQC de gestión y control (`pqcGestion`).** Mejora propuesta al cerrar el PR #82, aprobada por el dueño. La ficha AR6710-L R26C00 (misma huella que verificó el vigía) da «PQC is supported for SSL, SSH, and SD-WAN DTLS protocols»: gestión y canal de control, no el IPsec de datos y sin algoritmo. Los cuatro AR6710-L lo llevan en `pqcGestion` (`huawei.js`, con su fuente en `fuentes.js`); `ficha.js` lo pinta en la fila «Gestión y control» con su documento y `comparador.js` como «Solo en …; no en el túnel de datos». `pqc.js` no lo lee: con «Exigir PQC» siguen apartados por «no consta» (`test/pqc-gestion.test.js`).
