@@ -34,6 +34,7 @@ está en curso no va aquí: lo dice `npm run traspasos` (protocolo en `docs/tras
 ## Estado al cerrar esta entrega
 
 - **2026-10-31 · PR #94**: la sesión corre en Sonnet 5.5 con Opus 5.5 de asesor, y hay tres subagentes Haiku 5.5 de solo lectura (`search`, `grep`, `docs`) en `.claude/agents/`, versionados. **Criterio que conviene conservar**: el «solo lectura» de un subagente lo impone su `disallowedTools`, no su prompt; y quien quiera otro modelo lo pone en su `settings.local.json`, no en el `settings.json` del proyecto.
+- **2026-10-31 · PR #92**: axe y el reflujo a 640 px recorren también la ficha del firewall dedicado de Cisco, sin hallazgos. **Criterio que conviene conservar**: una parte de la pantalla que solo aparece con un escenario entra en `e2e-accesibilidad.js` con su ruta y un `preparar` que espera a verla; sin la espera, axe pasaría en verde sin haberla recorrido.
 - **2026-10-31 · PR #93**: el botón «Actualizar» avisa cuando su recálculo cambia lo que se veía
   («El resultado no estaba al día…») y deja en la consola el último campo tocado y el enlace. Es la
   vía para cazar el desfase que el dueño vio y ninguna batería reproduce: **si alguien ve ese aviso,
