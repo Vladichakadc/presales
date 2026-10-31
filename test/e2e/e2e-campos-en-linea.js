@@ -21,21 +21,9 @@
 
    Lo que es correcto que no siga en línea se declara en EXCEPCIONES con su motivo; hoy, ninguno. */
 const { cargarPlaywright, BASE, abrirSesion, asentar, trasNavegar, contador } = require('./ayuda');
+const { PAGINAS, PREPARAR, leerResultados, salir, diferencia } = require('./resultados');
 
-const PAGINAS = ['aruba-edgeconnect', 'cisco-catalyst8k', 'fortinet-fortigate', 'huawei-netengine',
-  'juniper-srx', 'mikrotik-routeros', 'nokia-7220ixr', 'nokia-7750sr', 'starlink-leo'];
 
-// El escenario de partida: sin caudal, casi todas las páginas dicen «sin candidato» y casi ningún
-// campo tiene nada que mover (la primera medición en CI, 2026-10-29: 29 de 38 campos de Cisco «sin
-// efecto»). Con un caudal típico de sucursal, cada campo tiene un resultado que cambiar.
-const PREPARAR = {
-  'aruba-edgeconnect': [['#users', '300'], ['.wan-fila input[data-campo=down]', '500']],
-  'cisco-catalyst8k': [['#bw', '500']],
-  'huawei-netengine': [['#bw', '500']],
-  'juniper-srx': [['#bw', '500']],
-  'mikrotik-routeros': [['#bw', '500']],
-  'nokia-7750sr': [['#bw', '100']],
-};
 
 // Bloques condicionales: hasta dos niveles (una casilla que abre un bloque con otra casilla que abre
 // otro), y un tope por página para que el job de `pantallas` no se alargue sin límite.
@@ -90,22 +78,6 @@ const marcarCampos = (page) => page.evaluate(() => {
   return out;
 });
 
-// El texto de los resultados: la segunda columna (y siguientes) de cada rejilla visible y el panel de
-// resultados de Starlink, sin el panel de funciones activadas (dice cuántos puntos cambiaron con el
-// último evento, que no es parte del cálculo).
-const leerResultados = (page) => page.evaluate(() => {
-  const d = window.document;
-  const partes = [];
-  const tomar = (el) => {
-    if (!el.checkVisibility()) return;
-    const c = el.cloneNode(true);
-    c.querySelectorAll('.funciones-activas, .barra-actualizar, script, style').forEach((x) => x.remove());
-    partes.push(c.textContent.replace(/\s+/g, ' ').trim());
-  };
-  d.querySelectorAll('.cols, .dim').forEach((g) => [...g.children].slice(1).forEach(tomar));
-  d.querySelectorAll('.results-panel').forEach(tomar);
-  return partes.join(' ‖ ');
-});
 
 // El valor actual del campo, para reponerlo.
 const valorDe = (page, n) => page.evaluate((k) => {
@@ -144,10 +116,6 @@ const otroNumero = (page, n) => page.evaluate((k) => {
   }
   return null;
 }, n);
-
-// Salir del campo (el `change` del navegador). Por el foco y no por el elemento: una página que
-// rehace su fila al escribir (el builder de enlaces) ya lo cambió por otro.
-const salir = (page) => page.evaluate(() => { const a = window.document.activeElement; if (a && a !== window.document.body) a.blur(); });
 
 async function cambiar(page, campo, nuevo) {
   const loc = page.locator(`[data-e2e-campo="${campo.n}"]`);
@@ -205,10 +173,7 @@ let donde = 'al empezar';
       const c = await leerResultados(page);
       cuenta.probados += 1;
       if (c !== b) {
-        // La primera diferencia, para que el aviso diga qué se quedó atrás.
-        let i = 0;
-        while (i < b.length && b[i] === c[i]) i += 1;
-        const tramo = `en línea «…${b.slice(Math.max(0, i - 30), i + 50)}…» / con el botón «…${c.slice(Math.max(0, i - 30), i + 50)}…»`;
+        const tramo = `en línea ${diferencia(b, c)}`;
         if (excepcion) console.log(`ok - ${pag}: ${nombre} no sigue en línea, declarado: ${excepcion}`);
         else malos.push(`${nombre} (${tipo}, ${b === a ? 'no se enteró' : 'a medias'}): ${tramo}`);
       } else if (b !== a) cuenta.enLinea += 1;
