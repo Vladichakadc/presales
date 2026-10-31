@@ -93,11 +93,9 @@ label{display:block;font-size:12.5px;font-weight:600;margin-bottom:6px}
 .b1 i{background:#6b7f8f}
 .b2 i{background:#b98a3e}
 .b3 i{background:#5e8a68}
-/* Modal de accesorios y bloque TCO (fase 11, 2026-09-13) */
-#accModal{position:fixed;inset:0;background:rgba(28,25,23,.45);z-index:60;display:flex;align-items:center;justify-content:center;padding:20px}
-#accModal[hidden]{display:none}
-.acc-caja{background:var(--card);border:1px solid var(--rule);border-radius:3px;max-width:640px;width:100%;max-height:86vh;overflow:auto;padding:20px}
-.acc-caja h3{font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--steel);margin:0 0 8px}
+/* Modal de accesorios (fase 11, 2026-09-13): velo, caja y título son la regla común de
+   controles.css, sección 6; aquí solo su ancho. Debajo, sus filas y el bloque TCO. */
+#accModal .acc-caja{max-width:640px}
 .acc-fila{display:grid;grid-template-columns:1fr 96px 70px;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid var(--rule)}
 .acc-fila:last-child{border-bottom:0}
 .acc-fila .acc-d{font-size:12.5px}.acc-fila .acc-d code{font-size:11px}
