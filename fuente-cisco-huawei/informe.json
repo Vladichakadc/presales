@@ -1,0 +1,111 @@
+[
+  {
+    "archivo": "sf-fw1200-ds.html",
+    "para": "CISCO",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://www.cisco.com/c/en/us/products/collateral/security/firewalls/secure-firewall-1200-series-ds.html",
+        "status": 200,
+        "bytes": 229725,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "sf-fw3100-ds.html",
+    "para": "CISCO",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://www.cisco.com/c/en/us/products/collateral/security/firewalls/secure-firewall-3100-series-ds.html",
+        "status": 200,
+        "bytes": 254649,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "sf-fw4200-ds.html",
+    "para": "CISCO",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://www.cisco.com/c/en/us/products/collateral/security/firewalls/secure-firewall-4200-ds.html",
+        "status": 200,
+        "bytes": 194923,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "sf-img",
+    "para": "CISCO",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://www.cisco.com/c/dam/en/us/products/collateral/security/firewalls/secure-firewall-1200-series-ds.docx/_jcr_content/renditions/secure-firewall-1200-series-ds_0.png",
+        "status": 200,
+        "bytes": 51794,
+        "guardado": true,
+        "como": "sf-img/_jcr_content__renditions__secure-firewall-1200-series-ds_0.png"
+      },
+      {
+        "url": "https://www.cisco.com/c/dam/en/us/products/collateral/security/firewalls/secure-firewall-1200-series-ds.docx/_jcr_content/renditions/secure-firewall-1200-series-ds_1.png",
+        "status": 200,
+        "bytes": 53796,
+        "guardado": true,
+        "como": "sf-img/_jcr_content__renditions__secure-firewall-1200-series-ds_1.png"
+      },
+      {
+        "url": "https://www.cisco.com/c/dam/en/us/products/collateral/security/firewalls/secure-firewall-1200-series-ds.docx/_jcr_content/renditions/secure-firewall-1200-series-ds_2.png",
+        "status": 200,
+        "bytes": 51095,
+        "guardado": true,
+        "como": "sf-img/_jcr_content__renditions__secure-firewall-1200-series-ds_2.png"
+      },
+      {
+        "url": "https://www.cisco.com/c/dam/en/us/products/collateral/security/firewalls/secure-firewall-1200-series-ds.docx/_jcr_content/renditions/secure-firewall-1200-series-ds_3.png",
+        "status": 200,
+        "bytes": 18004,
+        "guardado": true,
+        "como": "sf-img/_jcr_content__renditions__secure-firewall-1200-series-ds_3.png"
+      },
+      {
+        "url": "https://www.cisco.com/c/dam/en/us/products/collateral/security/firewalls/secure-firewall-3100-series-ds.docx/_jcr_content/renditions/secure-firewall-3100-series-ds_0.png",
+        "status": 200,
+        "bytes": 4073931,
+        "guardado": true,
+        "como": "sf-img/_jcr_content__renditions__secure-firewall-3100-series-ds_0.png"
+      },
+      {
+        "url": "https://www.cisco.com/c/dam/en/us/products/collateral/security/firewalls/secure-firewall-3100-series-ds.docx/_jcr_content/renditions/secure-firewall-3100-series-ds_1.png",
+        "status": 200,
+        "bytes": 4173776,
+        "guardado": true,
+        "como": "sf-img/_jcr_content__renditions__secure-firewall-3100-series-ds_1.png"
+      },
+      {
+        "url": "https://www.cisco.com/c/dam/en/us/products/collateral/security/firewalls/secure-firewall-4200-ds.docx/_jcr_content/renditions/secure-firewall-4200-ds_0.jpg",
+        "status": 200,
+        "bytes": 151034,
+        "guardado": true,
+        "como": "sf-img/_jcr_content__renditions__secure-firewall-4200-ds_0.jpg"
+      },
+      {
+        "url": "https://www.cisco.com/c/dam/en/us/products/collateral/security/firewalls/secure-firewall-4200-ds.docx/_jcr_content/renditions/secure-firewall-4200-ds_1.jpg",
+        "status": 200,
+        "bytes": 112324,
+        "guardado": true,
+        "como": "sf-img/_jcr_content__renditions__secure-firewall-4200-ds_1.jpg"
+      }
+    ]
+  }
+]
