@@ -17,6 +17,8 @@
 // `npm run catalogo` (seccion «PORTAL Y GUIA FRENTE AL DIMENSIONADOR»), y
 // `test/catalogo-contraste-pantallas.test.js` exige que coincidan y que no vuelva a repetirse
 // ninguna. Las ocho filas duplicadas de Cisco, que la siembra ignoraba enteras, se quitaron.
+const { SECURE_FIREWALL } = require('./cisco');
+
 module.exports = {
 hw_ar:[
   {model:'AR611',ser:'AR610',seg:'SOHO',sdwan:'50 Mbps',ports:'1 GE WAN + 4 GE LAN'},
@@ -111,6 +113,17 @@ cisco:[
   {model:'Cisco Secure Router C8121-G2-MX',ser:'Meraki MX',seg:'Sucursal G2 en la nube + PoE',protos:'Auto VPN, SD-WAN'},
   {model:'Cisco Secure Router C8355-G2-MX',ser:'Meraki MX',seg:'Sucursal grande G2 en la nube',protos:'Auto VPN, SD-WAN'},
   {model:'Cisco Secure Router C8455-G2-MX',ser:'Meraki MX',seg:'Campus y concentrador VPN G2 en la nube',protos:'Auto VPN, SD-WAN'},
+  // Cisco Secure Firewall 1200, 3100 y 4200 (2026-10-31, decisión del dueño: «Sí, ficha completa»).
+  // No tienen pareja en el dimensionador (no son routers): sus filas salen de `SECURE_FIREWALL` de
+  // legacyData/cisco.js, la misma copia que usa el firewall dedicado, con las cifras de Threat Defense
+  // de cada ficha. No se escribe `fwd`: las fichas no dan un firewall sin inspección, así que la
+  // calculadora los aparta del perfil de reenvío en vez de usar la cifra de otra capa. Sin precio.
+  ...SECURE_FIREWALL.modelos.map((m) => ({
+    model: m.id, ser: `Secure Firewall ${m.serie}`, seg: m.seg, ips: m.ips, ipsec: m.vpn, tls: m.tls,
+    fwAvc: m.fwAvc, sess: m.sesiones, cps: m.cps, pares: m.peers, ports: m.ports, gestion: m.gestion,
+    ru: m.ru, poe: m.poe, redund: m.redund, psu: m.psu, formato: m.formato, hwSku: m.pid,
+    bases: SECURE_FIREWALL.bases, elp: 'Consultar',
+  })),
 ],
 
 nokia:[

@@ -623,7 +623,12 @@ Módulos compartidos:
   caudal publicado: avisa); Cisco Secure Access en el BOM con sus túneles de 1 Gbps y respaldo
   (`SECURE_ACCESS`); y con «Firewall dedicado», un Cisco Secure Firewall 1200/3100/4200 por la cifra
   de su capa (`SECURE_FIREWALL`, `firewallDedicado`: FW + AVC, con IPS o TLS, nunca otra) y su
-  licencia TMC. La cifra de Threat Protection ya incluye URLF y AMP. En SD-WAN un modelo sin
+  licencia TMC; desde el 2026-10-31 (decisión del dueño, «ficha completa») los 14 están también en el
+  portal, generados de `SECURE_FIREWALL` con el hardware de sus fichas y sin `fwd`, y la calculadora los
+  lee por IPsec, FW + AVC + IPS y TLS (`test/secure-firewall-catalogo.test.js`); con «Firewall dedicado
+  aparte», su ficha va debajo de la del router (`#fichaFw`, `pintarFichaFw`, con FICHA y sus figuras de
+  `cisco-vistas-equipos.json`): elegir otro cambia el BOM, y su ciclo de vida se declara sin respaldo
+  (`CICLO_FW`), nunca el de los routers (`e2e-secure-firewall-ficha.js`). La cifra de Threat Protection ya incluye URLF y AMP. En SD-WAN un modelo sin
   cifra propia cae a IPsec y la lista lo marca. Licencias G2 por `clase` (S…2XL, guía de pedido) y
   segunda fuente `psu2`; los LIC-SEC no se proponen donde la guía los niega (`secAddon: false`), y en
   autónomo piden Routing Advantage y LIC-R-OP-SWM. **DNA** (`LICENCIAS_DNA`, FAQ de DNA y guía de
@@ -728,7 +733,9 @@ Módulos compartidos:
   cambios**, y un 403 no prueba quién bloquea (`npm run candidatas`). Pasadas 4 semanas sin
   contrastar, `verificar` frena (`SEMANAS_TOLERADAS`).
 - **Contraste** (`npm run contraste`, dentro del job de `pantallas`): cada caso de
-  `scripts/contrastes/` declara su línea base embebida y `medidoEn`; la cobertura de módulos se
+  `scripts/contrastes/` declara su línea base embebida y `medidoEn`; cada fallo sale además en una
+  línea `FALLO-CONTRASTE - caso · escenario · detalle` que el workflow publica como anotación
+  `contraste` (`test/contraste-anotaciones.test.js`); la cobertura de módulos se
   **mide** en Chromium (funciones ejecutadas; `ejercitado`, `rozado`, `sin conducir`).
 - **e2e** (`npm run e2e`, en CI): espera a condiciones con `asentar(page)`, nunca con pausas
   fijas; `resumen()` fija el código de salida. `e2e-campos-en-linea.js` cambia cada campo visible de los nueve dimensionadores y

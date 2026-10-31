@@ -27,6 +27,8 @@ let MOD_C8K = [];
 let SA = null;
 // Cisco Secure Firewall para el firewall dedicado: `SECURE_FIREWALL`.
 let SFW = null;
+// El Secure Firewall elegido a mano en su ficha (2026-10-31); null sigue al recomendado.
+let FW_ELEGIDO = null;
 // Categoría y ancho de banda de cada módulo celular (ficha de los módulos): `CELULAR`.
 let CELULAR = {};
 // Recursos de los componentes de control de SD-WAN: `CONTROLADORES_SDWAN`.
@@ -209,7 +211,75 @@ const filaDe = id => (ultimaEval ? ultimaEval.filas.find(f => f.m.id === id) : n
 // El firewall dedicado (propuesta 3.2): solo con «Firewall dedicado aparte» y salida a Internet.
 function firewallDe(p){
   if(p.seguridad !== 'desacoplada') return null;
-  return M.firewallDedicado(M.demanda(p), {capa:$('fwCapa').value, tls:p.tls, sesiones:(p.escala || {}).sesiones}, SFW);
+  const fw = M.firewallDedicado(M.demanda(p), {capa:$('fwCapa').value, tls:p.tls, sesiones:(p.escala || {}).sesiones}, SFW);
+  // Elegido a mano en su ficha: manda mientras siga cumpliendo; si deja de cumplir, el recomendado.
+  const aMano = fw && FW_ELEGIDO ? fw.candidatos.find(f => f.m.id === FW_ELEGIDO) : null;
+  if(fw && FW_ELEGIDO && !aMano) FW_ELEGIDO = null;
+  return aMano ? {...fw, recomendado:fw.elegido, elegido:aMano} : fw;
+}
+/* FICHA DEL FIREWALL DEDICADO (2026-10-31, fase 3 de «Secure Firewall en el catálogo, ficha
+   completa»): con «Firewall dedicado aparte» y salida a Internet, el Secure Firewall que va al BOM
+   tiene su propia ficha, con FICHA como la del router: desplegable de los que cumplen, la cifra
+   con su base, escala, hardware y alimentación de su ficha oficial y sus figuras. Elegir otro
+   cambia el BOM. El ciclo de vida no se afirma: ninguna fuente del catálogo lo respalda para
+   estos equipos. */
+const CICLO_FW = {respaldado:false, motivo:'ninguna fuente del catálogo respalda el fin de venta de los Secure Firewall'};
+function pintarFichaFw(ev, p){
+  const caja = $('fichaFw');
+  if(!caja) return;
+  const fw = p.seguridad === 'desacoplada' && ev.demanda.diaNeed > 0 ? firewallDe(p) : null;
+  if(!fw || !fw.elegido){ caja.hidden = true; caja.innerHTML = ''; return; }
+  caja.hidden = false;
+  const fila = id => fw.candidatos.find(f => f.m.id === id) || null;
+  const rec = (fw.recomendado || fw.elegido).m.id;
+  const ficha = m => SFW && SFW.fichas ? SFW.fichas[m.serie] || null : null;
+  FICHA.render({contenedor:'fichaFw',
+    candidatos:fw.candidatos.map(f => f.m),
+    recomendado:rec,
+    seleccionado:FW_ELEGIDO || rec,
+    vistas:VISTAS || {},
+    cicloVida:CICLO_FW,
+    etiqueta:m => `${m.id} · ${fmt(m[fw.k])} ${fw.n}`,
+    titulo:m => m.id,
+    subtitulo:m => `Firewall dedicado · Cisco Secure Firewall, serie ${m.serie}`,
+    medidores:m => {
+      const L = [{etq:`Salida a Internet — ${fw.n}`, val:fw.need, tope:m[fw.k], txt:`${fmt(fw.need)} / ${fmt(m[fw.k])}`}];
+      const ses = Math.floor(Number((p.escala || {}).sesiones) || 0);
+      if(ses) L.push({etq:'Sesiones con AVC', val:ses, tope:m.sesiones, txt:`${miles(ses)} / ${miles(m.sesiones)}`});
+      return L;
+    },
+    porQue:m => { const f = fila(m.id); return `<p style="margin:0;font-size:13.5px">Inspecciona la salida local del router con su cifra de <b>${esc(fw.n)}</b> (${esc(fw.base)}): ${f ? Math.round(f.u * 100) : '—'} % de uso con margen.${m.id === rec ? ' Es el más pequeño que llega.' : ` El recomendado es el ${esc(rec)}.`}</p>`; },
+    secciones:m => [
+      {titulo:'Rendimiento publicado', filas:[
+        ['FW + AVC', `${fmt(m.fwAvc)}${base(SFW.bases.fwAvc)}`],
+        ['FW + AVC + IPS', `${fmt(m.ips)}${base(SFW.bases.ips)}`],
+        ['IPsec', `${fmt(m.vpn)}${base(SFW.bases.vpn)}`],
+        ['Descifrado TLS', `${fmt(m.tls)}${base(SFW.bases.tls)}`],
+      ], nota:'Cifras con Threat Defense de la ficha oficial, cada una con su base; Malware y URL no tienen cifra propia.'},
+      {titulo:'Escala publicada', filas:[
+        ['Sesiones con AVC', miles(m.sesiones)],
+        ['Conexiones por segundo', miles(m.cps)],
+        ['Pares VPN', miles(m.peers)],
+      ]},
+      {titulo:'Características del equipo', filas:[
+        ['Referencia de pedido', `<code>${esc(m.pid)}</code>`],
+        ['Licencia Threat, Malware y URL', `<code>${esc(m.tmc.replace('{n}', 'N'))}</code>${m.tmc.includes('{n}') ? ' (N = 1, 3 o 5 años)' : ' (plazo en CCW)'}`],
+        ['Formato', esc(m.formato), true],
+        ['Unidades de rack', m.ru != null ? `${m.ru} U` : 'No aplica (sobremesa)'],
+        ['Gestión', esc(m.gestion)],
+        ['PoE', m.poe ? 'Sí' : 'No'],
+        ['Precio de lista ref.', 'Consultar CCW'],
+        ...(ficha(m) ? [['Ficha oficial', `<a href="${esc(ficha(m))}" target="_blank" rel="noopener">abrir la ficha de Cisco</a>`, true]] : []),
+      ]},
+      FICHA.seccionPuertos(m),
+      FICHA.seccionAlimentacion(m),
+    ],
+    alCambiar:(id, origen) => {
+      FW_ELEGIDO = origen === 'volver' || id === rec ? null : id;
+      pintarAvisos(ev, p);
+      renderBom();
+    },
+  });
 }
 function lineasSecureAccess(p){
   if(p.seguridad !== 'sse') return {filas:[], avisos:[]};
@@ -277,6 +347,8 @@ function render(){
   pintarControles();
   if(($('enlacesData').value || '') !== enlacesPintados) pintarEnlaces();
   const p = parametros();
+  // La ficha del firewall dedicado solo existe con un escenario que la pida (pintarFichaFw).
+  if($('fichaFw')) $('fichaFw').hidden = true;
   // Sin ancho de banda no hay recomendación (regla de preventa 2026-09-13): es el dato mínimo
   // del dimensionamiento; sin él la página pide valores en vez de proponer un equipo a ciegas.
   if(!(p.bwMbps > 0) || !MODELS.length){
@@ -304,6 +376,7 @@ function render(){
   hayCandidato = !!pick;
 
   pintarAvisos(ev, p);
+  pintarFichaFw(ev, p);
   pintarDistribucion(ev);
   pintarCgnat();
   pintarTopologia(ev);
@@ -472,7 +545,9 @@ function pintarAvisos(ev, p){
     const fw = firewallDe(p);
     const fila = f => `<tr><td>${esc(f.m.id)}</td><td class="n">${fmt(f.m[fw.k])}</td><td class="n">${Math.round(f.u * 100)} %</td><td><code>${esc(f.m.pid)}</code></td></tr>`;
     L.push(`<div class="callout info" role="note"><p><b>Firewall dedicado: Cisco Secure Firewall.</b> El router solo enruta la salida local; la inspecciona un firewall aparte, dimensionado con su cifra de <b>${esc(fw.n)}</b> (${esc(fw.base)}) frente a ${fmt(fw.need)} con margen, los dos sentidos.
-      ${fw.elegido ? `Se propone el <b>${esc(fw.elegido.m.id)}</b>, que va al BOM con su licencia de Threat, Malware y URL.` : '<b>Ninguno de las series 1200, 3100 y 4200 llega</b>: varios equipos en clúster o consultar con Cisco.'}
+      ${fw.elegido ? (fw.recomendado && fw.recomendado !== fw.elegido
+        ? `Va al BOM el <b>${esc(fw.elegido.m.id)}</b>, elegido a mano en su ficha (el recomendado es el ${esc(fw.recomendado.m.id)}), con su licencia de Threat, Malware y URL.`
+        : `Se propone el <b>${esc(fw.elegido.m.id)}</b>, que va al BOM con su licencia de Threat, Malware y URL; su ficha va debajo de la del router.`) : '<b>Ninguno de las series 1200, 3100 y 4200 llega</b>: varios equipos en clúster o consultar con Cisco.'}
       ${fw.apartados.length ? ` ${fw.apartados.length} se apartan (${esc(fw.apartados[0].motivos[0])}${fw.apartados.length > 1 ? '…' : ''}).` : ''} Otra opción, el <a href="/dimensionador-fortinet-fortigate.html">dimensionador Fortinet</a>.</p>
       ${fw.candidatos.length ? `<div class="scroll"><table><thead><tr><th>Equipo</th><th>${esc(fw.n)}</th><th>Uso</th><th>Referencia</th></tr></thead><tbody>${fw.candidatos.slice(0, 3).map(fila).join('')}</tbody></table></div>` : ''}</div>`);
   }
@@ -864,8 +939,11 @@ $('memoriaBtn').addEventListener('click', () => {
    marcas. Cargar es de Cisco (los campos son ids de ESTA página); consolidar no. */
 // Lo que viaja en el enlace (ESTADO.vincular). Los campos del perfil salen de esta lista
 // (2026-10-30): se declara solo lo que el perfil no guarda y lo que solo guarda él.
-const CAMPOS_ENLACE = [...ENTRADAS, 'critSeg', 'dirSeg', 'modeSeg', 'qty', 'termYears', 'licGestion', 'licNivel', 'licVpns', 'secUrl', 'secMalware', ...CAMPOS_SA, 'optQty', 'verdict-sel'];
+const CAMPOS_ENLACE = [...ENTRADAS, 'critSeg', 'dirSeg', 'modeSeg', 'qty', 'termYears', 'licGestion', 'licNivel', 'licVpns', 'secUrl', 'secMalware', ...CAMPOS_SA, 'optQty', 'verdict-sel', 'fichaFw-sel'];
 // `verdict-sel`: el equipo lo guarda el perfil aparte, en `modelo`.
+// `fichaFw-sel` (2026-10-31): el Secure Firewall elegido a mano en su ficha. Lo pinta ficha.js después
+// del primer render, como `verdict-sel`: ESTADO lo repone al aparecer y dispara su `change`, que fija
+// `FW_ELEGIDO` por `alCambiar` (el recomendado deja `FW_ELEGIDO` en null, sigue al escenario).
 const PERFIL_SIN = ['verdict-sel'];
 const PERFIL_EXTRA = [];
 const SEGS_PERFIL = ['modeSeg', 'dirSeg', 'critSeg'];
@@ -875,6 +953,8 @@ function capturarCampos(){
   const v = {};
   CAMPOS_PERFIL.forEach(id => { const n = $(id); if(n) v[id] = n.type === 'checkbox' ? n.checked : n.value; });
   SEGS_PERFIL.forEach(id => { const a = $(id).querySelector('[aria-pressed="true"]'); v[id] = a ? a.dataset.v : null; });
+  // El perfil guarda el firewall solo si se eligió a mano: el recomendado sigue al escenario.
+  v['fichaFw-sel'] = FW_ELEGIDO || null;
   return v;
 }
 function aplicarCampos(v){
@@ -885,6 +965,9 @@ function aplicarCampos(v){
   });
   // Los grupos .seg guardan su valor en una variable de la página: solo su manejador la actualiza.
   SEGS_PERFIL.forEach(id => { const b = v[id] != null && $(id).querySelector(`[data-v="${v[id]}"]`); if(b) b.click(); });
+  // El desplegable del firewall se repinta en el render: lo que manda es `FW_ELEGIDO`, y firewallDe lo
+  // descarta si el firewall ya no cumple el escenario del perfil.
+  FW_ELEGIDO = v['fichaFw-sel'] || null;
   render();
 }
 // Guardar, cargar, consolidar y la ventana: el módulo común de bom.js (2026-10-28).

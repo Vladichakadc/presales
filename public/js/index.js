@@ -8,8 +8,8 @@ const VENDORS=[
    series:['AR610','AR650','AR5710-S','AR5710-SE','AR6700-L','AR6700','AR8700','A800 E','NE8000 M','NE8000 F','NE8000 X'],
    tools:['Dimensionador BOM','Catálogo ópticas'],live:true},
   {id:'cisco',name:'Cisco',accent:'#049FD9',accentTxt:'#03739D',icon:'CS',iconCls:'cs',
-   desc:'ISR 1000/4000, ASR 1000, Catalyst 8000. SD-WAN Viptela, Meraki, DNA Center automación.',
-   series:['ISR 1000','ISR 4000','ASR 1000','Catalyst 8200','Catalyst 8300','Catalyst 8500'],
+   desc:'ISR 1000/4000, ASR 1000, Catalyst 8000. SD-WAN Viptela, Meraki, DNA Center automación. Secure Firewall 1200, 3100 y 4200.',
+   series:['ISR 1000','ISR 4000','ASR 1000','Catalyst 8200','Catalyst 8300','Catalyst 8500','Secure Firewall 1200','Secure Firewall 3100','Secure Firewall 4200'],
    tools:['Catálogo de equipos','Guía de selección'],live:false},
   {id:'nokia',name:'Nokia',accent:'#124191',icon:'NK',iconCls:'nk',
    desc:'7750 SR core/edge, 7210 SAS acceso, 7250 IXR datacenter. SR OS con SR-MPLS, SRv6, EVPN.',
@@ -70,9 +70,15 @@ function buildAll(){
     sdwan:p.sdwan,ports:p.ports,color:'#C7000B'}));
   PR.hw_wan.forEach(p=>ALL.push({grupo:'hw_wan',raw:p,vendor:'Huawei',model:p.model,series:p.ser,seg:p.seg,
     tp:parseCap(p.cap),tpL:p.cap,ipsec:0,ipsecL:'N/A',sdwan:'N/A',ports:p.ports,color:'#C7000B'}));
-  PR.cisco.forEach(p=>ALL.push({grupo:'cisco',raw:p,vendor:'Cisco',model:p.model,series:p.ser,seg:p.seg,
-    tp:parseRange(p.fwd),tpL:p.fwd,ipsec:parseRange(p.ipsec),ipsecL:p.ipsec,
-    sdwan:p.sdwan,ports:p.ports,color:'#049FD9'}));
+  // Los Secure Firewall (2026-10-31) no publican un reenvío sin inspección: su cifra de portada es
+  // la de Threat Defense con IPS, dicha como tal.
+  PR.cisco.forEach(p=>{
+    const sf=/^Secure Firewall /.test(p.ser||'');
+    ALL.push({grupo:'cisco',raw:p,vendor:'Cisco',model:p.model,series:p.ser,seg:p.seg,
+      tp:sf?(p.ips||0):parseRange(p.fwd),tpL:sf?(p.ips?'FW + AVC + IPS: '+fmtMbps(p.ips):'—'):p.fwd,
+      ipsec:parseRange(p.ipsec),ipsecL:sf?(p.ipsec?fmtMbps(p.ipsec):'—'):p.ipsec,
+      sdwan:sf?'N/A (firewall)':p.sdwan,ports:p.ports,color:'#049FD9'});
+  });
   PR.nokia.forEach(p=>ALL.push({grupo:'nokia',raw:p,vendor:'Nokia',model:p.model,series:p.ser,seg:p.seg,
     tp:parseCap(p.cap),tpL:p.cap,ipsec:0,ipsecL:'N/A (SP)',sdwan:'N/A',ports:p.ports,color:'#124191'}));
   PR.fortinet.forEach(p=>ALL.push({grupo:'fortinet',raw:p,vendor:'Fortinet',model:p.model,series:p.model.match(/\d+/)?p.model.replace(/FortiGate\s+(\d+\w+).*/,'$1 series'):'Fortinet',seg:p.seg,
