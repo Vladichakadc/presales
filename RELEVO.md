@@ -1,6 +1,6 @@
 # Relevo
 
-Última actualización: 2026-10-31 · PR #93
+Última actualización: 2026-10-31 · PR #92
 
 Informe para continuar el trabajo. Lo pidió el dueño del repositorio el 2026-10-27: «de aquí en
 adelante, un informe de pendientes y mejoras para que la cuenta **servicioiptv2025@gmail.com**
@@ -33,6 +33,7 @@ está en curso no va aquí: lo dice `npm run traspasos` (protocolo en `docs/tras
 
 ## Estado al cerrar esta entrega
 
+- **2026-10-31 · PR #92**: axe y el reflujo a 640 px recorren también la ficha del firewall dedicado de Cisco, sin hallazgos. **Criterio que conviene conservar**: una parte de la pantalla que solo aparece con un escenario entra en `e2e-accesibilidad.js` con su ruta y un `preparar` que espera a verla; sin la espera, axe pasaría en verde sin haberla recorrido.
 - **2026-10-31 · PR #93**: el botón «Actualizar» avisa cuando su recálculo cambia lo que se veía
   («El resultado no estaba al día…») y deja en la consola el último campo tocado y el enlace. Es la
   vía para cazar el desfase que el dueño vio y ninguna batería reproduce: **si alguien ve ese aviso,
