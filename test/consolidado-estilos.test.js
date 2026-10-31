@@ -28,16 +28,19 @@ test('las siete páginas con perfiles cargan la hoja común', () => {
   }
 });
 
-test('ninguna hoja de página vuelve a escribir la ventana del consolidado', () => {
+test('ninguna hoja de página vuelve a escribir las ventanas', () => {
   for (const pag of PAGINAS) {
     const css = estiloDe(leer(`public/dimensionador-${pag}.html`));
     assert.doesNotMatch(css, /#modalConsolidado/, `${pag}: la regla va en controles.css, sección 6`);
-    // La `.acc-caja` de Aruba es la de su ventana de ópticas (`#accModal`), que solo existe allí.
-    const tieneCajaPropia = /<div class="acc-caja"/.test(leer(`public/dimensionador-${pag}.html`));
-    if (!tieneCajaPropia) {
-      assert.doesNotMatch(css, /\.acc-caja/, `${pag}: una .acc-caja sin caja propia es la del consolidado, repetida`);
+    assert.doesNotMatch(css, /rgba\(28,\s*25,\s*23/, `${pag}: el velo cálido viejo; el velo sale de la tinta`);
+    // Lo único propio de una ventana que puede quedar en una hoja es el ancho de la de ópticas de
+    // Aruba (`#accModal`, 640 px): velo, caja y título son la regla común (2026-10-31, tras el PR #89).
+    const propias = (css.match(/[^{}]*(?:#accModal|\.acc-caja)[^{}]*\{[^}]*\}/g) || []).map((r) => r.replace(/\/\*[\s\S]*?\*\//g, '').trim());
+    for (const regla of propias) {
+      assert.match(regla, /^#accModal \.acc-caja\{max-width:\d+px\}$/, `${pag}: «${regla}» repite la ventana común`);
     }
   }
+  assert.match(leer('public/dimensionador-aruba-edgeconnect.html'), /<div id="accModal" hidden>/, 'la ventana de ópticas de Aruba sigue existiendo');
 });
 
 test('la hoja común da velo, posición y caja, con el velo de la tinta', () => {
@@ -47,13 +50,13 @@ test('la hoja común da velo, posición y caja, con el velo de la tinta', () => 
     assert.ok(m, `falta la regla ${sel}`);
     return m[1];
   };
-  const modal = regla('#modalConsolidado');
+  const modal = regla('#modalConsolidado, #accModal');
   assert.match(modal, /position: fixed/);
   assert.match(modal, /inset: 0/);
   assert.match(modal, /color-mix\(in srgb, var\(--ink, #0E1A2B\) 45%, transparent\)/,
     'el velo sale de la tinta de la página, no de un rgba escrito a mano');
-  assert.match(regla('#modalConsolidado[hidden]'), /display: none/, 'sin esto la ventana no se cierra');
-  const caja = regla('#modalConsolidado .acc-caja');
+  assert.match(regla('#modalConsolidado[hidden], #accModal[hidden]'), /display: none/, 'sin esto la ventana no se cierra');
+  const caja = regla('#modalConsolidado .acc-caja, #accModal .acc-caja');
   assert.match(caja, /max-height: 86vh/);
   assert.match(caja, /overflow: auto/, 'sin desplazamiento un consolidado largo se corta');
   // La tinta de las siete es la misma: el velo común no cambia de tono de una a otra.
