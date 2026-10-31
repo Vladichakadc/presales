@@ -973,23 +973,42 @@ const CELULAR = {
 // la suma de los dos (lo prudente). Malware y URL no tienen cifra propia en ninguna ficha.
 const FW = (id, serie, pid, tmc, fwAvc, ips, vpn, tls, sesiones, cps, peers, extra) =>
   ({id, serie, pid, tmc, fwAvc, ips, vpn, tls, sesiones, cps, peers, ...(extra || {})});
+// HARDWARE (2026-10-31, decisión del dueño: «Sí, ficha completa»): interfaces, formato, PoE,
+// alimentación y segmento de las mismas fichas. 1200: tablas 3 y 4 (rasgos), 5 (interfaces), 10 y 11
+// (especificaciones; el consumo típico de 32 W va en una celda que cubre los tres compactos, y los 1U
+// no lo publican). 3100: tabla 4 («Single 400W AC, Dual 400W AC optional» en 3105/3110/3120, «Dual
+// 400W AC» en 3130/3140). 4200: tabla 3 (dos fuentes de 1.900 W a 220 V y 1.200 W a 110 V; el 4245,
+// «Only 200 to 240 VAC»). El segmento es la frase de cada ficha: «branch offices and smaller sites»
+// (1200), «from the Internet edge to the data center» (3100), «large enterprises, datacenters, and
+// service providers» (4200). Ningún dato de consumo que la ficha no da: sin él, «sin dato».
+const HW1200C = (ports, poe, extra) => ({ports, poe, ru:null, redund:false, gestion:'1x 1000BASE-T',
+  psu:{watts:32, tipo:'Fuente externa única (100-240 V AC)'}, formato:'Sobremesa compacto (rack o pared con accesorios opcionales)', seg:'Sucursal y sede pequeña', ...(extra || {})});
+const HW1200U = (ports) => ({ports, poe:false, ru:1, redund:false, gestion:'1x 1000BASE-T',
+  psu:{watts:null, tipo:'Fuente única integrada (100-240 V AC)'}, formato:'1U en rack', seg:'Sucursal y sede pequeña'});
+const HW3100 = (sfp, dual) => ({ports:`8x 1GBASE-T (RJ-45) + 8x ${sfp} (SFP) + 1 ranura de módulo de red (hasta 24 puertos)`,
+  poe:false, ru:1, redund:dual ? true : 'opcional', gestion:'1x 1/10G SFP',
+  psu:{watts:null, tipo:dual ? 'Dos fuentes de 400 W AC de serie (DC opcional)' : 'Una fuente de 400 W AC; la segunda, opcional (DC opcional)'},
+  formato:'1U en rack', seg:'Internet edge y data center'});
+const HW4200 = (extra) => ({ports:'8x 1/10/25G (SFP28) + 2 ranuras de módulo de red', poe:false, ru:1, redund:true,
+  gestion:'2x 1/10/25G (SFP28)', psu:{watts:null, tipo:'Dos fuentes AC (1.900 W a 220 V, 1.200 W a 110 V)'},
+  formato:'1U en rack', seg:'Gran empresa, data center y operador', ...(extra || {})});
 const SECURE_FIREWALL = {
   bases:{fwAvc:'FW + AVC, 1.024 B', ips:'FW + AVC + IPS, 1.024 B', vpn:'IPsec, TCP de 1.024 B con Fastpath', tls:'50 % de TLS 1.2, AES256-SHA, RSA de 2.048'},
   modelos:[
-    FW('Secure Firewall 1210CE', '1200', 'CSF1210CE-TD-K9', 'CSF1210CET-TMC', 6000, 6000, 5000, 1000, 200000, 35000, 200),
-    FW('Secure Firewall 1210CP', '1200', 'CSF1210CP-TD-K9', 'CSF1210CPT-TMC', 6000, 6000, 5000, 1000, 200000, 35000, 200, {poe:true}),
-    FW('Secure Firewall 1220CX', '1200', 'CSF1220CX-TD-K9', 'CSF1220CXT-TMC', 9000, 9000, 10000, 1500, 300000, 50000, 300),
-    FW('Secure Firewall 1230', '1200', 'CSF1230-TD-K9', 'CSF1230T-TMC', 13000, 9000, 13000, 2500, 400000, 50000, 500),
-    FW('Secure Firewall 1240', '1200', 'CSF1240-TD-K9', 'CSF1240T-TMC', 18000, 12000, 18000, 3200, 600000, 70000, 1000),
-    FW('Secure Firewall 1250', '1200', 'CSF1250-TD-K9', 'CSF1250T-TMC', 24000, 18000, 22000, 4100, 1000000, 100000, 1500),
-    FW('Secure Firewall 3105', '3100', 'FPR3105-NGFW-K9', 'L-FPR3105T-TMC-{n}Y', 10000, 10000, 5500, 3200, 1500000, 90000, 2000),
-    FW('Secure Firewall 3110', '3100', 'FPR3110-NGFW-K9', 'L-FPR3110T-TMC-{n}Y', 17000, 17000, 8000, 4800, 2000000, 130000, 3000),
-    FW('Secure Firewall 3120', '3100', 'FPR3120-NGFW-K9', 'L-FPR3120T-TMC-{n}Y', 21000, 21000, 10000, 6700, 4000000, 170000, 7000),
-    FW('Secure Firewall 3130', '3100', 'FPR3130-NGFW-K9', 'L-FPR3130T-TMC-{n}Y', 38000, 38000, 17800, 9100, 6000000, 240000, 15000),
-    FW('Secure Firewall 3140', '3100', 'FPR3140-NGFW-K9', 'L-FPR3140T-TMC-{n}Y', 45000, 45000, 22400, 11500, 10000000, 300000, 20000),
-    FW('Secure Firewall 4215', '4200', 'FPR4215-NGFW-K9', 'L-FPR4215T-TMC-{n}Y', 65000, 65000, 45000, 20000, 15000000, 350000, 20000),
-    FW('Secure Firewall 4225', '4200', 'FPR4225-NGFW-K9', 'L-FPR4225T-TMC-{n}Y', 80000, 80000, 80000, 30000, 30000000, 600000, 25000),
-    FW('Secure Firewall 4245', '4200', 'FPR4245-NGFW-K9', 'L-FPR4245T-TMC-{n}Y', 140000, 140000, 140000, 45000, 60000000, 800000, 30000),
+    FW('Secure Firewall 1210CE', '1200', 'CSF1210CE-TD-K9', 'CSF1210CET-TMC', 6000, 6000, 5000, 1000, 200000, 35000, 200, HW1200C('8x 1000BASE-T', false)),
+    FW('Secure Firewall 1210CP', '1200', 'CSF1210CP-TD-K9', 'CSF1210CPT-TMC', 6000, 6000, 5000, 1000, 200000, 35000, 200, HW1200C('8x 1000BASE-T (4 con PoE+ 802.3at, 120 W en total)', true, {psu:{watts:32, tipo:'Fuente externa única (100-240 V AC); 165 W máximos con PoE'}})),
+    FW('Secure Firewall 1220CX', '1200', 'CSF1220CX-TD-K9', 'CSF1220CXT-TMC', 9000, 9000, 10000, 1500, 300000, 50000, 300, HW1200C('8x 1000BASE-T + 2x SFP+ (1/10G)', false)),
+    FW('Secure Firewall 1230', '1200', 'CSF1230-TD-K9', 'CSF1230T-TMC', 13000, 9000, 13000, 2500, 400000, 50000, 500, HW1200U('8x 1000BASE-T + 4x SFP+ (1/10G)')),
+    FW('Secure Firewall 1240', '1200', 'CSF1240-TD-K9', 'CSF1240T-TMC', 18000, 12000, 18000, 3200, 600000, 70000, 1000, HW1200U('8x 1000BASE-T + 4x SFP+ (1/10G)')),
+    FW('Secure Firewall 1250', '1200', 'CSF1250-TD-K9', 'CSF1250T-TMC', 24000, 18000, 22000, 4100, 1000000, 100000, 1500, HW1200U('8x 2.5GBASE-T + 4x SFP+ (1/10G)')),
+    FW('Secure Firewall 3105', '3100', 'FPR3105-NGFW-K9', 'L-FPR3105T-TMC-{n}Y', 10000, 10000, 5500, 3200, 1500000, 90000, 2000, HW3100('1/10G', false)),
+    FW('Secure Firewall 3110', '3100', 'FPR3110-NGFW-K9', 'L-FPR3110T-TMC-{n}Y', 17000, 17000, 8000, 4800, 2000000, 130000, 3000, HW3100('1/10G', false)),
+    FW('Secure Firewall 3120', '3100', 'FPR3120-NGFW-K9', 'L-FPR3120T-TMC-{n}Y', 21000, 21000, 10000, 6700, 4000000, 170000, 7000, HW3100('1/10G', false)),
+    FW('Secure Firewall 3130', '3100', 'FPR3130-NGFW-K9', 'L-FPR3130T-TMC-{n}Y', 38000, 38000, 17800, 9100, 6000000, 240000, 15000, HW3100('1/10/25G', true)),
+    FW('Secure Firewall 3140', '3100', 'FPR3140-NGFW-K9', 'L-FPR3140T-TMC-{n}Y', 45000, 45000, 22400, 11500, 10000000, 300000, 20000, HW3100('1/10/25G', true)),
+    FW('Secure Firewall 4215', '4200', 'FPR4215-NGFW-K9', 'L-FPR4215T-TMC-{n}Y', 65000, 65000, 45000, 20000, 15000000, 350000, 20000, HW4200()),
+    FW('Secure Firewall 4225', '4200', 'FPR4225-NGFW-K9', 'L-FPR4225T-TMC-{n}Y', 80000, 80000, 80000, 30000, 30000000, 600000, 25000, HW4200()),
+    FW('Secure Firewall 4245', '4200', 'FPR4245-NGFW-K9', 'L-FPR4245T-TMC-{n}Y', 140000, 140000, 140000, 45000, 60000000, 800000, 30000, HW4200({psu:{watts:null, tipo:'Dos fuentes AC de 1.900 W; solo a 200-240 V AC'}})),
   ],
 };
 
