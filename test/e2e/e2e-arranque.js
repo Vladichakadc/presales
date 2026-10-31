@@ -83,6 +83,8 @@ async function ponerEscenario(page, pag) {
   const t = contador();
   await abrirSesion(page);
 
+  // GitHub publica 10 avisos por paso y la de campos en línea ya usa 9: esta resume en uno.
+  let alDia = 0;
   for (const pag of PAGINAS) {
     const base = `${BASE}/dimensionador-${pag}.html`;
     const resultados = [];
@@ -118,11 +120,13 @@ async function ponerEscenario(page, pag) {
       if (excepcion) console.log(`ok - ${pag} (${arranque}): arranca distinto, declarado: ${excepcion}`);
       else malos.push(`${arranque}${escenario ? ` [${escenario}]` : ''}: al abrir ${diferencia(r.a, r.c)}`);
     }
-    console.log(`RESUMEN - ${pag}: arranque vacío, por enlace (${tocado.length ? tocado.join(', ') : 'sin escenario que poner'}) y recargado · ${3 - malos.length} de 3 al día al abrir`);
+    alDia += 3 - malos.length;
+    console.log(`  ${pag}: arranque vacío, por enlace (${tocado.length ? tocado.join(', ') : 'sin escenario que poner'}) y recargado · ${3 - malos.length} de 3 al día al abrir`);
     for (const m of malos) t.ok(false, `${pag}: ${m}`);
     if (!malos.length) t.ok(true, `${pag}: los tres arranques muestran lo mismo que el recálculo completo`);
   }
 
+  console.log(`RESUMEN - arranque: ${PAGINAS.length} páginas × 3 arranques (vacía, enlace compartido, recarga) · ${alDia} de ${PAGINAS.length * 3} al día al abrir`);
   t.ok(errores.length === 0, 'sin errores de JS' + (errores.length ? ': ' + [...new Set(errores)].slice(0, 5).join(' | ') : ''));
   await browser.close();
   process.exit(t.resumen('e2e-arranque'));
