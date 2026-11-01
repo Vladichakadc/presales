@@ -181,7 +181,9 @@ toman por silencio. Para mapear, buscar y leer documentación se delega en los s
 `.claude/agents/` (versionados), los tres en Haiku 5.5 y de solo lectura —Write, Edit,
 NotebookEdit y Bash denegados en su lista de herramientas, no en su prompt—: `search` (mapa del
 repositorio), `grep` (sitios de llamada de un símbolo) y `docs` (referencia de API, también por
-`WebFetch`, que el proxy de egreso corta como a todo lo demás).
+`WebFetch`, que el proxy de egreso corta como a todo lo demás). `test/claude-agentes.test.js` frena un subagente
+que gana una herramienta de escritura (salvo en `EXCEPCIONES`, con su motivo), uno sin `model`, un
+asesor de gama inferior al modelo de la sesión y un subagente que este archivo no nombra.
 
 **Las pruebas cubren lo que ya falló, no lo que es fácil de probar.** `test/servidor-produccion.test.js`
 arranca el servidor real con `NODE_ENV=production` y lo interroga por HTTP: es la única que cruza
