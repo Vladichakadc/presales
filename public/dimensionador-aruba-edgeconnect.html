@@ -819,8 +819,8 @@ details.cumplimiento-especial summary:focus-visible{outline:2px solid var(--red)
      lista de precios oficial del distribuidor; compatibilidad anclada al VSG oficial
      EdgeConnect. Un SKU en PLC «ES» nunca se oferta. -->
 <div id="accModal" hidden>
-  <div class="acc-caja">
-    <h3>Ópticas y accesorios — <span id="accModelo"></span></h3>
+  <div class="acc-caja" role="dialog" aria-modal="true" aria-labelledby="accTit">
+    <h3 id="accTit">Ópticas y accesorios — <span id="accModelo"></span></h3>
     <p class="hint" id="accHint"></p>
     <div id="accLista"></div>
     <p class="hint" style="margin-top:10px">SKU, descripción y «List Price» de la lista de precios oficial del distribuidor (2026-09-13) — la cifra firme la cierra tu distribuidor. Las variantes <b>TAA</b> cumplen el Trade Agreements Act (compra pública de EE.&nbsp;UU.). El cordón de alimentación localizado va <b>incluido por defecto</b> en el equipo (la opción #AC3 «NoLoc» es la que lo excluye — QuickSpecs).</p>

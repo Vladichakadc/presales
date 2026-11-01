@@ -22,6 +22,9 @@ const { cargarPlaywright, abrirSesion, BASE, asentar, contador } = require('./ay
 
 const AXE = fs.readFileSync(require.resolve('axe-core/axe.min.js'), 'utf8');
 
+const ARUBA_BOM = '/dimensionador-aruba-edgeconnect.html?users=120&perUser=2&wanLinksData='
+  + encodeURIComponent(JSON.stringify({ v: 2, wanLinks: [{ id: 1, tipo: 'DIA', medio: 'RJ45', down: 500, up: 500, simetrico: true }] }));
+
 const PANTALLAS = [
   { n: 'Portal', ruta: '/' },
   { n: 'Dimensionador Fortinet', ruta: '/dimensionador-fortinet-fortigate.html' },
@@ -45,6 +48,10 @@ const PANTALLAS = [
     + encodeURIComponent(JSON.stringify({ v: 2, wanLinks: [{ id: 1, tipo: 'DIA', medio: 'RJ45', down: 500, up: 500, simetrico: true }, { id: 2, tipo: '4G/5G', medio: 'RJ45', down: 100, up: 50, simetrico: false, rol: 'respaldo' }] })) },
   { n: 'Aruba con escenario · lista de materiales', ruta: '/dimensionador-aruba-edgeconnect.html?users=120&perUser=2&wanLinksData='
     + encodeURIComponent(JSON.stringify({ v: 2, wanLinks: [{ id: 1, tipo: 'DIA', medio: 'RJ45', down: 500, up: 500, simetrico: true }] })), pestana: 'bom' },
+  // La ventana de ópticas y accesorios de Aruba (2026-11-01, mejora propuesta al cerrar el PR #95): axe la
+  // audita abierta, que es como la ve quien la usa. Si no se abre, la espera lo convierte en error.
+  { n: 'Aruba · ventana de ópticas y accesorios', ruta: ARUBA_BOM, pestana: 'bom',
+    async preparar(page) { await page.click('#accBtn'); await page.waitForSelector('#accModal:not([hidden])', { timeout: 10000 }); } },
   { n: 'Cisco con escenario', ruta: '/dimensionador-cisco-catalyst8k.html?bw=800' },
   // La ficha del Secure Firewall dedicado (2026-10-31, PR #88): solo existe con «Firewall dedicado aparte»
   // y salida local, así que la ruta de arriba no la ve: desplegable, pestañas de figuras, lupa y enlaces.
@@ -93,6 +100,33 @@ const GRAVES = new Set(['critical', 'serious']);
     if (leves.length) console.log(`   (info) ${p.n}: ${leves.map((v) => `${v.id} [${v.impact}] ×${v.n}`).join(', ')}`);
     resumen.push({ pantalla: p.n, graves: graves.length, leves: leves.length });
   }
+
+  // La ventana de ópticas se porta como el diálogo del consolidado: es un diálogo con nombre, el foco
+  // entra, Escape la cierra sin cerrar otra y el foco vuelve al botón; pinchar fuera también la cierra.
+  await page.goto(BASE + ARUBA_BOM, { waitUntil: 'domcontentloaded' });
+  await asentar(page);
+  await page.click('[data-tab="bom"]');
+  await asentar(page);
+  await page.click('#accBtn');
+  await page.waitForSelector('#accModal:not([hidden])', { timeout: 10000 });
+  const d = await page.evaluate(() => {
+    const caja = document.querySelector('#accModal [role="dialog"]');
+    const tit = caja && document.getElementById(caja.getAttribute('aria-labelledby') || '-');
+    return { modal: caja && caja.getAttribute('aria-modal'), titulo: tit ? tit.textContent.trim() : '',
+      foco: document.getElementById('accModal').contains(document.activeElement) };
+  });
+  t.ok(d.modal === 'true' && /^Ópticas y accesorios — \S/.test(d.titulo), `ópticas de Aruba: diálogo modal con nombre («${d.titulo}»)`);
+  t.ok(d.foco, 'ópticas de Aruba: el foco entra en la ventana');
+  await page.keyboard.press('Escape');
+  await asentar(page);
+  t.ok(await page.isHidden('#accModal'), 'ópticas de Aruba: Escape la cierra');
+  t.ok(await page.evaluate(() => document.activeElement && document.activeElement.id === 'accBtn'), 'ópticas de Aruba: el foco vuelve a «Ópticas y accesorios»');
+  await page.click('#accBtn');
+  await page.waitForSelector('#accModal:not([hidden])', { timeout: 10000 });
+  await page.click('#accModal', { position: { x: 5, y: 5 } });
+  await asentar(page);
+  t.ok(await page.isHidden('#accModal'), 'ópticas de Aruba: pinchar fuera la cierra');
+  t.ok(await page.evaluate(() => document.activeElement && document.activeElement.id === 'accBtn'), 'ópticas de Aruba: y el foco vuelve al botón');
   await page.close();
 
   const zoom = await browser.newPage({ viewport: { width: 640, height: 900 } });
