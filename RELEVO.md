@@ -379,7 +379,10 @@ traspaso (el #37, de otra sesión, se fusionó mientras se cerraba esta).
 - **MikroTik**: si la cifra IPsec es por sentido o la suma (respuesta escrita de soporte), figuras
   traseras que la galería no publica, el CCR2004-16G-2S+PC en la matriz de compatibilidad (su manual
   no dice qué módulos admite: lo cierra una respuesta escrita de soporte).
-- **Huawei**: ficha de iMaster NCE-Campus; **regiones y «flavors» del vCPE AR6700V-L**: están en la
+- **Huawei**: **el controlador iMaster NCE-WAN** —su código, su modelo de licencia y si el paquete N1 de
+  las series de hoy ya lo incluye: la ficha N1 de 2022 dice que sí para las de entonces y la de NCE-Campus
+  R24C00 no lo dice (PR #112); lo cierra la «License Usage Guide» de la versión actual, que pide cuenta, o
+  Huawei—; **regiones y «flavors» del vCPE AR6700V-L**: están en la
   sección «Supported Flavors» de sus guías de despliegue por nube (Azure EDOC1100591294, GCP
   EDOC1100592600, Huawei Cloud EDOC1100368764; URL en el pendiente 10 de Huawei), que a Actions solo
   le sirven un cascarón: lo cierra una persona que las abra en el navegador.
@@ -394,6 +397,15 @@ existen los workflows de transporte. Huawei y HPE niegan además el navegador au
 
 ## Mejoras propuestas sin decidir
 
+- **`[hidden]` gana siempre, en una sola regla** (propuesta al cerrar el PR #112). Hoy cada página
+  arregla el `hidden` que su `display` anula con una regla por clase (`.tabpane[hidden]`,
+  `.checks[hidden]`…), y la prueba del PR #112 obliga a añadirla. Una sola regla
+  `[hidden]{display:none !important}` en la hoja común (`public/controles.css`, que cargan los ocho
+  dimensionadores con casillas) y en las páginas que no la cargan lo resolvería de una vez, y la prueba
+  pasaría a comprobar que esa regla está. Evita el siguiente caso como el de la licencia única, que llegó
+  a producción. Cuesta una línea por hoja y revisar que ningún elemento se apoya en verse con `hidden`
+  (no debería: es justo el fallo); si se hace mal, algo que hoy se ve por error dejaría de verse, que es lo
+  correcto, y `pantallas`, `e2e` y axe lo mirarían. Se decide por el dueño.
 - **Plan de mejora de los dimensionadores, aprobado el 2026-10-31**: lo que queda, en orden. (cada corte se mide con un caso en `scripts/equivalencias/`, `npm run equivalencia`) 3.1 sacar el cálculo de la página de Aruba a módulos puros con prueba en Node (PR #99: ópticas, EdgeHA y puertos; PR #111: el estado comercial derivado; PR #113: la elección del modelo. Hecha); 3.2 lo mismo en la página de Fortinet sin tocar el motor aprobado (hecha: PR #100 y PR #110). La 1.1 (medir el arranque) se hizo en el PR #86.
 - **Vigía semanal del ciclo de vida de Fortinet** (propuesta al cerrar el PR #68). Un workflow que
   cada lunes compare los FortiGate del catálogo con un listado de fin de vida y abra un issue si

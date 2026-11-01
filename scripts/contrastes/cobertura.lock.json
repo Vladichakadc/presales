@@ -1,7 +1,7 @@
 {
  "medidoEn": {
-  "commit": "801f76c",
-  "fecha": "2026-10-28"
+  "commit": "99398f7",
+  "fecha": "2026-11-01"
  },
  "umbralRozado": 25,
  "modulos": [
@@ -76,11 +76,25 @@
    "pct": 18
   },
   {
+   "modulo": "actualizar.js",
+   "estado": "ejercitado",
+   "total": 24,
+   "usadas": 12,
+   "pct": 50
+  },
+  {
    "modulo": "procedencia.js",
    "estado": "ejercitado",
-   "total": 36,
-   "usadas": 18,
+   "total": 38,
+   "usadas": 19,
    "pct": 50
+  },
+  {
+   "modulo": "fortinet-reglas.js",
+   "estado": "ejercitado",
+   "total": 45,
+   "usadas": 24,
+   "pct": 53
   },
   {
    "modulo": "navegacion.js",
@@ -88,13 +102,6 @@
    "total": 17,
    "usadas": 9,
    "pct": 53
-  },
-  {
-   "modulo": "fortinet-reglas.js",
-   "estado": "ejercitado",
-   "total": 40,
-   "usadas": 24,
-   "pct": 60
   },
   {
    "modulo": "login.js",
@@ -111,13 +118,6 @@
    "pct": 64
   },
   {
-   "modulo": "bom.js",
-   "estado": "ejercitado",
-   "total": 100,
-   "usadas": 65,
-   "pct": 65
-  },
-  {
    "modulo": "cotizador.js",
    "estado": "ejercitado",
    "total": 55,
@@ -125,31 +125,31 @@
    "pct": 65
   },
   {
+   "modulo": "bom.js",
+   "estado": "ejercitado",
+   "total": 121,
+   "usadas": 80,
+   "pct": 66
+  },
+  {
    "modulo": "dimensionador-aruba-edgeconnect.js",
    "estado": "ejercitado",
-   "total": 393,
-   "usadas": 267,
-   "pct": 68
-  },
-  {
-   "modulo": "dimensionador-nokia-7750sr.js",
-   "estado": "ejercitado",
-   "total": 64,
-   "usadas": 44,
-   "pct": 69
-  },
-  {
-   "modulo": "calculadora.js",
-   "estado": "ejercitado",
-   "total": 51,
-   "usadas": 36,
-   "pct": 71
+   "total": 377,
+   "usadas": 251,
+   "pct": 67
   },
   {
    "modulo": "estado.js",
    "estado": "ejercitado",
-   "total": 29,
-   "usadas": 21,
+   "total": 34,
+   "usadas": 23,
+   "pct": 68
+  },
+  {
+   "modulo": "calculadora.js",
+   "estado": "ejercitado",
+   "total": 53,
+   "usadas": 38,
    "pct": 72
   },
   {
@@ -160,18 +160,25 @@
    "pct": 72
   },
   {
+   "modulo": "dimensionador-nokia-7750sr.js",
+   "estado": "ejercitado",
+   "total": 60,
+   "usadas": 44,
+   "pct": 73
+  },
+  {
+   "modulo": "dimensionador-cisco-catalyst8k.js",
+   "estado": "ejercitado",
+   "total": 183,
+   "usadas": 138,
+   "pct": 75
+  },
+  {
    "modulo": "dimensionador-fortinet-fortigate.js",
    "estado": "ejercitado",
    "total": 292,
-   "usadas": 231,
-   "pct": 79
-  },
-  {
-   "modulo": "ficha.js",
-   "estado": "ejercitado",
-   "total": 101,
-   "usadas": 80,
-   "pct": 79
+   "usadas": 227,
+   "pct": 78
   },
   {
    "modulo": "mikrotik-motor.js",
@@ -179,13 +186,6 @@
    "total": 89,
    "usadas": 70,
    "pct": 79
-  },
-  {
-   "modulo": "dimensionador-cisco-catalyst8k.js",
-   "estado": "ejercitado",
-   "total": 172,
-   "usadas": 137,
-   "pct": 80
   },
   {
    "modulo": "fuentes.js",
@@ -209,32 +209,60 @@
    "pct": 81
   },
   {
+   "modulo": "ficha.js",
+   "estado": "ejercitado",
+   "total": 103,
+   "usadas": 83,
+   "pct": 81
+  },
+  {
    "modulo": "dimensionador-mikrotik-routeros.js",
    "estado": "ejercitado",
-   "total": 167,
+   "total": 164,
    "usadas": 135,
-   "pct": 81
+   "pct": 82
   },
   {
    "modulo": "fortinet-motor.js",
    "estado": "ejercitado",
-   "total": 109,
-   "usadas": 89,
+   "total": 110,
+   "usadas": 90,
    "pct": 82
   },
   {
    "modulo": "aruba-reglas.js",
    "estado": "ejercitado",
-   "total": 38,
-   "usadas": 33,
-   "pct": 87
+   "total": 69,
+   "usadas": 57,
+   "pct": 83
+  },
+  {
+   "modulo": "por-funcion.js",
+   "estado": "ejercitado",
+   "total": 18,
+   "usadas": 15,
+   "pct": 83
   },
   {
    "modulo": "dimensionador-huawei-netengine.js",
    "estado": "ejercitado",
-   "total": 163,
-   "usadas": 141,
-   "pct": 87
+   "total": 156,
+   "usadas": 139,
+   "pct": 89
+  },
+  {
+   "modulo": "fortinet-explicacion.js",
+   "estado": "ejercitado",
+   "total": 9,
+   "usadas": 8,
+   "pct": 89
+  },
+  {
+   "modulo": "funciones-activas.js",
+   "estado": "ejercitado",
+   "total": 53,
+   "usadas": 48,
+   "pct": 91
   },
   {
    "modulo": "motor-ingenieria.js",
