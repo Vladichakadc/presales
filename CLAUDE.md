@@ -177,6 +177,19 @@ sigue ignorado):
   que caduca a las 12 h) es anterior al último cambio. Los dos usan `lib-comando.js`, que distingue
   un comando que se ejecuta de uno que solo se menciona dentro de una cadena.
 
+**Modelo, asesor y subagentes** (2026-10-31, PR #94, petición del dueño). `.claude/settings.json`
+fija la sesión en Sonnet 5.5 (`model`) con Opus 5.5 de asesor (`advisorModel`); quien quiera otro
+modelo lo pone en su `settings.local.json`. **Se consulta al asesor antes de fijar un plan, cuando
+el mismo error aparece dos veces y antes de dar una tarea por terminada**: ningún ajuste fuerza la
+consulta, la fuerza esta regla. El asesor aconseja; las decisiones siguen siendo del dueño y no se
+toman por silencio. Para mapear, buscar y leer documentación se delega en los subagentes de
+`.claude/agents/` (versionados), los tres en Haiku 5.5 y de solo lectura —Write, Edit,
+NotebookEdit y Bash denegados en su lista de herramientas, no en su prompt—: `search` (mapa del
+repositorio), `grep` (sitios de llamada de un símbolo) y `docs` (referencia de API, también por
+`WebFetch`, que el proxy de egreso corta como a todo lo demás). `test/claude-agentes.test.js` frena un subagente
+que gana una herramienta de escritura (salvo en `EXCEPCIONES`, con su motivo), uno sin `model`, un
+asesor de gama inferior al modelo de la sesión y un subagente que este archivo no nombra.
+
 **Las pruebas cubren lo que ya falló, no lo que es fácil de probar.** `test/servidor-produccion.test.js`
 arranca el servidor real con `NODE_ENV=production` y lo interroga por HTTP: es la única que cruza
 todas las capas. `test/ayuda/navegador.js` carga los módulos de `public/js/` en Node con un doble
