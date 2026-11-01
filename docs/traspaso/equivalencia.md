@@ -3,7 +3,7 @@
 - **Tema:** npm run equivalencia: la medición vieja contra nueva, con mutación de control
 - **Rama:** claude/equivalencia
 - **Cuenta:** vladichakadc@gmail.com (sesión 016ruRWCH48mtdRjcg83pvKa)
-- **Estado:** reservado
+- **Estado:** en curso
 - **Actualizado:** 2026-11-01 13:12
 - **Archivos que toca:** scripts/equivalencia.js, scripts/equivalencias/, test/equivalencia.test.js, package.json, RELEVO.md, CLAUDE.md
 - **Siguiente paso:** comparador canónico, carga desde una referencia de git, CLI y prueba
