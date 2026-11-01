@@ -417,7 +417,11 @@ existen los workflows de transporte. Huawei y HPE niegan además el navegador au
   de Claude (fuera de Actions) que cada hora lance `vigilia-despliegue.yml` por `workflow_dispatch`.
   Evita que un despliegue atascado se avise horas tarde. Cuesta una tarea programada por hora y su
   aprobación; si se hace mal, solo duplica corridas, que el diseño de un aviso por commit ya tolera.
-  Se decide por el dueño.
+  **Medido el 2026-11-01 (PR #117): la condición ya se cumple.** Del 29-oct 08:55 al 1-nov 20:28 UTC
+  (83,6 h) el cron `17,47 * * * *` corrió 17 veces de unas 167 (10 %), con huecos de hasta 7 h 10 min.
+  Ese día se intentó crear la tarea programada y el control de permisos de la sesión lo denegó
+  («escritura de tareas programadas»): la crea el dueño (cada hora, `gh workflow run
+  vigilia-despliegue.yml -R Vladichakadc/presales`), o autoriza a la sesión a crearla.
 - **La vigilancia del lunes en «Fuentes oficiales», antes de comprobar nada** (propuesta al cerrar el PR #118).
   Hoy la tabla del portal dice «Sin comprobar» en los siete fabricantes hasta que alguien pulsa el
   botón, y pulsarlo hace que el servidor vuelva a leer cada documento en el sitio del fabricante.
