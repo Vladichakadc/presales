@@ -3,10 +3,10 @@
 - **Tema:** Fase 3.1: estado derivado de Aruba (tier, Boost, licencia) a aruba-reglas.js
 - **Rama:** claude/aruba-estado-derivado
 - **Cuenta:** vladichakadc@gmail.com (sesión 016ruRWCH48mtdRjcg83pvKa)
-- **Estado:** reservado
+- **Estado:** en curso
 - **Actualizado:** 2026-11-01 14:02
 - **Archivos que toca:** public/js/aruba-reglas.js, public/js/dimensionador-aruba-edgeconnect.js, test/aruba-estado-derivado.test.js, scripts/equivalencias/aruba-estado.js, RELEVO.md, CLAUDE.md
-- **Siguiente paso:** separar lectura del formulario y cálculo; medir con npm run equivalencia
+- **Siguiente paso:** verificación en modo producción (pantallas, contraste aruba-underlay, e2e), PR y cierre
 
 ## Encargo del dueño
 
