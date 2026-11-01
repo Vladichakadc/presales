@@ -25,10 +25,12 @@ const modelo = (id) => fortinet.MODELS.find((m) => m.id === id);
 // Desde el 2026-10-28 lleva un tercer parámetro, si el BOM cotiza la licencia única, que por defecto
 // sale de `unicaCotizada(m)` (el BOM validado, `RES`): se ejecutan las dos, con `RES` vacío.
 function licenciaHa(res = null) {
-  const fn = /function licenciaHa\(m, modo, cotizada = unicaCotizada\(m\)\) \{[\s\S]*?\n\}\n/.exec(JS);
+  // Desde el 2026-10-31 (fase 3.2) la regla vive en FortinetExplicacion y la página solo le pasa
+  // `unicaCotizada(m)`: se ejecuta el envoltorio de la página con el módulo real.
+  const fn = /function licenciaHa\(m, modo, cotizada = unicaCotizada\(m\)\) \{ return FortinetExplicacion\.licenciaHa\(m, modo, cotizada\); \}\n/.exec(JS);
   const uc = /function unicaCotizada\(m\) \{[\s\S]*?\n\}\n/.exec(JS);
   assert.ok(fn && uc, 'la página ya no tiene licenciaHa o unicaCotizada');
-  const ctx = { RES: res };
+  const ctx = { RES: res, FortinetExplicacion: require('../public/js/fortinet-explicacion.js') };
   vm.runInNewContext(`${uc[0]}${fn[0]}this.f = licenciaHa;`, ctx);
   return ctx.f;
 }
@@ -70,10 +72,14 @@ test('activo-activo, o un modelo que la guía no nombra: una suscripción por no
 });
 
 test('la cantidad, el resumen, la ficha y el BOM salen de licenciaHa, y la regla vieja no vuelve', () => {
-  assert.strictEqual((JS.match(/licenciaHa\(/g) || []).length, 5, 'la definición y sus cuatro usos');
-  assert.doesNotMatch(JS, /la licencia no se comparte en HA/);
-  assert.doesNotMatch(JS, /cada nodo lleva su propia suscripción FortiGuard/);
-  assert.doesNotMatch(JS, /cada uno lleva su propia suscripción/);
+  // `(?<!\.)`: sin contar la llamada de la página a FortinetExplicacion.licenciaHa(.
+  assert.strictEqual((JS.match(/(?<!\.)licenciaHa\(/g) || []).length, 5, 'la definición y sus cuatro usos');
+  const MOD = fs.readFileSync(path.join(__dirname, '..', 'public', 'js', 'fortinet-explicacion.js'), 'utf8');
+  for (const fuente of [JS, MOD]) {
+    assert.doesNotMatch(fuente, /la licencia no se comparte en HA/);
+    assert.doesNotMatch(fuente, /cada nodo lleva su propia suscripción FortiGuard/);
+    assert.doesNotMatch(fuente, /cada uno lleva su propia suscripción/);
+  }
 });
 
 test('haLicenciaUnica llega al navegador: la proyección de /api/dimensionador/fortinet la conserva', () => {

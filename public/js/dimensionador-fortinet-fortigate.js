@@ -737,22 +737,9 @@ function unicaCotizada(m) {
   return !!(m && RES && RES.seleccion && RES.seleccion.id === m.id && RES.bom
     && (RES.bom.filas || []).some((f) => f.haUnica));
 }
-function licenciaHa(m, modo, cotizada = unicaCotizada(m)) {
-  if (modo === 'standalone') return null;
-  const u = m && m.haLicenciaUnica;
-  if (u && modo === 'ha-ap' && cotizada) {
-    return { unica: true, texto: `una sola suscripción para el par: ${u.skuHa} × 2 y un bundle registrado a su número de `
-      + 'serie virtual (licencia única de la guía de FortiOS 7.6.6)' };
-  }
-  if (u && modo === 'ha-ap') {
-    return { unica: true, texto: `este BOM cotiza una suscripción por nodo, pero la serie ${u.serie} admite una sola `
-      + `para el par en activo-pasivo, con dos unidades del SKU de HA (${u.skuHa || 'que la lista firmada no trae para '
-      + 'este modelo: consultar'}), según la guía de FortiOS 7.6.6` };
-  }
-  return { unica: false, texto: u
-    ? 'una suscripción por nodo: la licencia única de su serie solo vale en activo-pasivo (guía de FortiOS 7.6.6)'
-    : 'una suscripción por nodo: la guía de FortiOS 7.6.6 no da licencia única en HA a este modelo' };
-}
+// La regla vive en FortinetExplicacion.licenciaHa (fase 3.2, 2026-10-31); aquí solo se le pasa si el
+// BOM de la página ya cotiza la licencia única.
+function licenciaHa(m, modo, cotizada = unicaCotizada(m)) { return FortinetExplicacion.licenciaHa(m, modo, cotizada); }
 
 // Lo que cada control dice de si mismo segun el resto del escenario.
 function pintarControles(r) {
@@ -957,35 +944,8 @@ function pintarCabecera(r) {
 }
 
 /* ── UTILIZACION POR EJE: la decision explicable ─────────────────────────────────────── */
-function resumenDescartes(r) {
-  const sinDato = new Map();
-  const porCapacidad = new Map();
-  const porRestriccion = new Map();
-  for (const c of r.descartados) {
-    const ev = c.eval;
-    if (ev.estado === 'apartado' && ev.apartadoPor) {
-      if (!sinDato.has(ev.apartadoPor)) sinDato.set(ev.apartadoPor, { n: ev.apartadoPorN, modelos: [] });
-      sinDato.get(ev.apartadoPor).modelos.push(c.id);
-    } else if (ev.estado === 'excede' && ev.manda) {
-      const k = ev.manda.k;
-      if (!porCapacidad.has(k)) porCapacidad.set(k, { n: ev.manda.n, modelos: [] });
-      porCapacidad.get(k).modelos.push(c.id);
-    } else if (c.bloqueos.length) {
-      for (const b of c.bloqueos) {
-        if (!porRestriccion.has(b.codigo)) porRestriccion.set(b.codigo, { n: b.codigo, ejemplo: b.mensaje, modelos: [] });
-        porRestriccion.get(b.codigo).modelos.push(c.id);
-      }
-    }
-  }
-  return { sinDato, porCapacidad, porRestriccion };
-}
-const RESTRICCION_N = {
-  CICLO_VIDA: 'fuera de venta en compra nueva', FORTIOS_INCOMPATIBLE: 'FortiOS no admite la función pedida',
-  PROXY_LIMITADO: 'soporte proxy limitado', PUERTOS_INSUFICIENTES: 'puertos insuficientes',
-  ALMACENAMIENTO_SIN_DATO: 'disco sin dato', ALMACENAMIENTO_INSUFICIENTE: 'disco insuficiente',
-  POE_SIN_DATO: 'PoE sin dato', POE_NO_DISPONIBLE: 'sin PoE en el SKU base',
-  PSU_SIN_DATO: 'fuente sin dato', PSU_SIN_REDUNDANCIA: 'sin fuente redundante',
-};
+function resumenDescartes(r) { return FortinetExplicacion.resumenDescartes(r); }
+const RESTRICCION_N = FortinetExplicacion.RESTRICCION_N;
 function pintarEjes(r) {
   const caja = $('ejesPanel');
   const sel = r.seleccion;
@@ -1021,12 +981,7 @@ function pintarEjes(r) {
 // nueva): van al desplegable de la ficha, detrás de los vigentes y en rojo, como en Cisco (petición
 // del dueño, 2026-10-28). Nunca salen recomendados; elegir uno es el override de siempre, que
 // bloquea la cotización y pide declarar ampliación, renovación o co-term con su justificación.
-function fueraDeVentaQueCumplen(r) {
-  return r.candidatos
-    .filter((c) => !c.elegible && c.eol && c.eval.estado === 'ok' && c.bloqueos.length
-      && c.bloqueos.every((b) => b.codigo === 'CICLO_VIDA'))
-    .sort((a, b) => a.soporta - b.soporta);
-}
+function fueraDeVentaQueCumplen(r) { return FortinetExplicacion.fueraDeVentaQueCumplen(r); }
 // Fortinet llama fuera de venta también al equipo sin SKU de hardware en la lista firmada; la
 // ficha solo mira `eol`, así que se le pasa marcado para que lo pinte en rojo y lo diga.
 const comoFicha = (m) => (m.eol || m.hwSku ? m : { ...m, eol: true });
