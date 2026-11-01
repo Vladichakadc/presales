@@ -786,9 +786,21 @@ $('accBtn').addEventListener('click',()=>{
   if(!m||!ACCESSORY_COMPAT[m.id]) return;
   pintarAccModal(m);
   $('accModal').hidden=false;
+  // El foco entra en la ventana (la primera cantidad, o «Cerrar» si no hay ninguna), como en el
+  // consolidado desde el PR #62: quien navega con teclado no se queda detrás del velo.
+  ($('accLista').querySelector('input')||$('accCerrar')).focus();
 });
-$('accCerrar').addEventListener('click',()=>{ $('accModal').hidden=true; });
-$('accModal').addEventListener('click',e=>{ if(e.target===$('accModal')) $('accModal').hidden=true; });
+// Cerrar, de las tres maneras, devuelve el foco al botón que la abrió (2026-11-01, mejora propuesta
+// al cerrar el PR #95). Escape se escucha en la propia ventana y no sube al documento: así no cierra
+// a la vez otra ventana que escuche Escape en `document` (la del consolidado).
+function cerrarAcc(){
+  if($('accModal').hidden) return;
+  $('accModal').hidden=true;
+  $('accBtn').focus();
+}
+$('accCerrar').addEventListener('click',cerrarAcc);
+$('accModal').addEventListener('click',e=>{ if(e.target===$('accModal')) cerrarAcc(); });
+$('accModal').addEventListener('keydown',e=>{ if(e.key==='Escape'){ e.stopPropagation(); cerrarAcc(); } });
 $('accLista').addEventListener('input',e=>{
   const sku=e.target.dataset&&e.target.dataset.acc;
   if(!sku) return;
