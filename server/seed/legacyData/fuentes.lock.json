@@ -1021,6 +1021,20 @@
       "clase": "bytes",
       "bytes": 1680317,
       "medido": "2026-10-26T12:35:29.169Z"
+    },
+    "huawei::https://carrier.huawei.cn/-/media/cnbgv2/download/products/networks/Huawei-SD-WAN-N1-Business-Mode-datasheet-en.pdf": {
+      "documento": "Huawei SD-WAN N1 Business Model (datasheet, V100R019)",
+      "hashVerificado": "937153a0ade0f92836f31de6cbfff80a5d6c98d31bbc259888f4f2f5557c2276",
+      "clase": "bytes",
+      "bytes": 195638,
+      "medido": "2026-11-01T19:00:00.000Z"
+    },
+    "huawei::https://e.huawei.com/marketingcloud/pep/asset/20000001/Material/e3ae1dc4d0e34e08871f529f499579c7/M3T1A590N1069706146884108541/iMaster%20NCE-Campus%20Product%20Datasheet%20R24C00%201130.pdf": {
+      "documento": "iMaster NCE-Campus Product Datasheet R24C00",
+      "hashVerificado": "94a7dc05721b4454ca4e35199a4243ab8fdb673f406213a76c3c9fb352861b25",
+      "clase": "bytes",
+      "bytes": 1196653,
+      "medido": "2026-11-01T19:00:00.000Z"
     }
   },
   "revisado": "2026-10-26T12:35:29.169Z"

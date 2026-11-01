@@ -296,7 +296,7 @@ function seccionesHuawei(m, c){
     {titulo:'Licenciamiento propuesto', filas:lic,
      nota:'Todas las licencias se emiten contra el ESN del equipo y se descargan del portal ESDP de Huawei.'},
     {titulo:'Software y gestión', filas:[
-      ['iMaster NCE-WAN', 'Controlador y gestión del overlay SD-WAN, licenciado por nodo administrado', true],
+      ['iMaster NCE-WAN', 'Controlador y gestión del overlay SD-WAN. Su código y su modelo de licencia no están publicados: el paquete N1 lo combina con el software del gateway según su ficha de 2022 (series AR6300 a AR600); confirmarlo con Huawei', true],
       ['iMaster NCE-Campus', 'Automatización y O&M del campus y de los APs gestionados', true],
       ['eSight / NetEco', 'Gestión de red y monitorización de infraestructura', true],
     ]},

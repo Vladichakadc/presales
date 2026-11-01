@@ -351,7 +351,15 @@
           : fx && fx.n1
           ? { on: 1, t: 'Paquete N1 CloudCampus con SD-WAN, por equipo — elegir uno', d: `${fx.n1.f} (Foundation) o ${fx.n1.a} (Advanced)${doc}. Los dos traen topologías hub-spoke, full-mesh y partial-mesh, multi-hub y multi-VPN, IWG, A-FEC y duplicación de paquetes; Advanced añade multicast sobre SD-WAN, compresión, QoS adaptativo, ITP, NetStream, IFIT estático y orquestación de vCPE (ficha de la solución SD-WAN R25C00).` }
           : { on: 1, t: 'Licencia de función SD-WAN por equipo', d: 'Habilita identificación de aplicaciones, selección inteligente de ruta y túneles gestionados. La ficha de este modelo no se ha leído: código por confirmar.' });
-        L.push({ on: 1, t: `Suscripción iMaster NCE-WAN — ${T}`, d: 'Controlador y gestión del overlay. Se licencia por nodo administrado.' });
+        // EL CONTROLADOR, SIN CODIGO NI MODELO DE LICENCIA PUBLICADO (2026-11-01). Hasta hoy la linea
+        // daba por hecho, sin fuente, que se licenciaba por cada nodo. La ficha del modelo de negocio N1
+        // (feb-2022, V100R019) dice que el paquete N1 ya «combines the NCE controller» con el software
+        // del gateway, pero solo para las series AR6300, AR6200, AR6100 y AR600; la de iMaster
+        // NCE-Campus R24C00 no da escala ni licencias. Se dice eso y se pide confirmarlo.
+        L.push({ on: 1, t: `Suscripción iMaster NCE-WAN — ${T}`, d: 'Controlador y gestión del overlay. Huawei no publica su código ni '
+          + 'su modelo de licencia: la ficha del modelo de negocio N1 (feb-2022; series AR6300, AR6200, AR6100 y AR600) dice que el '
+          + 'paquete N1 ya combina el controlador NCE con el software del gateway, y la de iMaster NCE-Campus R24C00 no da escala ni '
+          + 'licencias. Confirmar con Huawei si la versión de hoy pide una suscripción aparte antes de cotizarla.' });
       } else if (fx && fx.n1 && fx.n1.sin) {
         L.push({ on: 0, t: 'Paquete N1 sin SD-WAN', d: `${fx.n1.sin}: CloudCampus sin SD-WAN, para gestionar el equipo desde iMaster NCE sin overlay${doc}.` });
       }

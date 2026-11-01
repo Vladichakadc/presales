@@ -1628,4 +1628,13 @@ module.exports = [
     'https://help.mikrotik.com/docs/spaces/UM/pages/93552657/CCR2004-16G-2S+PC',
     'https://manual.mikrotik.com/hardware/ccr2004-16g-2s-plus-pc',
   ] },
+  // · Huawei, el controlador iMaster NCE-WAN (2026-11-01): la ficha del modelo de negocio N1 (feb-2022,
+  //   V100R019: el paquete N1 «combines the NCE controller») y la de iMaster NCE-Campus R24C00 (sin
+  //   escala ni licencias). Las cita la línea «Suscripción iMaster NCE-WAN» del BOM de Huawei.
+  { archivo: 'huawei-n1-modelo-negocio.pdf', tipo: 'pdf', para: 'HUAWEI', urls: [
+    'https://carrier.huawei.cn/-/media/cnbgv2/download/products/networks/Huawei-SD-WAN-N1-Business-Mode-datasheet-en.pdf',
+  ] },
+  { archivo: 'huawei-nce-campus-r24c00.pdf', tipo: 'pdf', para: 'HUAWEI', urls: [
+    'https://e.huawei.com/marketingcloud/pep/asset/20000001/Material/e3ae1dc4d0e34e08871f529f499579c7/M3T1A590N1069706146884108541/iMaster%20NCE-Campus%20Product%20Datasheet%20R24C00%201130.pdf',
+  ] },
 ];
