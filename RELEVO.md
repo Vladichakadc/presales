@@ -379,7 +379,10 @@ traspaso (el #37, de otra sesión, se fusionó mientras se cerraba esta).
 - **MikroTik**: si la cifra IPsec es por sentido o la suma (respuesta escrita de soporte), figuras
   traseras que la galería no publica, el CCR2004-16G-2S+PC en la matriz de compatibilidad (su manual
   no dice qué módulos admite: lo cierra una respuesta escrita de soporte).
-- **Huawei**: ficha de iMaster NCE-Campus; **regiones y «flavors» del vCPE AR6700V-L**: están en la
+- **Huawei**: **el controlador iMaster NCE-WAN** —su código, su modelo de licencia y si el paquete N1 de
+  las series de hoy ya lo incluye: la ficha N1 de 2022 dice que sí para las de entonces y la de NCE-Campus
+  R24C00 no lo dice (PR #112); lo cierra la «License Usage Guide» de la versión actual, que pide cuenta, o
+  Huawei—; **regiones y «flavors» del vCPE AR6700V-L**: están en la
   sección «Supported Flavors» de sus guías de despliegue por nube (Azure EDOC1100591294, GCP
   EDOC1100592600, Huawei Cloud EDOC1100368764; URL en el pendiente 10 de Huawei), que a Actions solo
   le sirven un cascarón: lo cierra una persona que las abra en el navegador.
@@ -394,6 +397,15 @@ existen los workflows de transporte. Huawei y HPE niegan además el navegador au
 
 ## Mejoras propuestas sin decidir
 
+- **`[hidden]` gana siempre, en una sola regla** (propuesta al cerrar el PR #112). Hoy cada página
+  arregla el `hidden` que su `display` anula con una regla por clase (`.tabpane[hidden]`,
+  `.checks[hidden]`…), y la prueba del PR #112 obliga a añadirla. Una sola regla
+  `[hidden]{display:none !important}` en la hoja común (`public/controles.css`, que cargan los ocho
+  dimensionadores con casillas) y en las páginas que no la cargan lo resolvería de una vez, y la prueba
+  pasaría a comprobar que esa regla está. Evita el siguiente caso como el de la licencia única, que llegó
+  a producción. Cuesta una línea por hoja y revisar que ningún elemento se apoya en verse con `hidden`
+  (no debería: es justo el fallo); si se hace mal, algo que hoy se ve por error dejaría de verse, que es lo
+  correcto, y `pantallas`, `e2e` y axe lo mirarían. Se decide por el dueño.
 - **La medición de equivalencia, como herramienta del repositorio** (propuesta al cerrar el PR #100). Los cortes de la fase 3 se miden ejecutando la versión de `main` contra la nueva sobre el catálogo real (30.075 casos en el #99, 6.355 en el #100), pero el comparador se escribió a mano fuera del repositorio cada vez. Un `scripts/equivalencia.js` que reciba la página, los nombres de las funciones y un generador de casos, saque la versión de `main` con `git show` y compare (con una mutación de control), dejaría la regla del criterio del #99 en una orden. Evita que el siguiente corte se haga sin medir o con un comparador que no ve nada (el del #100 confundía los `Map` de otro contexto con objetos vacíos y daba 3.000 diferencias falsas). Cuesta un script y su prueba sin red; si se hace mal, da por equivalente lo que no lo es, y por eso exige la mutación de control. Se decide por el dueño.
 - **«Por <función>» también en Juniper y Nokia 7750** (propuesta al cerrar el PR #97). Desde el PR #97 las dos resaltan la línea del BOM que aparece al marcar una función, pero ese resaltado se borra con el siguiente cambio; la etiqueta fija «por <función>» (`por-funcion.js`) y su sección en «Supuestos» (PR #96) solo existen en Cisco, Fortinet, Huawei, Aruba y MikroTik. Propuesta: cargar `por-funcion.js` en las dos y poner `por` en el mismo `if` que crea cada línea opcional (en Juniper, las de seguridad desacoplada y licencias; en Nokia, lo que traiga cada casilla). Evita que en esas dos páginas el Excel archivado no diga de qué requisito sale una línea. Cuesta revisar los `if` de dos páginas y ampliar `test/por-funcion.test.js`, que ya frena un `por` que no es una casilla; si se hace mal, una línea que va siempre quedaría atribuida a una función, que es peor que no decir nada. Se decide por el dueño.
 - **Plan de mejora de los dimensionadores, aprobado el 2026-10-31**: lo que queda, en orden. 3.1 sacar el cálculo de la página de Aruba a módulos puros con prueba en Node (primera entrega en el PR #99: ópticas, EdgeHA y puertos; queda el estado derivado y la elección del modelo); 3.2 lo mismo en la página de Fortinet sin tocar el motor aprobado (primera entrega en el PR #100: la explicación del resultado; quedan `porQueDe` y `porQueSinCandidato`). La 1.1 (medir el arranque) se hizo en el PR #86.
