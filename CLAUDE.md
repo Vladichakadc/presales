@@ -452,7 +452,11 @@ Módulos compartidos:
 - `public/controles.css` — la hoja común de los ocho dimensionadores con casillas (Starlink no:
   usa interruptores): el rojo del ciclo de vida en los desplegables (`#B42318`, nunca `--red`, que
   es el color de marca de cada página) y la fila de la casilla de función marcada, resaltada con el
-  acento de la página al 6 % (AA con el texto gris), sin moverse de sitio.
+  acento de la página al 6 % (AA con el texto gris), sin moverse de sitio. **`[hidden]` gana siempre**
+  (2026-11-01, PR #115): `[hidden]{display:none !important}` aquí, en la hoja de Starlink y en el
+  `<style>` de las otras seis páginas, en vez de una regla por clase; el `!important` gana también a un
+  `#id{display:flex}`, y `test/oculto-visible.test.js` exige que cada página la alcance y frena un
+  `display` de autor con `!important` distinto de `none`.
 - `funciones-activas.js` — el panel «Funciones activadas» arriba de la columna de resultados de esas
   ocho páginas (2026-10-28): una pastilla por casilla de función marcada, con el mismo resaltado que su
   fila y un clic que lleva a ella. Lee las rejillas `.cols`/`.dim` (parámetros en la primera hija,

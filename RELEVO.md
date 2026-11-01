@@ -397,15 +397,15 @@ existen los workflows de transporte. Huawei y HPE niegan además el navegador au
 
 ## Mejoras propuestas sin decidir
 
-- **`[hidden]` gana siempre, en una sola regla** (propuesta al cerrar el PR #112). Hoy cada página
-  arregla el `hidden` que su `display` anula con una regla por clase (`.tabpane[hidden]`,
-  `.checks[hidden]`…), y la prueba del PR #112 obliga a añadirla. Una sola regla
-  `[hidden]{display:none !important}` en la hoja común (`public/controles.css`, que cargan los ocho
-  dimensionadores con casillas) y en las páginas que no la cargan lo resolvería de una vez, y la prueba
-  pasaría a comprobar que esa regla está. Evita el siguiente caso como el de la licencia única, que llegó
-  a producción. Cuesta una línea por hoja y revisar que ningún elemento se apoya en verse con `hidden`
-  (no debería: es justo el fallo); si se hace mal, algo que hoy se ve por error dejaría de verse, que es lo
-  correcto, y `pantallas`, `e2e` y axe lo mirarían. Se decide por el dueño.
+- **Una sola forma de ocultar: el atributo `hidden`** (propuesta al cerrar el PR #115). Desde ese PR
+  `[hidden]{display:none !important}` gana siempre, pero conviven otras dos formas de ocultar: la clase
+  `.hidden` (su regla copiada en el `<style>` de ocho dimensionadores, unos 25 usos en su JS) y
+  `style.display` (unos 35, sobre todo en `index.js`, `procedencia.js` y `cotizador.js`). Pasar las dos
+  al atributo dejaría una regla y una prueba para todo lo que se oculta, y quitaría el
+  `style.display = 'block'` que pisa el `display` que la hoja le da al elemento (un `flex` que vuelve
+  como `block`). Cuesta tocar una decena de archivos de `public/js/` y conducirlos con `e2e` y
+  `contraste`; si se hace mal, algo que hoy se muestra dejaría de verse (lo verían `pantallas` y las
+  baterías), y el `marcar()` de Juniper tiene que conservar su `data-inactivo`. Se decide por el dueño.
 - **Plan de mejora de los dimensionadores, aprobado el 2026-10-31**: lo que queda, en orden. (cada corte se mide con un caso en `scripts/equivalencias/`, `npm run equivalencia`) 3.1 sacar el cálculo de la página de Aruba a módulos puros con prueba en Node (PR #99: ópticas, EdgeHA y puertos; PR #111: el estado comercial derivado; PR #113: la elección del modelo. Hecha); 3.2 lo mismo en la página de Fortinet sin tocar el motor aprobado (hecha: PR #100 y PR #110). La 1.1 (medir el arranque) se hizo en el PR #86.
 - **Vigía semanal del ciclo de vida de Fortinet** (propuesta al cerrar el PR #68). Un workflow que
   cada lunes compare los FortiGate del catálogo con un listado de fin de vida y abra un issue si
