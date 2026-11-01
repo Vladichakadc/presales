@@ -1,12 +1,10 @@
 'use strict';
-// Fase 3.1, tercera entrega (2026-11-01): el filtro de candidatos de Aruba sale de render() a
-// `ArubaReglas.filtrarCandidatos`. La versión vieja es el bloque de la página en la referencia, tal
-// cual, envuelto en una función que declara las mismas variables que render() tenía a mano (y un `$`
-// que devuelve el nivel de PQC del caso). Las funciones de la página que el filtro llama (capacidad,
-// filtro de familia, puertos, Central, PQC) se sacan también de la referencia y son las MISMAS para
-// las dos versiones: lo que se mide es el filtro.
+// El filtro de candidatos de Aruba, `ArubaReglas.filtrarCandidatos`: el módulo de la base contra el del
+// árbol de trabajo. Nació para medir la fase 3.1 (PR #113), cuando la versión vieja era el bloque de
+// render() tomado tal cual de la página; ya fusionado, vigila el módulo en cada PR que lo toque. Las
+// funciones de la página que el filtro llama (capacidad, filtro de familia, puertos, Central, PQC) salen
+// del árbol de trabajo y son las MISMAS para las dos versiones: lo que se mide es el filtro.
 //   npm run equivalencia -- scripts/equivalencias/aruba-eleccion.js
-const { execFileSync } = require('child_process');
 const path = require('path');
 const vm = require('vm');
 
@@ -22,9 +20,6 @@ function trozo(src, desde, hasta) {
   return src.slice(i, j + hasta.length);
 }
 
-const CTX = ['coincideFiltro', 'famMode', 'personaMode', 'PERSONA_MODELOS', 'boost', 'secMode', 'ArubaReglas', 'IMIX_FACTOR', 'needProc', 'fmt',
-  'centralParaModelo', 'capacidadMax', 'capacidadComparable', 'needDe', 'clientesMax', 'apsMax', 'users', 'aps', 'flujosDe', 'flujosReq',
-  'D', 'evaluarPuertos', 'PQC', 'soMode', 'SO_NOMBRE'];
 const SALIDA = ['candidates', 'outByBoost', 'outByClients', 'outByAps', 'outBySinDato', 'outByFlujos', 'outByPersona', 'outBySo', 'outByDtd',
   'outByBoostRec', 'outBySinSec', 'outByIds', 'outByIdsEc', 'outByPuertos', 'outByPqc'];
 
@@ -32,10 +27,12 @@ let comun = null; // las funciones de la página y los modelos por SO, iguales p
 let G = null;
 
 module.exports = {
-  nombre: 'Aruba: el filtro de candidatos, de render() (main) a ArubaReglas.filtrarCandidatos',
-  cargar({ actual }) {
-    const ref = (process.argv.find((a) => a.startsWith('--ref=')) || '--ref=origin/main').slice(6);
-    const src = execFileSync('git', ['show', `${ref}:${PAGINA}`], { cwd: RAIZ, encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 });
+  nombre: 'Aruba: el filtro de candidatos (ArubaReglas.filtrarCandidatos), base contra árbol de trabajo',
+  mide: ['public/js/aruba-reglas.js'],
+  cargar({ desdeRef, actual }) {
+    const baseR = desdeRef(['public/js/aruba-reglas.js']).ArubaReglas;
+    if (typeof baseR.filtrarCandidatos !== 'function') return { sinBase: 'la base no trae ArubaReglas.filtrarCandidatos (llegó en el PR #113)' };
+    const src = require('fs').readFileSync(path.join(RAIZ, PAGINA), 'utf8');
     G = actual(['public/js/aruba-reglas.js', 'public/js/pqc.js']);
     const R = G.ArubaReglas;
     // Las funciones de la página que el filtro llama, del texto de la referencia.
@@ -53,21 +50,11 @@ module.exports = {
     comun = { ...pagina.__p, ArubaReglas: R, PQC: G.PQC, fmt: R.fmt,
       clientesMax: R.clientesMax, apsMax: R.apsMax, flujosDe: R.flujosDe,
       centralParaModelo: (m, nivel, termYrs, sec) => R.centralParaModelo({ centralSerie: A.CENTRAL_POR_SERIE, central: A.CENTRAL_TIERS, skuCat: [] }, m, nivel, termYrs, sec) };
-    // El bloque viejo, sin tocar, dentro de una función con las variables que render() tenía a mano.
-    const bloque = trozo(src, '  let outByBoost=0,outByClients=0,outByAps=0,outBySinDato=0,outByFlujos=0,outByPersona=0,sobrado=[];\n',
-      '\n    return true;\n  });\n');
-    const viejoCtx = vm.createContext({});
-    vm.runInContext(`globalThis.__filtroViejo = function (MODELS, ctx) {
-      const { ${CTX.join(', ')} } = ctx;
-      const $ = () => ({ value: ctx.nivelPqc });
-      ${bloque}
-      return { ${SALIDA.join(', ')} };
-    };`, viejoCtx);
     const ids = (x) => (Array.isArray(x) ? x.map((e) => (e && e.id ? e.id : e && e.m ? { id: e.m.id, motivo: e.motivo } : e)) : x);
     const forma = (r) => Object.fromEntries(SALIDA.map((k) => [k, ids(r[k])]));
     const ctxDe = (c) => ({ ...comun, ...c, evaluarPuertos: (m, links) => R.evaluarPuertos(acc, m, links, c.unidades) });
     return {
-      viejo: (MODELS, c) => forma(viejoCtx.__filtroViejo(MODELS, ctxDe(c))),
+      viejo: (MODELS, c) => forma(baseR.filtrarCandidatos(MODELS, ctxDe(c))),
       nuevo: (MODELS, c) => forma(R.filtrarCandidatos(MODELS, ctxDe(c))),
       // La mutación: el filtro nuevo pidiendo el doble de caudal (cambia los candidatos) y con la PQC
       // exigida de otra forma (cambia los apartados por PQC).

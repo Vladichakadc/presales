@@ -1,12 +1,11 @@
 'use strict';
-// Fase 3.2, segunda entrega (2026-11-01): `porQueSinCandidato` y `porQueDe` salen de la página de
-// Fortinet a `fortinet-explicacion.js`. La versión vieja vivía dentro de la página, que no se puede
-// ejecutar entera fuera del navegador: se extrae su texto de la referencia (`git show`) y se ejecuta
-// con las MISMAS definiciones de la página (esc, fmt, cifra, nMil, TIERS, CAMPO_N), sacadas también de
-// la referencia, sobre el motor y las reglas de esa misma referencia. La nueva es la del módulo, con el
-// contexto que arma la página. Las dos leen los mismos resultados del motor actual.
+// `porQueSinCandidato` y `porQueDe` de `fortinet-explicacion.js`: el módulo de la base contra el del
+// árbol de trabajo, sobre resultados del motor actual. Nació para medir la fase 3.2 (PR #110), cuando
+// la versión vieja vivía en la página y se extraía de su texto; ya fusionado, vigila que un cambio
+// en el módulo no altere la explicación sin decirlo (en CI, `npm run equivalencia -- --todos`). Las
+// definiciones que la página le pasa (esc, fmt, cifra, nMil, TIERS, CAMPO_N) salen de la página del
+// árbol de trabajo y son las mismas para las dos versiones: lo que se mide es el módulo.
 //   npm run equivalencia -- scripts/equivalencias/fortinet-porque.js
-const { execFileSync } = require('child_process');
 const path = require('path');
 const vm = require('vm');
 
@@ -50,48 +49,30 @@ let CAT = null;
 let G = null; // el contexto actual: motor que da los resultados y módulo nuevo
 
 module.exports = {
-  nombre: 'Fortinet: porQueSinCandidato y porQueDe, de la página (main) al módulo fortinet-explicacion.js',
+  nombre: 'Fortinet: porQueSinCandidato y porQueDe (fortinet-explicacion.js), base contra árbol de trabajo',
+  mide: ['public/js/fortinet-explicacion.js'],
   cargar({ desdeRef, actual }) {
     CAT = catalogo();
     G = actual(MODULOS);
-    const viejoG = desdeRef(MODULOS);
-    const ref = process.argv.find((a) => a.startsWith('--ref='));
-    const src = execFileSync('git', ['show', `${ref ? ref.slice(6) : 'origin/main'}:${PAGINA}`], { cwd: RAIZ, encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 });
-    const funciones = trozo(src, 'function porQueSinCandidato(r) {', '\n}\n') + trozo(src, 'function porQueDe(r, c) {', '\n}\n');
-    // La página vieja: sus definiciones, sus dos funciones y lo que leían de sus globales.
-    vm.runInContext(`
-      const R = FortinetReglas; const M = FortinetMotor;
-      function resumenDescartes(r) { return FortinetExplicacion.resumenDescartes(r); }
-      const RESTRICCION_N = FortinetExplicacion.RESTRICCION_N;
-      var MODELS = []; var rolSdwan = 'none';
-      function licenciaHa(m, modo) { return FortinetExplicacion.licenciaHa(m, modo, false); }
-      ${definiciones(src)}
-      ${funciones}
-      globalThis.__vieja = { porQueSinCandidato, porQueDe, poner(models, rol) { MODELS = models; rolSdwan = rol; },
-        defs: { esc, fmt, cifra, nMil, TIER_BY_K, CAMPO_N } };`, viejoG);
-    const V = viejoG.__vieja;
-    V.poner(CAT.models, 'none');
-    // La nueva: el módulo actual con el contexto que arma la página (mismas definiciones, mismos datos).
-    const ctxDe = (rol) => ({ ...V.defs, MODELS: CAT.models, rolSdwan: rol, R: G.FortinetReglas, M: G.FortinetMotor,
-      licenciaHa: (m, modo) => G.FortinetExplicacion.licenciaHa(m, modo, false) });
-    const viejo = (r) => {
-      V.poner(CAT.models, r.snapshot.topologia.rol);
-      return [V.porQueSinCandidato(r), ...r.candidatos.slice(0, 4).map((c) => V.porQueDe(r, c)), V.porQueDe(r, null)];
-    };
-    const nuevo = (r) => {
-      const X = G.FortinetExplicacion;
-      const ctx = ctxDe(r.snapshot.topologia.rol);
+    const base = desdeRef(MODULOS);
+    if (typeof base.FortinetExplicacion.porQueDe !== 'function') return { sinBase: 'la base no trae FortinetExplicacion.porQueDe (llegó en el PR #110)' };
+    const src = require('fs').readFileSync(path.join(RAIZ, PAGINA), 'utf8');
+    const defsCtx = vm.createContext({});
+    vm.runInContext(`${definiciones(src)}\nglobalThis.__d = { esc, fmt, cifra, nMil, TIER_BY_K, CAMPO_N };`, defsCtx);
+    const D = defsCtx.__d;
+    const ctxDe = (rol, extra) => ({ ...D, MODELS: CAT.models, rolSdwan: rol, R: G.FortinetReglas, M: G.FortinetMotor,
+      licenciaHa: (m, modo) => G.FortinetExplicacion.licenciaHa(m, modo, false), ...extra });
+    const con = (X, ctxPara) => (r) => {
+      const ctx = ctxPara(r);
       return [X.porQueSinCandidato(r, ctx), ...r.candidatos.slice(0, 4).map((c) => X.porQueDe(r, c, ctx)), X.porQueDe(r, null, ctx)];
     };
-    // La mutación: el rol SD-WAN que no es (cambia el texto del overlay en `porQueDe`) y los nombres de
-    // las capas en mayúsculas (cambia el requerimiento que dicen las dos funciones).
-    const TIER_MAYUS = Object.fromEntries(Object.entries(V.defs.TIER_BY_K).map(([k, t]) => [k, { ...t, n: t.n.toUpperCase() }]));
-    const mutado = (r) => {
-      const X = G.FortinetExplicacion;
-      const ctx = { ...ctxDe(r.snapshot.topologia.rol === 'hub' ? 'spoke' : 'hub'), TIER_BY_K: TIER_MAYUS };
-      return [X.porQueSinCandidato(r, ctx), ...r.candidatos.slice(0, 4).map((c) => X.porQueDe(r, c, ctx)), X.porQueDe(r, null, ctx)];
+    // La mutación: el rol SD-WAN que no es y los nombres de las capas en mayúsculas.
+    const TIER_MAYUS = Object.fromEntries(Object.entries(D.TIER_BY_K).map(([k, t]) => [k, { ...t, n: t.n.toUpperCase() }]));
+    return {
+      viejo: con(base.FortinetExplicacion, (r) => ctxDe(r.snapshot.topologia.rol)),
+      nuevo: con(G.FortinetExplicacion, (r) => ctxDe(r.snapshot.topologia.rol)),
+      mutado: con(G.FortinetExplicacion, (r) => ctxDe(r.snapshot.topologia.rol === 'hub' ? 'spoke' : 'hub', { TIER_BY_K: TIER_MAYUS })),
     };
-    return { viejo, nuevo, mutado };
   },
   // Resultados del motor actual sobre escenarios al azar (semilla fija) y los 58 modelos elegidos a mano.
   casos() {

@@ -10,6 +10,7 @@ const FABRICANTES = ['aruba', 'cisco', 'fortinet', 'huawei', 'juniper', 'mikroti
 
 module.exports = {
   nombre: 'PQC.motivo (public/js/pqc.js) sobre los modelos del catálogo',
+  mide: ['public/js/pqc.js'],
   cargar({ desdeRef, actual }) {
     const viejo = desdeRef(['public/js/pqc.js']).PQC;
     const nuevo = actual(['public/js/pqc.js']).PQC;

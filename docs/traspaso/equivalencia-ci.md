@@ -3,10 +3,10 @@
 - **Tema:** Las equivalencias en CI: cada PR vuelve a medir los casos cuyos archivos toca
 - **Rama:** claude/equivalencia-ci
 - **Cuenta:** vladichakadc@gmail.com (sesión 016ruRWCH48mtdRjcg83pvKa)
-- **Estado:** reservado
+- **Estado:** en curso
 - **Actualizado:** 2026-11-01 16:55
-- **Archivos que toca:** scripts/equivalencia.js, scripts/equivalencias/, test/equivalencia.test.js, .github/workflows/ci.yml, RELEVO.md, CLAUDE.md
-- **Siguiente paso:** mide en cada caso, --todos con --base, aceptación en el PR, paso en el workflow
+- **Archivos que toca:** scripts/equivalencia.js, scripts/equivalencias/, test/equivalencia.test.js, .github/workflows/verificar.yml, RELEVO.md, CLAUDE.md
+- **Siguiente paso:** PR, ver el paso nuevo en su CI y cierre
 
 ## Encargo del dueño
 
