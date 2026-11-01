@@ -65,5 +65,7 @@ test('«Copiar informe» copia lo mismo que la consola y solo existe con el avis
   assert.match(js, /class="btn-act-informe" hidden/, 'nace oculto');
   assert.match(js, /navigator\.clipboard\.writeText\(informe\)/);
   assert.doesNotMatch(js, /fetch\(|XMLHttpRequest|sendBeacon/, 'nada sale del navegador');
-  assert.match(leer('public/actualizar.css'), /\.btn-act-informe\[hidden\] \{ display: none; \}/);
+  // Que nazca oculto de verdad (su clase pone `display`) ya no depende de una regla suya: lo da la regla
+  // única `[hidden]{display:none !important}` (2026-11-01, tras el PR #112), que las nueve páginas que
+  // cargan esta hoja alcanzan y que `test/oculto-visible.test.js` exige.
 });
