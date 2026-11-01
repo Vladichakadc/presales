@@ -73,4 +73,6 @@ no se descarta sola: si su tema ya está en `main`, `--aunque <rama>` la pasa po
 nuevo lo deja dicho. Si está libre, arma un commit con el traspaso sobre `origin/main` en un índice
 temporal (el árbol de trabajo no se toca) y lo empuja **sin `--force`**: si otra sesión creó la
 misma rama a la vez, GitHub rechaza el segundo push y la reserva es de la primera. `--comprobar`
-solo mira. Las reglas y la carrera se prueban sin red en `test/reservar.test.js`.
+solo mira. Las reglas y la carrera se prueban sin red en `test/reservar.test.js`. Desde el 2026-11-01 (PR #116) dice
+también qué caso de `scripts/equivalencias/` vigila los archivos reservados (se mide en cada PR) y cómo
+declarar un cambio de comportamiento hecho a propósito; queda escrito en el traspaso.
