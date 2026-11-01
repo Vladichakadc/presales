@@ -1,6 +1,7 @@
 # Relevo
 
-Última actualización: 2026-10-31 · PR #97
+Las entregas, una por archivo en `docs/entregas/` desde el 2026-10-31 (`npm run entregas` resume las
+más recientes).
 
 Informe para continuar el trabajo. Lo pidió el dueño del repositorio el 2026-10-27: «de aquí en
 adelante, un informe de pendientes y mejoras para que la cuenta **servicioiptv2025@gmail.com**
@@ -23,15 +24,20 @@ está en curso no va aquí: lo dice `npm run traspasos` (protocolo en `docs/tras
    pantalla conducida en el navegador (`npm run pantallas`, los casos de `npm run contraste`,
    `npm run e2e`, `npm run puerta`). Railway despliega `main` cuando CI pasa.
 4. **Al fusionar**: abre el PR primero, porque **la entrega se nombra por fecha y número de PR**
-   (`AAAA-MM-DD · PR #N`, nunca por ordinal); rebase sobre `main`; `PENDIENTES.md` (lo cerrado a
-   *Cerrado recientemente*), este archivo y `CLAUDE.md` si cambió una regla; el traspaso del tema se
-   borra en ese commit.
+   (`AAAA-MM-DD · PR #N`, nunca por ordinal); en el commit de cierre, **su archivo**
+   `docs/entregas/AAAA-MM-DD-pr-N.md` (de `PLANTILLA.md`: encargo, `## Cerrado` y `## Estado`), los
+   puntos de `PENDIENTES.md` y las secciones vivas de este archivo que cambien, y `CLAUDE.md` si
+   cambió una regla; el traspaso del tema se borra en ese commit. Nada de cabeceras ni de entradas
+   arriba de `PENDIENTES.md` o de este archivo: era donde chocaban las fusiones en paralelo.
 5. **Lo que no se negocia**: nunca se inventa un dato (sin documento oficial, `null` y «sin dato»);
    un 403 del proxy de egreso se reporta, no se rodea; los documentos de los fabricantes se traen con
    `traer-cisco-huawei.yml` a una rama `fuente/*` nueva por corrida; las decisiones del dueño no se
    toman por silencio; todo el texto visible, en español.
 
 ## Estado al cerrar esta entrega
+
+> Desde el 2026-10-31, el estado de cada entrega va en su archivo de `docs/entregas/` (`## Estado`); lo
+> de abajo es el registro anterior y no recibe entradas nuevas.
 
 - **2026-10-31 · PR #97**: lo que trae una función, resaltado también en la lista de materiales (fase 2.2 del plan aprobado). **Criterio que conviene conservar**: el resaltado sale de comparar la pantalla antes y después del clic, nunca de un mapa función→línea; una tabla nueva fuera de la columna de resultados entra en la foto como `#bomTabla` (`lineasBom`), y su prueba abre la pestaña después de marcar.
 - **2026-10-31 · PR #96**: «Líneas por función» en la hoja «Supuestos» del Excel (fase 2.1 del plan aprobado). **Criterio que conviene conservar**: la procedencia de una línea sale de su `por`, el mismo dato que pinta la etiqueta en pantalla; nunca un mapa aparte, y nunca en la hoja «BOM» del cliente.
@@ -390,7 +396,7 @@ existen los workflows de transporte. Huawei y HPE niegan además el navegador au
 
 - **«Por <función>» también en Juniper y Nokia 7750** (propuesta al cerrar el PR #97). Desde el PR #97 las dos resaltan la línea del BOM que aparece al marcar una función, pero ese resaltado se borra con el siguiente cambio; la etiqueta fija «por <función>» (`por-funcion.js`) y su sección en «Supuestos» (PR #96) solo existen en Cisco, Fortinet, Huawei, Aruba y MikroTik. Propuesta: cargar `por-funcion.js` en las dos y poner `por` en el mismo `if` que crea cada línea opcional (en Juniper, las de seguridad desacoplada y licencias; en Nokia, lo que traiga cada casilla). Evita que en esas dos páginas el Excel archivado no diga de qué requisito sale una línea. Cuesta revisar los `if` de dos páginas y ampliar `test/por-funcion.test.js`, que ya frena un `por` que no es una casilla; si se hace mal, una línea que va siempre quedaría atribuida a una función, que es peor que no decir nada. Se decide por el dueño.
 - **La ventana de ópticas de Aruba, accesible como la del consolidado** (propuesta al cerrar el PR #95). `#accModal` ya se ve igual que el consolidado, pero no se porta igual: no se cierra con Escape, su caja no lleva `role="dialog"`, `aria-modal` ni título enlazado, y al cerrar el foco no vuelve al botón que la abrió (solo el clic fuera o «Cerrar»). La del consolidado hace las tres cosas desde el PR #62. Evita que quien navega con teclado o lector de pantalla quede atrapado o perdido en la lista de ópticas. Cuesta unas diez líneas en `dimensionador-aruba-edgeconnect.js` y el marcado de la caja, más un caso en `e2e-accesibilidad.js` (abrir, Escape, foco de vuelta); si se hace mal, Escape podría cerrar también otra ventana abierta o el foco saltar al principio de la página. Se decide por el dueño.
-- **Plan de mejora de los dimensionadores, aprobado el 2026-10-31**: lo que queda, en orden. 3.1 sacar el cálculo de la página de Aruba (3.673 líneas) a módulos puros con prueba en Node, con `contraste` antes y después de cada PR; 3.2 lo mismo en la página de Fortinet (2.141 líneas) sin tocar el motor aprobado. La 1.1 (medir el arranque) se hizo en el PR #86.
+- **Plan de mejora de los dimensionadores, aprobado el 2026-10-31**: lo que queda, en orden. 3.1 sacar el cálculo de la página de Aruba a módulos puros con prueba en Node (primera entrega en el PR #99: ópticas, EdgeHA y puertos; queda el estado derivado y la elección del modelo); 3.2 lo mismo en la página de Fortinet (2.141 líneas) sin tocar el motor aprobado. La 1.1 (medir el arranque) se hizo en el PR #86.
 - **Vigía semanal del ciclo de vida de Fortinet** (propuesta al cerrar el PR #68). Un workflow que
   cada lunes compare los FortiGate del catálogo con un listado de fin de vida y abra un issue si
   aparece un modelo nuevo. Evita que un anuncio como el del 60F pase sin verse. Cuesta un workflow
