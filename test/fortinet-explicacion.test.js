@@ -55,5 +55,21 @@ test('la página carga el módulo antes que su script y solo delega', () => {
   assert.match(pag, /^function resumenDescartes\(r\) \{ return FortinetExplicacion\.resumenDescartes\(r\); \}$/m);
   assert.match(pag, /^function fueraDeVentaQueCumplen\(r\) \{ return FortinetExplicacion\.fueraDeVentaQueCumplen\(r\); \}$/m);
   assert.match(pag, /^function licenciaHa\(m, modo, cotizada = unicaCotizada\(m\)\) \{ return FortinetExplicacion\.licenciaHa\(m, modo, cotizada\); \}$/m);
-  assert.match(pag, /^const RESTRICCION_N = FortinetExplicacion\.RESTRICCION_N;$/m);
+  // Fase 3.2, segunda entrega (2026-11-01): el porqué del resultado, con el contexto que arma la página.
+  assert.match(pag, /^function porQueSinCandidato\(r\) \{ return FortinetExplicacion\.porQueSinCandidato\(r, contextoExplicacion\(\)\); \}$/m);
+  assert.match(pag, /^function porQueDe\(r, c\) \{ return FortinetExplicacion\.porQueDe\(r, c, contextoExplicacion\(\)\); \}$/m);
+  assert.match(pag, /return \{ esc, fmt, cifra, nMil, MODELS, rolSdwan, TIER_BY_K, CAMPO_N, R, M, licenciaHa \};/);
+  assert.doesNotMatch(pag, /const why = \[\];|const flags = \[\];/, 'la página no conserva una copia del cuerpo');
+});
+
+// El módulo no lee nada de fuera: lo que necesita llega en `ctx`. Medido contra la página de main con
+// `npm run equivalencia -- scripts/equivalencias/fortinet-porque.js` (1.573 resultados del motor).
+test('porQueDe y porQueSinCandidato solo leen su contexto', () => {
+  assert.strictEqual(X.porQueDe({}, null, {}), '', 'sin candidato no hay explicación');
+  const ctx = { esc: (v) => String(v), fmt: (v) => `${v} Mbps`, MODELS: [], TIER_BY_K: {}, CAMPO_N: { 'escala.usuarios': 'usuarios' }, R: {} };
+  const html = X.porQueSinCandidato({ errores: [{ campo: 'escala.usuarios', mensaje: 'fuera de rango' }], faltan: ['topologia.enlaces'] }, ctx);
+  assert.match(html, /<b>usuarios<\/b>: fuera de rango\./);
+  assert.match(html, /Declara el <b>caudal<\/b>/);
+  const src = fs.readFileSync(path.join(__dirname, '..', 'public/js/fortinet-explicacion.js'), 'utf8');
+  assert.doesNotMatch(src, /\bdocument\.|\bwindow\.(?!FortinetExplicacion)/, 'sin DOM');
 });
