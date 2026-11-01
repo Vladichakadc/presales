@@ -27,7 +27,7 @@ const ARUBA_BOM = '/dimensionador-aruba-edgeconnect.html?users=120&perUser=2&wan
 
 const PANTALLAS = [
   { n: 'Portal', ruta: '/' },
-  // «Fuentes oficiales» (2026-11-01, PR #117) con la tabla de los siete ya comprobada: la ruta de salud
+  // «Fuentes oficiales» (2026-11-01, PR #118) con la tabla de los siete ya comprobada: la ruta de salud
   // se simula, como en e2e-fuentes-portal.js, porque la de verdad pega a los fabricantes.
   { n: 'Portal · fuentes oficiales comprobadas', ruta: '/',
     async preparar(page) {

@@ -6,7 +6,7 @@
 - **Estado:** en curso
 - **Actualizado:** 2026-11-01 18:10
 - **Archivos que toca:** public/index.html, public/js/fuentes-portal.js, public/js/index.js, test/fuentes-portal.test.js, test/e2e/e2e-fuentes-portal.js, test/e2e/e2e-accesibilidad.js
-- **Siguiente paso:** abrir el PR, conducir la página contra la ruta de verdad y cerrar la entrega
+- **Siguiente paso:** PR #118 abierto; conducir la página contra la ruta de verdad, la batería completa y cerrar la entrega
 
 ## Encargo del dueño
 
@@ -24,8 +24,8 @@ fabricantes desde el portal» (propuesta al cerrar el PR #71, en *Mejoras propue
 
 ## Falta
 
-- Módulo, página, prueba en Node que fije la serie, batería e2e con la ruta simulada (no pega a los
-  fabricantes), la pantalla en `e2e-accesibilidad.js`, verificación, PR, entrega y relevo.
+- Servidor de producción con la ruta de verdad, `pantallas`, `contraste --todos`, `e2e` completa, `puerta`,
+  entrega y relevo.
 
 ## Decisiones y hallazgos
 
