@@ -57,3 +57,15 @@ test('la carpeta se ordena por fecha y PR, sin la plantilla ni el README, y el r
   assert.match(r, /2026-10-31 · PR #100 · Algo que cambió/);
   assert.doesNotMatch(r, /PR #120/);
 });
+
+// El arranque de cada sesión enseña las tres últimas (2026-10-31, mejora aprobada al cerrar el PR #98):
+// sin la cabecera de RELEVO.md, una sesión nueva no veía qué se entregó lo último. Como el listado de
+// temas en curso, va antes de `npm install` y dentro de un `if` con tiempo límite: no corta el arranque.
+test('session-start.sh enseña las tres últimas entregas sin poder cortar el arranque', () => {
+  const hook = fs.readFileSync(path.join(__dirname, '..', '.claude/hooks/session-start.sh'), 'utf8');
+  const i = hook.indexOf('node scripts/entregas.js');
+  assert.ok(i > 0, 'session-start.sh no corre scripts/entregas.js');
+  assert.ok(i < hook.indexOf('npm install --no-audit'), 'va antes de npm install: no necesita dependencias');
+  const linea = hook.slice(hook.lastIndexOf('\n', i) + 1, hook.indexOf('\n', i));
+  assert.match(linea, /^if ! timeout \d+ node scripts\/entregas\.js --n=3\b/, 'dentro de un if con timeout, las tres últimas');
+});

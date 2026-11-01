@@ -62,6 +62,16 @@ if ! GIT_TERMINAL_PROMPT=0 timeout 90 node scripts/traspasos.js 2>&1 | sed 's/^/
   echo "[arranque] AVISO: no se pudieron listar los temas en curso; corre 'npm run traspasos' a mano."
 fi
 
+# LAS ULTIMAS ENTREGAS (2026-10-31, mejora aprobada al cerrar el PR #98). Desde que cada entrega vive
+# en su archivo de docs/entregas/, ni PENDIENTES.md ni RELEVO.md dicen arriba que se entrego lo
+# ultimo: se ve aqui, junto a los temas en curso. Solo lee archivos del repositorio (sin red ni
+# dependencias), asi que va tambien antes de `npm install`; nunca bloquea, y una entrega mal
+# formada sale como aviso aqui en vez de esperar a CI.
+echo "[arranque] Ultimas entregas (docs/entregas/):"
+if ! timeout 20 node scripts/entregas.js --n=3 2>&1 | sed 's/^/[arranque]   /'; then
+  echo "[arranque] AVISO: alguna entrega esta mal formada o no se pudo leer; corre 'npm run entregas' a mano."
+fi
+
 echo "[arranque] Instalando dependencias de npm..."
 # `npm install` y no `npm ci`: el estado del contenedor se cachea despues del hook, asi que
 # una instalacion incremental aprovecha esa cache. El fallo cerrado de `npm ci` ante un
