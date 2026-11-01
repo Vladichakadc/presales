@@ -470,8 +470,70 @@
     return { ...a, nivel, motivo };
   }
 
+  /* ESTADO COMERCIAL DERIVADO (fase 3.1, segunda entrega, 2026-11-01). Topes de la licencia de
+     capacidad (clientes, APs y el nivel que los cubre), el bloque de Boost, los flujos que publica cada
+     fuente, el precio y el SKU de un peldaño por término, y la suscripción de Central de cada gateway.
+     Trasladadas sin cambiar su cuerpo desde la página, que conserva los nombres como envoltorios; lo
+     que leían de sus globales (SIZING, CENTRAL_SERIE, CENTRAL, SKU_CAT, secMode) llega por parámetro,
+     con el mismo nombre. Medido con `npm run equivalencia -- scripts/equivalencias/aruba-estado.js`. */
+  function clientesMax(m){
+    if(m.licCap&&m.licCap.length) return Math.max(...m.licCap.map(t=>t.clients));
+    return m.clients;
+  }
+
+  function apsMax(m){
+    if(m.licCap&&m.licCap.length) return Math.max(...m.licCap.map(t=>t.aps));
+    return m.aps;
+  }
+
+  function nivelLicenciaNecesario(m,need,users,aps){
+    if(!m.licCap) return null;
+    return m.licCap.find(t=>t.fw>=need&&t.clients>=(users||0)&&t.aps>=(aps||0))
+      ||m.licCap[m.licCap.length-1];
+  }
+
+  function bloquesBoost(SIZING, mbps){
+    const b=(SIZING.boost&&SIZING.boost.bloque)||100;
+    return Math.max(1,Math.ceil(mbps/b));
+  }
+
+  function flujosDe(m){
+    if(m.fam==='ec'){
+      const s=m.spec&&m.spec.conexiones;
+      const n=s?parseInt(String(s).replace(/\D/g,''),10):NaN;
+      return Number.isFinite(n)?n:null;
+    }
+    return m.fwSess!=null?m.fwSess:null;
+  }
+
+  function tierPrice(t,y){ if(!t) return null; const v=t['y'+y]; return v==null?null:v; }
+
+  function tierSku(t,y){ if(!t||t.sku==null) return null; if(typeof t.sku==='string') return t.sku; return t.sku['y'+y]||null; }
+
+  function baseParaModelo(CENTRAL_SERIE, m, D, secMode){
+    const fam=Object.values(CENTRAL_SERIE).find(f=>(f.series||[]).includes(m.serie));
+    const t=fam&&fam[secMode==='gwsec'?'foundationBaseSec':'foundationBase'];
+    if(!t||!(t.modelos||[]).includes(m.id)||!(D.users<=t.maxClientes)) return null;
+    return {n:t.n, sku:(t.sku&&t.sku['y'+D.termYrs])||null, maxClientes:t.maxClientes};
+  }
+
+  function centralParaModelo({ centralSerie: CENTRAL_SERIE, central: CENTRAL, skuCat: SKU_CAT }, m, nivel, termYrs, conSeguridad){
+    if(!m||!nivel) return null;
+    const fam=Object.values(CENTRAL_SERIE).find(f=>(f.series||[]).includes(m.serie));
+    if(!fam) return null;
+    const t=fam[nivel+(conSeguridad?'Sec':'')];
+    if(!t||(t.soloSeries&&!t.soloSeries.includes(m.serie))) return null;
+    const sku=(t.sku&&t.sku['y'+termYrs])||null;
+    let precio=null;
+    const base=CENTRAL[nivel];
+    if(sku&&base&&tierSku(base,termYrs)===sku) precio=tierPrice(base,termYrs);
+    else if(sku){ const f=(SKU_CAT||[]).find(x=>x.sku===sku); if(f&&f.p!=null) precio=f.p; }
+    return {n:t.n, sku, precio};
+  }
+
   return { BOOST_CUOTA, tierParaCaudal, capacidadSo, boostMbpsSitio, boostRecMbps, admiteDtd, escenariosUnderlay, escenarioBoost,
     MEDIO_MBPS, medioMinimo, asignarPuertos, asignarPuertosPar, enlacesSobreMedio,
     LAN_RESERVADOS, NOMBRE_PUERTO, VELOCIDAD_OPTICA, VEL_JAULA, fmt, opticasPorVelocidad, parEdgeHA, velocidadEdgeHA, sinJaulasSfp,
-    velocidadesJaula, opcionesHa, interconexionEdgeHA, inventarioTxt, cobreSfp, auditarPuertos, motivoPuertos, evaluarPuertos };
+    velocidadesJaula, opcionesHa, interconexionEdgeHA, inventarioTxt, cobreSfp, auditarPuertos, motivoPuertos, evaluarPuertos,
+    clientesMax, apsMax, nivelLicenciaNecesario, bloquesBoost, flujosDe, tierPrice, tierSku, baseParaModelo, centralParaModelo };
 });

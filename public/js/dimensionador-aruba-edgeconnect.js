@@ -1325,20 +1325,10 @@ function capacidadComparable(m){
 // En la serie 9200 la licencia perpetua amplia tambien clientes y APs, no solo el
 // throughput: filtrar por la cifra de solo-hardware descartaba un 9240 que si cumple con
 // Gold. Se compara contra el techo alcanzable y luego se informa que nivel hace falta.
-function clientesMax(m){
-  if(m.licCap&&m.licCap.length) return Math.max(...m.licCap.map(t=>t.clients));
-  return m.clients;
-}
-function apsMax(m){
-  if(m.licCap&&m.licCap.length) return Math.max(...m.licCap.map(t=>t.aps));
-  return m.aps;
-}
+function clientesMax(m){ return ArubaReglas.clientesMax(m); }
+function apsMax(m){ return ArubaReglas.apsMax(m); }
 // Nivel de licencia que cubre a la vez throughput, clientes y APs.
-function nivelLicenciaNecesario(m,need,users,aps){
-  if(!m.licCap) return null;
-  return m.licCap.find(t=>t.fw>=need&&t.clients>=(users||0)&&t.aps>=(aps||0))
-    ||m.licCap[m.licCap.length-1];
-}
+function nivelLicenciaNecesario(m,need,users,aps){ return ArubaReglas.nivelLicenciaNecesario(m,need,users,aps); }
 
 // C1 de la auditoria 2026-09-17: el tier se elige SOLO entre los que existen para el
 // nivel deducido. Antes recorria los 8 tiers de SIZING.bwTiers sin mirar el nivel y
@@ -1387,10 +1377,7 @@ const SPEC_LABELS=[
 // repiten en cada modelo porque el documento las declara a nivel de línea.
 const EC_AMBIENTE='Operación 0 – 40 °C · almacenamiento -40 – 65 °C · altitud 3.048 m operando / 12.192 m almacenado · humedad 5 – 95 % sin condensar';
 // Boost se licencia en bloques de 100 Mbps que forman un pool del fabric.
-function bloquesBoost(mbps){
-  const b=(SIZING.boost&&SIZING.boost.bloque)||100;
-  return Math.max(1,Math.ceil(mbps/b));
-}
+function bloquesBoost(mbps){ return ArubaReglas.bloquesBoost(SIZING,mbps); }
 
 /* ══ REFACTOR ARQUITECTÓNICO 2026-09-13 (petición del dueño, documento «Actúa como un
    Arquitecto de Soluciones de Redes») ══
@@ -1403,14 +1390,7 @@ function bloquesBoost(mbps){
 // simultáneas» del datasheet (spec.conexiones, texto con miles); los gateways como
 // sesiones de firewall (fwSess, ya numérico). null = la fuente no lo publica para ese
 // modelo (EC-V) y el motor lo declara en vez de inventarlo.
-function flujosDe(m){
-  if(m.fam==='ec'){
-    const s=m.spec&&m.spec.conexiones;
-    const n=s?parseInt(String(s).replace(/\D/g,''),10):NaN;
-    return Number.isFinite(n)?n:null;
-  }
-  return m.fwSess!=null?m.fwSess:null;
-}
+function flujosDe(m){ return ArubaReglas.flujosDe(m); }
 // Tasa de flujos por usuario según el perfil de entorno. Brief del duenyo 2026-09-13
 // (fase 11): 80 estandar / 150 intensivo — punto medio del rango 80-100 / 150-200 que la
 // arquitectura declaro en fase 9. SIN FUENTE oficial: HPE no publica flujos por usuario;
@@ -2605,12 +2585,12 @@ function accesoriosInyectados(m,D){
 // Término genérico y1/y3/y5/y7 (2026-09-15, pendiente #28): antes y=7 caía al else de
 // y3 y cotizaba 7 años A PRECIO DE 3 — una subcotización silenciosa. Clave directa y
 // null cuando el peldaño no publica ese término (la interfaz muestra «consultar»).
-function tierPrice(t,y){ if(!t) return null; const v=t['y'+y]; return v==null?null:v; }
+function tierPrice(t,y){ return ArubaReglas.tierPrice(t,y); }
 // El SKU de una suscripción depende de la duración (1/3/5/7 años — y7 desde el
 // 2026-09-15, pendiente #28): `sku` puede ser un objeto {y1,y3,y5,y7}. Se acepta
 // también la forma plana por compatibilidad. Misma corrección que tierPrice: clave
 // directa, sin else que cotizara 7 años a precio de 3.
-function tierSku(t,y){ if(!t||t.sku==null) return null; if(typeof t.sku==='string') return t.sku; return t.sku['y'+y]||null; }
+function tierSku(t,y){ return ArubaReglas.tierSku(t,y); }
 // A3 (2026-09-24): la suscripción de Central que corresponde a ESTE gateway — por su serie, su
 // nivel (foundation/advanced), el término y si lleva «+ Security» (IDS/IPS, estrategia gwsec).
 // El SKU sale de CENTRAL_SERIE (documento oficial de HPE); el precio, solo de lo verificado:
@@ -2618,25 +2598,8 @@ function tierSku(t,y){ if(!t||t.sku==null) return null; if(typeof t.sku==='strin
 // Devuelve null si el documento no publica ese nivel para esa serie (p. ej. Security en 70xx).
 // A4: el nivel Foundation Base (o Base + Security con gwsec) que aplica a este gateway y a
 // este número de usuarios, o null. Modelos y tope de clientes, del documento oficial.
-function baseParaModelo(m, D){
-  const fam=Object.values(CENTRAL_SERIE).find(f=>(f.series||[]).includes(m.serie));
-  const t=fam&&fam[secMode==='gwsec'?'foundationBaseSec':'foundationBase'];
-  if(!t||!(t.modelos||[]).includes(m.id)||!(D.users<=t.maxClientes)) return null;
-  return {n:t.n, sku:(t.sku&&t.sku['y'+D.termYrs])||null, maxClientes:t.maxClientes};
-}
-function centralParaModelo(m, nivel, termYrs, conSeguridad){
-  if(!m||!nivel) return null;
-  const fam=Object.values(CENTRAL_SERIE).find(f=>(f.series||[]).includes(m.serie));
-  if(!fam) return null;
-  const t=fam[nivel+(conSeguridad?'Sec':'')];
-  if(!t||(t.soloSeries&&!t.soloSeries.includes(m.serie))) return null;
-  const sku=(t.sku&&t.sku['y'+termYrs])||null;
-  let precio=null;
-  const base=CENTRAL[nivel];
-  if(sku&&base&&tierSku(base,termYrs)===sku) precio=tierPrice(base,termYrs);
-  else if(sku){ const f=(SKU_CAT||[]).find(x=>x.sku===sku); if(f&&f.p!=null) precio=f.p; }
-  return {n:t.n, sku, precio};
-}
+function baseParaModelo(m, D){ return ArubaReglas.baseParaModelo(CENTRAL_SERIE, m, D, secMode); }
+function centralParaModelo(m, nivel, termYrs, conSeguridad){ return ArubaReglas.centralParaModelo({centralSerie:CENTRAL_SERIE, central:CENTRAL, skuCat:SKU_CAT}, m, nivel, termYrs, conSeguridad); }
 
 // M6 (auditoría 2026-09-17, corregido 2026-09-24): con la página vacía el desplegable cae a
 // su primera opción (EC-XS) y el BOM cotizaba ese equipo con precio y «[OK] Diseño coherente»
