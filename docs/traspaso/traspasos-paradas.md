@@ -3,7 +3,7 @@
 - **Tema:** npm run traspasos marca las ramas paradas y si su tema ya está fusionado
 - **Rama:** claude/traspasos-paradas
 - **Cuenta:** vladichakadc@gmail.com (sesión 016ruRWCH48mtdRjcg83pvKa)
-- **Estado:** reservado
+- **Estado:** en curso
 - **Actualizado:** 2026-11-01 13:09
 - **Archivos que toca:** scripts/traspasos.js, test/traspasos.test.js, docs/traspaso/README.md, RELEVO.md, CLAUDE.md
 - **Siguiente paso:** marca en traspasos.js y su prueba
