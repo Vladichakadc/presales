@@ -137,8 +137,8 @@ npm run propuesta   # aplica una propuesta de la sincronización sobre legacyDat
 
 # Fuentes y documentos (lo que descarga necesita salida a internet: IMPORTAR-CATALOGO.md)
 npm run traspasos   # temas en curso: ramas con docs/traspaso/<tema>.md y PR abiertos sin él; marca las paradas (solo lee)
-npm run reservar    # reserva un tema antes de escribir código: empuja claude/<tema> con su traspaso si nadie declara sus archivos
-npm run equivalencia # mide main contra la versión nueva de un script de public/js/ (caso en scripts/equivalencias/; exige mutación de control)
+npm run reservar    # reserva un tema antes de escribir código: empuja claude/<tema> con su traspaso si nadie declara sus archivos; avisa del caso de equivalencia que los vigila
+npm run equivalencia # mide main contra la versión nueva de un script de public/js/ (caso en scripts/equivalencias/; exige mutación de control; --todos en cada PR)
 npm run entregas    # las entregas más recientes, de docs/entregas/ (--todas, --n=N; solo lee)
 npm run vigia       # ¿cambió el documento de cada fuente? (hash contra fuentes.lock.json)
 npm run vigencia    # ¿desapareció algún modelo de Aruba de su guía de pedido oficial?
@@ -238,6 +238,10 @@ rojo o sin terminar, en cola, sin despliegue) y lo cierra al desplegarse; un fal
   `scripts/transporte/` desde el 2026-10-28 (como `node -e` pasó el tope de 128 KiB de un argumento,
   y como heredoc bash seguía leyéndolo antes que Node). `traer({ docs, solo, fetch, dir })` se prueba
   sin red en `test/transporte-traer.test.js`: una regla nueva del transporte entra con su caso ahí.
+- **Las equivalencias corren en cada PR** (`verificar.yml`, 2026-11-01): `npm run equivalencia -- --todos`
+  vuelve a medir cada caso de `scripts/equivalencias/` cuyo `mide` toca el PR, módulo de la base contra el
+  del PR; un cambio de comportamiento a propósito se declara en la descripción del PR con
+  `equivalencia-acepta: <caso>: <motivo>`. Un corte nuevo deja su caso ahí, con `mide` y su mutación.
 - **`npm run auditar` falla cerrado**: un aviso alto o crítico frena; la salida es una excepción
   declarada con GHSA, motivo y caducidad de 90 días como mucho, nunca apagar el paso.
 - Los jobs de navegador corren en `ubuntu-26.04` con **Playwright 1.61.1**, movidos juntos: la

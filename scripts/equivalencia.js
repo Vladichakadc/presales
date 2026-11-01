@@ -105,28 +105,101 @@ const desdeRef = (ref) => (archivos) => contexto(archivos,
   (rel) => execFileSync('git', ['show', `${ref}:${rel}`], { cwd: RAIZ, encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 }));
 const actual = (archivos) => contexto(archivos, (rel) => require('fs').readFileSync(path.join(RAIZ, rel), 'utf8'));
 
-function main(argv) {
-  const ruta = argv.find((a) => !a.startsWith('--'));
-  const opt = Object.fromEntries(argv.filter((a) => a.startsWith('--')).map((a) => a.slice(2).split('=')));
-  if (!ruta) { console.error('Uso: npm run equivalencia -- scripts/equivalencias/<caso>.js [--ref=origin/main] [--max=5]'); return 2; }
-  const ref = opt.ref || 'origin/main';
-  let caso; let fns; let casos;
+/* EN CI (2026-11-01, mejora propuesta al cerrar el PR #113 y aprobada por el dueño). Cada caso declara
+   en `mide` los archivos cuyo cambio vuelve a medirlo (rutas o carpetas terminadas en «/»), y compara
+   el módulo de la BASE del PR con el del árbol de trabajo. `--todos --base=<ref>` corre los casos que
+   el cambio toca: el diff se toma contra la base común (`git merge-base`), así que en local no cuenta
+   lo que haya entrado en main desde que se cortó la rama. Un caso cuya función aún no existe en la
+   base devuelve `{ sinBase }` desde `cargar` y se salta diciéndolo. Un cambio de comportamiento hecho a
+   propósito se acepta con una línea en la descripción del PR (variable PR_BODY en CI):
+     equivalencia-acepta: <caso>: <motivo de al menos diez caracteres>
+   y aun así se imprimen sus diferencias. Sale con 0 si todo casa o está aceptado, 1 si hay diferencias
+   sin aceptar y 2 si un caso no carga o su mutación no se ve. */
+const DIR_CASOS = path.join(RAIZ, 'scripts', 'equivalencias');
+const git = (args) => execFileSync('git', args, { cwd: RAIZ, encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 }).trim();
+
+// Las aceptaciones declaradas en un texto (la descripción del PR): { caso: motivo }.
+function aceptaciones(texto) {
+  const out = {};
+  for (const m of String(texto || '').matchAll(/^\s*equivalencia-acepta:\s*([\w-]+)\s*:\s*(.+?)\s*$/gm)) {
+    if (m[2].length >= 10) out[m[1]] = m[2];
+  }
+  return out;
+}
+const tocaCaso = (mide, cambiados) => (mide || []).some((r) => cambiados.some((c) => (r.endsWith('/') ? c.startsWith(r) : c === r)));
+
+// Mide un caso. Devuelve { estado: 'igual'|'distinto'|'ciego'|'sinBase'|'error', ... }.
+function medirCaso(caso, ref, { max = 5 } = {}) {
+  let fns; let casos;
   try {
-    caso = require(path.resolve(ruta));
-    fns = caso.cargar({ desdeRef: desdeRef(ref), actual });
+    fns = caso.cargar({ desdeRef: desdeRef(ref), actual, ref });
+    if (fns && fns.sinBase) return { estado: 'sinBase', motivo: fns.sinBase };
     casos = caso.casos();
   } catch (e) {
-    console.error(`No se pudo cargar el caso: ${e.message}`);
-    return 2;
+    return { estado: 'error', motivo: e.message };
   }
-  const r = medir({ ...fns, casos, max: Number(opt.max) || 5 });
-  console.log(`${caso.nombre || ruta}\n  ${ref} contra el árbol de trabajo: ${r.total} casos, ${r.diferentes} diferencia(s).`);
+  const r = medir({ ...fns, casos, max });
+  return { ...r, estado: !r.valido ? 'ciego' : r.diferentes ? 'distinto' : 'igual' };
+}
+
+function informar(nombre, ref, r) {
+  if (r.estado === 'sinBase') { console.log(`${nombre}\n  Sin línea base en ${ref}: ${r.motivo}. No se mide.`); return; }
+  if (r.estado === 'error') { console.log(`${nombre}\n  No se pudo cargar el caso: ${r.motivo}`); return; }
+  console.log(`${nombre}\n  ${ref} contra el árbol de trabajo: ${r.total} casos, ${r.diferentes} diferencia(s).`);
   console.log(`  Control: la mutación da ${r.control} diferencia(s)${r.valido ? '' : ' — EL COMPARADOR NO VE: la medición no vale'}.`);
   for (const e of r.ejemplos) console.log(`\n  args   ${e.args}\n  viejo  ${e.viejo}\n  nuevo  ${e.nuevo}`);
+}
+
+function todos(opt) {
+  const base = opt.base || 'origin/main';
+  let ref; let cambiados;
+  try {
+    ref = git(['merge-base', base, 'HEAD']);
+    cambiados = git(['diff', '--name-only', ref]).split('\n').filter(Boolean);
+  } catch (e) {
+    console.error(`No se pudo comparar con ${base}: ${String(e.stderr || e.message).trim()}`);
+    return 2;
+  }
+  const acepta = aceptaciones(opt.prBody != null ? opt.prBody : process.env.PR_BODY);
+  const archivos = require('fs').readdirSync(DIR_CASOS).filter((f) => f.endsWith('.js')).sort();
+  let rc = 0; let medidos = 0;
+  for (const f of archivos) {
+    const nombre = f.replace(/\.js$/, '');
+    const caso = require(path.join(DIR_CASOS, f));
+    if (!Array.isArray(caso.mide) || !caso.mide.length) { console.log(`${nombre}: no declara \`mide\`: no se sabe cuándo medirlo.`); rc = 2; continue; }
+    if (!tocaCaso(caso.mide, cambiados)) continue;
+    medidos += 1;
+    const r = medirCaso(caso, ref, { max: Number(opt.max) || 5 });
+    informar(`[${nombre}] ${caso.nombre || ''}`, `la base (${ref.slice(0, 7)})`, r);
+    if (r.estado === 'error' || r.estado === 'ciego') rc = 2;
+    else if (r.estado === 'distinto') {
+      if (acepta[nombre]) console.log(`  Aceptado en el PR: ${acepta[nombre]}`);
+      else {
+        console.log(`  Si el cambio es a propósito, decláralo en la descripción del PR:\n    equivalencia-acepta: ${nombre}: <motivo>`);
+        if (rc === 0) rc = 1;
+      }
+    }
+  }
+  console.log(`\n${medidos} caso(s) medidos de ${archivos.length}; archivos cambiados: ${cambiados.length}.`);
+  return rc;
+}
+
+function main(argv) {
+  const opt = Object.fromEntries(argv.filter((a) => a.startsWith('--')).map((a) => { const [k, ...v] = a.slice(2).split('='); return [k, v.length ? v.join('=') : true]; }));
+  if (opt.todos) return todos(opt);
+  const ruta = argv.find((a) => !a.startsWith('--'));
+  if (!ruta) { console.error('Uso: npm run equivalencia -- scripts/equivalencias/<caso>.js [--ref=origin/main] [--max=5]\n   o: npm run equivalencia -- --todos [--base=origin/main]'); return 2; }
+  const ref = opt.ref || 'origin/main';
+  let caso;
+  try { caso = require(path.resolve(ruta)); } catch (e) { console.error(`No se pudo cargar el caso: ${e.message}`); return 2; }
+  const r = medirCaso(caso, ref, { max: Number(opt.max) || 5 });
+  informar(caso.nombre || ruta, ref, r);
+  if (r.estado === 'sinBase') return 0;
+  if (r.estado === 'error') return 2;
   if (!r.valido) return 2;
   return r.diferentes ? 1 : 0;
 }
 
 if (require.main === module) process.exitCode = main(process.argv.slice(2));
 
-module.exports = { canonico, huella, comparar, medir, contexto, desdeRef, actual, main };
+module.exports = { canonico, huella, comparar, medir, contexto, desdeRef, actual, main, todos, aceptaciones, tocaCaso, medirCaso };

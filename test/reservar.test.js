@@ -154,3 +154,24 @@ test('sin tema válido o sin archivos no se reserva', () => {
   assert.strictEqual(correr(process.cwd(), ['Tema Malo', '--archivos', 'a.js']).rc, 2);
   assert.strictEqual(correr(process.cwd(), ['tema-bueno']).rc, 2);
 });
+
+// LOS CASOS DE EQUIVALENCIA QUE VIGILAN LO RESERVADO (2026-11-01): se leen del texto del caso, sin
+// ejecutarlo, y solo avisan.
+test('reservar dice qué caso de equivalencia vigila los archivos reservados y cómo aceptar un cambio', () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'reservar-equiv-'));
+  try {
+    fs.writeFileSync(path.join(dir, 'aruba-estado.js'), "module.exports = { nombre: 'x', mide: ['public/js/aruba-reglas.js'], cargar() { throw new Error('no se ejecuta'); } };\n");
+    fs.writeFileSync(path.join(dir, 'carpeta.js'), 'module.exports = { mide: ["public/js/"] };\n');
+    fs.writeFileSync(path.join(dir, 'sin-mide.js'), 'module.exports = { nombre: "y" };\n');
+    const l = R.casosQueVigilan(['public/js/aruba-reglas.js', 'test/x.test.js'], dir);
+    assert.deepStrictEqual(l.map((c) => [c.caso, c.pisa.join()]), [['aruba-estado', 'public/js/aruba-reglas.js'], ['carpeta', 'public/js/aruba-reglas.js']]);
+    assert.deepStrictEqual(R.casosQueVigilan(['server/x.js'], dir), [], 'lo que nadie mide no avisa');
+    const aviso = R.avisoEquivalencias(l);
+    assert.match(aviso, /npm run equivalencia -- scripts\/equivalencias\/aruba-estado\.js/);
+    assert.match(aviso, /equivalencia-acepta: aruba-estado: <motivo>/);
+    assert.strictEqual(R.avisoEquivalencias([]), '');
+    const t = R.traspasoInicial({ tema: 'x', rama: 'claude/x', archivos: ['public/js/aruba-reglas.js'], fecha: 'f', vigilan: l });
+    assert.match(t, /La medición de equivalencias vigila `aruba-estado` \(por public\/js\/aruba-reglas\.js\)/, 'queda dicho en el traspaso');
+  } finally { fs.rmSync(dir, { recursive: true, force: true }); }
+  assert.deepStrictEqual(R.casosQueVigilan(['x.js'], path.join(os.tmpdir(), 'no-existe-reservar')), [], 'sin carpeta de casos, nada');
+});
