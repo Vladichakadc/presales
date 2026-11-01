@@ -469,7 +469,7 @@ Módulos compartidos:
   nueva registra su recálculo completo y carga los dos archivos (`test/actualizar.test.js`). **Detector**
   (2026-10-31): si su recálculo cambia el texto de resultados (el mismo que leen las baterías e2e), dice
   «El resultado no estaba al día…» con el último campo tocado y deja `[actualizar]` en la consola con
-  página, campo, enlace y hora; nada sale del navegador (`e2e-boton-detector.js`).
+  página, campo, enlace y hora; junto al aviso, «Copiar informe» lleva ese mismo texto al portapapeles (2026-11-01, PR #107; desaparece al volver a estar al día); nada sale del navegador (`e2e-boton-detector.js`).
 - `por-funcion.js` — **«por <función>» en la fila del BOM** (2026-10-29, PR #70; complementa el
   resaltado de `funciones-activas.js`): la fila que existe solo porque se pidió una función lleva
   `por` (id de su casilla), puesto en el mismo `if` que la crea o traducido del `req` del motor con
