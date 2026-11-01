@@ -307,6 +307,171 @@
       .filter((l) => MEDIO_MBPS[l.medio] != null && Math.max(l.down || 0, l.up || 0) > MEDIO_MBPS[l.medio]);
   }
 
+
+  /* ══ ÓPTICAS, INTERCONEXIÓN EdgeHA Y SEMÁFORO DE PUERTOS (2026-10-31, fase 3.1 del plan de
+     mejora de los dimensionadores: el cálculo de la página de Aruba, a módulos puros con prueba) ══
+     Vivían en dimensionador-aruba-edgeconnect.js, mezclados con el DOM. Aquí, sin estado: el
+     catálogo de accesorios llega como `cat = {catalogo, compat}` (lo que la página recibe de
+     /api/dimensionador/aruba) y las unidades del sitio (1, o 2 con el par HA) como número. La
+     página conserva funciones con los mismos nombres que solo pasan esos dos datos, así que ninguna
+     llamada cambia. La lógica es la misma, línea a línea; su historia está en los comentarios de la
+     página y en PENDIENTES.md. Prueba: test/aruba-opticas-puertos.test.js. */
+  const LAN_RESERVADOS = 2;
+  const NOMBRE_PUERTO = { rj45: 'RJ-45', combo: 'combo RJ-45/SFP 1G', sfp: 'SFP 1G', sfpPlus: 'SFP+ 1/10G', sfp28: 'SFP28 1/10/25G', celular: 'módem 4G/5G integrado' };
+  // Velocidad de las ópticas del catálogo, en Mbps por dirección (full-duplex).
+  const VELOCIDAD_OPTICA = { '1G': 1000, '10G': 10000, '25G': 25000 };
+  const VEL_JAULA = { sfp: ['1G'], sfpPlus: ['1G', '10G'], sfp28: ['1G', '10G', '25G'] };
+  function fmt(m) {
+    if (m == null) return '—';
+    if (m >= 1000) return (m / 1000).toFixed(m % 1000 ? 1 : 0) + ' Gbps';
+    return Math.round(m) + ' Mbps';
+  }
+  const catalogoDe = (cat) => (cat && cat.catalogo) || {};
+  const compatDe = (cat) => (cat && cat.compat) || {};
+  // Ópticas compatibles con un modelo a una velocidad: sin DAC (sala), sin TAA (van por el
+  // cumplimiento especial) y nunca en fin de venta («ES»).
+  function opticasPorVelocidad(cat, modeloId, speed) {
+    if (!speed || !modeloId) return [];
+    const cfg = compatDe(cat)[modeloId]; if (!cfg) return [];
+    const catalogo = catalogoDe(cat);
+    return cfg.items.map((sku) => ({ sku, a: catalogo[sku] }))
+      .filter((x) => x.a && x.a.speed === speed && x.a.media !== 'DAC' && !/_TAA$/.test(x.a.media || '') && x.a.plc !== 'ES');
+  }
+  // El predicado del par EdgeHA: EdgeConnect, dos unidades y ≥2 enlaces activos. Devuelve los
+  // enlaces activos o null.
+  function parEdgeHA(esEC, unidades, links) {
+    const act = (links || []).filter((l) => l.down > 0 || l.up > 0);
+    return (esEC && unidades === 2 && act.length >= 2) ? act : null;
+  }
+  // La menor velocidad de óptica del modelo que cubre el agregado (regla declarada de la casa).
+  function velocidadEdgeHA(cat, modeloId, agregadoMbps) {
+    const cfg = compatDe(cat)[modeloId]; if (!cfg) return null;
+    const catalogo = catalogoDe(cat);
+    const speeds = [...new Set(cfg.items.map((s) => catalogo[s] && catalogo[s].speed).filter(Boolean))];
+    const caben = speeds.filter((s) => (VELOCIDAD_OPTICA[s] || 0) >= agregadoMbps)
+      .sort((a, b) => VELOCIDAD_OPTICA[a] - VELOCIDAD_OPTICA[b]);
+    return caben[0] || null;
+  }
+  // ¿El chasis no tiene ninguna jaula SFP? Del inventario; sin él no se afirma nada.
+  function sinJaulasSfp(modelo) {
+    const p = modelo && modelo.puertos;
+    if (!p) return false;
+    return !(p.sfp || p.combo || p.sfpPlus || p.sfp28);
+  }
+  // Velocidades de óptica que la jaula `tipo` de ESTE modelo admite y el catálogo trae.
+  function velocidadesJaula(cat, m, tipo) {
+    const cfg = compatDe(cat)[m.id];
+    const catalogo = catalogoDe(cat);
+    const delModelo = new Set(cfg ? cfg.items.map((k) => catalogo[k] && catalogo[k].speed).filter(Boolean) : []);
+    return (VEL_JAULA[tipo] || []).filter((v) => delModelo.has(v) && opticasPorVelocidad(cat, m.id, v).length);
+  }
+  // Lo que la auditoría del par necesita para elegir la interconexión por velocidad.
+  function opcionesHa(cat, m, enlacesPar) {
+    if (!m || !enlacesPar) return undefined;
+    return {
+      haMbps: enlacesPar.reduce((s, l) => s + l.down, 0),
+      haVel: (t) => ((t === 'rj45' || t === 'combo') ? VELOCIDAD_OPTICA['1G']
+        : Math.max(0, ...velocidadesJaula(cat, m, t).map((v) => VELOCIDAD_OPTICA[v] || 0))),
+    };
+  }
+  // La interconexión del par, por el puerto que le toca: cobre (latiguillo), jaula (2 ópticas de
+  // la menor velocidad que admite y cubre el agregado) o sin puerto común.
+  function interconexionEdgeHA(cat, m, unidades, links, pick) {
+    const enlaces = m ? parEdgeHA(m.fam === 'ec', unidades, links) : null;
+    if (!enlaces) return null;
+    const agregado = enlaces.reduce((s, l) => s + l.down, 0);
+    const r = { enlaces, agregado, puerto: null, modo: 'optica', vel: null, ops: [], sku: null, aviso: null };
+    if (m.puertos) {
+      const asig = asignarPuertosPar(m.puertos, links, LAN_RESERVADOS, opcionesHa(cat, m, enlaces));
+      r.puerto = asig.ha;
+      if (!asig.ha) { r.modo = 'sinPuerto'; return r; }
+      if (asig.ha === 'rj45' || asig.ha === 'combo') {
+        r.modo = 'cobre';
+        if (agregado > (VELOCIDAD_OPTICA['1G'])) r.aviso = `el RJ-45 es de 1 GbE y el agregado del sitio es ${fmt(agregado)}: la regla de la casa pide ≥ agregado, y no queda libre en los dos chasis una jaula con óptica que lo cubra; si importa, libera una del mismo tipo en ambos`;
+        return r;
+      }
+      const admitidas = velocidadesJaula(cat, m, asig.ha);
+      r.vel = admitidas.find((v) => (VELOCIDAD_OPTICA[v] || 0) >= agregado) || null;
+      if (!r.vel) {
+        r.modo = 'sinOptica';
+        r.aviso = admitidas.length
+          ? `la jaula ${NOMBRE_PUERTO[asig.ha]} admite como mucho ${admitidas[admitidas.length - 1]} en el catálogo y el agregado del sitio es ${fmt(agregado)}`
+          : `el catálogo no trae ópticas para la jaula ${NOMBRE_PUERTO[asig.ha]} de ${m.id}`;
+        return r;
+      }
+    } else {
+      r.vel = velocidadEdgeHA(cat, m.id, agregado);
+      if (!r.vel) { r.modo = 'sinOptica'; r.aviso = `el agregado del sitio (${fmt(agregado)}) supera las ópticas del catálogo para ${m.id}`; return r; }
+    }
+    r.ops = opticasPorVelocidad(cat, m.id, r.vel);
+    if (!r.ops.length) { r.modo = 'sinOptica'; r.aviso = `no hay óptica ${r.vel} compatible con ${m.id} en el catálogo`; return r; }
+    const p = pick && pick.EdgeHA;
+    r.sku = p && r.ops.some((o) => o.sku === p) ? p : (r.ops.length === 1 ? r.ops[0].sku : null);
+    return r;
+  }
+  // Texto del inventario para los motivos: «4x RJ-45 + 2x SFP+ 1/10G».
+  function inventarioTxt(p) {
+    if (!p) return 'sin chasis (virtual)';
+    return Object.keys(NOMBRE_PUERTO).filter((k) => p[k]).map((k) => `${p[k]}x ${NOMBRE_PUERTO[k]}`).join(' + ');
+  }
+  // Transceptores 1000BASE-T certificados del modelo: la salida para un cobre sin RJ-45 libre.
+  function cobreSfp(cat, modelo) {
+    return opticasPorVelocidad(cat, modelo.id, '1G').filter((o) => o.a.media === 'COPPER').map((o) => o.sku);
+  }
+  // Con el par EdgeHA se audita el par; sin él, un chasis.
+  function auditarPuertos(cat, modelo, wanLinks, unidades) {
+    const enlaces = (wanLinks || []).filter((l) => l.down > 0 || l.up > 0);
+    const enlacesPar = modelo ? parEdgeHA(modelo.fam === 'ec', unidades, wanLinks) : null;
+    const par = !!enlacesPar;
+    return {
+      par,
+      puertosNecesarios: enlaces.length + LAN_RESERVADOS * (par ? 2 : 1) + (par ? 2 : 0),
+      hayFibra: enlaces.some((l) => /^SFP/.test(l.medio)),
+      asignacion: par ? asignarPuertosPar(modelo.puertos, wanLinks, LAN_RESERVADOS, opcionesHa(cat, modelo, enlacesPar))
+        : asignarPuertos(modelo ? modelo.puertos : null, wanLinks, LAN_RESERVADOS),
+    };
+  }
+  // El porqué de un «no cabe», con el número de enlace y lo que hay que cambiar.
+  function motivoPuertos(cat, modelo, asig) {
+    const inv = inventarioTxt(modelo.puertos);
+    const partes = [];
+    const porMedio = {};
+    asig.sinAsignar.forEach((x) => { (porMedio[x.medio] = porMedio[x.medio] || []).push(x.enlace); });
+    Object.entries(porMedio).forEach(([medio, ns]) => {
+      const cuales = `enlace${ns.length > 1 ? 's' : ''} ${ns.join(', ')}`;
+      if (medio === 'RJ45') {
+        const cu = cobreSfp(cat, modelo);
+        partes.push(`${cuales} por RJ-45 sin puerto de cobre libre${cu.length ? ` — si va a una jaula SFP, declara el medio «SFP 1G» y elige el transceptor 1000BASE-T (${cu.join(', ')})` : ''}`);
+      } else {
+        partes.push(`${cuales} por ${medio} sin jaula libre que lo admita`);
+      }
+    });
+    if (asig.porChasis) {
+      if (asig.lanFaltan) partes.push(`${asig.lanFaltan === 1 ? 'falta 1' : `faltan ${asig.lanFaltan}`} de los ${LAN_RESERVADOS} puertos LAN de cada chasis`);
+      if (asig.haFalta) partes.push('no queda en los dos chasis un puerto libre del mismo tipo para la interconexión EdgeHA (mismo medio y velocidad en los dos extremos, nunca el MGMT)');
+      return `Cada ${modelo.id} del par EdgeHA tiene ${inv}, con los enlaces repartidos entre los dos: ${partes.join('; ')}.`;
+    }
+    if (asig.lanFaltan) partes.push(`${asig.lanFaltan === 1 ? 'falta 1' : `faltan ${asig.lanFaltan}`} de los ${LAN_RESERVADOS} puertos LAN`);
+    return `El ${modelo.id} tiene ${inv}: ${partes.join('; ')}.`;
+  }
+  // Semáforo de puertos: rojo (algo no tiene puerto), ámbar (cabe, pero un enlace declara más de
+  // lo que lleva su medio) o verde. Una sola regla para el descarte, la barra y la ficha.
+  function evaluarPuertos(cat, modelo, wanLinks, unidades) {
+    const a = auditarPuertos(cat, modelo, wanLinks, unidades);
+    let nivel = 'verde', motivo = '';
+    const sobre = enlacesSobreMedio((wanLinks || []).filter((l) => l.down > 0 || l.up > 0));
+    if (modelo && !a.asignacion.cabe) {
+      nivel = 'rojo';
+      motivo = motivoPuertos(cat, modelo, a.asignacion);
+    } else if (sobre.length) {
+      nivel = 'ambar';
+      motivo = sobre.map((l) => `El enlace ${l.n} declara ${fmt(Math.max(l.down, l.up))} por ${l.medio}, que lleva ${fmt(MEDIO_MBPS[l.medio])}`).join('; ') + ' — cambia el medio.';
+    }
+    return { ...a, nivel, motivo };
+  }
+
   return { BOOST_CUOTA, tierParaCaudal, capacidadSo, boostMbpsSitio, boostRecMbps, admiteDtd, escenariosUnderlay, escenarioBoost,
-    MEDIO_MBPS, medioMinimo, asignarPuertos, asignarPuertosPar, enlacesSobreMedio };
+    MEDIO_MBPS, medioMinimo, asignarPuertos, asignarPuertosPar, enlacesSobreMedio,
+    LAN_RESERVADOS, NOMBRE_PUERTO, VELOCIDAD_OPTICA, VEL_JAULA, fmt, opticasPorVelocidad, parEdgeHA, velocidadEdgeHA, sinJaulasSfp,
+    velocidadesJaula, opcionesHa, interconexionEdgeHA, inventarioTxt, cobreSfp, auditarPuertos, motivoPuertos, evaluarPuertos };
 });
