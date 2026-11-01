@@ -3,10 +3,10 @@
 - **Tema:** Optimizar la página: respuestas comprimidas (gzip/brotli) para HTML, JS, CSS y JSON
 - **Rama:** claude/compresion-respuestas
 - **Cuenta:** vladichakadc@gmail.com (sesión 016ruRWCH48mtdRjcg83pvKa)
-- **Estado:** reservado
+- **Estado:** en curso
 - **Actualizado:** 2026-11-01 18:13
 - **Archivos que toca:** server/server.js, package.json, package-lock.json, test/compresion.test.js, RELEVO.md, CLAUDE.md
-- **Siguiente paso:** revisar compression (cadena de suministro), montarlo y medir antes/después
+- **Siguiente paso:** e2e completa, PR y cierre; tras desplegar, confirmar Content-Encoding en producción
 
 ## Encargo del dueño
 
