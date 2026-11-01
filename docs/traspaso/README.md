@@ -57,6 +57,10 @@ de Dependabot no son temas. Después pide a GitHub (con `gh`) los PR abiertos y 
 salieron arriba, con sus archivos (`--sin-prs` lo salta); si `gh` no responde, avisa con el enlace
 a los PR y sigue. Solo lee: no cambia de rama ni escribe nada.
 
+**Ramas paradas** (2026-11-01, PR #108). Bajo un traspaso sin commits en más de tres días sale
+`PARADA`, con los PR que nombra y ya se fusionaron, y cómo cerrarla; bajo uno «cerrado…», `CERRADO`
+(ya no bloquea a `reservar`). Solo avisa: borrar la rama es de una persona.
+
 ## Qué hace `npm run reservar`
 
 Trae las ramas y lee lo mismo que `npm run traspasos` (traspasos de las ramas y archivos de los PR
