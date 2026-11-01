@@ -61,6 +61,9 @@ input[type=range]{width:100%;accent-color:var(--red)}
 .seg button+button{border-left:1px solid var(--rule)}
 .seg button[aria-pressed=true]{background:var(--ink);color:#fff;font-weight:600}
 .checks{display:grid;gap:7px}
+/* `hidden` no gana a un `display` de autor: sin esta regla la licencia única del par se veía sin HA y en
+   activo-activo, y el resumen WAN quedaba como una caja vacía sin enlaces (2026-11-01). */
+.checks[hidden],.wan-resumen[hidden]{display:none}
 .check{display:flex;gap:8px;align-items:flex-start;font-size:13px;cursor:pointer}
 .check input{margin:3px 0 0;accent-color:var(--red)}
 .hidden{display:none!important}

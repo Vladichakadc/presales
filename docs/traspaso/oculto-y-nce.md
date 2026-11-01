@@ -5,7 +5,7 @@
 - **Cuenta:** vladichakadc, sesión 01TxCQ3W2sHYVmimAdMKht3j
 - **Estado:** en curso
 - **Actualizado:** 2026-11-01 13:50
-- **Archivos que toca:** public/dimensionador-fortinet-fortigate.html (solo el `<style>`), test/oculto-visible.test.js, public/js/huawei-motor.js (la línea de NCE-WAN), test/huawei-nce.test.js, scripts/transporte/documentos.js (entradas al final)
+- **Archivos que toca:** public/dimensionador-fortinet-fortigate.html (solo el `<style>`), test/oculto-visible.test.js, test/e2e/e2e-fortinet-rediseno.js (la comprobación de HA-UNICA), public/js/huawei-motor.js (la línea de NCE-WAN), test/huawei-nce.test.js, scripts/transporte/documentos.js (entradas al final)
 - **Siguiente paso:** regla CSS y prueba del patrón; luego la línea de NCE-WAN con lo que dicen sus documentos
 
 ## Encargo del dueño
