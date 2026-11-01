@@ -2,8 +2,8 @@
 
 Guía para Claude Code (claude.ai/code) en este repositorio. Aquí va **la regla vigente y su
 porqué**, no su historia: la crónica (qué día, qué se midió, qué corrida, qué sabotaje) está en
-`docs/claude-md-cronica.md`, que no se carga en cada sesión, y lo cerrado en
-`PENDIENTES.md` → *Cerrado recientemente*. Si una regla de aquí parece arbitraria, su motivo
+`docs/claude-md-cronica.md`, que no se carga en cada sesión, y lo cerrado en `docs/entregas/`
+(una entrega por archivo; antes del 2026-10-31, `PENDIENTES.md` → *Cerrado recientemente*). Si una regla de aquí parece arbitraria, su motivo
 completo está allí.
 
 ## Instrucciones permanentes del dueño
@@ -16,7 +16,7 @@ completo está allí.
   verificar: ver *Desplegar*.
 - **Recordar siempre lo que falta.** `PENDIENTES.md` es el registro vivo. Al empezar una tarea se
   buscan los puntos abiertos que la tocan (no se lee entero: casi todo es historia); al terminar
-  se actualiza (lo cerrado a *Cerrado recientemente*, lo nuevo a su sección) y **se resume al
+  se actualiza (lo cerrado sale de su sección y va a la entrega, lo nuevo a su sección) y **se resume al
   usuario al cerrar cada entrega**, aunque no lo pida. Un pendiente bloqueado por política de
   egreso se reporta como tal, con el dominio y el comando que lo cierra desde una máquina con
   acceso; no se rodea el bloqueo ni se rellena el dato a ojo.
@@ -27,17 +27,21 @@ completo está allí.
   dice eso en vez de inventarla.
 - **Informe de relevo en cada entrega** (decisión del dueño, 2026-10-27: «de aquí en adelante, un
   informe de pendientes y mejoras para que la cuenta servicioiptv2025@gmail.com continúe; van a
-  trabajar en el proyecto juntos»). En el commit que fusiona cada entrega en `main` se reescribe
-  `RELEVO.md`: qué se entregó, los pendientes por prioridad con lo que los cierra, las mejoras
+  trabajar en el proyecto juntos»). **Cada entrega es un archivo**, `docs/entregas/AAAA-MM-DD-pr-N.md`
+  (de `docs/entregas/PLANTILLA.md`: encargo, `## Cerrado` y `## Estado` con su «Criterio que conviene
+  conservar»), escrito en el commit que la fusiona en `main`; `npm run entregas` resume las más
+  recientes (mejora aprobada el 2026-10-31: las cabeceras de `PENDIENTES.md` y `RELEVO.md` chocaban en
+  cada fusión en paralelo, y ya no reciben entradas). En ese mismo commit se reescriben las secciones
+  vivas de `RELEVO.md` que cambien: los pendientes por prioridad con lo que los cierra, las mejoras
   propuestas sin decidir, lo que decide el dueño y cómo retomar. Complementa el traspaso (punto
-  siguiente): el traspaso es el estado de UN tema en SU rama mientras se trabaja; el relevo, el
-  resumen de todo lo pendiente en `main` al cerrar. Lo que está en curso no se apunta en el
-  relevo (una tabla común chocaría en cada fusión): lo dice `npm run traspasos`.
-  `test/relevo.test.js` frena un relevo sin sus secciones o más viejo que `PENDIENTES.md`.
-  **Una entrega se nombra por fecha y número de PR** (`Última revisión: AAAA-MM-DD · PR #N` en
-  `PENDIENTES.md`, `Última actualización: AAAA-MM-DD · PR #N` en `RELEVO.md`, el mismo PR en los
-  dos), nunca por ordinal: dos sesiones en paralelo tomaban el mismo número. Por eso el PR se abre
-  antes del commit de cierre, que ya lleva su número. Las revisiones viejas con ordinal no se tocan.
+  siguiente): el traspaso es el estado de UN tema en SU rama mientras se trabaja; la entrega y el
+  relevo, lo que queda en `main` al cerrar. Lo que está en curso no se apunta en el relevo (una
+  tabla común chocaría en cada fusión): lo dice `npm run traspasos`. `test/relevo.test.js` frena un
+  relevo sin sus secciones, una entrega mal formada o repetida y la vuelta a las cabeceras de antes.
+  **Una entrega se nombra por fecha y número de PR** (el nombre del archivo y su cabecera
+  `# AAAA-MM-DD · PR #N · título`), nunca por ordinal: dos sesiones en paralelo tomaban el mismo
+  número. Por eso el PR se abre antes del commit de cierre, que ya lleva su número. El registro
+  anterior al 2026-10-31 sigue en `PENDIENTES.md` y `RELEVO.md` y no se toca.
 - **Las decisiones del dueño no se toman por silencio.** Cuando el dueño pide «ejecuta los
   pendientes», la opción recomendada de una decisión pendiente se ejecuta y se anota; si no, se
   pregunta.
@@ -133,6 +137,7 @@ npm run propuesta   # aplica una propuesta de la sincronización sobre legacyDat
 
 # Fuentes y documentos (lo que descarga necesita salida a internet: IMPORTAR-CATALOGO.md)
 npm run traspasos   # temas en curso: ramas con docs/traspaso/<tema>.md y PR abiertos sin él (solo lee)
+npm run entregas    # las entregas más recientes, de docs/entregas/ (--todas, --n=N; solo lee)
 npm run vigia       # ¿cambió el documento de cada fuente? (hash contra fuentes.lock.json)
 npm run vigencia    # ¿desapareció algún modelo de Aruba de su guía de pedido oficial?
 npm run candidatas  # grupo de control: distingue el 403 de un fabricante del de un proxy
