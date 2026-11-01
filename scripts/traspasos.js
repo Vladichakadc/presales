@@ -56,6 +56,33 @@ function repoDeOrigen(url) {
   return m ? `${m[1]}/${m[2]}` : null;
 }
 
+// RAMAS PARADAS (2026-11-01, mejora propuesta al cerrar el PR #106). Una rama abandonada sigue
+// declarando sus archivos y sale igual que un tema vivo: `claude/elegant-pascal-7ymts7` bloqueó 28
+// archivos días después de que sus tres temas llegaran a main. Sin commits en más de DIAS_PARADA
+// días (la regla de `npm run reservar`) se marca parada, y se dice qué PR que nombra su traspaso ya
+// se fusionaron. Solo avisa: decidir que un tema está abandonado es de una persona.
+const DIAS_PARADA = 3;
+const diasSin = (fecha, ahora = Date.now()) => {
+  const t = Date.parse(fecha);
+  return Number.isFinite(t) ? (ahora - t) / 86400000 : null;
+};
+// Los «PR #N» que nombra un traspaso, sin repetir y en orden.
+function prsNombrados(texto) {
+  return [...new Set((String(texto || '').match(/PR #(\d+)/g) || []).map((m) => Number(m.slice(4))))].sort((a, b) => a - b);
+}
+// Puro: la marca de una rama. `fusionados` son los números de PR ya fusionados entre los que nombra.
+function marcaParada({ rama, fecha, estado, fusionados = [], ahora = Date.now() }) {
+  const d = diasSin(fecha, ahora);
+  const cerrado = /^cerrado/i.test(String(estado || '').trim());
+  if (!cerrado && (d == null || d <= DIAS_PARADA)) return null;
+  const partes = [cerrado ? 'CERRADO: su traspaso lo da por terminado' : `PARADA: ${Math.floor(d)} días sin commits`];
+  if (fusionados.length) partes.push(`su traspaso nombra PR ya fusionados (${fusionados.map((n) => `#${n}`).join(', ')})`);
+  partes.push(cerrado
+    ? `ya no bloquea a npm run reservar; se puede borrar (git push origin --delete ${rama})`
+    : `si su tema ya está en main, se puede borrar (git push origin --delete ${rama}); mientras, reservar sus archivos pide --aunque ${rama}`);
+  return partes.join('; ');
+}
+
 function gh(args) {
   return execFileSync('gh', args, { cwd: RAIZ, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'], timeout: 20000 });
 }
@@ -99,7 +126,8 @@ function main(argv) {
       const ruta = CARPETA + nombre;
       // En main no vive ningún traspaso: si aparece, alguien olvidó borrarlo al fusionar.
       const enMain = ref === 'origin/main';
-      const cab = leerCabecera(git(['show', `${ref}:${ruta}`]));
+      const texto = git(['show', `${ref}:${ruta}`]);
+      const cab = leerCabecera(texto);
       temas += 1;
       ramasConTraspaso.push(ref.replace(/^origin\//, ''));
       console.log(`\n${ref}  (último commit ${fecha})${enMain ? '  << en main: borrar al fusionar' : ''}`);
@@ -107,11 +135,28 @@ function main(argv) {
       for (const campo of CAMPOS) {
         console.log(`  ${campo}: ${campo in cab ? cab[campo] : '(no consta)'}`);
       }
+      const rama = ref.replace(/^origin\//, '');
+      if (!enMain && (/^cerrado/i.test(String(cab.Estado || '').trim()) || (diasSin(fecha) || 0) > DIAS_PARADA)) {
+        console.log(`  >> ${marcaParada({ rama, fecha, estado: cab.Estado, fusionados: fusionadosDe(prsNombrados(texto)) })}`);
+      }
     }
   }
   if (temas === 0) console.log('Ningún tema en curso: ninguna rama remota lleva un traspaso.');
   else console.log(`\n${temas} tema(s) en curso. No tomes un tema ni un archivo que ya declaren.`);
   if (!argv.includes('--sin-prs')) listarPrs(ramasConTraspaso);
+}
+
+// De los PR nombrados, los ya fusionados (como mucho 10 consultas; sin `gh`, ninguno: la marca se
+// queda en los días, que no necesitan red).
+function fusionadosDe(numeros) {
+  let repo;
+  try { repo = repoDeOrigen(git(['remote', 'get-url', 'origin'])); } catch { return []; }
+  if (!repo) return [];
+  const out = [];
+  for (const n of numeros.slice(-10)) {
+    try { if (JSON.parse(gh(['api', `repos/${repo}/pulls/${n}`])).merged) out.push(n); } catch { /* sin red: no se dice */ }
+  }
+  return out;
 }
 
 // PR abiertos sin traspaso, con los archivos que tocan (como mucho 10 PR): un tema que ya está
@@ -144,4 +189,4 @@ function listarPrs(ramasConTraspaso) {
 
 if (require.main === module) main(process.argv.slice(2));
 
-module.exports = { leerCabecera, archivosDeTema, prsSinTraspaso, repoDeOrigen, RAMA_NO_TEMA, CAMPOS };
+module.exports = { leerCabecera, archivosDeTema, prsSinTraspaso, repoDeOrigen, RAMA_NO_TEMA, CAMPOS, marcaParada, prsNombrados, DIAS_PARADA };
