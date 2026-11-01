@@ -103,6 +103,37 @@
     estados.forEach((s) => { s.textContent = texto; s.dataset.tipo = tipo; });
   }
 
+  // «COPIAR INFORME» (2026-11-01, mejora propuesta al cerrar el PR #93). El aviso de desfase dejaba lo
+  // útil en la consola, que un preventa no abre, y por eso el fallo no se ha podido reproducir. El
+  // informe es el MISMO de la consola, armado en el momento del aviso (el enlace es `location.href` de
+  // ese instante: copiado después podría llevar otro escenario). Solo se ve mientras el aviso está
+  // puesto; nada sale del navegador salvo lo que la persona pegue.
+  let informe = '';
+  const botonesInforme = [];
+  function ponerInforme(texto) {
+    informe = texto;
+    botonesInforme.forEach((b) => { b.hidden = !texto; b.textContent = 'Copiar informe'; });
+  }
+  function textoInforme(datos) {
+    return [
+      'Presales: el resultado no estaba al día (el botón «Actualizar» lo cambió)',
+      `Página: ${datos.pagina}`,
+      `Hora: ${new Date().toISOString().slice(0, 10)} ${datos.hora}`,
+      `Último campo tocado: ${datos.ultimoCampo ? `${datos.ultimoCampo.campo} = ${datos.ultimoCampo.valor} (a las ${datos.ultimoCampo.hora})` : 'ninguno desde que se abrió la página'}`,
+      `Enlace del escenario: ${datos.enlace}`,
+    ].join('\n');
+  }
+  async function copiarInforme(b) {
+    if (!informe) return;
+    try {
+      await navigator.clipboard.writeText(informe);
+      b.textContent = 'Informe copiado';
+    } catch {
+      // Sin permiso de portapapeles (o fuera de https): el informe sigue en la consola.
+      b.textContent = 'No se pudo copiar: está en la consola';
+    }
+  }
+
   function actualizar(boton) {
     const cols = columnas();
     const malos = validar(cols);
@@ -112,6 +143,7 @@
       return;
     }
     boton.disabled = true;
+    ponerInforme('');
     const antes = textoResultados();
     try {
       if (fn() === false) {
@@ -126,12 +158,9 @@
       boton.disabled = false;
     }
     if (textoResultados() !== antes) {
-      console.warn('[actualizar] El resultado no estaba al día: el botón lo cambió.', {
-        pagina: location.pathname,
-        ultimoCampo: ultimo,
-        enlace: location.href,
-        hora: hora(),
-      });
+      const datos = { pagina: location.pathname, ultimoCampo: ultimo, enlace: location.href, hora: hora() };
+      console.warn('[actualizar] El resultado no estaba al día: el botón lo cambió.', datos);
+      ponerInforme(textoInforme(datos));
       decir(`El resultado no estaba al día: se recalculó a las ${hora()}.${ultimo ? ` Último campo tocado: ${ultimo.campo}.` : ''}`
         + (malos.length ? ` Además, ${malos.length === 1 ? 'un campo está' : `${malos.length} campos están`} fuera de rango (en rojo).` : ''), 'aviso');
       return;
@@ -147,8 +176,12 @@
     const b = document.createElement('div');
     b.className = 'barra-actualizar';
     b.innerHTML = '<button type="button" class="btn-actualizar" title="Recalcula el resultado y valida los parámetros con los valores actuales">Actualizar</button>'
-      + '<span class="act-estado" role="status" aria-live="polite"></span>';
+      + '<span class="act-estado" role="status" aria-live="polite"></span>'
+      + '<button type="button" class="btn-act-informe" hidden title="Copia la página, la hora, el último campo tocado y el enlace del escenario, para pegarlo en un mensaje">Copiar informe</button>';
     estados.push(b.querySelector('.act-estado'));
+    const bi = b.querySelector('.btn-act-informe');
+    botonesInforme.push(bi);
+    bi.addEventListener('click', () => copiarInforme(bi));
     b.querySelector('button').addEventListener('click', (e) => actualizar(e.currentTarget));
     return b;
   }

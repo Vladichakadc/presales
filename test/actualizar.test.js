@@ -53,3 +53,17 @@ test('el botón avisa cuando el resultado no estaba al día, sin mandar nada fue
   assert.doesNotMatch(js, /fetch\(|sendBeacon|XMLHttpRequest/);
 });
 
+
+// «COPIAR INFORME» (2026-11-01, PR #107): el informe de la consola, armado en el momento del aviso, y
+// el botón solo mientras el aviso está puesto. Lo conduce de verdad `e2e-boton-detector.js`.
+test('«Copiar informe» copia lo mismo que la consola y solo existe con el aviso', () => {
+  const js = leer('public/js/actualizar.js');
+  assert.match(js, /const datos = \{ pagina: location\.pathname, ultimoCampo: ultimo, enlace: location\.href, hora: hora\(\) \};/,
+    'el enlace se toma en el momento del aviso, no al copiar');
+  assert.match(js, /console\.warn\('\[actualizar\][^']*', datos\);\s*ponerInforme\(textoInforme\(datos\)\);/, 'consola e informe salen de los mismos datos');
+  assert.match(js, /boton\.disabled = true;\s*ponerInforme\(''\);/, 'cada pulsación empieza sin informe');
+  assert.match(js, /class="btn-act-informe" hidden/, 'nace oculto');
+  assert.match(js, /navigator\.clipboard\.writeText\(informe\)/);
+  assert.doesNotMatch(js, /fetch\(|XMLHttpRequest|sendBeacon/, 'nada sale del navegador');
+  assert.match(leer('public/actualizar.css'), /\.btn-act-informe\[hidden\] \{ display: none; \}/);
+});
