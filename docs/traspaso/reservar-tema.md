@@ -3,10 +3,10 @@
 - **Tema:** npm run reservar: el tema se reserva en GitHub antes de escribir código
 - **Rama:** claude/reservar-tema
 - **Cuenta:** vladichakadc@gmail.com (sesión 016ruRWCH48mtdRjcg83pvKa)
-- **Estado:** reservado
-- **Actualizado:** 2026-11-01 12:10
+- **Estado:** en curso
+- **Actualizado:** 2026-11-01 12:40
 - **Archivos que toca:** scripts/reservar.js, test/reservar.test.js, package.json, docs/traspaso/README.md, CLAUDE.md
-- **Siguiente paso:** pruebas sin red de scripts/reservar.js y la regla en docs/traspaso/README.md
+- **Siguiente paso:** verificar, auditar, PR y commit de cierre (CLAUDE.md y su entrega)
 
 ## Encargo del dueño
 
