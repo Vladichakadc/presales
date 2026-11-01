@@ -27,6 +27,16 @@ const ARUBA_BOM = '/dimensionador-aruba-edgeconnect.html?users=120&perUser=2&wan
 
 const PANTALLAS = [
   { n: 'Portal', ruta: '/' },
+  // «Fuentes oficiales» (2026-11-01, PR #117) con la tabla de los siete ya comprobada: la ruta de salud
+  // se simula, como en e2e-fuentes-portal.js, porque la de verdad pega a los fabricantes.
+  { n: 'Portal · fuentes oficiales comprobadas', ruta: '/',
+    async preparar(page) {
+      await page.route('**/api/fuentes/*/salud', (route) => route.fulfill({ status: 200, contentType: 'application/json',
+        body: JSON.stringify({ revisadoEn: new Date().toISOString(), deCache: false, resumen: { sinCambios: 3, cambiaron: 1, inalcanzables: 1 }, fuentes: [{}, {}, {}, {}, {}] }) }));
+      await page.evaluate(() => window.go('fuentes'));
+      await page.click('#fpComprobar');
+      await page.waitForFunction(() => /^Comprobados los 7/.test(document.getElementById('fpEstado').textContent), null, { timeout: 15000 });
+    } },
   { n: 'Dimensionador Fortinet', ruta: '/dimensionador-fortinet-fortigate.html' },
   { n: 'Dimensionador Aruba', ruta: '/dimensionador-aruba-edgeconnect.html' },
   { n: 'Dimensionador Cisco', ruta: '/dimensionador-cisco-catalyst8k.html' },

@@ -4,9 +4,9 @@
 - **Rama:** claude/elegant-pascal-7ymts7
 - **Cuenta:** vladichakadc@gmail.com (sesión 01TxCQ3W2sHYVmimAdMKht3j)
 - **Estado:** en curso
-- **Actualizado:** 2026-11-01 18:00
+- **Actualizado:** 2026-11-01 18:10
 - **Archivos que toca:** public/index.html, public/js/fuentes-portal.js, public/js/index.js, test/fuentes-portal.test.js, test/e2e/e2e-fuentes-portal.js, test/e2e/e2e-accesibilidad.js
-- **Siguiente paso:** escribir `public/js/fuentes-portal.js` (núcleo puro en serie y su pintado) y la página «Fuentes oficiales» del portal
+- **Siguiente paso:** abrir el PR, conducir la página contra la ruta de verdad y cerrar la entrega
 
 ## Encargo del dueño
 
@@ -16,7 +16,11 @@ fabricantes desde el portal» (propuesta al cerrar el PR #71, en *Mejoras propue
 
 ## Hecho
 
-- Nada todavía.
+- `public/js/fuentes-portal.js` (núcleo `comprobarEnSerie` y su pintado), la página «Fuentes oficiales» del
+  portal con su botón en la barra lateral, `test/fuentes-portal.test.js` (seis pruebas; con `Promise.all`
+  en vez de la serie, cae «dos fabricantes a la vez»), `test/e2e/e2e-fuentes-portal.js` (ruta simulada:
+  máximo a la vez 1, filas, fallo de un fabricante, línea final y enlace a `?tab=src`) y la pantalla en
+  `e2e-accesibilidad.js` (axe y reflujo a 640 px en verde).
 
 ## Falta
 
@@ -34,4 +38,4 @@ fabricantes desde el portal» (propuesta al cerrar el PR #71, en *Mejoras propue
 
 ## Verificación
 
-- Pendiente.
+- `verificar` (1.372), lint sin errores; `e2e-fuentes-portal` y `e2e-accesibilidad` en verde.

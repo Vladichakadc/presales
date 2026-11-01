@@ -210,6 +210,20 @@ input:focus-visible,select:focus-visible,button:focus-visible{outline:2px solid 
 .topo-card p,.topo-card ul{font-size:13px;color:var(--steel);margin:6px 0 0}
 .topo-card li{margin-bottom:4px}
 
+/* ── FUENTES OFICIALES (fuentes-portal.js) ── */
+.fp-acciones{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:14px}
+.fp-estado{font-size:13px;color:var(--steel)}
+.fp-tabla{overflow-x:auto}
+.fp-tabla th[scope=row]{text-align:left;white-space:nowrap}
+.fp-num,.fp-hora{white-space:nowrap}
+.fp-tabla a{color:var(--red);font-weight:600;white-space:nowrap}
+.fp-bien{color:var(--green);font-weight:600}
+.fp-aviso{color:var(--amber);font-weight:600}
+.fp-mal{color:var(--red);font-weight:600}
+.fp-neutro{color:var(--steel)}
+.fp-nota{font-size:12.5px;color:var(--steel);margin:12px 0 0}
+.fp-oculto{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+
 /* ── RESPONSIVE ── */
 @media(max-width:900px){
   .sidebar{transform:translateX(-100%)}
@@ -300,6 +314,9 @@ input:focus-visible,select:focus-visible,button:focus-visible{outline:2px solid 
     </button>
     <button class="nav-btn" data-page="guias" data-ir="guias">
       <span class="nav-icon tool">&#9670;</span> Guías de Diseño
+    </button>
+    <button class="nav-btn" data-page="fuentes" data-ir="fuentes">
+      <span class="nav-icon tool">&#8635;</span> Fuentes oficiales
     </button>
     <button class="nav-btn" data-abrir="guia-diseno-interactiva.html">
       <span class="nav-icon tool">&#9672;</span> Diseño Interactivo
@@ -534,6 +551,33 @@ input:focus-visible,select:focus-visible,button:focus-visible{outline:2px solid 
   </div>
 </div>
 
+<!-- ════ FUENTES OFICIALES ════
+     La comprobación de los siete fabricantes de una vez (2026-11-01, la mejora propuesta al cerrar el
+     PR #71): js/fuentes-portal.js llama, de uno en uno, a la ruta que usa el botón «Actualizar fuentes»
+     de cada dimensionador. -->
+<div class="page" id="page-fuentes">
+  <div class="page-header">
+    <p class="eyebrow">Herramienta &middot; Procedencia del catálogo</p>
+    <h1>Fuentes<br>oficiales</h1>
+    <p class="sub">Vuelve a leer los documentos oficiales de los siete fabricantes, de uno en uno, y dice si siguen siendo los que se contrastaron. Solo lee: no cambia el catálogo. Un fabricante comprobado hace menos de 10 minutos sale de la caché del servidor.</p>
+  </div>
+  <div class="panel">
+    <h2>Comprobación en el momento</h2>
+    <div class="fp-acciones">
+      <button class="btn" id="fpComprobar" type="button">&#8635; Comprobar los siete</button>
+      <span id="fpEstado" role="status" class="fp-estado">Puede tardar unos minutos: cada fabricante se pide cuando el anterior respondió.</span>
+    </div>
+    <div class="fp-tabla">
+      <table>
+        <caption class="fp-oculto">Estado de las fuentes oficiales de cada fabricante</caption>
+        <thead><tr><th scope="col">Fabricante</th><th scope="col">Documentos</th><th scope="col">Resultado</th><th scope="col">Comprobado</th><th scope="col"><span class="fp-oculto">Pestaña de fuentes</span></th></tr></thead>
+        <tbody id="fpCuerpo"></tbody>
+      </table>
+    </div>
+    <p class="fp-nota">Lo que cambió se contrasta en la pestaña «Fuentes» de su fabricante. Starlink no tiene esa pestaña: sus documentos los vigila el vigía de los lunes.</p>
+  </div>
+</div>
+
 </main><!-- /main -->
 
 <script src="/js/estado.js"></script>
@@ -546,6 +590,7 @@ input:focus-visible,select:focus-visible,button:focus-visible{outline:2px solid 
      window.NAVFAB.FABRICANTES: la misma fuente que usan la delegación de clicks
      de abajo y scripts/verificar-pantallas.js para el mapa fabricante -> dimensionador. -->
 <script src="/js/navegacion.js"></script>
+<script src="/js/fuentes-portal.js"></script>
 <script src="/js/index.js"></script>
 
 
