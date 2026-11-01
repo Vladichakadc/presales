@@ -29,7 +29,6 @@
 }
 .btn-act-informe:hover { background: #FEF3F2; }
 .btn-act-informe:focus-visible { outline: 2px solid #B42318; outline-offset: 2px; }
-.btn-act-informe[hidden] { display: none; }
 .act-invalido { outline: 2px solid #B42318 !important; outline-offset: 1px; background-color: #FEF3F2 !important; }
 
 @media (forced-colors: active) {

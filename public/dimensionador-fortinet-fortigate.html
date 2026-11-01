@@ -23,7 +23,6 @@ h1{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:clamp(28p
 .tabs{display:flex;gap:0;border-bottom:1px solid var(--rule);margin-bottom:22px}
 .tabs button{background:none;border:0;border-bottom:3px solid transparent;padding:11px 18px;cursor:pointer;font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:16px;letter-spacing:.03em;text-transform:uppercase;color:var(--steel)}
 .tabs button[aria-selected=true]{color:var(--ink);border-bottom-color:var(--red)}
-.tabpane[hidden]{display:none}
 
 /* LADDER */
 .ladder{background:var(--card);border:1px solid var(--rule);border-radius:3px;padding:20px 18px 12px;margin-bottom:20px;overflow:hidden}
@@ -61,9 +60,6 @@ input[type=range]{width:100%;accent-color:var(--red)}
 .seg button+button{border-left:1px solid var(--rule)}
 .seg button[aria-pressed=true]{background:var(--ink);color:#fff;font-weight:600}
 .checks{display:grid;gap:7px}
-/* `hidden` no gana a un `display` de autor: sin esta regla la licencia única del par se veía sin HA y en
-   activo-activo, y el resumen WAN quedaba como una caja vacía sin enlaces (2026-11-01). */
-.checks[hidden],.wan-resumen[hidden]{display:none}
 .check{display:flex;gap:8px;align-items:flex-start;font-size:13px;cursor:pointer}
 .check input{margin:3px 0 0;accent-color:var(--red)}
 .hidden{display:none!important}
@@ -296,7 +292,6 @@ code{background:var(--paper);padding:1px 5px;border-radius:2px;white-space:nowra
 /* En movil no caben ni compactadas (468 px en 352): pasan a dos filas, que se ven enteras. */
 @media(max-width:880px){.res-tabs{flex-wrap:wrap;overflow-x:visible}}
 .res-cuerpo{padding:12px 14px}
-.res-panel[hidden]{display:none}
 .res-panel:focus-visible{outline:2px solid var(--red);outline-offset:2px}
 .res-pie{border-top:1px solid var(--rule);padding:10px 14px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
 .res-pie .gate-linea{flex:1 1 220px;font-size:12px;line-height:1.45}
@@ -319,7 +314,6 @@ code{background:var(--paper);padding:1px 5px;border-radius:2px;white-space:nowra
 .res-bloqueos li.borrador{border-left-color:var(--steel)}
 .btn-corr{font-size:10.5px;padding:2px 8px;margin-left:6px;vertical-align:1px}
 .autocorr{border:1px solid var(--amber);border-left:3px solid var(--amber);padding:8px 10px;font-size:12.5px;margin:10px 0 0;display:flex;gap:8px;align-items:baseline;flex-wrap:wrap;line-height:1.45}
-.autocorr[hidden]{display:none}
 
 /* Campos: validacion en linea, obligatorios, y QUE EJE TOCA cada uno (§10.3 del informe). */
 .afecta{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--steel);margin:4px 0 0;letter-spacing:.02em}
