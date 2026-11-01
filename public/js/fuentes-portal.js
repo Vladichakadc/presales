@@ -52,7 +52,8 @@
   // dimensionador (procedencia.js). `tono` es para el color; el texto lo dice igual sin él.
   function partesDe(d) {
     const c = (d && d.resumen) || {};
-    const partes = [{ n: c.sinCambios || 0, texto: 'sin cambios', tono: 'bien' }];
+    // Un cero no es buena noticia: «0 sin cambios» va en gris, no en verde.
+    const partes = [{ n: c.sinCambios || 0, texto: 'sin cambios', tono: c.sinCambios ? 'bien' : 'neutro' }];
     if (c.cambiaron) partes.push({ n: c.cambiaron, texto: c.cambiaron === 1 ? 'cambió sin contrastar' : 'cambiaron sin contrastar', tono: 'aviso' });
     if (c.varian) partes.push({ n: c.varian, texto: c.varian === 1 ? 'página dinámica que varía' : 'páginas dinámicas que varían', tono: 'neutro' });
     if (c.primera) partes.push({ n: c.primera, texto: 'sin medición previa', tono: 'neutro' });

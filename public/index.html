@@ -214,7 +214,9 @@ input:focus-visible,select:focus-visible,button:focus-visible{outline:2px solid 
 .fp-acciones{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:14px}
 .fp-estado{font-size:13px;color:var(--steel)}
 .fp-tabla{overflow-x:auto}
-.fp-tabla th[scope=row]{text-align:left;white-space:nowrap}
+/* La celda del fabricante es cabecera de fila (lectores de pantalla), pero se ve como una celda: sin el
+   estilo de las cabeceras de columna y con el mismo borde y relleno que sus vecinas. */
+.fp-tabla tbody th[scope=row]{font-family:inherit;font-size:13px;letter-spacing:0;text-transform:none;color:var(--ink);font-weight:600;padding:9px 10px 9px 0;border-bottom:1px solid var(--paper);vertical-align:top;white-space:nowrap}
 .fp-num,.fp-hora{white-space:nowrap}
 .fp-tabla a{color:var(--red);font-weight:600;white-space:nowrap}
 .fp-bien{color:var(--green);font-weight:600}
