@@ -48,7 +48,7 @@ completo está allí.
 - **Trabajo en paralelo y traspaso entre sesiones** (`docs/traspaso/README.md`). Varias sesiones,
   a veces de cuentas distintas, trabajan a la vez y solo comparten GitHub. Al empezar, `npm run
   traspasos` dice qué temas tienen rama y qué archivos declaran, y los PR abiertos sin traspaso
-  con los suyos: **no se toma un tema ni un archivo ajeno**. Cada tema va en su rama con `docs/traspaso/<tema>.md` (de `PLANTILLA.md`) al
+  con los suyos: **no se toma un tema ni un archivo ajeno**. **El tema se reserva antes de escribir código** (`npm run reservar -- <tema> --archivos "…"`, 2026-11-01): empuja la rama con su traspaso en el primer minuto y se niega si otro tema declara alguno de esos archivos; la carrera la arbitra GitHub (push sin `--force`). Cada tema va en su rama con `docs/traspaso/<tema>.md` (de `PLANTILLA.md`) al
   día en cada commit, y se empuja a menudo: lo no empujado se pierde si la sesión se corta.
   Retomar es leer ese traspaso y seguir su «Siguiente paso». `PENDIENTES.md` y `CLAUDE.md` se
   tocan solo al fusionar, y en ese commit el traspaso se borra.
@@ -137,6 +137,7 @@ npm run propuesta   # aplica una propuesta de la sincronización sobre legacyDat
 
 # Fuentes y documentos (lo que descarga necesita salida a internet: IMPORTAR-CATALOGO.md)
 npm run traspasos   # temas en curso: ramas con docs/traspaso/<tema>.md y PR abiertos sin él (solo lee)
+npm run reservar    # reserva un tema antes de escribir código: empuja claude/<tema> con su traspaso si nadie declara sus archivos
 npm run entregas    # las entregas más recientes, de docs/entregas/ (--todas, --n=N; solo lee)
 npm run vigia       # ¿cambió el documento de cada fuente? (hash contra fuentes.lock.json)
 npm run vigencia    # ¿desapareció algún modelo de Aruba de su guía de pedido oficial?
