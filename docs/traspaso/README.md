@@ -16,6 +16,11 @@ lleve nada consigo, y para que dos sesiones a la vez no se pisen.
    tomado aunque su traspaso ya se haya borrado. **No se toma un tema que ya
    tiene rama, ni un archivo que otro traspaso declara**: si hace falta, se elige otro tema o se
    espera a que esa rama se fusione.
+   **Y se reserva antes de escribir código** (2026-11-01): `npm run reservar -- <tema> --archivos
+   "ruta, carpeta/, …" --descripcion "…"` empuja en ese momento `claude/<tema>` con su traspaso
+   (estado «reservado») y se niega si otra rama o un PR abierto declara alguno de esos archivos. Así
+   el tema se ve en `npm run traspasos` desde el primer minuto y no tras la primera hora de trabajo,
+   que es como el 2026-10-28 tres sesiones hicieron la misma mejora (PR #60, #62 y #63).
 3. **Commit y push frecuentes** (cada paso que funcione, como mucho cada media hora de trabajo), y
    en cada uno el traspaso al día. Lo que no está empujado se pierde si la sesión se corta.
 4. **Retomar un tema** es: `git fetch`, cambiar a su rama, leer su traspaso entero y seguir por su
@@ -51,3 +56,17 @@ traspaso. Las ramas `fuente/*` (transporte de documentos, cortadas desde la rama
 de Dependabot no son temas. Después pide a GitHub (con `gh`) los PR abiertos y enseña los que no
 salieron arriba, con sus archivos (`--sin-prs` lo salta); si `gh` no responde, avisa con el enlace
 a los PR y sigue. Solo lee: no cambia de rama ni escribe nada.
+
+## Qué hace `npm run reservar`
+
+Trae las ramas y lee lo mismo que `npm run traspasos` (traspasos de las ramas y archivos de los PR
+abiertos sin traspaso). Si el tema ya tiene rama o algún archivo declarado choca con otro tema en
+curso, lo dice (con quién y en qué archivo) y sale con 1 sin crear nada. Dos rutas chocan si son la
+misma o si una es carpeta (`test/e2e/`) de la otra; `PENDIENTES.md`, `RELEVO.md`, `CLAUDE.md`,
+`docs/entregas/` y `docs/traspaso/` no cuentan, porque todos los tocan al cerrar. Un traspaso en
+estado «cerrado…» no choca. Una rama sin commits hace más de tres días se señala como parada, pero
+no se descarta sola: si su tema ya está en `main`, `--aunque <rama>` la pasa por alto y el traspaso
+nuevo lo deja dicho. Si está libre, arma un commit con el traspaso sobre `origin/main` en un índice
+temporal (el árbol de trabajo no se toca) y lo empuja **sin `--force`**: si otra sesión creó la
+misma rama a la vez, GitHub rechaza el segundo push y la reserva es de la primera. `--comprobar`
+solo mira. Las reglas y la carrera se prueban sin red en `test/reservar.test.js`.
