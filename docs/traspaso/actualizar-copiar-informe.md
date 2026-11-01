@@ -3,10 +3,10 @@
 - **Tema:** «Copiar informe» en el aviso del botón Actualizar
 - **Rama:** claude/actualizar-copiar-informe
 - **Cuenta:** vladichakadc@gmail.com (sesión 016ruRWCH48mtdRjcg83pvKa)
-- **Estado:** reservado
+- **Estado:** en curso
 - **Actualizado:** 2026-11-01 12:16
 - **Archivos que toca:** public/js/actualizar.js, public/actualizar.css, test/actualizar.test.js, test/e2e/e2e-boton-detector.js, RELEVO.md, CLAUDE.md
-- **Siguiente paso:** botón y manejador en actualizar.js, prueba y e2e
+- **Siguiente paso:** verificar, auditar, accesibilidad, e2e completa; PR y cierre
 
 ## Encargo del dueño
 
