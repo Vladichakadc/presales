@@ -100,7 +100,7 @@ jobs:
           } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Guardar lo medido para el job que publica
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: vigia
           path: |
@@ -174,7 +174,7 @@ jobs:
 
       - name: Guardar el contraste para el job que publica
         if: ${{ steps.pendiente.outputs.pendiente == 'true' }}
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: matrix
           path: ${{ runner.temp }}/matrix/matrix.json
@@ -213,7 +213,7 @@ jobs:
           } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Guardar el contraste para el job que publica
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: cisco
           path: ${{ runner.temp }}/cisco/cisco.json
