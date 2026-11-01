@@ -1,6 +1,7 @@
 # Relevo
 
-Última actualización: 2026-10-31 · PR #97
+Las entregas, una por archivo en `docs/entregas/` desde el 2026-10-31 (`npm run entregas` resume las
+más recientes).
 
 Informe para continuar el trabajo. Lo pidió el dueño del repositorio el 2026-10-27: «de aquí en
 adelante, un informe de pendientes y mejoras para que la cuenta **servicioiptv2025@gmail.com**
@@ -23,15 +24,20 @@ está en curso no va aquí: lo dice `npm run traspasos` (protocolo en `docs/tras
    pantalla conducida en el navegador (`npm run pantallas`, los casos de `npm run contraste`,
    `npm run e2e`, `npm run puerta`). Railway despliega `main` cuando CI pasa.
 4. **Al fusionar**: abre el PR primero, porque **la entrega se nombra por fecha y número de PR**
-   (`AAAA-MM-DD · PR #N`, nunca por ordinal); rebase sobre `main`; `PENDIENTES.md` (lo cerrado a
-   *Cerrado recientemente*), este archivo y `CLAUDE.md` si cambió una regla; el traspaso del tema se
-   borra en ese commit.
+   (`AAAA-MM-DD · PR #N`, nunca por ordinal); en el commit de cierre, **su archivo**
+   `docs/entregas/AAAA-MM-DD-pr-N.md` (de `PLANTILLA.md`: encargo, `## Cerrado` y `## Estado`), los
+   puntos de `PENDIENTES.md` y las secciones vivas de este archivo que cambien, y `CLAUDE.md` si
+   cambió una regla; el traspaso del tema se borra en ese commit. Nada de cabeceras ni de entradas
+   arriba de `PENDIENTES.md` o de este archivo: era donde chocaban las fusiones en paralelo.
 5. **Lo que no se negocia**: nunca se inventa un dato (sin documento oficial, `null` y «sin dato»);
    un 403 del proxy de egreso se reporta, no se rodea; los documentos de los fabricantes se traen con
    `traer-cisco-huawei.yml` a una rama `fuente/*` nueva por corrida; las decisiones del dueño no se
    toman por silencio; todo el texto visible, en español.
 
 ## Estado al cerrar esta entrega
+
+> Desde el 2026-10-31, el estado de cada entrega va en su archivo de `docs/entregas/` (`## Estado`); lo
+> de abajo es el registro anterior y no recibe entradas nuevas.
 
 - **2026-10-31 · PR #97**: lo que trae una función, resaltado también en la lista de materiales (fase 2.2 del plan aprobado). **Criterio que conviene conservar**: el resaltado sale de comparar la pantalla antes y después del clic, nunca de un mapa función→línea; una tabla nueva fuera de la columna de resultados entra en la foto como `#bomTabla` (`lineasBom`), y su prueba abre la pestaña después de marcar.
 - **2026-10-31 · PR #96**: «Líneas por función» en la hoja «Supuestos» del Excel (fase 2.1 del plan aprobado). **Criterio que conviene conservar**: la procedencia de una línea sale de su `por`, el mismo dato que pinta la etiqueta en pantalla; nunca un mapa aparte, y nunca en la hoja «BOM» del cliente.
