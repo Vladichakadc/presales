@@ -1953,85 +1953,12 @@ function render(){
     track.appendChild(dot);
   });
 
-  let outByBoost=0,outByClients=0,outByAps=0,outBySinDato=0,outByFlujos=0,outByPersona=0,sobrado=[];
-  // Fase 1 de la auditoria 2026-09-17: tres descartes nuevos, cada uno con su porque.
-  const outBySo=[], outByDtd=[], outByBoostRec=[];
-  // gwsec (2026-09-24): gateways sin nivel «+ Security» en el documento oficial (7000/7200),
-  // y los que no llegan (o no publican) el throughput de IDS/IPS del VSG.
-  const outBySinSec=[], outByIds=[], outByIdsEc=[];
-  // M2 · Auditoría de puertos (SPEC B.3, para todo chasis desde el 2026-10-15): un modelo en
-  // el que algún enlace no tiene puerto queda fuera. Se anota con su motivo y solo si habría
-  // cumplido todo lo demás: es lo que dispara #alertaEscalado y el porqué del veredicto.
-  const outByPuertos=[];
-  // Criptografía post-cuántica exigida (2026-10-27): la regla única de pqc.js, también al final.
-  const outByPqc=[];
-  const nivelPqc=$('reqPqc').value;
-  const candidates=MODELS.filter(m=>{
-    if(!coincideFiltro(m,famMode)) return false;
-    // Arquetipo de sede (fase 11): restringe el catalogo a los modelos que el VSG
-    // posiciona para ese tamanyo de sitio. Libre = no restringe.
-    if(personaMode!=='auto'&&personaMode!=='micro'&&PERSONA_MODELOS[personaMode]
-      &&!PERSONA_MODELOS[personaMode].includes(m.id)){ outByPersona++; return false; }
-    if(boost&&m.boostMax==null){ outByBoost++; return false; }
-    // A1: Dynamic Threat Defense solo corre en EdgeConnect, y no en el modelo que el catálogo
-    // marque `dtd:false`. Antes era un aviso rojo debajo de un equipo que seguía saliendo
-    // RECOMENDADO y cotizaba la licencia DTD.
-    if(secMode==='dtd'&&!ArubaReglas.admiteDtd(m)){ if(m.fam==='ec') outByDtd.push(m.id); return false; }
-    // Y donde el fabricante publica la capacidad de IDS/IPS del EdgeConnect (hoy el EC-XS, en
-    // su spec sheet: 300 Mbps en línea), es un techo duro, con la misma degradación IMIX que el
-    // eje de IDS/IPS de los gateways (2026-10-06). Sin cifra, sigue la reserva del motor.
-    if(secMode==='dtd'&&m.fam==='ec'&&m.idsMbps!=null&&m.idsMbps*IMIX_FACTOR<needProc){
-      outByIdsEc.push({id:m.id, motivo:`IDS/IPS en línea ${fmt(m.idsMbps)} (×${IMIX_FACTOR} IMIX) por debajo de ${fmt(needProc)}`}); return false; }
-    // IDS/IPS en el gateway (gwsec, 2026-09-24): solo los gateways cuya serie tiene nivel
-    // «+ Security» en el documento oficial de Central (9000, 9100, 9200). EdgeConnect lo hace
-    // con DTD y la línea 7000/7200 no tiene ese nivel.
-    if(secMode==='gwsec'&&(m.fam==='ec'||!centralParaModelo(m, 'foundation', 1, true))){ if(m.fam!=='ec') outBySinSec.push(m.id); return false; }
-    // Y el eje de IDS/IPS con la cifra oficial del VSG (idsMbps), con la misma degradación
-    // IMIX que el firewall del gateway. Sin cifra publicada (9004-LTE) no se afirma que cumpla:
-    // se aparta con su motivo, nunca con la cifra de firewall ni con la de su hermano.
-    if(secMode==='gwsec'&&m.fam==='gw'){
-      if(m.idsMbps==null){ outByIds.push({id:m.id, motivo:'sin cifra de IDS/IPS en el VSG'}); return false; }
-      if(m.idsMbps*IMIX_FACTOR<needProc){ outByIds.push({id:m.id, motivo:`IDS/IPS ${fmt(m.idsMbps)} (×${IMIX_FACTOR} IMIX) por debajo de ${fmt(needProc)}`}); return false; }
-    }
-    // C2/C3: un gateway sin cifras para el SO elegido (9114 en AOS 8, series 7000/7200 en
-    // AOS 10) no puede afirmarse que cumpla — se descarta y se dice por qué.
-    if(m.sinCifraSo){ outBySo.push(m); return false; }
-    // EC-V no publica rango: se dimensiona por licencia y vCPU, no por hardware.
-    if(m.fam==='ec'&&m.wanMax==null) return false;
-    const cap=capacidadMax(m);
-    // Sin cifra publicada no se puede afirmar que cumpla: se descarta y se explica, en
-    // vez de colarlo con un numero inventado o de omitirlo en silencio.
-    if(cap==null){ outBySinDato++; return false; }
-    // Factor IMIX (regla de trabajo del duenyo): la mezcla real de trafico rinde menos
-    // que el UDP de laboratorio. En EdgeConnect la degradación vive YA en el
-    // requerimiento del motor de ingeniería (÷IMIX según perfil) y se compara contra el
-    // nominal; en gateways se conserva el ×0,70 del lado capacidad (ver
-    // capacidadComparable — brief carrier-grade 2026-09-13, sin doble conteo).
-    if(capacidadComparable(m)<needDe(m)) return false;
-    const cMax=clientesMax(m), aMax=apsMax(m);
-    if(cMax!=null&&users&&cMax<users){ outByClients++; return false; }
-    if(aMax!=null&&aps&&aMax<aps){ outByAps++; return false; }
-    // Flujos simultáneos: el chasis debe soportar con holgura los flujos calculados.
-    // null (EC-V) = la fuente no publica el dato: no descarta, se declara.
-    const fl=flujosDe(m);
-    if(flujosReq>0&&fl!=null&&fl<flujosReq){ outByFlujos++; return false; }
-    // C4: el Boost que necesita la sede no puede superar el que HPE recomienda optimizar
-    // en ese appliance (EC-10104 200 Mbps, EC-S 500 Mbps, EC-M 1 Gbps…). null = sin dato
-    // publicado: no descarta, se declara.
-    if(boost&&m.fam==='ec'&&D.boostMbps>0){
-      const rec=ArubaReglas.boostRecMbps(m);
-      if(rec!=null&&D.boostMbps>rec){ outByBoostRec.push(m.id); return false; }
-    }
-    // Auditoría de puertos: la regla se evalúa AL FINAL para saber si el modelo habría
-    // cumplido todo lo demás (y por tanto el dimensionador está escalando por los puertos o
-    // el medio de los enlaces, no por capacidad). La MISMA regla del semáforo de #wanResumen.
-    const ev=evaluarPuertos(m,D.wanLinks);
-    if(ev.nivel==='rojo'){ outByPuertos.push({m, motivo:ev.motivo}); return false; }
-    // El SO del escenario va con la regla: la PPK de los gateways es de AOS-8 (pqc.so); los
-    // EdgeConnect corren ECOS y su `pqc` no declara SO, así que el selector no les afecta.
-    const motPqc=PQC.motivo(m,nivelPqc,{so:soMode, soNombre:SO_NOMBRE[soMode]||soMode});
-    if(motPqc){ outByPqc.push({m, motivo:motPqc}); return false; }
-    return true;
+  let sobrado=[];
+  // Fase 3.1, tercera entrega (2026-11-01): el filtro de candidatos vive en aruba-reglas.js, con su
+  // cuerpo intacto; aquí se le pasa lo que leía de este render() y de la página.
+  const { candidates, outByBoost, outByClients, outByAps, outBySinDato, outByFlujos, outByPersona, outBySo, outByDtd, outByBoostRec, outBySinSec, outByIds, outByIdsEc, outByPuertos, outByPqc } = ArubaReglas.filtrarCandidatos(MODELS, {
+    coincideFiltro, famMode, personaMode, PERSONA_MODELOS, boost, secMode, ArubaReglas, IMIX_FACTOR, needProc, fmt, centralParaModelo, capacidadMax, capacidadComparable, needDe, clientesMax, apsMax, users, aps, flujosDe, flujosReq, D, evaluarPuertos, PQC, soMode, SO_NOMBRE,
+    nivelPqc: $('reqPqc').value,
   });
   // Generacion actual primero: entre dos que cumplen, la linea AOS 8 (series 7000/7200)
   // solo se propone si no hay un equivalente vigente. Sigue apareciendo como alternativa y
