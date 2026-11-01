@@ -62,3 +62,47 @@ test('la orden sale con 0 sin diferencias, 1 con diferencias y 2 si el comparado
     assert.strictEqual(callar(() => E.main([ruta, '--ref=HEAD'])), 2, 'una mutación ciega');
   } finally { caso.cargar = original; }
 });
+
+// EN CI (2026-11-01): cada PR vuelve a medir los casos cuyos archivos toca.
+test('las aceptaciones salen de la descripción del PR, con motivo, y solo con ese formato', () => {
+  const a = E.aceptaciones('Resumen\nequivalencia-acepta: aruba-estado: el nivel pasa a exigir más caudal\n'
+    + 'equivalencia-acepta: pqc: corto\n  equivalencia-acepta:fortinet-porque:  texto nuevo de la explicación del HA \nacepta: otro: nada');
+  assert.deepStrictEqual(JSON.parse(JSON.stringify(a)), {
+    'aruba-estado': 'el nivel pasa a exigir más caudal',
+    'fortinet-porque': 'texto nuevo de la explicación del HA',
+  }, 'un motivo de menos de diez caracteres no acepta nada');
+  assert.deepStrictEqual(E.aceptaciones(undefined), {});
+});
+
+test('un caso se mide si el PR toca un archivo suyo o algo dentro de una carpeta suya', () => {
+  assert.ok(E.tocaCaso(['public/js/pqc.js'], ['README.md', 'public/js/pqc.js']));
+  assert.ok(E.tocaCaso(['public/js/'], ['public/js/bom.js']));
+  assert.ok(!E.tocaCaso(['public/js/pqc.js'], ['public/js/pqc-otro.js']));
+  assert.ok(!E.tocaCaso([], ['public/js/pqc.js']));
+});
+
+test('cada caso declara qué archivos mide, y existen', () => {
+  const fs = require('fs');
+  const dir = path.join(__dirname, '..', 'scripts', 'equivalencias');
+  const casos = fs.readdirSync(dir).filter((f) => f.endsWith('.js'));
+  assert.ok(casos.length >= 4);
+  for (const f of casos) {
+    const c = require(path.join(dir, f));
+    assert.ok(Array.isArray(c.mide) && c.mide.length, `${f}: sin \`mide\`, --todos no sabe cuándo medirlo`);
+    for (const r of c.mide) assert.ok(fs.existsSync(path.join(__dirname, '..', r)), `${f}: mide ${r}, que no existe`);
+  }
+});
+
+test('verificar.yml mide las equivalencias en cada PR, con la descripción como variable y el historial entero', () => {
+  const fs = require('fs');
+  const yml = fs.readFileSync(path.join(__dirname, '..', '.github', 'workflows', 'verificar.yml'), 'utf8');
+  assert.match(yml, /fetch-depth: 0/, 'sin historial no hay base común con main');
+  const i = yml.indexOf('- name: Equivalencias');
+  assert.ok(i > 0, 'falta el paso de las equivalencias');
+  const paso = yml.slice(i, yml.indexOf('\n      - name:', i + 10) > 0 ? yml.indexOf('\n      - name:', i + 10) : undefined);
+  assert.match(paso, /if: github\.event_name == 'pull_request'/);
+  assert.match(paso, /PR_BODY: \$\{\{ github\.event\.pull_request\.body \}\}/);
+  assert.match(paso, /run: node scripts\/equivalencia\.js --todos --base="origin\/\$BASE_REF"/);
+  assert.doesNotMatch(paso.slice(paso.indexOf('run:')), /\$\{\{/, 'la descripción del PR nunca se interpola en el shell (inyección)');
+  assert.doesNotMatch(paso, /continue-on-error/);
+});
