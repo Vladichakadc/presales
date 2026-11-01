@@ -4,7 +4,12 @@ Registro vivo de lo que falta. **Al empezar una tarea se buscan aquí los puntos
 tocan, y al terminarla se actualiza**, y su contenido se resume al usuario al cerrar cada entrega — esa es la instrucción
 permanente que lo justifica (ver `CLAUDE.md`, sección *Instrucciones permanentes del dueño*).
 
-Última revisión: 2026-10-31 · PR #97 (**Lo que trae una función, resaltado también en la lista de materiales.** Encargo del dueño: «Ejecuta lo pendiente del plan aprobado» (fase 2.2). Ver *Cerrado recientemente*.)
+**Las entregas se registran una por archivo en `docs/entregas/` desde el 2026-10-31** (`AAAA-MM-DD-pr-N.md`,
+de `docs/entregas/PLANTILLA.md`; `npm run entregas` las resume): ni esta cabecera ni *Cerrado recientemente*
+reciben entradas nuevas, para que dos fusiones en paralelo no choquen en las mismas líneas. Lo de abajo es
+el registro anterior.
+
+Revisión anterior: 2026-10-31 · PR #97 (**Lo que trae una función, resaltado también en la lista de materiales.** Encargo del dueño: «Ejecuta lo pendiente del plan aprobado» (fase 2.2). Ver *Cerrado recientemente*.)
 Revisión anterior: 2026-10-31 · PR #96 (**«Líneas por función» en la hoja «Supuestos» del Excel.** Encargo del dueño: «Ejecuta lo pendiente del plan aprobado» (fase 2.1). Ver *Cerrado recientemente*.)
 Revisión anterior: 2026-10-31 · PR #92 (**axe recorre la ficha del firewall dedicado de Cisco.** Encargo del dueño: «Ejecuta la mejora propuesta», la del cierre del PR #91. Ver *Cerrado recientemente*.)
 Revisión anterior: 2026-10-31 · PR #93 (**El botón «Actualizar» avisa cuando el resultado no estaba al día.** Encargo del dueño: «ejecuta la mejora propuesta», la del cierre del PR #86. Ver *Cerrado recientemente*.)
@@ -2531,6 +2536,9 @@ que ya se comprobó y lo que cuesta cada opción.
     normalizar) se cerró el 2026-09-02 — ver *Cerrado recientemente*.
 
 ## Cerrado recientemente
+
+> Desde el 2026-10-31, lo que se cierra va en su entrega de `docs/entregas/` (`## Cerrado`); esta lista es
+> el registro anterior y no recibe entradas nuevas.
 
 - **2026-10-31 · PR #97 · Lo que trae una función, resaltado también en la lista de materiales.** Fase 2.2 del plan aprobado (la mejora propuesta al cerrar el PR #66). `funciones-activas.js` mete en la foto del `click` las líneas de `#bomTabla` (sin rótulos de grupo ni total) cuando la tabla vive fuera de la columna de resultados de la rejilla de la casilla: la línea que una función añade se resalta con «Apareció al activar «X»» aunque su pestaña esté cerrada, el panel la cuenta aparte («M líneas de la lista de materiales») y «Ver» abre la pestaña si hace falta. Medido en CI: la tabla se repinta con su pestaña cerrada (`BOM.sincronizar`), así que la foto no es vieja. Caso fijo en `e2e-funciones-activas.js` con FortiConverter de Fortinet; una casilla de la propia pestaña del BOM (Capacitación de MikroTik) ya tenía la tabla en su columna de resultados.
 - **2026-10-31 · PR #96 · «Líneas por función» en la hoja «Supuestos» del Excel.** Fase 2.1 del plan aprobado (la mejora propuesta al cerrar el PR #70). `BOM.lineasPorFuncion(filas, POR_FUNCION)` saca las líneas del BOM que existen por una función pedida, con la misma regla que la etiqueta de la pantalla (solo casillas marcadas), y `matrizSupuestos` las escribe en «LÍNEAS POR FUNCIÓN» (línea, referencia, cantidad, función) antes de los parámetros. Sale de las filas que ya recibe `exportarExcel`: ninguna página se tocó, en vez de pasarlas por `meta.supuestos` de cinco como decía la propuesta. La hoja «BOM» que lee el cliente no lleva la marca. Pruebas en `bom-supuestos.test.js` y el Excel real de MikroTik en `e2e-por-funcion.js`.
