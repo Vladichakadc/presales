@@ -1,8 +1,8 @@
 'use strict';
 // El informe de relevo (decisión del dueño, 2026-10-27): «de aquí en adelante, un informe de
-// pendientes y mejoras para que la cuenta servicioiptv2025@gmail.com continúe». Se reescribe al
-// cerrar cada entrega, junto con PENDIENTES.md. Esta prueba frena un relevo que se quedó atrás
-// (más viejo que la última revisión de PENDIENTES.md) o al que le falta una de sus secciones.
+// pendientes y mejoras para que la cuenta servicioiptv2025@gmail.com continúe». Sus secciones vivas
+// se reescriben cuando cambian; cada entrega va en su archivo de docs/entregas/ (desde 2026-10-31).
+// Esta prueba frena un relevo al que le falta una sección y una entrega mal formada o repetida.
 const test = require('node:test');
 const assert = require('node:assert');
 const fs = require('fs');
@@ -20,34 +20,35 @@ test('RELEVO.md existe, tiene sus secciones y dice para quién es', () => {
   assert.match(leer('CLAUDE.md'), /RELEVO\.md/, 'CLAUDE.md no dice que hay que actualizar el relevo');
 });
 
-test('el relevo no es más viejo que la última revisión de PENDIENTES.md', () => {
-  const fecha = (texto, re) => { const m = texto.match(re); return m ? m[1] : null; };
-  const relevo = fecha(leer('RELEVO.md'), /^Última actualización: (\d{4}-\d{2}-\d{2})/m);
-  const pendientes = fecha(leer('PENDIENTES.md'), /^Última revisión: (\d{4}-\d{2}-\d{2})/m);
-  assert.ok(relevo, 'RELEVO.md sin «Última actualización: AAAA-MM-DD»');
-  assert.ok(pendientes, 'PENDIENTES.md sin «Última revisión: AAAA-MM-DD»');
-  assert.ok(relevo >= pendientes, `el relevo (${relevo}) se quedó atrás de PENDIENTES.md (${pendientes})`);
+// LAS ENTREGAS, UNA POR ARCHIVO (2026-10-31, mejora aprobada por el dueño al cerrar el PR #92). Antes
+// cada entrega reescribía la cabecera y la primera entrada de PENDIENTES.md y de RELEVO.md, y dos
+// fusiones en paralelo chocaban siempre ahí. Ahora cada una es `docs/entregas/AAAA-MM-DD-pr-N.md`
+// (scripts/entregas.js). Se sigue nombrando por fecha y número de PR, nunca por ordinal: dos sesiones
+// en paralelo tomaban el mismo ordinal, y el número de PR no se repite.
+const { leerEntregas } = require('../scripts/entregas');
+const ORDINAL = /\b(primera|segunda|tercera|cuarta|quinta|sexta|s[eé]ptima|octava|novena|d[eé]cima|vig[eé]sim|trig[eé]sim|cuadrag[eé]sim|quincuag[eé]sim|sexag[eé]sim|septuag[eé]sim|octog[eé]sim|nonag[eé]sim|cent[eé]sim)\w* entrega/i;
+
+test('cada entrega de docs/entregas/ está bien formada: nombre, cabecera, encargo, Cerrado y Estado', () => {
+  const entregas = leerEntregas();
+  assert.ok(entregas.length > 0, 'docs/entregas/ no tiene ninguna entrega');
+  for (const e of entregas) assert.deepStrictEqual(e.problemas, [], `${e.archivo}: ${e.problemas.join('; ')}`);
 });
 
-// Las entregas se nombran por fecha y número de PR (mejora aprobada el 2026-10-27). Con ordinales
-// («sexagesimonovena», «septuagésima»), dos sesiones en paralelo tomaban el mismo número tres
-// veces el mismo día y la que fusionaba segunda tenía que renumerar cada mención al rebasar. El
-// número de PR lo da GitHub y no se repite. Las revisiones anteriores con ordinal son historia y
-// no se reescriben: la regla mira solo la cabecera vigente de los dos archivos.
-const CABECERA_PENDIENTES = /^Última revisión: (\d{4}-\d{2}-\d{2}) · PR #(\d+)\b/m;
-const CABECERA_RELEVO = /^Última actualización: (\d{4}-\d{2}-\d{2}) · PR #(\d+)\s*$/m;
-
-test('la entrega vigente se nombra por fecha y PR, igual en PENDIENTES.md y en RELEVO.md', () => {
-  const p = leer('PENDIENTES.md').match(CABECERA_PENDIENTES);
-  const r = leer('RELEVO.md').match(CABECERA_RELEVO);
-  assert.ok(p, 'PENDIENTES.md: la cabecera va como «Última revisión: AAAA-MM-DD · PR #N (**título** …)», sin ordinal');
-  assert.ok(r, 'RELEVO.md: la cabecera va como «Última actualización: AAAA-MM-DD · PR #N», sin ordinal');
-  assert.strictEqual(r[2], p[2], `RELEVO.md cita el PR #${r[2]} y PENDIENTES.md el #${p[2]}: se reescriben en el mismo commit`);
+test('un PR, una entrega; y ninguna se nombra por ordinal', () => {
+  const vistos = new Map();
+  for (const e of leerEntregas()) {
+    assert.ok(!vistos.has(e.pr), `el PR #${e.pr} tiene dos entregas: ${vistos.get(e.pr)} y ${e.archivo}`);
+    vistos.set(e.pr, e.archivo);
+    assert.doesNotMatch(e.titulo || '', ORDINAL, `${e.archivo}: la entrega se nombra por fecha y PR, no por ordinal`);
+  }
 });
 
-test('la cabecera vigente no vuelve al ordinal', () => {
-  const ordinal = /\b(primera|segunda|tercera|cuarta|quinta|sexta|s[eé]ptima|octava|novena|d[eé]cima|vig[eé]sim|trig[eé]sim|cuadrag[eé]sim|quincuag[eé]sim|sexag[eé]sim|septuag[eé]sim|octog[eé]sim|nonag[eé]sim|cent[eé]sim)\w* entrega/i;
-  const lineaVigente = (texto, re) => (texto.split('\n').find((l) => re.test(l)) || '');
-  assert.doesNotMatch(lineaVigente(leer('PENDIENTES.md'), /^Última revisión:/), ordinal);
-  assert.doesNotMatch(lineaVigente(leer('RELEVO.md'), /^Última actualización:/), ordinal);
+test('PENDIENTES.md y RELEVO.md ya no llevan la cabecera de la entrega: va en su archivo', () => {
+  // Si una rama de antes del cambio vuelve a escribir «Última revisión» o «Última actualización», las
+  // fusiones en paralelo vuelven a chocar en esa línea. La entrega va a docs/entregas/ (PLANTILLA.md).
+  assert.doesNotMatch(leer('PENDIENTES.md'), /^Última revisión:/m,
+    'PENDIENTES.md: la entrega va en docs/entregas/AAAA-MM-DD-pr-N.md, no en «Última revisión»; la línea vieja pasa a «Revisión anterior»');
+  assert.doesNotMatch(leer('RELEVO.md'), /^Última actualización:/m,
+    'RELEVO.md: la entrega va en docs/entregas/AAAA-MM-DD-pr-N.md, no en «Última actualización»');
+  for (const f of ['PENDIENTES.md', 'RELEVO.md']) assert.match(leer(f), /docs\/entregas\//, `${f} no dice dónde están las entregas`);
 });

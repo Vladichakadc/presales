@@ -22,8 +22,9 @@ lleve nada consigo, y para que dos sesiones a la vez no se pisen.
    «Siguiente paso». No se rehace lo que el traspaso da por hecho sin comprobar primero que falla.
 5. **Al terminar**, lo de siempre (`CLAUDE.md` → *Desplegar*): `npm run verificar`, `npm run
    auditar`, abrir el PR (su número nombra la entrega), rebase sobre `main` y fusionar. En el
-   commit de cierre, que cita ese `PR #N`, lo cerrado pasa a
-   `PENDIENTES.md` (*Cerrado recientemente*), lo que queda abierto a su sección, y **el archivo de
+   commit de cierre, que cita ese `PR #N`, lo cerrado y su estado van a **su entrega**,
+   `docs/entregas/AAAA-MM-DD-pr-N.md` (de `docs/entregas/PLANTILLA.md`; desde el 2026-10-31, no a
+   una cabecera de `PENDIENTES.md`), lo que queda abierto a su sección, y **el archivo de
    traspaso se borra**: en `main` no vive ninguno salvo este README y la plantilla.
 
 ## Por qué así
@@ -32,7 +33,9 @@ lleve nada consigo, y para que dos sesiones a la vez no se pisen.
   mismo archivo, cada fusión chocaría ahí. Con un archivo por rama nadie edita el de otro, y
   `npm run traspasos` los lee de las ramas sin cambiar de rama.
 - **`PENDIENTES.md` y `CLAUDE.md` solo se tocan al fusionar.** Son los dos archivos que todas las
-  sesiones comparten; editarlos a mitad de trabajo en dos ramas es un conflicto seguro.
+  sesiones comparten; editarlos a mitad de trabajo en dos ramas es un conflicto seguro. Por lo
+  mismo, la entrega va en un archivo propio (`docs/entregas/`) y no arriba de `PENDIENTES.md` o
+  `RELEVO.md`, donde dos cierres simultáneos escribían la misma línea.
 - **Temas distintos y archivos distintos.** Dos ramas que tocan el mismo motor o el mismo
   `legacyData/` se pueden fusionar sin conflicto de texto y aun así romper el cálculo. Por eso el
   traspaso declara los archivos y el siguiente que llega elige otra cosa.
