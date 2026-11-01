@@ -75,6 +75,34 @@ function choques(propios, ocupados, { ignorar = [] } = {}) {
   return out;
 }
 
+// LOS CASOS DE EQUIVALENCIA QUE VIGILAN LO RESERVADO (2026-11-01, mejora propuesta al cerrar el PR #114).
+// Desde ese PR, `verificar.yml` vuelve a medir en cada PR los casos de scripts/equivalencias/ cuyo `mide`
+// toca el cambio. Quien reserva un archivo vigilado lo sabe desde el primer minuto: qué caso lo mide,
+// cómo correrlo en local y cómo declarar un cambio de comportamiento hecho a propósito. El `mide` se lee
+// del texto del caso, sin ejecutarlo (cargar un caso carga catálogos enteros). Solo avisa.
+const DIR_EQUIVALENCIAS = path.join(RAIZ, 'scripts', 'equivalencias');
+function casosQueVigilan(archivos, dir = DIR_EQUIVALENCIAS) {
+  let lista;
+  try { lista = fs.readdirSync(dir).filter((f) => f.endsWith('.js')).sort(); } catch { return []; }
+  const out = [];
+  for (const f of lista) {
+    const texto = fs.readFileSync(path.join(dir, f), 'utf8');
+    const m = /\bmide:\s*\[([^\]]*)\]/.exec(texto);
+    if (!m) continue;
+    const mide = [...m[1].matchAll(/'([^']+)'|"([^"]+)"/g)].map((x) => x[1] || x[2]);
+    const pisa = archivos.filter((a) => mide.some((r) => solapan(a, r)));
+    if (pisa.length) out.push({ caso: f.replace(/\.js$/, ''), mide, pisa });
+  }
+  return out;
+}
+function avisoEquivalencias(lista) {
+  if (!lista.length) return '';
+  return ['Lo vigila la medición de equivalencias en cada PR (verificar.yml):',
+    ...lista.map((c) => `  ${c.caso} (por ${c.pisa.join(', ')}): npm run equivalencia -- scripts/equivalencias/${c.caso}.js`),
+    '  Un cambio de comportamiento hecho a propósito se declara en la descripción del PR:',
+    ...lista.map((c) => `    equivalencia-acepta: ${c.caso}: <motivo>`)].join('\n');
+}
+
 const diasDesde = (fecha, ahora = Date.now()) => {
   const t = Date.parse(fecha);
   return Number.isFinite(t) ? (ahora - t) / 86400000 : null;
@@ -87,12 +115,15 @@ function horaBogota(d = new Date()) {
 }
 
 // El traspaso inicial, de la plantilla: mismos campos, con lo que se sabe al reservar.
-function traspasoInicial({ tema, rama, descripcion, cuenta, archivos, siguiente, ignoradas = [], fecha }) {
+function traspasoInicial({ tema, rama, descripcion, cuenta, archivos, siguiente, ignoradas = [], fecha, vigilan = [] }) {
   const plantilla = fs.readFileSync(path.join(RAIZ, CARPETA, 'PLANTILLA.md'), 'utf8');
   const cuerpo = plantilla.slice(plantilla.indexOf('## Encargo del dueño'));
-  const nota = ignoradas.length
+  const nota = (ignoradas.length
     ? `\n- Reservado pasando por alto los archivos de ${ignoradas.join(', ')} (\`--aunque\`): rama parada cuyo tema ya está en main.`
-    : '';
+    : '')
+    + (vigilan.length
+      ? `\n- La medición de equivalencias vigila ${vigilan.map((c) => `\`${c.caso}\` (por ${c.pisa.join(', ')})`).join(', ')}: se corre en cada PR; un cambio a propósito se declara con \`equivalencia-acepta: <caso>: <motivo>\`.`
+      : '');
   return [
     `# Traspaso: ${tema}`,
     '',
@@ -226,13 +257,15 @@ function main(argv, opts = {}) {
   }
   const comunes = archivos.filter(esComun);
   if (comunes.length) console.log(`(No cuentan para el choque, se tocan al cerrar: ${comunes.join(', ')}.)`);
+  const vigilan = casosQueVigilan(archivos);
   if (o.comprobar) {
     console.log(`Libre: ningún tema en curso declara ${archivos.filter((r) => !esComun(r)).join(', ') || 'esos archivos'}.`);
+    if (vigilan.length) console.log(avisoEquivalencias(vigilan));
     return 0;
   }
   const ruta = `${CARPETA}${o.tema}.md`;
   const contenido = traspasoInicial({ tema: o.tema, rama, descripcion: o.descripcion, cuenta: o.cuenta, archivos,
-    siguiente: o.siguiente, ignoradas: o.aunque, fecha: horaBogota() });
+    siguiente: o.siguiente, ignoradas: o.aunque, fecha: horaBogota(), vigilan });
   let commit;
   try {
     commit = empujarReserva(rama, ruta, contenido, `Reserva: ${o.descripcion || o.tema}`);
@@ -242,11 +275,12 @@ function main(argv, opts = {}) {
     return 1;
   }
   console.log(`Reservado: ${rama} (${commit.slice(0, 7)}) con ${ruta}.`);
+  if (vigilan.length) console.log(avisoEquivalencias(vigilan));
   console.log(`Para trabajar en él: git fetch origin && git switch ${rama}  (o git switch -c ${rama} --track origin/${rama}).`);
   return 0;
 }
 
 if (require.main === module) process.exitCode = main(process.argv.slice(2));
 
-module.exports = { main, normalizarArchivos, solapan, choques, esComun, traspasoInicial, horaBogota, argumentos, diasDesde,
+module.exports = { main, casosQueVigilan, avisoEquivalencias, normalizarArchivos, solapan, choques, esComun, traspasoInicial, horaBogota, argumentos, diasDesde,
   COMUNES_AL_CIERRE, DIAS_PARADA };
