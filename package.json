@@ -26,6 +26,7 @@
     "vigia": "node scripts/vigia-fuentes.js",
     "traspasos": "node scripts/traspasos.js",
     "reservar": "node scripts/reservar.js",
+    "equivalencia": "node scripts/equivalencia.js",
     "entregas": "node scripts/entregas.js",
     "vigencia": "node scripts/vigencia-quickspecs.js",
     "manual": "node scripts/generar-manual-usuario.js",
