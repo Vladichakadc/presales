@@ -1,6 +1,6 @@
 {
  "medidoEn": {
-  "commit": "99398f7",
+  "commit": "279c345",
   "fecha": "2026-11-01"
  },
  "umbralRozado": 25,
@@ -83,13 +83,6 @@
    "pct": 50
   },
   {
-   "modulo": "procedencia.js",
-   "estado": "ejercitado",
-   "total": 38,
-   "usadas": 19,
-   "pct": 50
-  },
-  {
    "modulo": "fortinet-reglas.js",
    "estado": "ejercitado",
    "total": 45,
@@ -101,6 +94,13 @@
    "estado": "ejercitado",
    "total": 17,
    "usadas": 9,
+   "pct": 53
+  },
+  {
+   "modulo": "procedencia.js",
+   "estado": "ejercitado",
+   "total": 38,
+   "usadas": 20,
    "pct": 53
   },
   {
@@ -134,9 +134,9 @@
   {
    "modulo": "dimensionador-aruba-edgeconnect.js",
    "estado": "ejercitado",
-   "total": 377,
-   "usadas": 251,
-   "pct": 67
+   "total": 371,
+   "usadas": 246,
+   "pct": 66
   },
   {
    "modulo": "estado.js",
@@ -153,10 +153,10 @@
    "pct": 72
   },
   {
-   "modulo": "index.js",
+   "modulo": "fortinet-explicacion.js",
    "estado": "ejercitado",
-   "total": 58,
-   "usadas": 42,
+   "total": 25,
+   "usadas": 18,
    "pct": 72
   },
   {
@@ -165,6 +165,13 @@
    "total": 60,
    "usadas": 44,
    "pct": 73
+  },
+  {
+   "modulo": "index.js",
+   "estado": "ejercitado",
+   "total": 58,
+   "usadas": 43,
+   "pct": 74
   },
   {
    "modulo": "dimensionador-cisco-catalyst8k.js",
@@ -176,9 +183,9 @@
   {
    "modulo": "dimensionador-fortinet-fortigate.js",
    "estado": "ejercitado",
-   "total": 292,
-   "usadas": 227,
-   "pct": 78
+   "total": 279,
+   "usadas": 220,
+   "pct": 79
   },
   {
    "modulo": "mikrotik-motor.js",
@@ -230,13 +237,6 @@
    "pct": 82
   },
   {
-   "modulo": "aruba-reglas.js",
-   "estado": "ejercitado",
-   "total": 69,
-   "usadas": 57,
-   "pct": 83
-  },
-  {
    "modulo": "por-funcion.js",
    "estado": "ejercitado",
    "total": 18,
@@ -244,17 +244,17 @@
    "pct": 83
   },
   {
+   "modulo": "aruba-reglas.js",
+   "estado": "ejercitado",
+   "total": 85,
+   "usadas": 71,
+   "pct": 84
+  },
+  {
    "modulo": "dimensionador-huawei-netengine.js",
    "estado": "ejercitado",
    "total": 156,
    "usadas": 139,
-   "pct": 89
-  },
-  {
-   "modulo": "fortinet-explicacion.js",
-   "estado": "ejercitado",
-   "total": 9,
-   "usadas": 8,
    "pct": 89
   },
   {
