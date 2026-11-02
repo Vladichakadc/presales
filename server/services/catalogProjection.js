@@ -223,8 +223,10 @@ function respaldoCicloVida(vendorCode) {
   return { respaldado: true, fuente: f.documento || null, fecha: f.fecha || null, url: f.url || null };
 }
 
-async function toFuentes() {
-  const vendors = await Vendor.findAll({ order: [['name', 'ASC']] });
+// `vendor` (opcional) limita la respuesta a un fabricante con la MISMA forma, `{ <code>: {...} }`:
+// la pestaña de fuentes y la hoja «Supuestos» pintan uno solo y no tienen por qué bajar los siete.
+async function toFuentes(vendor) {
+  const vendors = await Vendor.findAll({ order: [['name', 'ASC']], ...(vendor ? { where: { code: vendor } } : {}) });
   const out = {};
   for (const v of vendors) {
     // Las subidas a mano van PRIMERO (son lo más reciente que alguien aportó) y antes que la

@@ -38,7 +38,7 @@ function montar({ conObservador = true, puedeSync = false } = {}) {
   g.fetch = (url) => {
     peticiones.push(String(url));
     if (url === '/api/cuenta/estado') return Promise.resolve({ ok: true, json: async () => ({ puedeSync }) });
-    if (url === '/api/fuentes') {
+    if (url === '/api/fuentes?vendor=huawei') {
       return Promise.resolve({ ok: true, json: async () => ({ huawei: { fuentes: [] } }) });
     }
     return Promise.resolve({ ok: false, json: async () => ({}) });
@@ -55,7 +55,7 @@ function montar({ conObservador = true, puedeSync = false } = {}) {
 }
 
 const pausa = () => new Promise((ok) => setTimeout(ok, 0));
-const deFuentes = (p) => p.filter((u) => u === '/api/fuentes').length;
+const deFuentes = (p) => p.filter((u) => u.startsWith('/api/fuentes')).length;
 
 test('sin verse la pestaña no se pide /api/fuentes; al verse, una vez y se pinta', async () => {
   const { caja, peticiones, observadores } = montar();
