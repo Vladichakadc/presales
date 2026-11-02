@@ -111,3 +111,51 @@ test('el portal tiene la página, su botón en la barra lateral y carga el módu
   const mod = html.indexOf('<script src="/js/fuentes-portal.js">');
   assert.ok(nav > 0 && mod > nav, 'fuentes-portal.js lee NAVFAB: va detrás de navegacion.js');
 });
+
+// LA VIGILANCIA DEL LUNES (2026-11-02, la mejora propuesta al cerrar el PR #118): la columna «Vigía
+// semanal» sale de `/api/fuentes`, que se pide al abrir la sección. Lo que se ve lo conduce
+// `e2e-fuentes-portal.js`, que además mide que se pide una sola vez y no al cargar el portal.
+test('el resumen del vigía cuenta lo del lock y dice de cuándo es, sin las cargadas a mano', () => {
+  const g = modulo();
+  const r = g.FUENTES_PORTAL.resumenVigilancia({ fuentes: [
+    { vigilancia: { estado: 'verificada', desde: '2026-10-19T04:00:00Z' } },
+    { vigilancia: { estado: 'verificada', desde: '2026-10-26T04:00:00Z' } },
+    { vigilancia: { estado: 'cambió', desde: '2026-10-12T04:00:00Z' } },
+    { vigilancia: { estado: 'cambió', desde: '2026-10-19T04:00:00Z' } },
+    { vigilancia: { estado: 'no comprobada', motivo: 'no hay URL pública que vigilar' } },
+    { subida: true, vigilancia: { estado: 'no comprobada', motivo: 'documento cargado a mano, no se vigila' } },
+  ] });
+  assert.deepStrictEqual(n(r), { documentos: 5, sinCambios: 2, cambiaron: 2, noComprobadas: 1, medido: '2026-10-26', pendienteDesde: '2026-10-12' });
+  const celda = g.FUENTES_PORTAL.celdaVigia({ estado: 'ok', resumen: r });
+  assert.match(celda, /2 sin cambios.*2 cambiaron sin contrastar.*1 no comprobada/);
+  assert.match(celda, /leído sin cambios por última vez el 2026-10-26 · cambio pendiente desde el 2026-10-12/);
+  assert.doesNotMatch(g.FUENTES_PORTAL.celdaVigia({ estado: 'error', error: '<b>x</b>' }), /<b>/);
+});
+
+test('el resumen del vigía casa con la forma real de /api/fuentes y cuenta los mismos documentos que la salud', () => {
+  // Se siembra una base en memoria con la siembra del arranque, como scripts/ayuda/pantallas-servidas.js.
+  const programa = `
+    process.env.DATABASE_PATH = ':memory:';
+    console.log = (...a) => console.error(...a);
+    const { sequelize } = require('./server/models');
+    const seedCatalog = require('./server/seed/seedCatalog');
+    const { toFuentes } = require('./server/services/catalogProjection');
+    (async () => {
+      await sequelize.sync();
+      await seedCatalog();
+      process.stdout.write(JSON.stringify(await toFuentes()));
+      await sequelize.close();
+    })().catch((e) => { console.error(e); process.exit(1); });`;
+  const datos = JSON.parse(require('child_process').execFileSync(process.execPath, ['-e', programa], {
+    cwd: RAIZ, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'], maxBuffer: 64 * 1024 * 1024,
+  }));
+  const g = modulo();
+  const { FUENTES } = require('../server/seed/legacyData/fuentes');
+  for (const f of g.FUENTES_PORTAL.fabricantes()) {
+    assert.ok(datos[f.id], `/api/fuentes no trae ${f.id}`);
+    const r = g.FUENTES_PORTAL.resumenVigilancia(datos[f.id]);
+    assert.strictEqual(r.documentos, FUENTES[f.id].length, `${f.id}: no cuenta los mismos documentos que la comprobación en vivo`);
+    assert.strictEqual(r.sinCambios + r.cambiaron + r.noComprobadas, r.documentos, `${f.id}: un estado de vigilancia que el resumen no conoce`);
+    assert.ok(r.medido === null || /^\d{4}-\d\d-\d\d$/.test(r.medido), `${f.id}: fecha de lectura ${r.medido}`);
+  }
+});

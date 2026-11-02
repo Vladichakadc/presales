@@ -1,7 +1,7 @@
 {
  "medidoEn": {
-  "commit": "e23979c",
-  "fecha": "2026-11-01"
+  "commit": "9b1f76a",
+  "fecha": "2026-11-02"
  },
  "umbralRozado": 25,
  "modulos": [
@@ -76,11 +76,11 @@
    "pct": 18
   },
   {
-   "modulo": "fuentes-portal.js",
+   "modulo": "procedencia.js",
    "estado": "ejercitado",
-   "total": 17,
-   "usadas": 8,
-   "pct": 47
+   "total": 34,
+   "usadas": 10,
+   "pct": 29
   },
   {
    "modulo": "actualizar.js",
@@ -90,11 +90,11 @@
    "pct": 50
   },
   {
-   "modulo": "procedencia.js",
+   "modulo": "fuentes-portal.js",
    "estado": "ejercitado",
-   "total": 38,
-   "usadas": 19,
-   "pct": 50
+   "total": 23,
+   "usadas": 12,
+   "pct": 52
   },
   {
    "modulo": "fortinet-reglas.js",
