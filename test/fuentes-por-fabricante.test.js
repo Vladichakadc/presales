@@ -4,7 +4,7 @@
 // siete. Se arranca el servidor real en modo producción (como test/compresion.test.js) y se fija:
 //   - con `vendor`, la misma forma (`{ <code>: {...} }`) y el mismo contenido que la entrada de la
 //     respuesta completa, y nada más;
-//   - sin `vendor`, los siete, como siempre (el portal y PR #118 la leen así);
+//   - sin `vendor`, los siete, como siempre (`scripts/verificar-pantallas.js` la lee así);
 //   - un código que no existe da 404 y uno mal formado 400: nunca un `{}` que la pantalla leería
 //     como «sin procedencia registrada»;
 //   - los tres lectores del navegador piden su fabricante, no los siete.

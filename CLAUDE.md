@@ -449,6 +449,11 @@ Módulos compartidos:
   «↻ Actualizar fuentes», 2026-10-29: `/api/fuentes/:vendor/salud` con `server/vigiaEnVivo.js` vuelve a
   leer cada documento y lo clasifica contra el lock con la regla del vigía —columna «Comprobado
   ahora»—; solo lee, 10 min de caché por fabricante, cuatro descargas a la vez).
+- `fuentes-portal.js` — **«Fuentes oficiales» del portal** (2026-11-01, PR #118): «Comprobar los siete» llama a
+  la misma ruta de salud para los siete de `NAVFAB.FABRICANTES`, **de uno en uno** (`comprobarEnSerie`: el
+  siguiente cuando el anterior respondió; siete a la vez serían veintiocho descargas contra los fabricantes),
+  y pinta una fila por fabricante con su enlace a `?tab=src`. Solo lee. `test/fuentes-portal.test.js` fija la
+  serie y `e2e-fuentes-portal.js` la mide en la red con la ruta simulada.
 - `navegacion.js` — barra de fabricante (anterior/siguiente conservando el paso, `Alt`+flechas).
 - `tabla.js` — ordenación por columna; la coma es separador de miles y el punto decimal, y «sin
   dato» va siempre al final.
