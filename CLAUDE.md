@@ -453,7 +453,9 @@ Módulos compartidos:
   la misma ruta de salud para los siete de `NAVFAB.FABRICANTES`, **de uno en uno** (`comprobarEnSerie`: el
   siguiente cuando el anterior respondió; siete a la vez serían veintiocho descargas contra los fabricantes),
   y pinta una fila por fabricante con su enlace a `?tab=src`. Solo lee. `test/fuentes-portal.test.js` fija la
-  serie y `e2e-fuentes-portal.js` la mide en la red con la ruta simulada.
+  serie y `e2e-fuentes-portal.js` la mide en la red con la ruta simulada. **«Vigía semanal»** (2026-11-02,
+  PR #122): lo que dejó el vigía en el lock, con su fecha, de `/api/fuentes` pedida al abrir la sección y una
+  vez (`resumenVigilancia`); lo del lunes y lo de ahora, en columnas distintas.
 - `navegacion.js` — barra de fabricante (anterior/siguiente conservando el paso, `Alt`+flechas).
 - `tabla.js` — ordenación por columna; la coma es separador de miles y el punto decimal, y «sin
   dato» va siempre al final.
