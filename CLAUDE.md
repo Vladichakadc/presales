@@ -207,7 +207,7 @@ en un issue, para no saltar un despliegue que espera.
 503 con la base vacía) y la sonda: `sonda-produccion.yml` escucha el `deployment_status` que Railway
 publica en GitHub, corre `/salud`, `/login` y `npm run puerta` contra el dominio real, y abre o
 cierra un issue con la etiqueta `despliegue`. Lo que nunca termina lo vigila
-`vigilia-despliegue.yml` (cada media hora, `scripts/vigilia-despliegue.js`): si la cabeza de `main`
+`vigilia-despliegue.yml` (cada media hora, `scripts/vigilia-despliegue.js`; como el cron de GitHub solo corría el 10 % de las veces, una tarea programada de Claude la lanza además cada hora en el minuto 12): si la cabeza de `main`
 lleva 90 min sin un despliegue en `success`, abre un issue `despliegue-en-espera` con la causa (CI en
 rojo o sin terminar, en cola, sin despliegue) y lo cierra al desplegarse; un fallido es de la sonda.
 
@@ -297,7 +297,7 @@ contra lo verificado, queda como diff de `legacyData/` y llega a producción con
   IP más retardo global (rotar `X-Forwarded-For` daba cuota nueva).
 - **Autorización: `exige('permiso')`** en `server.js`; ocultar un enlace es comodidad, nunca
   control. Usa `req.baseUrl + req.path` (Express recorta el prefijo de montaje).
-- `server.js` también: CSP estricta con helmet (`script-src 'self'`), sin `cors()`, SheetJS en
+- `server.js` también: CSP estricta con helmet (`script-src 'self'`), **respuestas comprimidas** (`compression`, brotli o gzip, 2026-11-01: un dimensionador bajaba ~1 MB y ahora ~300 KB; `/login`, `/logout`, `/api/cuenta/*` y `/api/usuarios` fuera por BREACH, `test/compresion.test.js`), sin `cors()`, SheetJS en
   `/vendor/xlsx.js` desde `npm:@e965/xlsx` (el `xlsx` de npm quedó abandonado con un aviso alto),
   `RENOMBRADAS` para páginas renombradas (conserva el querystring), `/salud` público.
 - `server/models/` — Sequelize. `Product` es la tabla central, con `specs` JSON (campos numéricos
