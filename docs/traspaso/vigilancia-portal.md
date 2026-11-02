@@ -4,9 +4,9 @@
 - **Rama:** claude/elegant-pascal-7ymts7
 - **Cuenta:** vladichakadc@gmail.com (sesión 01TxCQ3W2sHYVmimAdMKht3j)
 - **Estado:** en curso
-- **Actualizado:** 2026-11-01 23:30
+- **Actualizado:** 2026-11-01 23:45
 - **Archivos que toca:** public/js/fuentes-portal.js, public/index.html, test/fuentes-portal.test.js, test/e2e/e2e-fuentes-portal.js
-- **Siguiente paso:** `resumenVigilancia` en fuentes-portal.js, la columna «Vigía semanal» y la carga de `/api/fuentes` al abrir la sección
+- **Siguiente paso:** verificar (axe, pantallas, contraste, e2e, puerta), abrir el PR y cerrar la entrega
 
 ## Encargo del dueño
 
@@ -16,7 +16,11 @@ del lunes en «Fuentes oficiales», antes de comprobar nada» (propuesta al cerr
 
 ## Hecho
 
-- Nada todavía.
+- `resumenVigilancia` y `celdaVigia` en `fuentes-portal.js`; columna «Vigía semanal» con la fecha de la
+  lectura; `/api/fuentes` al abrir la sección (`MutationObserver` sobre la clase `active` de
+  `#page-fuentes`), una vez. Dos pruebas nuevas en Node (una contra `toFuentes` sembrado; quitar el filtro
+  de las cargadas a mano la tumba) y la batería e2e ampliada (0 peticiones al cargar el portal, 1 al abrir,
+  ninguna más al volver).
 
 ## Falta
 

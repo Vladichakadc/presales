@@ -31,6 +31,10 @@ const RESPUESTAS = {
   let enVuelo = 0;
   let maximo = 0;
   const orden = [];
+  // La vigilancia del lunes (2026-11-02): `/api/fuentes` se pide al abrir la sección, una vez, y no al
+  // cargar el portal. Esa ruta NO se simula: el vigía es el lock del repositorio, sin salir a la red.
+  let pedidasFuentes = 0;
+  page.on('request', (r) => { if (new URL(r.url()).pathname === '/api/fuentes') pedidasFuentes += 1; });
   await page.route('**/api/fuentes/*/salud', async (route) => {
     const vendor = new URL(route.request().url()).pathname.split('/')[3];
     enVuelo += 1; maximo = Math.max(maximo, enVuelo); orden.push(vendor);
@@ -50,14 +54,25 @@ const RESPUESTAS = {
   await abrirSesion(page);
   await page.goto(`${BASE}/`, { waitUntil: 'domcontentloaded' });
   await asentar(page);
+  t.ok(pedidasFuentes === 0, `al cargar el portal no se pide /api/fuentes (${pedidasFuentes})`);
   await page.click('.nav-btn[data-page="fuentes"]');
   t.ok(await page.isVisible('#page-fuentes'), 'el botón de la barra lateral abre «Fuentes oficiales»');
+  await page.waitForFunction(() => {
+    const celdas = [...document.querySelectorAll('#fpCuerpo .fp-vigia')];
+    return celdas.length === 7 && celdas.every((c) => !/Leyendo/.test(c.textContent));
+  }, null, { timeout: 15000 });
+  t.ok(pedidasFuentes === 1, `al abrir la sección, /api/fuentes una sola vez (${pedidasFuentes})`);
 
   const filas = () => page.$$eval('#fpCuerpo tr', (trs) => trs.map((tr) => ({
     fab: tr.dataset.fpFab, texto: [...tr.children].map((c) => c.textContent.replace(/\s+/g, ' ').trim()).join(' | '), href: (tr.querySelector('a') || {}).getAttribute ? tr.querySelector('a').getAttribute('href') : '' })));
   const antes = await filas();
   t.ok(antes.length === 7 && antes.every((f) => /Sin comprobar/.test(f.texto)), `siete filas sin comprobar antes de pulsar (${antes.length})`);
   t.ok(antes.every((f) => /^\/dimensionador-[a-z0-9-]+\.html\?tab=src$/.test(f.href)), 'cada fila enlaza a la pestaña «Fuentes» de su dimensionador');
+  const { FUENTES } = require('../../server/seed/legacyData/fuentes');
+  const huaweiAntes = antes.find((f) => f.fab === 'huawei').texto;
+  t.ok(new RegExp(`^Huawei \\| ${FUENTES.huawei.length} \\| \\d+ sin cambios.*(leído sin cambios por última vez el \\d{4}-\\d\\d-\\d\\d|no comprobada).* \\| Sin comprobar \\| — \\|`).test(huaweiAntes),
+    `antes de comprobar, el vigía ya dice lo suyo, con su fecha y sus ${FUENTES.huawei.length} documentos («${huaweiAntes}»)`);
+  t.ok(antes.every((f) => /^\S.* \| \d+ \| \d+ sin cambios/.test(f.texto)), 'los siete traen la columna del vigía');
 
   await page.click('#fpComprobar');
   await page.waitForFunction(() => /Comprobando Huawei \(1 de 7\)/.test(document.getElementById('fpEstado').textContent), null, { timeout: 5000 });
@@ -69,15 +84,20 @@ const RESPUESTAS = {
   t.ok(!(await page.isDisabled('#fpComprobar')), 'al terminar, el botón vuelve a estar disponible');
 
   const despues = Object.fromEntries((await filas()).map((f) => [f.fab, f.texto]));
-  t.ok(/^Huawei \| 33 \| 30 sin cambios · 2 cambiaron sin contrastar · 1 sin medición previa \| \d\d:\d\d \|/.test(despues.huawei), `Huawei: «${despues.huawei}»`);
+  t.ok(/^Huawei \| 33 \| \d+ sin cambios.* \| 30 sin cambios · 2 cambiaron sin contrastar · 1 sin medición previa \| \d\d:\d\d \|/.test(despues.huawei), `Huawei: «${despues.huawei}»`);
   t.ok(/No se pudo comprobar: No se pudieron comprobar las fuentes/.test(despues.cisco), `Cisco, que falla, lo dice y no para a los demás: «${despues.cisco}»`);
   t.ok(/de hace menos de 10 min/.test(despues.fortinet), 'Fortinet, servido de la caché del servidor, lo dice');
   t.ok(/12 sin cambios · 2 inalcanzables/.test(despues.aruba), `Aruba: «${despues.aruba}»`);
-  t.ok(/^Nokia \| 4 \| 4 sin cambios \|/.test(despues.nokia), `Nokia, el último, también se comprobó: «${despues.nokia}»`);
+  t.ok(/^Nokia \| 4 \| \d+ sin cambios.* \| 4 sin cambios \|/.test(despues.nokia), `Nokia, el último, también se comprobó: «${despues.nokia}»`);
 
   const estado = await page.textContent('#fpEstado');
   t.ok(estado === 'Comprobados los 7 fabricantes: cambiaron documentos sin contrastar en Huawei; hay documentos inalcanzables en Aruba; no se pudo comprobar Cisco.',
     `la línea final nombra a quién mirar («${estado}»)`);
+
+  await page.click('.nav-btn[data-page="dashboard"]');
+  await page.click('.nav-btn[data-page="fuentes"]');
+  await asentar(page);
+  t.ok(pedidasFuentes === 1, `volver a la sección no repite la petición (${pedidasFuentes})`);
 
   // El enlace lleva a la pestaña «Fuentes» del dimensionador de verdad.
   await page.click('#fpCuerpo tr[data-fp-fab="huawei"] a');

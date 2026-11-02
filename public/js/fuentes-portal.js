@@ -15,7 +15,14 @@
    cambió sale «cambió · sin contrastar»; quien lo vea abre la pestaña de su fabricante.
 
    Los siete son los de `NAVFAB.FABRICANTES` (navegacion.js), los que tienen pestaña «Fuentes». Starlink
-   no la tiene: sus fuentes las vigila el vigía de los lunes. */
+   no la tiene: sus fuentes las vigila el vigía de los lunes.
+
+   LA VIGILANCIA DEL LUNES, ANTES DE COMPROBAR NADA (2026-11-02, la mejora propuesta al cerrar el PR
+   #118). La columna «Vigía semanal» dice lo que dejó el vigía en el lock: `/api/fuentes` lo trae para
+   los siete en una sola petición y sin salir a la red. Se pide al abrir esta sección, nunca al cargar el
+   portal (unos 57 KB comprimida, medido en el PR #119), y una sola vez. Lo del lunes y lo de ahora van en
+   columnas distintas, y cada uno dice de cuándo es: el vigía, la fecha de su lectura; la comprobación, su
+   hora. */
 (function (global) {
   function esc(v) {
     return String(v ?? '').replace(/[&<>"']/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
@@ -62,6 +69,43 @@
     return partes;
   }
 
+  // El vigía de un fabricante, de la respuesta de `/api/fuentes` (`{fuentes: [{vigilancia}]}`, la que pinta
+  // la columna «Vigilancia» de cada pestaña). Sin las cargadas a mano, que no vigila nadie: así cuenta los
+  // mismos documentos que la comprobación en vivo. `medido` es la lectura más reciente en la que un
+  // documento salió igual al contrastado (el `medido` del lock); `pendienteDesde`, el cambio más antiguo
+  // sin contrastar.
+  function resumenVigilancia(v) {
+    const fuentes = ((v && v.fuentes) || []).filter((f) => !f.subida);
+    const c = { documentos: fuentes.length, sinCambios: 0, cambiaron: 0, noComprobadas: 0, medido: null, pendienteDesde: null };
+    for (const f of fuentes) {
+      const g = f.vigilancia || {};
+      const dia = g.desde ? String(g.desde).slice(0, 10) : null;
+      if (g.estado === 'verificada') {
+        c.sinCambios += 1;
+        if (dia && (!c.medido || dia > c.medido)) c.medido = dia;
+      } else if (g.estado === 'cambió') {
+        c.cambiaron += 1;
+        if (dia && (!c.pendienteDesde || dia < c.pendienteDesde)) c.pendienteDesde = dia;
+      } else c.noComprobadas += 1;
+    }
+    return c;
+  }
+
+  function celdaVigia(v) {
+    if (!v) return '<span class="fp-neutro">—</span>';
+    if (v.estado === 'cargando') return '<span class="fp-neutro">Leyendo…</span>';
+    if (v.estado === 'error') return `<span class="fp-mal">No se pudo leer: ${esc(v.error)}</span>`;
+    if (!v.resumen) return '<span class="fp-neutro">Sin datos del vigía</span>';
+    const c = v.resumen;
+    const partes = [`<span class="fp-${c.sinCambios ? 'bien' : 'neutro'}">${c.sinCambios} sin cambios</span>`];
+    if (c.cambiaron) partes.push(`<span class="fp-aviso">${c.cambiaron} ${c.cambiaron === 1 ? 'cambió' : 'cambiaron'} sin contrastar</span>`);
+    if (c.noComprobadas) partes.push(`<span class="fp-neutro">${c.noComprobadas} no ${c.noComprobadas === 1 ? 'comprobada' : 'comprobadas'}</span>`);
+    const fechas = [];
+    if (c.medido) fechas.push(`leído sin cambios por última vez el ${esc(c.medido)}`);
+    if (c.pendienteDesde) fechas.push(`cambio pendiente desde el ${esc(c.pendienteDesde)}`);
+    return partes.join(' · ') + (fechas.length ? `<br><span class="fp-neutro fp-fecha">${fechas.join(' · ')}</span>` : '');
+  }
+
   // La línea final: qué fabricantes tienen algo que mirar.
   function conclusion(resultados) {
     const con = (k) => resultados.filter((r) => r.estado === 'ok' && ((r.datos.resumen || {})[k] || 0) > 0).map((r) => r.fab.nombre);
@@ -80,9 +124,9 @@
     return Number.isNaN(d.getTime()) ? '—' : d.toLocaleTimeString('es', { hour: '2-digit', minute: '2-digit' });
   };
 
-  function fila(fab, r) {
+  function fila(fab, r, v) {
     const enlace = `<a href="/${esc(fab.dim)}?tab=src">Ver sus fuentes<span class="fp-oculto"> de ${esc(fab.nombre)}</span></a>`;
-    let docs = '—';
+    let docs = v && v.resumen ? String(v.resumen.documentos) : '—';
     let resultado = '<span class="fp-neutro">Sin comprobar</span>';
     let cuando = '—';
     if (r && r.estado === 'en-curso') resultado = '<span class="fp-neutro">Comprobando…</span>';
@@ -92,11 +136,38 @@
       resultado = partesDe(r.datos).map((p) => `<span class="fp-${p.tono}">${p.n} ${esc(p.texto)}</span>`).join(' · ');
       cuando = `${esc(hora(r.datos.revisadoEn))}${r.datos.deCache ? ' <span class="fp-neutro">(de hace menos de 10 min)</span>' : ''}`;
     }
-    return `<tr data-fp-fab="${esc(fab.id)}"><th scope="row">${esc(fab.nombre)}</th><td class="fp-num">${docs}</td><td>${resultado}</td><td class="fp-hora">${cuando}</td><td>${enlace}</td></tr>`;
+    return `<tr data-fp-fab="${esc(fab.id)}"><th scope="row">${esc(fab.nombre)}</th><td class="fp-num">${docs}</td><td class="fp-vigia">${celdaVigia(v)}</td><td>${resultado}</td><td class="fp-hora">${cuando}</td><td>${enlace}</td></tr>`;
   }
 
   function fabricantes() {
     return ((global.NAVFAB && global.NAVFAB.FABRICANTES) || []).filter((f) => f.dim);
+  }
+
+  // Lo que la tabla sabe: la comprobación en vivo de cada fabricante y lo que dijo el vigía.
+  const ultimo = {};
+  const vigia = {};
+  function pintar() {
+    const cuerpo = document.getElementById('fpCuerpo');
+    if (cuerpo) cuerpo.innerHTML = fabricantes().map((f) => fila(f, ultimo[f.id], vigia[f.id])).join('');
+  }
+
+  let vigiaPedido = false;
+  async function cargarVigilancia() {
+    if (vigiaPedido) return;
+    vigiaPedido = true;
+    const lista = fabricantes();
+    lista.forEach((f) => { vigia[f.id] = { estado: 'cargando' }; });
+    pintar();
+    try {
+      const res = await global.fetch('/api/fuentes');
+      const d = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(d.error || `HTTP ${res.status}`);
+      lista.forEach((f) => { vigia[f.id] = d[f.id] ? { estado: 'ok', resumen: resumenVigilancia(d[f.id]) } : { estado: 'ok' }; });
+    } catch (err) {
+      const error = (err && err.message) || String(err);
+      lista.forEach((f) => { vigia[f.id] = { estado: 'error', error }; });
+    }
+    pintar();
   }
 
   let corriendo = false;
@@ -107,8 +178,6 @@
     if (corriendo || !cuerpo) return null;
     corriendo = true;
     const lista = fabricantes();
-    const ultimo = {};
-    const pintar = () => { cuerpo.innerHTML = lista.map((f) => fila(f, ultimo[f.id])).join(''); };
     if (boton) boton.disabled = true;
     cuerpo.closest('table').setAttribute('aria-busy', 'true');
     try {
@@ -129,12 +198,22 @@
   function montar() {
     const cuerpo = document.getElementById('fpCuerpo');
     if (!cuerpo) return;
-    cuerpo.innerHTML = fabricantes().map((f) => fila(f, null)).join('');
+    pintar();
     const boton = document.getElementById('fpComprobar');
     if (boton) boton.addEventListener('click', () => { comprobarTodas(); });
+    // La sección se abre con `go('fuentes')` de index.js, que le pone la clase `active`: se mira esa
+    // clase, no un botón concreto, para que valga cualquier camino que la abra.
+    const pagina = document.getElementById('page-fuentes');
+    if (!pagina) return;
+    const alAbrir = () => { if (pagina.classList.contains('active')) cargarVigilancia(); };
+    alAbrir();
+    if (!vigiaPedido) {
+      const obs = new global.MutationObserver(() => { alAbrir(); if (vigiaPedido) obs.disconnect(); });
+      obs.observe(pagina, { attributes: true, attributeFilter: ['class'] });
+    }
   }
 
-  global.FUENTES_PORTAL = { comprobarEnSerie, pedirSalud, partesDe, conclusion, fila, fabricantes, comprobarTodas };
+  global.FUENTES_PORTAL = { comprobarEnSerie, pedirSalud, partesDe, conclusion, fila, fabricantes, comprobarTodas, resumenVigilancia, celdaVigia, cargarVigilancia };
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', montar);
   else montar();
 })(window);
