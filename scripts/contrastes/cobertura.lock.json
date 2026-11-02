@@ -1,6 +1,6 @@
 {
  "medidoEn": {
-  "commit": "9b1f76a",
+  "commit": "c87a5b0",
   "fecha": "2026-11-02"
  },
  "umbralRozado": 25,
@@ -92,9 +92,9 @@
   {
    "modulo": "fuentes-portal.js",
    "estado": "ejercitado",
-   "total": 23,
+   "total": 24,
    "usadas": 12,
-   "pct": 52
+   "pct": 50
   },
   {
    "modulo": "fortinet-reglas.js",
