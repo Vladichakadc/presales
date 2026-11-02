@@ -1928,7 +1928,7 @@ function pintarAfecta() {
   // La procedencia llega despues y en su propia peticion: el banner, la vigencia de precios
   // y la puerta la necesitan; el dimensionamiento no, asi que no se le hace esperar.
   try {
-    const rf = await fetch('/api/fuentes');
+    const rf = await fetch('/api/fuentes?vendor=fortinet');
     const todas = await rf.json();
     FUENTES = todas && todas.fortinet ? todas.fortinet : null;
   } catch { FUENTES = null; }
