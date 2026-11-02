@@ -443,10 +443,30 @@
     }
   });
 
-  renderProcedencia();
+  // La tabla de fuentes se pide cuando alguien la va a ver, no al abrir la página: las cajas viven
+  // en la pestaña «Fuentes», oculta al entrar, y /api/fuentes trae los siete fabricantes (~250 KB
+  // sin comprimir). Antes se pedía al arrancar y, a un administrador, dos veces. Un navegador sin
+  // IntersectionObserver la pide en el acto, como siempre: fallar hacia «cargada», nunca hacia vacía.
+  let vista = false;
+  function alVerse() {
+    if (vista) return;
+    vista = true;
+    renderProcedencia();
+  }
+  const cajasIniciales = document.querySelectorAll('[data-procedencia]');
+  if (cajasIniciales.length) {
+    if (typeof global.IntersectionObserver !== 'function') {
+      alVerse();
+    } else {
+      const obs = new global.IntersectionObserver((entradas) => {
+        if (entradas.some((e) => e.isIntersecting)) { obs.disconnect(); alVerse(); }
+      }, { rootMargin: '400px' });
+      cajasIniciales.forEach((c) => obs.observe(c));
+    }
+  }
   fetch('/api/cuenta/estado')
     .then((r) => (r.ok ? r.json() : null))
-    .then((d) => { if (d && d.puedeSync) { puedeSync = true; renderProcedencia(); } })
+    .then((d) => { if (d && d.puedeSync) { puedeSync = true; if (vista) renderProcedencia(); } })
     .catch(() => {});
 
   // Las etiquetas de Estado y Vigilancia, para que la hoja «Supuestos» del Excel (bom.js) diga lo

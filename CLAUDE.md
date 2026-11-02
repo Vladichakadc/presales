@@ -444,7 +444,7 @@ Módulos compartidos:
   declara en `opcionesTarde` y se repone cuando llegan sus opciones, o se anuncia si ya estaban
   (MikroTik, `apModel`; Aruba, `pickModel`, que su `change` marca como elegido a mano, y `selTier`);
   `test/opciones-tarde.test.js` frena un desplegable vacío del enlace sin declarar.
-- `procedencia.js` — la pestaña de fuentes (leer, subir, borrar, contrastar en el acto con
+- `procedencia.js` — la pestaña de fuentes (se pide **al verse**, no al abrir la página: `IntersectionObserver`, y sin él en el acto; 2026-11-01, PR #120, `test/procedencia-perezosa.test.js`; leer, subir, borrar, contrastar en el acto con
   `contraste.js`: cambios, altas, sin cambio y columnas ignoradas; nunca adivina un mapeo); y
   «↻ Actualizar fuentes», 2026-10-29: `/api/fuentes/:vendor/salud` con `server/vigiaEnVivo.js` vuelve a
   leer cada documento y lo clasifica contra el lock con la regla del vigía —columna «Comprobado
