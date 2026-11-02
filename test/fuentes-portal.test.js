@@ -157,5 +157,32 @@ test('el resumen del vigía casa con la forma real de /api/fuentes y cuenta los 
     assert.strictEqual(r.documentos, FUENTES[f.id].length, `${f.id}: no cuenta los mismos documentos que la comprobación en vivo`);
     assert.strictEqual(r.sinCambios + r.cambiaron + r.noComprobadas, r.documentos, `${f.id}: un estado de vigilancia que el resumen no conoce`);
     assert.ok(r.medido === null || /^\d{4}-\d\d-\d\d$/.test(r.medido), `${f.id}: fecha de lectura ${r.medido}`);
+    // La última corrida del vigía que llegó a main (2026-11-02, tras el PR #122): el `revisado` del lock,
+    // el mismo en los siete, dentro de cada uno porque el primer nivel son solo los fabricantes.
+    const lock = JSON.parse(fs.readFileSync(path.join(RAIZ, 'server/seed/legacyData/fuentes.lock.json'), 'utf8'));
+    assert.strictEqual(datos[f.id].vigiaRevisado, lock.revisado, `${f.id}: vigiaRevisado no es el revisado del lock`);
+  }
+});
+
+test('la línea de la corrida del vigía dice de cuándo es y avisa pasados 8 días, no antes', () => {
+  const g = modulo();
+  const { lineaCorrida, DIAS_AVISO } = g.FUENTES_PORTAL;
+  assert.strictEqual(DIAS_AVISO, 8, 'el umbral deja pasar el lunes siguiente con margen');
+  const corrida = '2026-10-26T12:35:29.169Z';
+  const t = Date.parse(corrida);
+  const dia = 86400000;
+  const hoy = lineaCorrida(corrida, t + 3600000);
+  assert.strictEqual(hoy.aviso, false);
+  assert.strictEqual(hoy.texto, '«Vigía semanal» es la corrida del 2026-10-26 (hoy), la última que se fusionó en main.');
+  assert.match(lineaCorrida(corrida, t + dia).texto, /\(hace 1 día\)/);
+  // El lunes siguiente, unas horas tarde: todavía no avisa.
+  assert.strictEqual(lineaCorrida(corrida, t + 7 * dia + 6 * 3600000).aviso, false);
+  assert.strictEqual(lineaCorrida(corrida, t + 8 * dia).aviso, false);
+  const tarde = lineaCorrida(corrida, t + 9 * dia);
+  assert.strictEqual(tarde.aviso, true);
+  assert.match(tarde.texto, /hace 9 días\), la última que se fusionó en main\. Pasa de una semana: la corrida siguiente no corrió o espera en la rama vigia\/fuentes/);
+  // Sin dato no es «al día»: avisa.
+  for (const sin of [null, undefined, '', 'no es una fecha']) {
+    assert.strictEqual(lineaCorrida(sin, t).aviso, true, `«${sin}» no puede leerse como reciente`);
   }
 });

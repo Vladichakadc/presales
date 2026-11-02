@@ -4,9 +4,9 @@
 - **Rama:** claude/elegant-pascal-7ymts7
 - **Cuenta:** vladichakadc@gmail.com (sesión 01TxCQ3W2sHYVmimAdMKht3j)
 - **Estado:** en curso
-- **Actualizado:** 2026-11-02 17:15
+- **Actualizado:** 2026-11-02 17:40
 - **Archivos que toca:** server/services/catalogProjection.js, server/routes/catalog.js, public/js/fuentes-portal.js, public/index.html, test/fuentes-portal.test.js, test/e2e/e2e-fuentes-portal.js
-- **Siguiente paso:** `vigiaRevisado` en cada fabricante de `toFuentes` (del `revisado` del lock) y la línea de la página con su aviso
+- **Siguiente paso:** abrir el PR, verificar con navegador (axe, pantallas, contraste, e2e, puerta) y cerrar la entrega
 
 ## Encargo del dueño
 
@@ -16,7 +16,10 @@ del vigía, a la vista, con aviso si se paró» (propuesta al cerrar el PR #122)
 
 ## Hecho
 
-- Nada todavía.
+- `vigiaRevisado` en cada fabricante de `toFuentes` (el `revisado` del lock); `lineaCorrida` y
+  `#fpVigiaCorrida` en el portal, con aviso pasados 8 días (`DIAS_AVISO`). Pruebas: la regla de los días
+  con fechas fijas y el campo contra la base sembrada (los dos sabotajes caen); e2e con la línea real y con
+  un lock retocado en la red a 2020, que avisa.
 
 ## Falta
 

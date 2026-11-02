@@ -225,6 +225,7 @@ input:focus-visible,select:focus-visible,button:focus-visible{outline:2px solid 
 .fp-neutro{color:var(--steel)}
 .fp-nota{font-size:12.5px;color:var(--steel);margin:12px 0 0}
 .fp-fecha{font-size:11.5px}
+.fp-alerta{color:var(--amber);font-weight:600;border-left:3px solid var(--amber);padding-left:8px}
 .fp-oculto{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
 
 /* ── RESPONSIVE ── */
@@ -570,6 +571,7 @@ input:focus-visible,select:focus-visible,button:focus-visible{outline:2px solid 
       <button class="btn" id="fpComprobar" type="button">&#8635; Comprobar los siete</button>
       <span id="fpEstado" role="status" class="fp-estado">Puede tardar unos minutos: cada fabricante se pide cuando el anterior respondió.</span>
     </div>
+    <p id="fpVigiaCorrida" class="fp-nota" hidden></p>
     <div class="fp-tabla">
       <table>
         <caption class="fp-oculto">Estado de las fuentes oficiales de cada fabricante</caption>

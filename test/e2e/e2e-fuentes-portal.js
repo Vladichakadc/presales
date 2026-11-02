@@ -99,11 +99,40 @@ const RESPUESTAS = {
   await asentar(page);
   t.ok(pedidasFuentes === 1, `volver a la sección no repite la petición (${pedidasFuentes})`);
 
+  // La última corrida del vigía que llegó a main (2026-11-02, tras el PR #122). La fecha real del lock
+  // cambia con cada corrida fusionada: aquí se mira la forma y que el aviso vaya con su texto.
+  const linea = await page.textContent('#fpVigiaCorrida');
+  t.ok(await page.isVisible('#fpVigiaCorrida')
+    && /^«Vigía semanal» es la corrida del \d{4}-\d\d-\d\d \((hoy|hace \d+ días?)\), la última que se fusionó en main\./.test(linea),
+  `la línea dice de qué corrida del vigía es la columna («${linea}»)`);
+  const alerta = await page.$eval('#fpVigiaCorrida', (e) => e.classList.contains('fp-alerta'));
+  t.ok(alerta === /Pasa de una semana/.test(linea), 'el color de aviso va con el texto del aviso, no solo');
+
   // El enlace lleva a la pestaña «Fuentes» del dimensionador de verdad.
   await page.click('#fpCuerpo tr[data-fp-fab="huawei"] a');
   await page.waitForURL(/dimensionador-huawei-netengine\.html\?tab=src/, { timeout: 10000 });
   await asentar(page);
   t.ok(await page.getAttribute('.tabs button[data-tab="src"]', 'aria-selected') === 'true', 'el enlace de Huawei abre su pestaña «Fuentes»');
+
+  // Con un lock viejo (la respuesta real, retocada en la red), avisa.
+  const vieja = await browser.newPage({ viewport: { width: 1440, height: 900 } });
+  vieja.on('pageerror', (e) => errores.push(e.message));
+  await vieja.route((u) => u.pathname === '/api/fuentes', async (route) => {
+    const res = await route.fetch();
+    const d = await res.json();
+    for (const k of Object.keys(d)) d[k].vigiaRevisado = '2020-01-06T12:00:00.000Z';
+    await route.fulfill({ response: res, json: d });
+  });
+  await abrirSesion(vieja);
+  await vieja.goto(`${BASE}/`, { waitUntil: 'domcontentloaded' });
+  await asentar(vieja);
+  await vieja.click('.nav-btn[data-page="fuentes"]');
+  await vieja.waitForSelector('#fpVigiaCorrida:not([hidden])', { timeout: 15000 });
+  const lineaVieja = await vieja.textContent('#fpVigiaCorrida');
+  t.ok(/corrida del 2020-01-06 \(hace \d+ días\).*Pasa de una semana: la corrida siguiente no corrió o espera en la rama vigia\/fuentes/.test(lineaVieja)
+    && await vieja.$eval('#fpVigiaCorrida', (e) => e.classList.contains('fp-alerta')),
+  `con la última corrida fusionada hace años, avisa en ámbar («${lineaVieja.slice(0, 90)}…»)`);
+  await vieja.close();
 
   t.ok(errores.length === 0, `sin excepciones de página (${errores.join(' | ') || 'ninguna'})`);
   await browser.close();
