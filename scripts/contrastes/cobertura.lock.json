@@ -1,6 +1,6 @@
 {
  "medidoEn": {
-  "commit": "279c345",
+  "commit": "e23979c",
   "fecha": "2026-11-01"
  },
  "umbralRozado": 25,
@@ -76,10 +76,24 @@
    "pct": 18
   },
   {
+   "modulo": "fuentes-portal.js",
+   "estado": "ejercitado",
+   "total": 17,
+   "usadas": 8,
+   "pct": 47
+  },
+  {
    "modulo": "actualizar.js",
    "estado": "ejercitado",
    "total": 24,
    "usadas": 12,
+   "pct": 50
+  },
+  {
+   "modulo": "procedencia.js",
+   "estado": "ejercitado",
+   "total": 38,
+   "usadas": 19,
    "pct": 50
   },
   {
@@ -94,13 +108,6 @@
    "estado": "ejercitado",
    "total": 17,
    "usadas": 9,
-   "pct": 53
-  },
-  {
-   "modulo": "procedencia.js",
-   "estado": "ejercitado",
-   "total": 38,
-   "usadas": 20,
    "pct": 53
   },
   {
@@ -160,18 +167,18 @@
    "pct": 72
   },
   {
+   "modulo": "index.js",
+   "estado": "ejercitado",
+   "total": 58,
+   "usadas": 42,
+   "pct": 72
+  },
+  {
    "modulo": "dimensionador-nokia-7750sr.js",
    "estado": "ejercitado",
    "total": 60,
    "usadas": 44,
    "pct": 73
-  },
-  {
-   "modulo": "index.js",
-   "estado": "ejercitado",
-   "total": 58,
-   "usadas": 43,
-   "pct": 74
   },
   {
    "modulo": "dimensionador-cisco-catalyst8k.js",
