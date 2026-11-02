@@ -127,11 +127,16 @@
   async function renderProcedencia() {
     const cajas = document.querySelectorAll('[data-procedencia]');
     if (!cajas.length) return;
+    // Cada caja pinta un fabricante: se pide solo el suyo (`?vendor=`), no los siete.
     let datos;
     try {
-      const res = await fetch('/api/fuentes');
-      if (!res.ok) throw new Error('respuesta no válida');
-      datos = await res.json();
+      const codigos = [...new Set([...cajas].map((c) => c.dataset.procedencia))];
+      const partes = await Promise.all(codigos.map(async (code) => {
+        const res = await fetch(`/api/fuentes?vendor=${encodeURIComponent(code)}`);
+        if (!res.ok) throw new Error('respuesta no válida');
+        return res.json();
+      }));
+      datos = Object.assign({}, ...partes);
     } catch {
       cajas.forEach((c) => { c.textContent = 'No se pudo cargar la procedencia del catálogo.'; });
       return;
