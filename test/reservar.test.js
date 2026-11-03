@@ -262,3 +262,59 @@ test('--en-esta-rama: dos sesiones que reservan lo mismo a la vez; la segunda re
     assert.strictEqual(correr(c, ['tema-c', '--archivos', 'src/z.js', '--comprobar']).rc, 0, 'lo que solo declaraba B vuelve a estar libre');
   } finally { fs.rmSync(base, { recursive: true, force: true }); }
 });
+
+// TEMAS CERRADOS EN MAIN (2026-11-03): la reserva en claude/<tema> de un tema que se trabajó y se cerró
+// desde otra rama. El commit de cierre borra en main el mismo docs/traspaso/<tema>.md; si lo borró
+// después del último commit de la rama, la reserva ya no bloquea.
+test('cerrado en main: el borrado tiene que ser posterior al último commit de la rama', () => {
+  const T = require('../scripts/traspasos');
+  assert.ok(T.cerradoEnMain({ borrado: '2026-11-03T12:18:29+00:00', ultimoCommitRama: '2026-11-03 11:01:19 +0000' }));
+  assert.ok(!T.cerradoEnMain({ borrado: '2026-11-03T12:18:29+00:00', ultimoCommitRama: '2026-11-03 13:00:00 +0000' }), 'una rama con commits después sigue viva');
+  assert.ok(!T.cerradoEnMain({ borrado: null, ultimoCommitRama: '2026-11-03 11:01:19 +0000' }), 'sin borrado en main no hay nada cerrado');
+});
+
+function shFecha(cwd, fecha, ...args) {
+  return execFileSync('git', args, { cwd, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'],
+    env: { ...process.env, GIT_COMMITTER_DATE: fecha, GIT_AUTHOR_DATE: fecha } });
+}
+
+test('una reserva cuyo tema se cerró en main desde otra rama deja de bloquear; si se retomó, sigue', () => {
+  const { base, clonar } = escenario();
+  try {
+    const a = clonar('sesion-a');
+    // A reserva claude/tema-x (como hacía reservar sin --en-esta-rama) a las 10:00.
+    const t = R.traspasoInicial({ tema: 'tema-x', rama: 'claude/tema-x', archivos: ['src/x.js'], fecha: 'f' });
+    fs.mkdirSync(path.join(a, 'docs/traspaso'), { recursive: true });
+    sh(a, 'switch', '-q', '-c', 'claude/tema-x');
+    fs.writeFileSync(path.join(a, 'docs/traspaso/tema-x.md'), t);
+    sh(a, 'add', '.');
+    shFecha(a, '2026-11-03T10:00:00Z', 'commit', '-q', '-m', 'reserva');
+    sh(a, 'push', '-q', 'origin', 'claude/tema-x');
+    // El tema se trabaja desde la rama fija de otra sesión y se cierra en main: el traspaso entra y,
+    // en el commit de cierre, sale (12:00), por un merge, como en el repositorio.
+    const s = clonar('sesion-s');
+    sh(s, 'switch', '-q', '-c', 'claude/rama-fija');
+    fs.mkdirSync(path.join(s, 'docs/traspaso'), { recursive: true });
+    fs.writeFileSync(path.join(s, 'docs/traspaso/tema-x.md'), t);
+    fs.writeFileSync(path.join(s, 'x.js'), 'hecho\n');
+    sh(s, 'add', '.');
+    shFecha(s, '2026-11-03T11:00:00Z', 'commit', '-q', '-m', 'trabajo');
+    sh(s, 'rm', '-q', 'docs/traspaso/tema-x.md');
+    shFecha(s, '2026-11-03T12:00:00Z', 'commit', '-q', '-m', 'cierre');
+    sh(s, 'switch', '-q', 'main');
+    shFecha(s, '2026-11-03T12:05:00Z', 'merge', '-q', '--no-ff', '-m', 'merge', 'claude/rama-fija');
+    sh(s, 'push', '-q', 'origin', 'main');
+    const b = clonar('sesion-b');
+    const libre = correr(b, ['tema-y', '--archivos', 'src/x.js', '--comprobar']);
+    assert.strictEqual(libre.rc, 0, `la reserva vieja ya no bloquea: ${libre.salida}`);
+    // Si A retoma su rama después del cierre (un commit a las 13:00), el tema vuelve a estar vivo.
+    sh(a, 'switch', '-q', 'claude/tema-x');
+    fs.writeFileSync(path.join(a, 'docs/traspaso/tema-x.md'), t.replace('reservado', 'en curso'));
+    sh(a, 'add', '.');
+    shFecha(a, '2026-11-03T13:00:00Z', 'commit', '-q', '-m', 'se retoma');
+    sh(a, 'push', '-q', 'origin', 'claude/tema-x');
+    const vivo = correr(b, ['tema-y', '--archivos', 'src/x.js', '--comprobar']);
+    assert.strictEqual(vivo.rc, 1, `retomada después del cierre, bloquea: ${vivo.salida}`);
+    assert.match(vivo.salida, /claude\/tema-x/);
+  } finally { fs.rmSync(base, { recursive: true, force: true }); }
+});
