@@ -25,6 +25,9 @@ jobs:
 
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # Historial entero: el paso de las equivalencias mide contra la base común con main.
+          fetch-depth: 0
 
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
@@ -57,6 +60,18 @@ jobs:
 
       - name: Pruebas
         run: npm test
+
+      # Las equivalencias de los cortes (2026-11-01): cada caso de scripts/equivalencias/ que mide un
+      # archivo que este PR cambia vuelve a comparar el módulo de main con el del PR. Un cambio de
+      # comportamiento hecho a propósito se declara en la descripción del PR con una línea
+      # «equivalencia-acepta: <caso>: <motivo>». La descripción entra como variable de entorno, nunca
+      # interpolada en el shell.
+      - name: Equivalencias de los cortes que toca el PR
+        if: github.event_name == 'pull_request'
+        env:
+          BASE_REF: ${{ github.base_ref }}
+          PR_BODY: ${{ github.event.pull_request.body }}
+        run: node scripts/equivalencia.js --todos --base="origin/$BASE_REF"
 
       # El arranque real, con la base sembrada desde cero y las variables que exige
       # produccion. Si el contenedor no llega a `listen`, aqui se ve.

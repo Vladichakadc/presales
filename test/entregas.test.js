@@ -69,3 +69,21 @@ test('session-start.sh enseña las tres últimas entregas sin poder cortar el ar
   const linea = hook.slice(hook.lastIndexOf('\n', i) + 1, hook.indexOf('\n', i));
   assert.match(linea, /^if ! timeout \d+ node scripts\/entregas\.js --n=3\b/, 'dentro de un if con timeout, las tres últimas');
 });
+
+// El resumen nombra siempre las entregas mal formadas, también las que no muestra (2026-11-01, mejora
+// aprobada al cerrar el PR #101): el arranque enseña tres, y una rota más vieja hacía saltar el aviso
+// sin decir cuál era.
+test('una entrega rota fuera de las mostradas se nombra con su archivo y su motivo', () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'entregas-'));
+  for (const pr of [101, 102, 103]) {
+    fs.writeFileSync(path.join(dir, `2026-10-31-pr-${pr}.md`), BUENA.replace('PR #98', `PR #${pr}`));
+  }
+  fs.writeFileSync(path.join(dir, '2026-10-30-pr-90.md'), '# 2026-10-30 · PR #90 · Rota\n');
+  const L = leerEntregas(dir);
+  const r = resumen(L, 3);
+  assert.doesNotMatch(r, /2026-10-30 · PR #90 · Rota/, 'no se muestra entera: no está entre las tres');
+  assert.match(r, /Mal formadas fuera de las mostradas \(1\):/);
+  assert.match(r, /! 2026-10-30-pr-90\.md: falta «- \*\*Encargo:\*\* …»/);
+  assert.doesNotMatch(resumen(L.slice(0, 3), 3), /Mal formadas/, 'sin rotas fuera, nada que decir');
+  assert.doesNotMatch(resumen(L, 0), /Mal formadas fuera/, 'con --todas ya se ven todas: no se repite');
+});

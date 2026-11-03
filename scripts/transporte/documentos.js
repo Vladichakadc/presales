@@ -489,6 +489,76 @@ module.exports = [
   ] },
   { archivo: 'aruba-7205-ig.pdf', tipo: 'pdf', para: 'ARUBA', urls: [],
     descubrirEnlace: { de: 'aruba-7205-pagina.html', contiene: '/ig/', dominios: ['arubanetworks.com', 'hpe.com'], base: 'https://arubanetworking.hpe.com/techdocs/hardware/DocumentationPortal/Content/ArubaTopics/gatecontroller/7205.htm' } },
+  // 2026-11-03 (issue #123): el vigía del 2026-11-02 leyó como texto la ficha PDF del SRX1600 que
+  // el lock guarda como un PDF de 484 KB. Se trae como PDF (si ya no lo es, el informe da la firma)
+  // y la misma URL como página, para ver qué sirve Juniper ahora; y las otras dos fichas de la serie.
+  { archivo: 'juniper-srx1600-ds.pdf', tipo: 'pdf', para: 'JUNIPER', urls: [
+    'https://www.juniper.net/content/dam/www/assets/datasheets/us/en/security/srx1600-firewall-datasheet.pdf',
+  ] },
+  { archivo: 'juniper-srx1600-ds-respuesta.html', tipo: 'html', para: 'JUNIPER', exploracion: true, urls: [
+    'https://www.juniper.net/content/dam/www/assets/datasheets/us/en/security/srx1600-firewall-datasheet.pdf',
+  ] },
+  { archivo: 'juniper-srx2300-ds.pdf', tipo: 'pdf', para: 'JUNIPER', urls: [
+    'https://www.juniper.net/content/dam/www/assets/datasheets/us/en/security/srx2300-firewall-datasheet.pdf',
+  ] },
+  { archivo: 'juniper-srx4300-ds.pdf', tipo: 'pdf', para: 'JUNIPER', urls: [
+    'https://www.juniper.net/content/dam/www/assets/datasheets/us/en/security/srx4300-firewall-datasheet.pdf',
+  ] },
+  // Donde enlaza hoy la ficha: la página del producto en juniper.net y la de la serie en hpe.com.
+  { archivo: 'juniper-srx1600-pagina.html', tipo: 'html', para: 'JUNIPER', exploracion: true, urls: [
+    'https://www.juniper.net/us/en/products/security/srx-series/srx1600-data-center-and-enterprise-firewall.html',
+  ] },
+  { archivo: 'juniper-srx1600-specs.html', tipo: 'html', para: 'JUNIPER', exploracion: true, urls: [
+    'https://www.juniper.net/us/en/products/security/srx-series/srx1600-data-center-and-enterprise-firewall/specs.html',
+  ] },
+  { archivo: 'hpe-srx-serie.html', tipo: 'html', para: 'JUNIPER', exploracion: true, urls: [
+    'https://www.hpe.com/us/en/juniper-srx-firewall.html',
+    'https://www.hpe.com/emea_europe/en/juniper-srx-firewall.html',
+  ] },
+  // Las fichas que enlaza hoy la página de la serie en hpe.com (su tarjeta de cada modelo).
+  { archivo: 'hpe-a00150833enw.pdf', tipo: 'pdf', para: 'JUNIPER', urls: [
+    'https://www.hpe.com/psnow/downloadDoc/a00150833enw.pdf?id=a00150833enw',
+  ] },
+  { archivo: 'hpe-a00150834enw.pdf', tipo: 'pdf', para: 'JUNIPER', urls: [
+    'https://www.hpe.com/psnow/downloadDoc/a00150834enw.pdf?id=a00150834enw',
+  ] },
+  { archivo: 'hpe-a00150836enw.pdf', tipo: 'pdf', para: 'JUNIPER', urls: [
+    'https://www.hpe.com/psnow/downloadDoc/a00150836enw.pdf?id=a00150836enw',
+  ] },
+  // Los otros dos PDF de juniper.net que el lock vigila como bytes: ¿siguen siendo PDF?
+  { archivo: 'juniper-comparativa-seguridad.pdf', tipo: 'pdf', para: 'JUNIPER', urls: [
+    'https://www.juniper.net/content/dam/www/assets/datasheets/us/en/security/security-products-comparison-chart.pdf',
+  ] },
+  // Fichas de psnow que enlazan las páginas SRX de hpe.com y aún no se habían identificado: se
+  // traen para leer de qué modelo es cada una (sustitutas de la ficha del SSR1000 y de la matriz SRX).
+  { archivo: 'hpe-a00150819enw.pdf', tipo: 'pdf', para: 'JUNIPER', urls: [
+    'https://www.hpe.com/psnow/downloadDoc/a00150819enw.pdf?id=a00150819enw',
+  ] },
+  { archivo: 'hpe-a00150823enw.pdf', tipo: 'pdf', para: 'JUNIPER', urls: [
+    'https://www.hpe.com/psnow/downloadDoc/a00150823enw.pdf?id=a00150823enw',
+  ] },
+  { archivo: 'hpe-a00150832enw.pdf', tipo: 'pdf', para: 'JUNIPER', urls: [
+    'https://www.hpe.com/psnow/downloadDoc/a00150832enw.pdf?id=a00150832enw',
+  ] },
+  { archivo: 'hpe-a00150852enw.pdf', tipo: 'pdf', para: 'JUNIPER', urls: [
+    'https://www.hpe.com/psnow/downloadDoc/a00150852enw.pdf?id=a00150852enw',
+  ] },
+  { archivo: 'hpe-a00154678enw.pdf', tipo: 'pdf', para: 'JUNIPER', urls: [
+    'https://www.hpe.com/psnow/downloadDoc/a00154678enw.pdf?id=a00154678enw',
+  ] },
+  { archivo: 'hpe-a50015856enw.pdf', tipo: 'pdf', para: 'JUNIPER', urls: [
+    'https://www.hpe.com/psnow/downloadDoc/a50015856enw.pdf?id=a50015856enw',
+  ] },
+  // 2026-11-03: las tres fuentes que la corrida del vigía de ese día dejó pendientes de contrastar.
+  { archivo: 'fortios-7.6.0-release-notes.pdf', tipo: 'pdf', para: 'FORTINET', urls: [
+    'https://fortinetweb.s3.amazonaws.com/docs.fortinet.com/v2/attachments/51fcbb4f-33ff-11ef-bfe5-fa163e15d75b/fortios-v7.6.0-release-notes.pdf',
+  ] },
+  { archivo: 'juniper-srx1600-hw-index.html', tipo: 'html', para: 'JUNIPER', exploracion: true, urls: [
+    'https://www.juniper.net/documentation/us/en/hardware/srx1600/index.html',
+  ] },
+  { archivo: 'aruba-9000-ds-a00067608enw.pdf', tipo: 'pdf', para: 'ARUBA', urls: [
+    'https://www.hpe.com/psnow/downloadDoc/a00067608enw.pdf?id=a00067608enw',
+  ] },
   { archivo: 'juniper-srx300-ds.html', tipo: 'html', para: 'JUNIPER', debeContener: 'SRX340', urls: [
     'https://www.juniper.net/us/en/products/security/srx-series/srx300-line-firewalls-branch-datasheet.html',
     'https://www.juniper.net/gb/en/products/security/srx-series/srx300-line-firewalls-branch-datasheet.html',
@@ -1627,5 +1697,37 @@ module.exports = [
   { archivo: 'mikrotik-ccr2004-16g-2s-pc-manual.html', tipo: 'html', para: 'MIKROTIK', debeContener: 'CCR2004-16G-2S+PC', urls: [
     'https://help.mikrotik.com/docs/spaces/UM/pages/93552657/CCR2004-16G-2S+PC',
     'https://manual.mikrotik.com/hardware/ccr2004-16g-2s-plus-pc',
+  ] },
+  // · Huawei, el controlador iMaster NCE-WAN (2026-11-01): la ficha del modelo de negocio N1 (feb-2022,
+  //   V100R019: el paquete N1 «combines the NCE controller») y la de iMaster NCE-Campus R24C00 (sin
+  //   escala ni licencias). Las cita la línea «Suscripción iMaster NCE-WAN» del BOM de Huawei.
+  { archivo: 'huawei-n1-modelo-negocio.pdf', tipo: 'pdf', para: 'HUAWEI', urls: [
+    'https://carrier.huawei.cn/-/media/cnbgv2/download/products/networks/Huawei-SD-WAN-N1-Business-Mode-datasheet-en.pdf',
+  ] },
+  { archivo: 'huawei-nce-campus-r24c00.pdf', tipo: 'pdf', para: 'HUAWEI', urls: [
+    'https://e.huawei.com/marketingcloud/pep/asset/20000001/Material/e3ae1dc4d0e34e08871f529f499579c7/M3T1A590N1069706146884108541/iMaster%20NCE-Campus%20Product%20Datasheet%20R24C00%201130.pdf',
+  ] },
+  // 2026-11-03 (pendiente: la PQC de los gateways Aruba con AOS-10). Lo cierra la referencia de CLI
+  // de AOS-10 que nombre la PPK en el gateway. La guía de CLI de AOS-10 en PDF (comandos show, con la
+  // versión en que entra cada uno), el índice «What's New in AOS-10 CLI» de la CLI-Bank (enlaza a lo
+  // nuevo en 10.8.0.0 y 10.8.1.0) y las notas «What's New» de AOS-10.8.0.0, que nombran ppk-mandatory.
+  { archivo: 'aruba-aos10-cli-guide.pdf', tipo: 'pdf', para: 'ARUBA', urls: [
+    'https://arubanetworking.hpe.com/techdocs/AOS_10.x_Books/AOS10_CLI_Guide.pdf',
+  ] },
+  // El índice respondió 200 sin el texto «AOS-10.8» en su HTML (corrida 41666380506): se pide como
+  // exploración para leer a qué páginas enlaza.
+  { archivo: 'aruba-aos10-cli-whats-new.html', tipo: 'html', para: 'ARUBA', exploracion: true, urls: [
+    'https://arubanetworking.hpe.com/techdocs/CLI-Bank/Content/aos10/whats-new/main.htm',
+  ] },
+  { archivo: 'aruba-aos10-108-whats-new.html', tipo: 'html', para: 'ARUBA', debeContener: 'ppk-mandatory', urls: [
+    'https://arubanetworking.hpe.com/techdocs/AOS_10.x_RN_WebHelp/Content/10.8/00/features-10800.htm',
+  ] },
+  // Las dos páginas de comandos nuevos de 10.8 a las que enlaza ese índice (corrida 41666623064,
+  // rama fuente/aruba-aos10-ppk-2-2026-11-03: «10.8.htm» y «10.8.1.htm», relativas a su carpeta).
+  { archivo: 'aruba-aos10-cli-10800.html', tipo: 'html', para: 'ARUBA', exploracion: true, urls: [
+    'https://arubanetworking.hpe.com/techdocs/CLI-Bank/Content/aos10/whats-new/10.8.htm',
+  ] },
+  { archivo: 'aruba-aos10-cli-10810.html', tipo: 'html', para: 'ARUBA', exploracion: true, urls: [
+    'https://arubanetworking.hpe.com/techdocs/CLI-Bank/Content/aos10/whats-new/10.8.1.htm',
   ] },
 ];

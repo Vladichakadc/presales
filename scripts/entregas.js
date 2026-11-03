@@ -87,6 +87,15 @@ function resumen(entregas, cuantas) {
     if (e.estado) for (const l of e.estado.split('\n')) L.push(`  ${l}`);
     for (const p of e.problemas) L.push(`  ! ${p}`);
   }
+  // Las mal formadas que quedan fuera de las mostradas también se nombran (2026-11-01, mejora
+  // aprobada al cerrar el PR #101): el arranque solo enseña tres, y su aviso saltaba por una entrega
+  // rota más vieja sin decir cuál.
+  const fuera = entregas.slice(lista.length).filter((e) => e.problemas.length);
+  if (fuera.length) {
+    L.push('');
+    L.push(`Mal formadas fuera de las mostradas (${fuera.length}):`);
+    for (const e of fuera) L.push(`  ! ${e.archivo}: ${e.problemas.join('; ')}`);
+  }
   return L.join('\n');
 }
 

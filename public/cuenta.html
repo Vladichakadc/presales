@@ -9,6 +9,8 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" media="print" data-fuente>
 <style>
+/* `hidden` gana siempre, como en controles.css (test/oculto-visible.test.js). */
+[hidden]{display:none!important}
 :root{--paper:#EDF0F4;--ink:#0E1A2B;--steel:#5C6E85;--rule:#C6CFDA;--red:#C7000B;--amber:#A45B00;--green:#1F6B4A;--card:#FFF}
 *{box-sizing:border-box}
 html,body{margin:0;padding:0}
@@ -55,7 +57,7 @@ code{font-family:'IBM Plex Mono',monospace;font-size:11.5px;background:var(--pap
         <tr><td style="color:var(--steel);padding:4px 0">Rol</td><td style="text-align:right;font-family:'IBM Plex Mono',monospace" id="miRol">—</td></tr>
       </tbody>
     </table>
-    <p class="txt" id="enlaceAdmin" style="margin:14px 0 0;display:none"><a href="/usuarios">Gestionar usuarios &#8594;</a></p>
+    <p class="txt" id="enlaceAdmin" style="margin:14px 0 0" hidden><a href="/usuarios">Gestionar usuarios &#8594;</a></p>
   </section>
 
   <section class="card">

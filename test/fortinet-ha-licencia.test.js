@@ -73,8 +73,12 @@ test('activo-activo, o un modelo que la guía no nombra: una suscripción por no
 
 test('la cantidad, el resumen, la ficha y el BOM salen de licenciaHa, y la regla vieja no vuelve', () => {
   // `(?<!\.)`: sin contar la llamada de la página a FortinetExplicacion.licenciaHa(.
-  assert.strictEqual((JS.match(/(?<!\.)licenciaHa\(/g) || []).length, 5, 'la definición y sus cuatro usos');
+  // Desde el 2026-11-01 (fase 3.2) el uso de la explicación del candidato vive en fortinet-explicacion.js,
+  // que recibe ESTE licenciaHa de la página en su contexto (con la licencia única cotizada o no).
+  assert.strictEqual((JS.match(/(?<!\.)licenciaHa\(/g) || []).length, 4, 'la definición y sus tres usos');
+  assert.match(JS, /function contextoExplicacion\(\) \{\s*return \{[^}]*\blicenciaHa \};/);
   const MOD = fs.readFileSync(path.join(__dirname, '..', 'public', 'js', 'fortinet-explicacion.js'), 'utf8');
+  assert.match(MOD, /const \{[^}]*\blicenciaHa \} = ctx;[\s\S]*FortiGuard: \$\{esc\(licenciaHa\(m, s\.disponibilidad\.modo\)\.texto\)\}/);
   for (const fuente of [JS, MOD]) {
     assert.doesNotMatch(fuente, /la licencia no se comparte en HA/);
     assert.doesNotMatch(fuente, /cada nodo lleva su propia suscripción FortiGuard/);

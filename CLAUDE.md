@@ -48,7 +48,7 @@ completo está allí.
 - **Trabajo en paralelo y traspaso entre sesiones** (`docs/traspaso/README.md`). Varias sesiones,
   a veces de cuentas distintas, trabajan a la vez y solo comparten GitHub. Al empezar, `npm run
   traspasos` dice qué temas tienen rama y qué archivos declaran, y los PR abiertos sin traspaso
-  con los suyos: **no se toma un tema ni un archivo ajeno**. Cada tema va en su rama con `docs/traspaso/<tema>.md` (de `PLANTILLA.md`) al
+  con los suyos: **no se toma un tema ni un archivo ajeno**. **El tema se reserva antes de escribir código** (`npm run reservar -- <tema> --archivos "…"`, 2026-11-01): empuja la rama con su traspaso en el primer minuto y se niega si otro tema declara alguno de esos archivos; la carrera la arbitra GitHub (push sin `--force`). Una sesión con rama fija reserva con `--en-esta-rama` (2026-11-03, PR #131): el traspaso va en un commit de su rama, sin crear `claude/<tema>`, y tras empujar manda la reserva más antigua. Cada tema va en su rama con `docs/traspaso/<tema>.md` (de `PLANTILLA.md`) al
   día en cada commit, y se empuja a menudo: lo no empujado se pierde si la sesión se corta.
   Retomar es leer ese traspaso y seguir su «Siguiente paso». `PENDIENTES.md` y `CLAUDE.md` se
   tocan solo al fusionar, y en ese commit el traspaso se borra.
@@ -114,6 +114,7 @@ npm run catalogo    # inventario: cobertura por campo, ciclo de vida, precios, p
 npm run pantallas   # conduce las pantallas en Chromium y captura cada una
 npm run contraste   # contraste antes/después de un refactor (casos en scripts/contrastes/)
 npm run e2e         # batería de flujos completos en Chromium (levanta su servidor)
+npm run visibles    # lo visible paso a paso, contra origin/main (levanta los dos servidores; --ref, --solo)
 npm run limites     # recorrido de valores límite por los dimensionadores (semanal en CI)
 npm run puerta      # comprueba que el muro de acceso sigue cerrado en una instancia en marcha
 
@@ -136,7 +137,9 @@ npm run lista-aruba # lista del distribuidor de Aruba: dry-run salvo --aplicar
 npm run propuesta   # aplica una propuesta de la sincronización sobre legacyData/, con anclaje
 
 # Fuentes y documentos (lo que descarga necesita salida a internet: IMPORTAR-CATALOGO.md)
-npm run traspasos   # temas en curso: ramas con docs/traspaso/<tema>.md y PR abiertos sin él (solo lee)
+npm run traspasos   # temas en curso: ramas con docs/traspaso/<tema>.md y PR abiertos sin él; marca las paradas y las cerradas en main (solo lee)
+npm run reservar    # reserva un tema antes de escribir código: empuja claude/<tema> con su traspaso si nadie declara sus archivos (--en-esta-rama: en la rama de la sesión); avisa del caso de equivalencia que los vigila
+npm run equivalencia # mide main contra la versión nueva de un script de public/js/ (caso en scripts/equivalencias/; exige mutación de control; --todos en cada PR)
 npm run entregas    # las entregas más recientes, de docs/entregas/ (--todas, --n=N; solo lee)
 npm run vigia       # ¿cambió el documento de cada fuente? (hash contra fuentes.lock.json)
 npm run vigencia    # ¿desapareció algún modelo de Aruba de su guía de pedido oficial?
@@ -198,14 +201,14 @@ en un issue, para no saltar un despliegue que espera.
   `AUTH_PASSWORD`, la cookie `Secure`, las rutas `/api/sync/apply` en 503).
 - Conducir la pantalla cambiada en un navegador, no solo la API: toda regresión real de este
   repositorio era invisible a `curl`. `npm run pantallas`, los casos de `contraste` que toquen, la
-  batería `e2e` y `npm run puerta`.
+  batería `e2e`, `npm run visibles` si se tocó `public/` y `npm run puerta`.
 
 **Después de empujar:** el despliegue en SUCCESS, sus logs con `[seed]`, la línea `[db]` y
 `Presales corriendo en`, el healthcheck `/salud` superado (Railway lo usa como healthcheck; responde
 503 con la base vacía) y la sonda: `sonda-produccion.yml` escucha el `deployment_status` que Railway
 publica en GitHub, corre `/salud`, `/login` y `npm run puerta` contra el dominio real, y abre o
 cierra un issue con la etiqueta `despliegue`. Lo que nunca termina lo vigila
-`vigilia-despliegue.yml` (cada media hora, `scripts/vigilia-despliegue.js`): si la cabeza de `main`
+`vigilia-despliegue.yml` (cada media hora, `scripts/vigilia-despliegue.js`; como el cron de GitHub solo corría el 10 % de las veces, una tarea programada de Claude la lanza además cada hora en el minuto 12): si la cabeza de `main`
 lleva 90 min sin un despliegue en `success`, abre un issue `despliegue-en-espera` con la causa (CI en
 rojo o sin terminar, en cola, sin despliegue) y lo cierra al desplegarse; un fallido es de la sonda.
 
@@ -236,6 +239,17 @@ rojo o sin terminar, en cola, sin despliegue) y lo cierra al desplegarse; un fal
   `scripts/transporte/` desde el 2026-10-28 (como `node -e` pasó el tope de 128 KiB de un argumento,
   y como heredoc bash seguía leyéndolo antes que Node). `traer({ docs, solo, fetch, dir })` se prueba
   sin red en `test/transporte-traer.test.js`: una regla nueva del transporte entra con su caso ahí.
+- **Las equivalencias corren en cada PR** (`verificar.yml`, 2026-11-01): `npm run equivalencia -- --todos`
+  vuelve a medir cada caso de `scripts/equivalencias/` cuyo `mide` toca el PR, módulo de la base contra el
+  del PR; un cambio de comportamiento a propósito se declara en la descripción del PR con
+  `equivalencia-acepta: <caso>: <motivo>`. Un corte nuevo deja su caso ahí, con `mide` y su mutación.
+- **Lo visible, contra la base, en los PR que tocan `public/`** (`visibles.yml`, 2026-11-03, PR #129):
+  `scripts/visibles.js` conduce el mismo recorrido (portal, cuenta, usuarios, guía, cotizador y cada
+  pestaña, botón segmentado y casilla de los nueve dimensionadores) contra la base, desde un worktree, y
+  contra el PR, y compara los id que se ven en cada paso. Frena lo que deja de verse y lo que la base
+  ocultaba y ahora se ve; un id nuevo solo avisa; un panel entero es una línea. Cada paso parte del estado
+  de entrada de su página, espera con `asentar()` y la mutación de control es obligatoria. Un cambio a
+  propósito: `visibles-acepta: #<id>: <motivo>` en la descripción del PR (`test/visibles.test.js`).
 - **`npm run auditar` falla cerrado**: un aviso alto o crítico frena; la salida es una excepción
   declarada con GHSA, motivo y caducidad de 90 días como mucho, nunca apagar el paso.
 - Los jobs de navegador corren en `ubuntu-26.04` con **Playwright 1.61.1**, movidos juntos: la
@@ -291,7 +305,7 @@ contra lo verificado, queda como diff de `legacyData/` y llega a producción con
   IP más retardo global (rotar `X-Forwarded-For` daba cuota nueva).
 - **Autorización: `exige('permiso')`** en `server.js`; ocultar un enlace es comodidad, nunca
   control. Usa `req.baseUrl + req.path` (Express recorta el prefijo de montaje).
-- `server.js` también: CSP estricta con helmet (`script-src 'self'`), sin `cors()`, SheetJS en
+- `server.js` también: CSP estricta con helmet (`script-src 'self'`), **respuestas comprimidas** (`compression`, brotli o gzip, 2026-11-01: un dimensionador bajaba ~1 MB y ahora ~300 KB; `/login`, `/logout`, `/api/cuenta/*` y `/api/usuarios` fuera por BREACH, `test/compresion.test.js`), sin `cors()`, SheetJS en
   `/vendor/xlsx.js` desde `npm:@e965/xlsx` (el `xlsx` de npm quedó abandonado con un aviso alto),
   `RENOMBRADAS` para páginas renombradas (conserva el querystring), `/salud` público.
 - `server/models/` — Sequelize. `Product` es la tabla central, con `specs` JSON (campos numéricos
@@ -438,11 +452,20 @@ Módulos compartidos:
   declara en `opcionesTarde` y se repone cuando llegan sus opciones, o se anuncia si ya estaban
   (MikroTik, `apModel`; Aruba, `pickModel`, que su `change` marca como elegido a mano, y `selTier`);
   `test/opciones-tarde.test.js` frena un desplegable vacío del enlace sin declarar.
-- `procedencia.js` — la pestaña de fuentes (leer, subir, borrar, contrastar en el acto con
+- `procedencia.js` — la pestaña de fuentes (se pide **al verse**, no al abrir la página: `IntersectionObserver`, y sin él en el acto; 2026-11-01, PR #120, `test/procedencia-perezosa.test.js`; y **solo su fabricante**, `/api/fuentes?vendor=<code>`, como «Supuestos» y el arranque de Fortinet —misma forma, 404 si no existe; sin el parámetro, los siete—, PR #121, `test/fuentes-por-fabricante.test.js`; leer, subir, borrar, contrastar en el acto con
   `contraste.js`: cambios, altas, sin cambio y columnas ignoradas; nunca adivina un mapeo); y
   «↻ Actualizar fuentes», 2026-10-29: `/api/fuentes/:vendor/salud` con `server/vigiaEnVivo.js` vuelve a
   leer cada documento y lo clasifica contra el lock con la regla del vigía —columna «Comprobado
   ahora»—; solo lee, 10 min de caché por fabricante, cuatro descargas a la vez).
+- `fuentes-portal.js` — **«Fuentes oficiales» del portal** (2026-11-01, PR #118): «Comprobar los siete» llama a
+  la misma ruta de salud para los siete de `NAVFAB.FABRICANTES`, **de uno en uno** (`comprobarEnSerie`: el
+  siguiente cuando el anterior respondió; siete a la vez serían veintiocho descargas contra los fabricantes),
+  y pinta una fila por fabricante con su enlace a `?tab=src`. Solo lee. `test/fuentes-portal.test.js` fija la
+  serie y `e2e-fuentes-portal.js` la mide en la red con la ruta simulada. **«Vigía semanal»** (2026-11-02,
+  PR #122): lo que dejó el vigía en el lock, con su fecha, de `/api/fuentes` pedida al abrir la sección y una
+  vez (`resumenVigilancia`); lo del lunes y lo de ahora, en columnas distintas. Encima, **la última corrida del
+  vigía fusionada en main** (`vigiaRevisado`, el `revisado` del lock, en cada fabricante de `/api/fuentes`;
+  PR #124), con aviso pasados 8 días (`DIAS_AVISO`): el vigía deja su lock en la rama `vigia/fuentes`.
 - `navegacion.js` — barra de fabricante (anterior/siguiente conservando el paso, `Alt`+flechas).
 - `tabla.js` — ordenación por columna; la coma es separador de miles y el punto decimal, y «sin
   dato» va siempre al final.
@@ -450,7 +473,13 @@ Módulos compartidos:
 - `public/controles.css` — la hoja común de los ocho dimensionadores con casillas (Starlink no:
   usa interruptores): el rojo del ciclo de vida en los desplegables (`#B42318`, nunca `--red`, que
   es el color de marca de cada página) y la fila de la casilla de función marcada, resaltada con el
-  acento de la página al 6 % (AA con el texto gris), sin moverse de sitio.
+  acento de la página al 6 % (AA con el texto gris), sin moverse de sitio. **`[hidden]` gana siempre**
+  (2026-11-01, PR #115): `[hidden]{display:none !important}` aquí, en la hoja de Starlink y en el
+  `<style>` de las otras seis páginas, en vez de una regla por clase; el `!important` gana también a un
+  `#id{display:flex}`, y `test/oculto-visible.test.js` exige que cada página la alcance y frena un
+  `display` de autor con `!important` distinto de `none`. **Y es la única forma de ocultar** (2026-11-03,
+  PR #127): se pone y se quita `.hidden = true/false`; ni la clase `.hidden`, ni `style.display`, ni un
+  `display:none` en línea (que quitar el atributo no deshace), y la misma prueba los frena.
 - `funciones-activas.js` — el panel «Funciones activadas» arriba de la columna de resultados de esas
   ocho páginas (2026-10-28): una pastilla por casilla de función marcada, con el mismo resaltado que su
   fila y un clic que lleva a ella. Lee las rejillas `.cols`/`.dim` (parámetros en la primera hija,
@@ -469,7 +498,7 @@ Módulos compartidos:
   nueva registra su recálculo completo y carga los dos archivos (`test/actualizar.test.js`). **Detector**
   (2026-10-31): si su recálculo cambia el texto de resultados (el mismo que leen las baterías e2e), dice
   «El resultado no estaba al día…» con el último campo tocado y deja `[actualizar]` en la consola con
-  página, campo, enlace y hora; nada sale del navegador (`e2e-boton-detector.js`).
+  página, campo, enlace y hora; junto al aviso, «Copiar informe» lleva ese mismo texto al portapapeles (2026-11-01, PR #107; desaparece al volver a estar al día); nada sale del navegador (`e2e-boton-detector.js`).
 - `por-funcion.js` — **«por <función>» en la fila del BOM** (2026-10-29, PR #70; complementa el
   resaltado de `funciones-activas.js`): la fila que existe solo porque se pidió una función lleva
   `por` (id de su casilla), puesto en el mismo `if` que la crea o traducido del `req` del motor con

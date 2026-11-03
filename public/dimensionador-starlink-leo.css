@@ -318,7 +318,8 @@ input:invalid { border-color: var(--red); }
   pointer-events: none;
 }
 
-.dynamic-field[hidden], .app-config[hidden] { display: none !important; }
+/* `hidden` gana siempre, como en controles.css (test/oculto-visible.test.js). */
+[hidden] { display: none !important; }
 
 .app-list { display: grid; gap: 8px; }
 .app-card {

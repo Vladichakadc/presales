@@ -6,7 +6,7 @@ const test = require('node:test');
 const assert = require('node:assert');
 const fs = require('fs');
 const path = require('path');
-const { leerCabecera, archivosDeTema, prsSinTraspaso, repoDeOrigen, RAMA_NO_TEMA, CAMPOS } = require('../scripts/traspasos');
+const { leerCabecera, archivosDeTema, prsSinTraspaso, repoDeOrigen, RAMA_NO_TEMA, CAMPOS, marcaParada, prsNombrados, DIAS_PARADA } = require('../scripts/traspasos');
 
 const RAIZ = path.join(__dirname, '..');
 
@@ -69,4 +69,24 @@ test('las ramas de transporte de documentos y las de Dependabot no son temas', (
   assert.ok(RAMA_NO_TEMA.test('origin/fuente/pqc-2-2026-10-27'));
   assert.ok(RAMA_NO_TEMA.test('origin/dependabot/npm_and_yarn/x'));
   assert.ok(!RAMA_NO_TEMA.test('origin/claude/fuente-nueva'));
+});
+
+// RAMAS PARADAS (2026-11-01): una rama abandonada sigue declarando sus archivos; se marca, nunca se borra sola.
+test('una rama sin commits en más de tres días se marca parada, con los PR fusionados que nombra y cómo cerrarla', () => {
+  const ahora = Date.parse('2026-11-01T17:00:00Z');
+  const m = marcaParada({ rama: 'claude/vieja', fecha: '2026-10-29 02:30:21 +0000', estado: 'en curso', fusionados: [58, 60], ahora });
+  assert.match(m, /^PARADA: 3 días sin commits/, 'tres días y medio cuentan como más de tres');
+  assert.match(m, /PR ya fusionados \(#58, #60\)/);
+  assert.match(m, /git push origin --delete claude\/vieja/);
+  assert.match(m, /--aunque claude\/vieja/);
+  assert.strictEqual(marcaParada({ rama: 'claude/viva', fecha: '2026-10-31T17:00:00Z', estado: 'en curso', ahora }), null, 'dos días es un tema vivo');
+  assert.strictEqual(DIAS_PARADA, require('../scripts/reservar').DIAS_PARADA, 'la misma regla que reservar');
+});
+
+test('un traspaso cerrado se marca aunque sea reciente; los PR nombrados se leen sin repetir', () => {
+  const m = marcaParada({ rama: 'claude/x', fecha: new Date().toISOString(), estado: 'cerrado sin fusionar: duplicado del PR #62' });
+  assert.match(m, /^CERRADO/);
+  assert.match(m, /ya no bloquea a npm run reservar/);
+  assert.doesNotMatch(m, /--aunque/, 'reservar ya ignora un traspaso cerrado');
+  assert.deepStrictEqual(prsNombrados('PR #62 y el PR #58; otra vez PR #62, no #7'), [58, 62]);
 });

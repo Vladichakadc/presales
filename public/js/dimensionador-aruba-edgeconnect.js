@@ -786,9 +786,21 @@ $('accBtn').addEventListener('click',()=>{
   if(!m||!ACCESSORY_COMPAT[m.id]) return;
   pintarAccModal(m);
   $('accModal').hidden=false;
+  // El foco entra en la ventana (la primera cantidad, o «Cerrar» si no hay ninguna), como en el
+  // consolidado desde el PR #62: quien navega con teclado no se queda detrás del velo.
+  ($('accLista').querySelector('input')||$('accCerrar')).focus();
 });
-$('accCerrar').addEventListener('click',()=>{ $('accModal').hidden=true; });
-$('accModal').addEventListener('click',e=>{ if(e.target===$('accModal')) $('accModal').hidden=true; });
+// Cerrar, de las tres maneras, devuelve el foco al botón que la abrió (2026-11-01, mejora propuesta
+// al cerrar el PR #95). Escape se escucha en la propia ventana y no sube al documento: así no cierra
+// a la vez otra ventana que escuche Escape en `document` (la del consolidado).
+function cerrarAcc(){
+  if($('accModal').hidden) return;
+  $('accModal').hidden=true;
+  $('accBtn').focus();
+}
+$('accCerrar').addEventListener('click',cerrarAcc);
+$('accModal').addEventListener('click',e=>{ if(e.target===$('accModal')) cerrarAcc(); });
+$('accModal').addEventListener('keydown',e=>{ if(e.key==='Escape'){ e.stopPropagation(); cerrarAcc(); } });
 $('accLista').addEventListener('input',e=>{
   const sku=e.target.dataset&&e.target.dataset.acc;
   if(!sku) return;
@@ -1313,20 +1325,10 @@ function capacidadComparable(m){
 // En la serie 9200 la licencia perpetua amplia tambien clientes y APs, no solo el
 // throughput: filtrar por la cifra de solo-hardware descartaba un 9240 que si cumple con
 // Gold. Se compara contra el techo alcanzable y luego se informa que nivel hace falta.
-function clientesMax(m){
-  if(m.licCap&&m.licCap.length) return Math.max(...m.licCap.map(t=>t.clients));
-  return m.clients;
-}
-function apsMax(m){
-  if(m.licCap&&m.licCap.length) return Math.max(...m.licCap.map(t=>t.aps));
-  return m.aps;
-}
+function clientesMax(m){ return ArubaReglas.clientesMax(m); }
+function apsMax(m){ return ArubaReglas.apsMax(m); }
 // Nivel de licencia que cubre a la vez throughput, clientes y APs.
-function nivelLicenciaNecesario(m,need,users,aps){
-  if(!m.licCap) return null;
-  return m.licCap.find(t=>t.fw>=need&&t.clients>=(users||0)&&t.aps>=(aps||0))
-    ||m.licCap[m.licCap.length-1];
-}
+function nivelLicenciaNecesario(m,need,users,aps){ return ArubaReglas.nivelLicenciaNecesario(m,need,users,aps); }
 
 // C1 de la auditoria 2026-09-17: el tier se elige SOLO entre los que existen para el
 // nivel deducido. Antes recorria los 8 tiers de SIZING.bwTiers sin mirar el nivel y
@@ -1375,10 +1377,7 @@ const SPEC_LABELS=[
 // repiten en cada modelo porque el documento las declara a nivel de línea.
 const EC_AMBIENTE='Operación 0 – 40 °C · almacenamiento -40 – 65 °C · altitud 3.048 m operando / 12.192 m almacenado · humedad 5 – 95 % sin condensar';
 // Boost se licencia en bloques de 100 Mbps que forman un pool del fabric.
-function bloquesBoost(mbps){
-  const b=(SIZING.boost&&SIZING.boost.bloque)||100;
-  return Math.max(1,Math.ceil(mbps/b));
-}
+function bloquesBoost(mbps){ return ArubaReglas.bloquesBoost(SIZING,mbps); }
 
 /* ══ REFACTOR ARQUITECTÓNICO 2026-09-13 (petición del dueño, documento «Actúa como un
    Arquitecto de Soluciones de Redes») ══
@@ -1391,14 +1390,7 @@ function bloquesBoost(mbps){
 // simultáneas» del datasheet (spec.conexiones, texto con miles); los gateways como
 // sesiones de firewall (fwSess, ya numérico). null = la fuente no lo publica para ese
 // modelo (EC-V) y el motor lo declara en vez de inventarlo.
-function flujosDe(m){
-  if(m.fam==='ec'){
-    const s=m.spec&&m.spec.conexiones;
-    const n=s?parseInt(String(s).replace(/\D/g,''),10):NaN;
-    return Number.isFinite(n)?n:null;
-  }
-  return m.fwSess!=null?m.fwSess:null;
-}
+function flujosDe(m){ return ArubaReglas.flujosDe(m); }
 // Tasa de flujos por usuario según el perfil de entorno. Brief del duenyo 2026-09-13
 // (fase 11): 80 estandar / 150 intensivo — punto medio del rango 80-100 / 150-200 que la
 // arquitectura declaro en fase 9. SIN FUENTE oficial: HPE no publica flujos por usuario;
@@ -1942,7 +1934,7 @@ function render(){
   const track=$('track');
   track.querySelectorAll('.dot,.tick,.pickLabel').forEach(e=>e.remove());
   const pickLbl=document.createElement('div');
-  pickLbl.className='pickLabel'; pickLbl.id='pickLbl'; pickLbl.style.display='none';
+  pickLbl.className='pickLabel'; pickLbl.id='pickLbl'; pickLbl.hidden=true;
   track.appendChild(pickLbl);
   [10,50,100,500,1000,5000,10000,40000].forEach(v=>{
     const pct=xPct(v);if(pct<0||pct>100)return;
@@ -1961,85 +1953,12 @@ function render(){
     track.appendChild(dot);
   });
 
-  let outByBoost=0,outByClients=0,outByAps=0,outBySinDato=0,outByFlujos=0,outByPersona=0,sobrado=[];
-  // Fase 1 de la auditoria 2026-09-17: tres descartes nuevos, cada uno con su porque.
-  const outBySo=[], outByDtd=[], outByBoostRec=[];
-  // gwsec (2026-09-24): gateways sin nivel «+ Security» en el documento oficial (7000/7200),
-  // y los que no llegan (o no publican) el throughput de IDS/IPS del VSG.
-  const outBySinSec=[], outByIds=[], outByIdsEc=[];
-  // M2 · Auditoría de puertos (SPEC B.3, para todo chasis desde el 2026-10-15): un modelo en
-  // el que algún enlace no tiene puerto queda fuera. Se anota con su motivo y solo si habría
-  // cumplido todo lo demás: es lo que dispara #alertaEscalado y el porqué del veredicto.
-  const outByPuertos=[];
-  // Criptografía post-cuántica exigida (2026-10-27): la regla única de pqc.js, también al final.
-  const outByPqc=[];
-  const nivelPqc=$('reqPqc').value;
-  const candidates=MODELS.filter(m=>{
-    if(!coincideFiltro(m,famMode)) return false;
-    // Arquetipo de sede (fase 11): restringe el catalogo a los modelos que el VSG
-    // posiciona para ese tamanyo de sitio. Libre = no restringe.
-    if(personaMode!=='auto'&&personaMode!=='micro'&&PERSONA_MODELOS[personaMode]
-      &&!PERSONA_MODELOS[personaMode].includes(m.id)){ outByPersona++; return false; }
-    if(boost&&m.boostMax==null){ outByBoost++; return false; }
-    // A1: Dynamic Threat Defense solo corre en EdgeConnect, y no en el modelo que el catálogo
-    // marque `dtd:false`. Antes era un aviso rojo debajo de un equipo que seguía saliendo
-    // RECOMENDADO y cotizaba la licencia DTD.
-    if(secMode==='dtd'&&!ArubaReglas.admiteDtd(m)){ if(m.fam==='ec') outByDtd.push(m.id); return false; }
-    // Y donde el fabricante publica la capacidad de IDS/IPS del EdgeConnect (hoy el EC-XS, en
-    // su spec sheet: 300 Mbps en línea), es un techo duro, con la misma degradación IMIX que el
-    // eje de IDS/IPS de los gateways (2026-10-06). Sin cifra, sigue la reserva del motor.
-    if(secMode==='dtd'&&m.fam==='ec'&&m.idsMbps!=null&&m.idsMbps*IMIX_FACTOR<needProc){
-      outByIdsEc.push({id:m.id, motivo:`IDS/IPS en línea ${fmt(m.idsMbps)} (×${IMIX_FACTOR} IMIX) por debajo de ${fmt(needProc)}`}); return false; }
-    // IDS/IPS en el gateway (gwsec, 2026-09-24): solo los gateways cuya serie tiene nivel
-    // «+ Security» en el documento oficial de Central (9000, 9100, 9200). EdgeConnect lo hace
-    // con DTD y la línea 7000/7200 no tiene ese nivel.
-    if(secMode==='gwsec'&&(m.fam==='ec'||!centralParaModelo(m, 'foundation', 1, true))){ if(m.fam!=='ec') outBySinSec.push(m.id); return false; }
-    // Y el eje de IDS/IPS con la cifra oficial del VSG (idsMbps), con la misma degradación
-    // IMIX que el firewall del gateway. Sin cifra publicada (9004-LTE) no se afirma que cumpla:
-    // se aparta con su motivo, nunca con la cifra de firewall ni con la de su hermano.
-    if(secMode==='gwsec'&&m.fam==='gw'){
-      if(m.idsMbps==null){ outByIds.push({id:m.id, motivo:'sin cifra de IDS/IPS en el VSG'}); return false; }
-      if(m.idsMbps*IMIX_FACTOR<needProc){ outByIds.push({id:m.id, motivo:`IDS/IPS ${fmt(m.idsMbps)} (×${IMIX_FACTOR} IMIX) por debajo de ${fmt(needProc)}`}); return false; }
-    }
-    // C2/C3: un gateway sin cifras para el SO elegido (9114 en AOS 8, series 7000/7200 en
-    // AOS 10) no puede afirmarse que cumpla — se descarta y se dice por qué.
-    if(m.sinCifraSo){ outBySo.push(m); return false; }
-    // EC-V no publica rango: se dimensiona por licencia y vCPU, no por hardware.
-    if(m.fam==='ec'&&m.wanMax==null) return false;
-    const cap=capacidadMax(m);
-    // Sin cifra publicada no se puede afirmar que cumpla: se descarta y se explica, en
-    // vez de colarlo con un numero inventado o de omitirlo en silencio.
-    if(cap==null){ outBySinDato++; return false; }
-    // Factor IMIX (regla de trabajo del duenyo): la mezcla real de trafico rinde menos
-    // que el UDP de laboratorio. En EdgeConnect la degradación vive YA en el
-    // requerimiento del motor de ingeniería (÷IMIX según perfil) y se compara contra el
-    // nominal; en gateways se conserva el ×0,70 del lado capacidad (ver
-    // capacidadComparable — brief carrier-grade 2026-09-13, sin doble conteo).
-    if(capacidadComparable(m)<needDe(m)) return false;
-    const cMax=clientesMax(m), aMax=apsMax(m);
-    if(cMax!=null&&users&&cMax<users){ outByClients++; return false; }
-    if(aMax!=null&&aps&&aMax<aps){ outByAps++; return false; }
-    // Flujos simultáneos: el chasis debe soportar con holgura los flujos calculados.
-    // null (EC-V) = la fuente no publica el dato: no descarta, se declara.
-    const fl=flujosDe(m);
-    if(flujosReq>0&&fl!=null&&fl<flujosReq){ outByFlujos++; return false; }
-    // C4: el Boost que necesita la sede no puede superar el que HPE recomienda optimizar
-    // en ese appliance (EC-10104 200 Mbps, EC-S 500 Mbps, EC-M 1 Gbps…). null = sin dato
-    // publicado: no descarta, se declara.
-    if(boost&&m.fam==='ec'&&D.boostMbps>0){
-      const rec=ArubaReglas.boostRecMbps(m);
-      if(rec!=null&&D.boostMbps>rec){ outByBoostRec.push(m.id); return false; }
-    }
-    // Auditoría de puertos: la regla se evalúa AL FINAL para saber si el modelo habría
-    // cumplido todo lo demás (y por tanto el dimensionador está escalando por los puertos o
-    // el medio de los enlaces, no por capacidad). La MISMA regla del semáforo de #wanResumen.
-    const ev=evaluarPuertos(m,D.wanLinks);
-    if(ev.nivel==='rojo'){ outByPuertos.push({m, motivo:ev.motivo}); return false; }
-    // El SO del escenario va con la regla: la PPK de los gateways es de AOS-8 (pqc.so); los
-    // EdgeConnect corren ECOS y su `pqc` no declara SO, así que el selector no les afecta.
-    const motPqc=PQC.motivo(m,nivelPqc,{so:soMode, soNombre:SO_NOMBRE[soMode]||soMode});
-    if(motPqc){ outByPqc.push({m, motivo:motPqc}); return false; }
-    return true;
+  let sobrado=[];
+  // Fase 3.1, tercera entrega (2026-11-01): el filtro de candidatos vive en aruba-reglas.js, con su
+  // cuerpo intacto; aquí se le pasa lo que leía de este render() y de la página.
+  const { candidates, outByBoost, outByClients, outByAps, outBySinDato, outByFlujos, outByPersona, outBySo, outByDtd, outByBoostRec, outBySinSec, outByIds, outByIdsEc, outByPuertos, outByPqc } = ArubaReglas.filtrarCandidatos(MODELS, {
+    coincideFiltro, famMode, personaMode, PERSONA_MODELOS, boost, secMode, ArubaReglas, IMIX_FACTOR, needProc, fmt, centralParaModelo, capacidadMax, capacidadComparable, needDe, clientesMax, apsMax, users, aps, flujosDe, flujosReq, D, evaluarPuertos, PQC, soMode, SO_NOMBRE,
+    nivelPqc: $('reqPqc').value,
   });
   // Generacion actual primero: entre dos que cumplen, la linea AOS 8 (series 7000/7200)
   // solo se propone si no hay un equivalente vigente. Sigue apareciendo como alternativa y
@@ -2420,7 +2339,7 @@ function render(){
   };
 
   const pintarDependientes=m=>{
-    $('pickLbl').textContent=m.id; $('pickLbl').style.display='block';
+    $('pickLbl').textContent=m.id; $('pickLbl').hidden=false;
     $('pickLbl').style.left=xPct(capacidadMax(m))+'%';
   };
 
@@ -2593,12 +2512,12 @@ function accesoriosInyectados(m,D){
 // Término genérico y1/y3/y5/y7 (2026-09-15, pendiente #28): antes y=7 caía al else de
 // y3 y cotizaba 7 años A PRECIO DE 3 — una subcotización silenciosa. Clave directa y
 // null cuando el peldaño no publica ese término (la interfaz muestra «consultar»).
-function tierPrice(t,y){ if(!t) return null; const v=t['y'+y]; return v==null?null:v; }
+function tierPrice(t,y){ return ArubaReglas.tierPrice(t,y); }
 // El SKU de una suscripción depende de la duración (1/3/5/7 años — y7 desde el
 // 2026-09-15, pendiente #28): `sku` puede ser un objeto {y1,y3,y5,y7}. Se acepta
 // también la forma plana por compatibilidad. Misma corrección que tierPrice: clave
 // directa, sin else que cotizara 7 años a precio de 3.
-function tierSku(t,y){ if(!t||t.sku==null) return null; if(typeof t.sku==='string') return t.sku; return t.sku['y'+y]||null; }
+function tierSku(t,y){ return ArubaReglas.tierSku(t,y); }
 // A3 (2026-09-24): la suscripción de Central que corresponde a ESTE gateway — por su serie, su
 // nivel (foundation/advanced), el término y si lleva «+ Security» (IDS/IPS, estrategia gwsec).
 // El SKU sale de CENTRAL_SERIE (documento oficial de HPE); el precio, solo de lo verificado:
@@ -2606,25 +2525,8 @@ function tierSku(t,y){ if(!t||t.sku==null) return null; if(typeof t.sku==='strin
 // Devuelve null si el documento no publica ese nivel para esa serie (p. ej. Security en 70xx).
 // A4: el nivel Foundation Base (o Base + Security con gwsec) que aplica a este gateway y a
 // este número de usuarios, o null. Modelos y tope de clientes, del documento oficial.
-function baseParaModelo(m, D){
-  const fam=Object.values(CENTRAL_SERIE).find(f=>(f.series||[]).includes(m.serie));
-  const t=fam&&fam[secMode==='gwsec'?'foundationBaseSec':'foundationBase'];
-  if(!t||!(t.modelos||[]).includes(m.id)||!(D.users<=t.maxClientes)) return null;
-  return {n:t.n, sku:(t.sku&&t.sku['y'+D.termYrs])||null, maxClientes:t.maxClientes};
-}
-function centralParaModelo(m, nivel, termYrs, conSeguridad){
-  if(!m||!nivel) return null;
-  const fam=Object.values(CENTRAL_SERIE).find(f=>(f.series||[]).includes(m.serie));
-  if(!fam) return null;
-  const t=fam[nivel+(conSeguridad?'Sec':'')];
-  if(!t||(t.soloSeries&&!t.soloSeries.includes(m.serie))) return null;
-  const sku=(t.sku&&t.sku['y'+termYrs])||null;
-  let precio=null;
-  const base=CENTRAL[nivel];
-  if(sku&&base&&tierSku(base,termYrs)===sku) precio=tierPrice(base,termYrs);
-  else if(sku){ const f=(SKU_CAT||[]).find(x=>x.sku===sku); if(f&&f.p!=null) precio=f.p; }
-  return {n:t.n, sku, precio};
-}
+function baseParaModelo(m, D){ return ArubaReglas.baseParaModelo(CENTRAL_SERIE, m, D, secMode); }
+function centralParaModelo(m, nivel, termYrs, conSeguridad){ return ArubaReglas.centralParaModelo({centralSerie:CENTRAL_SERIE, central:CENTRAL, skuCat:SKU_CAT}, m, nivel, termYrs, conSeguridad); }
 
 // M6 (auditoría 2026-09-17, corregido 2026-09-24): con la página vacía el desplegable cae a
 // su primera opción (EC-XS) y el BOM cotizaba ese equipo con precio y «[OK] Diseño coherente»
@@ -3270,7 +3172,7 @@ $('skuTaa').addEventListener('click',()=>{
 $('copyBtn').addEventListener('click',async()=>{
   const t=$('bomOut');
   try{await navigator.clipboard.writeText(t.value);$('copyBtn').textContent='Copiado';}
-  catch{t.classList.remove('hidden');t.select();document.execCommand('copy');t.classList.add('hidden');$('copyBtn').textContent='Copiado';}
+  catch{t.hidden = false;t.select();document.execCommand('copy');t.hidden = true;$('copyBtn').textContent='Copiado';}
   setTimeout(()=>$('copyBtn').textContent='Copiar como texto',1600);
 });
 

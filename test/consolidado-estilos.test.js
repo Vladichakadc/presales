@@ -55,7 +55,9 @@ test('la hoja común da velo, posición y caja, con el velo de la tinta', () => 
   assert.match(modal, /inset: 0/);
   assert.match(modal, /color-mix\(in srgb, var\(--ink, #0E1A2B\) 45%, transparent\)/,
     'el velo sale de la tinta de la página, no de un rgba escrito a mano');
-  assert.match(regla('#modalConsolidado[hidden], #accModal[hidden]'), /display: none/, 'sin esto la ventana no se cierra');
+  // La ventana se cierra con la regla única `[hidden]` (2026-11-01, tras el PR #112): sin `!important`,
+  // el `display: flex` de su id le ganaría al atributo y la ventana no se cerraría.
+  assert.match(regla('[hidden]'), /^ display: none !important; $/, 'sin esto la ventana no se cierra');
   const caja = regla('#modalConsolidado .acc-caja, #accModal .acc-caja');
   assert.match(caja, /max-height: 86vh/);
   assert.match(caja, /overflow: auto/, 'sin desplazamiento un consolidado largo se corta');
