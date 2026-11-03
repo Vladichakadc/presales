@@ -360,10 +360,10 @@ function drawLadder(need, pick, pk){
   $('needLbl').textContent = 'Requiere ' + fmt(need);
   const lbl = $('pickLbl');
   if(pick){
-    lbl.style.display = 'block'; lbl.textContent = pick.m.id;
+    lbl.hidden = false; lbl.textContent = pick.m.id;
     const lp = pos(pick.cap); lbl.style.left = lp + '%';
     lbl.style.transform = lp > 80 ? 'translateX(-90%)' : (lp < 12 ? 'translateX(-10%)' : 'translateX(-50%)');
-  } else lbl.style.display = 'none';
+  } else lbl.hidden = true;
 }
 
 function drawVerdict(pick, next, c){

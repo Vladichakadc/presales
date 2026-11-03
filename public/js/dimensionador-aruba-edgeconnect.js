@@ -1934,7 +1934,7 @@ function render(){
   const track=$('track');
   track.querySelectorAll('.dot,.tick,.pickLabel').forEach(e=>e.remove());
   const pickLbl=document.createElement('div');
-  pickLbl.className='pickLabel'; pickLbl.id='pickLbl'; pickLbl.style.display='none';
+  pickLbl.className='pickLabel'; pickLbl.id='pickLbl'; pickLbl.hidden=true;
   track.appendChild(pickLbl);
   [10,50,100,500,1000,5000,10000,40000].forEach(v=>{
     const pct=xPct(v);if(pct<0||pct>100)return;
@@ -2339,7 +2339,7 @@ function render(){
   };
 
   const pintarDependientes=m=>{
-    $('pickLbl').textContent=m.id; $('pickLbl').style.display='block';
+    $('pickLbl').textContent=m.id; $('pickLbl').hidden=false;
     $('pickLbl').style.left=xPct(capacidadMax(m))+'%';
   };
 

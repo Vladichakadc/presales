@@ -245,12 +245,12 @@ function clearRec(){
   document.getElementById('recTitle').textContent='—';
   document.getElementById('recDesc').textContent='Haz clic en un nodo del diagrama.';
   document.querySelector('.role-tag').textContent='Selecciona un nodo';
-  document.getElementById('recEmpty').style.display='block';
+  document.getElementById('recEmpty').hidden=false;
   document.getElementById('recVendors').innerHTML='';
 }
 
 function showRec(node){
-  document.getElementById('recEmpty').style.display='none';
+  document.getElementById('recEmpty').hidden=true;
   document.querySelector('.role-tag').textContent='Rol: '+node.role;
   document.getElementById('recTitle').textContent=node.label+' — '+node.role;
   document.getElementById('recDesc').textContent='Equipos activos recomendados (no EOL/EOS) para el rol '+node.role+' en la topología '+currentTopo.label+'.';
