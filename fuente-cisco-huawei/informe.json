@@ -1,0 +1,46 @@
+[
+  {
+    "archivo": "aruba-aos10-cli-guide.pdf",
+    "para": "ARUBA",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://arubanetworking.hpe.com/techdocs/AOS_10.x_Books/AOS10_CLI_Guide.pdf",
+        "status": 200,
+        "bytes": 4940718,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "aruba-aos10-cli-whats-new.html",
+    "para": "ARUBA",
+    "guardado": false,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://arubanetworking.hpe.com/techdocs/CLI-Bank/Content/aos10/whats-new/main.htm",
+        "status": 200,
+        "bytes": 19052,
+        "nota": "no contiene el texto esperado"
+      }
+    ]
+  },
+  {
+    "archivo": "aruba-aos10-108-whats-new.html",
+    "para": "ARUBA",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://arubanetworking.hpe.com/techdocs/AOS_10.x_RN_WebHelp/Content/10.8/00/features-10800.htm",
+        "status": 200,
+        "bytes": 39764,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  }
+]
