@@ -343,6 +343,13 @@ traspaso (el #37, de otra sesión, se fusionó mientras se cerraba esta).
 ### Se pueden hacer desde una sesión, sin acceso especial
 
 1. **Mejoras propuestas**: las de abajo, cuando el dueño las apruebe (no se hacen solas).
+2. **El SRX1500 y el ATP del SRX340/345 sin documento vivo** (hallado en el PR #125). La matriz SRX de
+   2020 (`security-products-comparison-chart.pdf`) da 404. La ficha vigente del SRX1500 (psnow
+   `a00150819ENW` Rev. 2, traída a `fuente/psnow-juniper-2026-11-03`) da firewall IMIX 4,5 Gbps (el
+   catálogo, 5,0), IPsec 4,0 Gbps a 1.400 B y 1,0 en IMIX (1,3), NGFW por CPS 2,0 (IPS 3,0) y ATP por CPS
+   1,0 (1,6); sesiones y conexiones/s, iguales. La ficha del SRX300 (`a00150823ENW` Rev. 2) no publica
+   ATP. Lo cierra pasar el SRX1500 a su ficha vigente (manda el documento más reciente) y dejar el ATP del
+   340/345 en «sin dato» o con otro documento oficial.
 
 ### Esperan un documento oficial (se cierran trayéndolo por Actions)
 
