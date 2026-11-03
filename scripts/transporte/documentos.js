@@ -504,6 +504,17 @@ module.exports = [
   { archivo: 'juniper-srx4300-ds.pdf', tipo: 'pdf', para: 'JUNIPER', urls: [
     'https://www.juniper.net/content/dam/www/assets/datasheets/us/en/security/srx4300-firewall-datasheet.pdf',
   ] },
+  // Donde enlaza hoy la ficha: la página del producto en juniper.net y la de la serie en hpe.com.
+  { archivo: 'juniper-srx1600-pagina.html', tipo: 'html', para: 'JUNIPER', exploracion: true, urls: [
+    'https://www.juniper.net/us/en/products/security/srx-series/srx1600-data-center-and-enterprise-firewall.html',
+  ] },
+  { archivo: 'juniper-srx1600-specs.html', tipo: 'html', para: 'JUNIPER', exploracion: true, urls: [
+    'https://www.juniper.net/us/en/products/security/srx-series/srx1600-data-center-and-enterprise-firewall/specs.html',
+  ] },
+  { archivo: 'hpe-srx-serie.html', tipo: 'html', para: 'JUNIPER', exploracion: true, urls: [
+    'https://www.hpe.com/us/en/juniper-srx-firewall.html',
+    'https://www.hpe.com/emea_europe/en/juniper-srx-firewall.html',
+  ] },
   { archivo: 'juniper-srx300-ds.html', tipo: 'html', para: 'JUNIPER', debeContener: 'SRX340', urls: [
     'https://www.juniper.net/us/en/products/security/srx-series/srx300-line-firewalls-branch-datasheet.html',
     'https://www.juniper.net/gb/en/products/security/srx-series/srx300-line-firewalls-branch-datasheet.html',
