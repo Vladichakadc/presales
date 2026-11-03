@@ -1714,7 +1714,9 @@ module.exports = [
   { archivo: 'aruba-aos10-cli-guide.pdf', tipo: 'pdf', para: 'ARUBA', urls: [
     'https://arubanetworking.hpe.com/techdocs/AOS_10.x_Books/AOS10_CLI_Guide.pdf',
   ] },
-  { archivo: 'aruba-aos10-cli-whats-new.html', tipo: 'html', para: 'ARUBA', debeContener: 'AOS-10.8', urls: [
+  // El índice respondió 200 sin el texto «AOS-10.8» en su HTML (corrida 41666380506): se pide como
+  // exploración para leer a qué páginas enlaza.
+  { archivo: 'aruba-aos10-cli-whats-new.html', tipo: 'html', para: 'ARUBA', exploracion: true, urls: [
     'https://arubanetworking.hpe.com/techdocs/CLI-Bank/Content/aos10/whats-new/main.htm',
   ] },
   { archivo: 'aruba-aos10-108-whats-new.html', tipo: 'html', para: 'ARUBA', debeContener: 'ppk-mandatory', urls: [
