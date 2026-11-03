@@ -4,9 +4,9 @@
 - **Rama:** claude/elegant-pascal-7ymts7
 - **Cuenta:** vladichakadc@gmail.com (sesión 01TxCQ3W2sHYVmimAdMKht3j)
 - **Estado:** en curso
-- **Actualizado:** 2026-11-03 08:12
+- **Actualizado:** 2026-11-03 08:40
 - **Archivos que toca:** scripts/reservar.js, test/reservar.test.js, docs/traspaso/README.md
-- **Siguiente paso:** --en-esta-rama en reservar.js con su prueba (carrera incluida) y el README
+- **Siguiente paso:** PR, CLAUDE.md, entrega y relevo
 
 ## Encargo del dueño
 
@@ -16,11 +16,12 @@ reservar` en la rama de la sesión», propuesta al cerrar el PR #129.
 
 ## Hecho
 
-- <Lo terminado, con el commit que lo contiene.>
+- `--en-esta-rama` en `scripts/reservar.js` (`ganaLaReserva`, `empujarEnEstaRama`, `retirarEnEstaRama`), sus
+  cuatro pruebas en `test/reservar.test.js` (la carrera con retirada incluida) y el README del traspaso.
 
 ## Falta
 
-- <Lo pendiente de este tema, en orden.>
+- PR, la línea de `CLAUDE.md`, entrega y relevo.
 
 ## Decisiones y hallazgos
 
@@ -29,4 +30,5 @@ reservar` en la rama de la sesión», propuesta al cerrar el PR #129.
 
 ## Verificación
 
-- <Qué se corrió (`npm run verificar`, `auditar`, `pantallas`…) y con qué resultado.>
+- `test/reservar.test.js`: 15/15. Caen tres sabotajes: sin la segunda mirada, la regla al revés y el
+  traspaso fuera del índice real.

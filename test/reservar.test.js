@@ -175,3 +175,90 @@ test('reservar dice qué caso de equivalencia vigila los archivos reservados y c
   } finally { fs.rmSync(dir, { recursive: true, force: true }); }
   assert.deepStrictEqual(R.casosQueVigilan(['x.js'], path.join(os.tmpdir(), 'no-existe-reservar')), [], 'sin carpeta de casos, nada');
 });
+
+// EN LA RAMA DE LA SESIÓN (2026-11-03, mejora propuesta al cerrar el PR #129): --en-esta-rama pone el
+// traspaso en un commit de la rama actual. Sin la creación de rama no arbitra GitHub: tras empujar se
+// vuelve a mirar y manda la reserva más antigua.
+test('manda la reserva más antigua; a igual segundo, el nombre de la rama; sin fecha, la que ya estaba', () => {
+  const a = { rama: 'claude/a', fecha: '2026-11-03T10:00:00Z' };
+  const b = { rama: 'claude/b', fecha: '2026-11-03T10:00:05Z' };
+  assert.ok(R.ganaLaReserva(a, b));
+  assert.ok(!R.ganaLaReserva(b, a));
+  assert.ok(R.ganaLaReserva(a, { ...b, fecha: a.fecha }), 'a igual segundo, claude/a antes que claude/b');
+  assert.ok(!R.ganaLaReserva({ ...b, fecha: a.fecha }, a), 'y las dos sesiones llegan a lo mismo');
+  assert.ok(!R.ganaLaReserva(a, { rama: 'claude/z', fecha: null }), 'un rival sin fecha ya estaba: manda él');
+});
+
+function enRama(dir, rama) {
+  sh(dir, 'switch', '-q', '-c', rama);
+  sh(dir, 'push', '-q', '-u', 'origin', rama);
+}
+
+test('--en-esta-rama: el traspaso va en un commit de la rama de la sesión, sin crear claude/<tema> ni tocar lo que está a medias', () => {
+  const { base, clonar } = escenario();
+  try {
+    const a = clonar('sesion-a');
+    enRama(a, 'claude/sesion-a');
+    fs.writeFileSync(path.join(a, 'a-medias.js'), 'trabajo sin commit\n');
+    fs.writeFileSync(path.join(a, 'LEEME.md'), 'repo de prueba, editado sin commit\n');
+    const antes = sh(a, 'rev-parse', 'HEAD').trim();
+    const r = correr(a, ['tema-uno', '--archivos', 'src/x.js', '--en-esta-rama', '--descripcion', 'Uno']);
+    assert.strictEqual(r.rc, 0, r.salida);
+    assert.match(r.salida, /Reservado: claude\/sesion-a/);
+    assert.doesNotMatch(r.salida, /git switch/, 'no hay otra rama a la que cambiarse');
+    assert.throws(() => sh(a, 'rev-parse', '--verify', 'origin/claude/tema-uno'), 'no crea claude/<tema>');
+    sh(a, 'fetch', '-q', 'origin');
+    assert.strictEqual(sh(a, 'rev-parse', 'origin/claude/sesion-a').trim(), sh(a, 'rev-parse', 'HEAD').trim(), 'la rama local y la de origin, en el commit de la reserva');
+    assert.strictEqual(sh(a, 'rev-parse', 'HEAD^').trim(), antes, 'un solo commit sobre lo que había');
+    const t = sh(a, 'show', 'HEAD:docs/traspaso/tema-uno.md');
+    assert.match(t, /- \*\*Rama:\*\* claude\/sesion-a/);
+    assert.deepStrictEqual(sh(a, 'show', '--name-only', '--format=', 'HEAD').trim().split('\n'), ['docs/traspaso/tema-uno.md'], 'solo entra el traspaso');
+    assert.deepStrictEqual(sh(a, 'status', '--porcelain').replace(/\n$/, '').split('\n').sort(), [' M LEEME.md', '?? a-medias.js'], 'lo que estaba a medias sigue igual, y el traspaso no sale como cambio');
+    assert.strictEqual(fs.readFileSync(path.join(a, 'docs/traspaso/tema-uno.md'), 'utf8'), t, 'el traspaso, también en el árbol');
+    const b = clonar('sesion-b');
+    const choque = correr(b, ['tema-dos', '--archivos', 'src/x.js', '--comprobar']);
+    assert.strictEqual(choque.rc, 1, 'otra sesión la ve como cualquier reserva');
+    assert.match(choque.salida, /claude\/sesion-a/);
+  } finally { fs.rmSync(base, { recursive: true, force: true }); }
+});
+
+test('--en-esta-rama se niega en main y en una rama que ya lleva un tema abierto', () => {
+  const { base, clonar } = escenario();
+  try {
+    const a = clonar('sesion-a');
+    const enMain = correr(a, ['tema-uno', '--archivos', 'src/x.js', '--en-esta-rama']);
+    assert.strictEqual(enMain.rc, 2, enMain.salida);
+    assert.match(enMain.salida, /rama de trabajo de la sesión/);
+    enRama(a, 'claude/sesion-a');
+    assert.strictEqual(correr(a, ['tema-uno', '--archivos', 'src/x.js', '--en-esta-rama']).rc, 0);
+    const otro = correr(a, ['tema-dos', '--archivos', 'src/y.js', '--en-esta-rama']);
+    assert.strictEqual(otro.rc, 1, otro.salida);
+    assert.match(otro.salida, /ya lleva el traspaso de tema-uno\.md/);
+  } finally { fs.rmSync(base, { recursive: true, force: true }); }
+});
+
+test('--en-esta-rama: dos sesiones que reservan lo mismo a la vez; la segunda retira su reserva', () => {
+  const { base, clonar } = escenario();
+  try {
+    const a = clonar('sesion-a');
+    const b = clonar('sesion-b');
+    enRama(a, 'claude/sesion-a');
+    enRama(b, 'claude/sesion-b');
+    // B mira antes de que A empuje y empuja después: su push a su propia rama funciona, así que la
+    // carrera no la para GitHub; la para la segunda mirada, tras empujar.
+    sh(b, 'fetch', '-q', 'origin');
+    assert.strictEqual(correr(a, ['tema-a', '--archivos', 'src/x.js', '--en-esta-rama']).rc, 0);
+    const tarde = correr(b, ['tema-b', '--archivos', 'src/x.js, src/z.js', '--en-esta-rama', '--sin-fetch']);
+    assert.strictEqual(tarde.rc, 1, tarde.salida);
+    assert.match(tarde.salida, /CHOQUE tras empujar: claude\/sesion-a \(src\/x\.js\) reservó lo mismo antes/);
+    assert.match(tarde.salida, /se retiró la de claude\/sesion-b/);
+    sh(b, 'fetch', '-q', 'origin');
+    assert.throws(() => sh(b, 'show', 'origin/claude/sesion-b:docs/traspaso/tema-b.md'), 'en origin, la rama de B ya no lleva el traspaso');
+    assert.match(sh(b, 'show', 'origin/claude/sesion-b^:docs/traspaso/tema-b.md'), /src\/z\.js/, 'la reserva y su retirada quedan en la historia');
+    assert.strictEqual(sh(b, 'status', '--porcelain').trim(), '', 'y el árbol de B, limpio');
+    assert.ok(!fs.existsSync(path.join(b, 'docs/traspaso/tema-b.md')));
+    assert.match(sh(a, 'show', 'origin/claude/sesion-a:docs/traspaso/tema-a.md'), /src\/x\.js/, 'la de A sigue');
+    const c = clonar('sesion-c');
+    assert.strictEqual(correr(c, ['tema-c', '--archivos', 'src/z.js', '--comprobar']).rc, 0, 'lo que solo declaraba B vuelve a estar libre');
+  } finally { fs.rmSync(base, { recursive: true, force: true }); }
+});
