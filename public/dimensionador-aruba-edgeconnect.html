@@ -128,7 +128,6 @@ input[type=range]{width:100%;accent-color:var(--red)}
 .checks{display:grid;gap:7px}
 .check{display:flex;gap:8px;align-items:flex-start;font-size:13px;cursor:pointer}
 .check input{margin:3px 0 0;accent-color:var(--red)}
-.hidden{display:none!important}
 
 /* VERDICT */
 .verdict{background:var(--card);border:1px solid var(--rule);border-left:4px solid var(--red);border-radius:3px;padding:22px;margin-bottom:16px}
@@ -616,7 +615,7 @@ details.cumplimiento-especial summary:focus-visible{outline:2px solid var(--red)
     <input type="hidden" id="bomAjustes">
     <div id="bomTabla"></div>
     <div id="bomRetiradas"></div>
-    <textarea id="bomOut" readonly class="hidden" aria-hidden="true"></textarea>
+    <textarea id="bomOut" readonly hidden aria-hidden="true"></textarea>
   </section>
   <section class="panel">
     <h2>Precio neto y TCO del sitio</h2>

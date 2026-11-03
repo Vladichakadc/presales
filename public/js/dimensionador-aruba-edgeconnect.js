@@ -3172,7 +3172,7 @@ $('skuTaa').addEventListener('click',()=>{
 $('copyBtn').addEventListener('click',async()=>{
   const t=$('bomOut');
   try{await navigator.clipboard.writeText(t.value);$('copyBtn').textContent='Copiado';}
-  catch{t.classList.remove('hidden');t.select();document.execCommand('copy');t.classList.add('hidden');$('copyBtn').textContent='Copiado';}
+  catch{t.hidden = false;t.select();document.execCommand('copy');t.hidden = true;$('copyBtn').textContent='Copiado';}
   setTimeout(()=>$('copyBtn').textContent='Copiar como texto',1600);
 });
 

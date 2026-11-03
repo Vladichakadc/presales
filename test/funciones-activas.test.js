@@ -30,7 +30,7 @@ test('la derecha cuenta lo mismo que la izquierda resalta', () => {
   const deCss = [...css.match(/label:has\(> input\[type="checkbox"\]:checked\)((?::not\([^)]+\))+) \{/)[1].matchAll(/:not\(([^)]+)\)/g)].map((m) => m[1]).sort();
   assert.deepStrictEqual(excl, deCss);
   // Lo oculto no cuenta; lo bloqueado sí, con la barra gris como a la izquierda.
-  assert.match(js, /n\.hidden \|\| n\.classList\.contains\('hidden'\)/);
+  assert.match(js, /if \(n\.hidden\) return false;/);
   assert.match(css, /\.fa-pastilla\.fa-fija \{ box-shadow: inset 3px 0 0 var\(--steel/);
   // El mismo resaltado que la fila: acento al 6 %, barra de 3 px y seminegrita.
   assert.match(css, /\.fa-pastilla \{[^}]*background-color: color-mix\(in srgb, var\(--red, #0E1A2B\) 6%, var\(--card, #FFF\)\);[^}]*box-shadow: inset 3px 0 0 var\(--red, #0E1A2B\);/s);
