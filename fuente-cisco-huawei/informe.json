@@ -1,0 +1,32 @@
+[
+  {
+    "archivo": "juniper-pqc-intro.html",
+    "para": "JUNIPER",
+    "guardado": true,
+    "exploracion": true,
+    "intentos": [
+      {
+        "url": "https://www.juniper.net/documentation/us/en/software/junos/pki/topics/concept/get-started-with-pqc.html",
+        "status": 200,
+        "bytes": 26148,
+        "guardado": true,
+        "verificado": false
+      }
+    ]
+  },
+  {
+    "archivo": "juniper-fe-7502.html",
+    "para": "JUNIPER",
+    "guardado": true,
+    "exploracion": true,
+    "intentos": [
+      {
+        "url": "https://apps.juniper.net/feature-explorer/feature/7502",
+        "status": 200,
+        "bytes": 109112,
+        "guardado": true,
+        "verificado": false
+      }
+    ]
+  }
+]
