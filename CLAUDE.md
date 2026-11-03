@@ -469,7 +469,9 @@ Módulos compartidos:
   (2026-11-01, PR #115): `[hidden]{display:none !important}` aquí, en la hoja de Starlink y en el
   `<style>` de las otras seis páginas, en vez de una regla por clase; el `!important` gana también a un
   `#id{display:flex}`, y `test/oculto-visible.test.js` exige que cada página la alcance y frena un
-  `display` de autor con `!important` distinto de `none`.
+  `display` de autor con `!important` distinto de `none`. **Y es la única forma de ocultar** (2026-11-03,
+  PR #127): se pone y se quita `.hidden = true/false`; ni la clase `.hidden`, ni `style.display`, ni un
+  `display:none` en línea (que quitar el atributo no deshace), y la misma prueba los frena.
 - `funciones-activas.js` — el panel «Funciones activadas» arriba de la columna de resultados de esas
   ocho páginas (2026-10-28): una pastilla por casilla de función marcada, con el mismo resaltado que su
   fila y un clic que lleva a ella. Lee las rejillas `.cols`/`.dim` (parámetros en la primera hija,
