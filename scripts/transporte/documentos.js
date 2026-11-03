@@ -549,6 +549,16 @@ module.exports = [
   { archivo: 'hpe-a50015856enw.pdf', tipo: 'pdf', para: 'JUNIPER', urls: [
     'https://www.hpe.com/psnow/downloadDoc/a50015856enw.pdf?id=a50015856enw',
   ] },
+  // 2026-11-03: las tres fuentes que la corrida del vigía de ese día dejó pendientes de contrastar.
+  { archivo: 'fortios-7.6.0-release-notes.pdf', tipo: 'pdf', para: 'FORTINET', urls: [
+    'https://fortinetweb.s3.amazonaws.com/docs.fortinet.com/v2/attachments/51fcbb4f-33ff-11ef-bfe5-fa163e15d75b/fortios-v7.6.0-release-notes.pdf',
+  ] },
+  { archivo: 'juniper-srx1600-hw-index.html', tipo: 'html', para: 'JUNIPER', exploracion: true, urls: [
+    'https://www.juniper.net/documentation/us/en/hardware/srx1600/index.html',
+  ] },
+  { archivo: 'aruba-9000-ds-a00067608enw.pdf', tipo: 'pdf', para: 'ARUBA', urls: [
+    'https://www.hpe.com/psnow/downloadDoc/a00067608enw.pdf?id=a00067608enw',
+  ] },
   { archivo: 'juniper-srx300-ds.html', tipo: 'html', para: 'JUNIPER', debeContener: 'SRX340', urls: [
     'https://www.juniper.net/us/en/products/security/srx-series/srx300-line-firewalls-branch-datasheet.html',
     'https://www.juniper.net/gb/en/products/security/srx-series/srx300-line-firewalls-branch-datasheet.html',
