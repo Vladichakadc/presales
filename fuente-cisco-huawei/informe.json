@@ -1,0 +1,44 @@
+[
+  {
+    "archivo": "juniper-srx1600-pagina.html",
+    "para": "JUNIPER",
+    "guardado": false,
+    "exploracion": true,
+    "intentos": [
+      {
+        "url": "https://www.juniper.net/us/en/products/security/srx-series/srx1600-data-center-and-enterprise-firewall.html",
+        "status": 403
+      }
+    ]
+  },
+  {
+    "archivo": "juniper-srx1600-specs.html",
+    "para": "JUNIPER",
+    "guardado": true,
+    "exploracion": true,
+    "intentos": [
+      {
+        "url": "https://www.juniper.net/us/en/products/security/srx-series/srx1600-data-center-and-enterprise-firewall/specs.html",
+        "status": 200,
+        "bytes": 363254,
+        "guardado": true,
+        "verificado": false
+      }
+    ]
+  },
+  {
+    "archivo": "hpe-srx-serie.html",
+    "para": "JUNIPER",
+    "guardado": true,
+    "exploracion": true,
+    "intentos": [
+      {
+        "url": "https://www.hpe.com/us/en/juniper-srx-firewall.html",
+        "status": 200,
+        "bytes": 402890,
+        "guardado": true,
+        "verificado": false
+      }
+    ]
+  }
+]
