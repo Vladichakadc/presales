@@ -455,7 +455,9 @@ Módulos compartidos:
   y pinta una fila por fabricante con su enlace a `?tab=src`. Solo lee. `test/fuentes-portal.test.js` fija la
   serie y `e2e-fuentes-portal.js` la mide en la red con la ruta simulada. **«Vigía semanal»** (2026-11-02,
   PR #122): lo que dejó el vigía en el lock, con su fecha, de `/api/fuentes` pedida al abrir la sección y una
-  vez (`resumenVigilancia`); lo del lunes y lo de ahora, en columnas distintas.
+  vez (`resumenVigilancia`); lo del lunes y lo de ahora, en columnas distintas. Encima, **la última corrida del
+  vigía fusionada en main** (`vigiaRevisado`, el `revisado` del lock, en cada fabricante de `/api/fuentes`;
+  PR #124), con aviso pasados 8 días (`DIAS_AVISO`): el vigía deja su lock en la rama `vigia/fuentes`.
 - `navegacion.js` — barra de fabricante (anterior/siguiente conservando el paso, `Alt`+flechas).
 - `tabla.js` — ordenación por columna; la coma es separador de miles y el punto decimal, y «sin
   dato» va siempre al final.

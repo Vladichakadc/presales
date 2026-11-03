@@ -162,15 +162,29 @@ async function getVendorsList() {
 // con un despliegue. Que falte no es un error -- el repositorio funciona igual sin vigia.
 const RUTA_LOCK = pathMod.join(__dirname, '..', 'seed', 'legacyData', 'fuentes.lock.json');
 let lockCache;
-function lockVigia() {
+let revisadoCache;
+function leerLock() {
   if (lockCache === undefined) {
     try {
-      lockCache = JSON.parse(fs.readFileSync(RUTA_LOCK, 'utf8')).documentos || {};
+      const lock = JSON.parse(fs.readFileSync(RUTA_LOCK, 'utf8'));
+      lockCache = lock.documentos || {};
+      revisadoCache = typeof lock.revisado === 'string' ? lock.revisado : null;
     } catch {
       lockCache = {};
+      revisadoCache = null;
     }
   }
+}
+function lockVigia() {
+  leerLock();
   return lockCache;
+}
+// LA ÚLTIMA CORRIDA DEL VIGÍA QUE LLEGÓ A MAIN (2026-11-02, la mejora propuesta al cerrar el PR #122).
+// El vigía deja su lock en la rama `vigia/fuentes` y una persona lo fusiona: `revisado` es la hora de
+// la última corrida FUSIONADA, no de la última que corrió. La pantalla lo dice así; sin lock, null.
+function vigiaRevisado() {
+  leerLock();
+  return revisadoCache;
 }
 
 function vigilanciaDe(vendorCode, f) {
@@ -240,7 +254,9 @@ async function toFuentes(vendor) {
       ...f,
       vigilancia: { estado: 'no comprobada', motivo: 'documento cargado a mano, no se vigila' },
     }));
-    out[v.code] = { nombre: v.name, colorHex: v.colorHex, fuentes: [...subidas, ...propias] };
+    // `vigiaRevisado` es el mismo en todos: va dentro de cada fabricante porque el primer nivel de la
+    // respuesta son solo los fabricantes (test/fuentes-por-fabricante.test.js).
+    out[v.code] = { nombre: v.name, colorHex: v.colorHex, vigiaRevisado: vigiaRevisado(), fuentes: [...subidas, ...propias] };
   }
   return out;
 }

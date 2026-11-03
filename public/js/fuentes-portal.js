@@ -106,6 +106,23 @@
     return partes.join(' · ') + (fechas.length ? `<br><span class="fp-neutro fp-fecha">${fechas.join(' · ')}</span>` : '');
   }
 
+  // LA ÚLTIMA CORRIDA DEL VIGÍA QUE LLEGÓ A MAIN (2026-11-02, la mejora propuesta al cerrar el PR #122).
+  // Las fechas de la columna son de cada documento: un documento contrastado a mano un martes la hace
+  // parecer reciente, y un vigía que dejara de llegar a main no se vería. `vigiaRevisado` es el
+  // `revisado` del lock: la corrida del vigía de los lunes que se fusionó por última vez (el vigía deja su
+  // lock en la rama `vigia/fuentes` y una persona lo fusiona). Pasados 8 días, lo que deja pasar el lunes
+  // siguiente con margen, la línea avisa.
+  const DIAS_AVISO = 8;
+  function lineaCorrida(revisado, ahoraMs) {
+    const t = revisado ? Date.parse(revisado) : NaN;
+    if (Number.isNaN(t)) return { aviso: true, texto: 'No consta cuándo llegó a main la última corrida del vigía: el lock no lo dice.' };
+    const dias = Math.max(0, Math.floor((ahoraMs - t) / 86400000));
+    const hace = dias === 0 ? 'hoy' : `hace ${dias} ${dias === 1 ? 'día' : 'días'}`;
+    const base = `«Vigía semanal» es la corrida del ${String(revisado).slice(0, 10)} (${hace}), la última que se fusionó en main.`;
+    if (dias <= DIAS_AVISO) return { aviso: false, dias, texto: base };
+    return { aviso: true, dias, texto: `${base} Pasa de una semana: la corrida siguiente no corrió o espera en la rama vigia/fuentes a que alguien la fusione, y esta columna puede ir atrasada.` };
+  }
+
   // La línea final: qué fabricantes tienen algo que mirar.
   function conclusion(resultados) {
     const con = (k) => resultados.filter((r) => r.estado === 'ok' && ((r.datos.resumen || {})[k] || 0) > 0).map((r) => r.fab.nombre);
@@ -163,6 +180,14 @@
       const d = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(d.error || `HTTP ${res.status}`);
       lista.forEach((f) => { vigia[f.id] = d[f.id] ? { estado: 'ok', resumen: resumenVigilancia(d[f.id]) } : { estado: 'ok' }; });
+      const conDato = lista.map((f) => d[f.id]).find((v) => v && 'vigiaRevisado' in v);
+      const linea = document.getElementById('fpVigiaCorrida');
+      if (linea && conDato) {
+        const l = lineaCorrida(conDato.vigiaRevisado, Date.now());
+        linea.textContent = l.texto;
+        linea.classList.toggle('fp-alerta', l.aviso);
+        linea.hidden = false;
+      }
     } catch (err) {
       const error = (err && err.message) || String(err);
       lista.forEach((f) => { vigia[f.id] = { estado: 'error', error }; });
@@ -213,7 +238,7 @@
     }
   }
 
-  global.FUENTES_PORTAL = { comprobarEnSerie, pedirSalud, partesDe, conclusion, fila, fabricantes, comprobarTodas, resumenVigilancia, celdaVigia, cargarVigilancia };
+  global.FUENTES_PORTAL = { comprobarEnSerie, pedirSalud, partesDe, conclusion, fila, fabricantes, comprobarTodas, resumenVigilancia, celdaVigia, cargarVigilancia, lineaCorrida, DIAS_AVISO };
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', montar);
   else montar();
 })(window);
