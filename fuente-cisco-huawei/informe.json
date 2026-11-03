@@ -1,0 +1,48 @@
+[
+  {
+    "archivo": "juniper-comparativa-seguridad.pdf",
+    "para": "JUNIPER",
+    "guardado": false,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://www.juniper.net/content/dam/www/assets/datasheets/us/en/security/security-products-comparison-chart.pdf",
+        "status": 404
+      }
+    ]
+  },
+  {
+    "archivo": "juniper-ssr1000-ds.pdf",
+    "para": "JUNIPER",
+    "guardado": false,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://www.juniper.net/content/dam/www/assets/datasheets/us/en/routers/ssr1000-line-of-routers-datasheet.pdf",
+        "status": 200,
+        "firma": "203c21444f435459",
+        "nota": "no es un PDF"
+      }
+    ]
+  },
+  {
+    "archivo": "juniper-ssr1000-ds.pdf",
+    "para": "JUNIPER",
+    "guardado": false,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://www.juniper.net/content/dam/www/assets/datasheets/us/en/routers/ssr1000-line-of-routers-datasheet.pdf",
+        "status": 200,
+        "firma": "203c21444f435459",
+        "nota": "no es un PDF"
+      },
+      {
+        "url": "https://www.juniper.net/content/dam/www/assets/datasheets/jp/ja/routers/ssr1000-line-of-routers-datasheet.pdf",
+        "status": 200,
+        "firma": "203c21444f435459",
+        "nota": "no es un PDF"
+      }
+    ]
+  }
+]
