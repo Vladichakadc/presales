@@ -114,6 +114,7 @@ npm run catalogo    # inventario: cobertura por campo, ciclo de vida, precios, p
 npm run pantallas   # conduce las pantallas en Chromium y captura cada una
 npm run contraste   # contraste antes/después de un refactor (casos en scripts/contrastes/)
 npm run e2e         # batería de flujos completos en Chromium (levanta su servidor)
+npm run visibles    # lo visible paso a paso, contra origin/main (levanta los dos servidores; --ref, --solo)
 npm run limites     # recorrido de valores límite por los dimensionadores (semanal en CI)
 npm run puerta      # comprueba que el muro de acceso sigue cerrado en una instancia en marcha
 
@@ -200,7 +201,7 @@ en un issue, para no saltar un despliegue que espera.
   `AUTH_PASSWORD`, la cookie `Secure`, las rutas `/api/sync/apply` en 503).
 - Conducir la pantalla cambiada en un navegador, no solo la API: toda regresión real de este
   repositorio era invisible a `curl`. `npm run pantallas`, los casos de `contraste` que toquen, la
-  batería `e2e` y `npm run puerta`.
+  batería `e2e`, `npm run visibles` si se tocó `public/` y `npm run puerta`.
 
 **Después de empujar:** el despliegue en SUCCESS, sus logs con `[seed]`, la línea `[db]` y
 `Presales corriendo en`, el healthcheck `/salud` superado (Railway lo usa como healthcheck; responde
@@ -242,6 +243,13 @@ rojo o sin terminar, en cola, sin despliegue) y lo cierra al desplegarse; un fal
   vuelve a medir cada caso de `scripts/equivalencias/` cuyo `mide` toca el PR, módulo de la base contra el
   del PR; un cambio de comportamiento a propósito se declara en la descripción del PR con
   `equivalencia-acepta: <caso>: <motivo>`. Un corte nuevo deja su caso ahí, con `mide` y su mutación.
+- **Lo visible, contra la base, en los PR que tocan `public/`** (`visibles.yml`, 2026-11-03, PR #129):
+  `scripts/visibles.js` conduce el mismo recorrido (portal, cuenta, usuarios, guía, cotizador y cada
+  pestaña, botón segmentado y casilla de los nueve dimensionadores) contra la base, desde un worktree, y
+  contra el PR, y compara los id que se ven en cada paso. Frena lo que deja de verse y lo que la base
+  ocultaba y ahora se ve; un id nuevo solo avisa; un panel entero es una línea. Cada paso parte del estado
+  de entrada de su página, espera con `asentar()` y la mutación de control es obligatoria. Un cambio a
+  propósito: `visibles-acepta: #<id>: <motivo>` en la descripción del PR (`test/visibles.test.js`).
 - **`npm run auditar` falla cerrado**: un aviso alto o crítico frena; la salida es una excepción
   declarada con GHSA, motivo y caducidad de 90 días como mucho, nunca apagar el paso.
 - Los jobs de navegador corren en `ubuntu-26.04` con **Playwright 1.61.1**, movidos juntos: la
