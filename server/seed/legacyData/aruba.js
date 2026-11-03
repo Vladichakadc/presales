@@ -164,7 +164,7 @@ const MODELS = [
   // · EdgeConnect: QuickSpecs HPE a50004289enw (tabla "Comparison" p.30 + fichas por
   //   modelo) y EdgeConnect Hardware Reference (tablas de alimentación/físico pp.20-26,
   //   ambiental p.33, ruido p.35) — copias locales en public/datasheets/.
-  // · Serie 9000: data sheet a00067608enw Rev. 2, antes DS_9000Series (serie-9000-branch-gateways.pdf pp.5-7).
+  // · Serie 9000: data sheet a00067608enw Rev. 3 (2026-11-03; las mismas cifras que la Rev. 2), antes DS_9000Series (serie-9000-branch-gateways.pdf pp.5-7).
   // · Serie 9100: QuickSpecs a50006999enw (serie-9100-hybrid-quickspecs.pdf pp.14-16).
   // · Serie 9200: QuickSpecs serie 9200 (serie-9200-campus-gateways.pdf pp.9-11).
   // · Series 7000/7200: DS_7000Series y DS_7200Series oficiales de Aruba (doble ancla:
