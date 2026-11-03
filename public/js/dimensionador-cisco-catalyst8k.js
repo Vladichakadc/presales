@@ -299,9 +299,9 @@ function pintarControles(){
   $('headVal').textContent = $('head').value + ' %';
   $('concVal').textContent = $('conc').value + ' %';
   $('diaVal').textContent = $('diaPct').value + ' %';
-  $('aggBlock').classList.toggle('hidden', mode !== 'agg');
-  $('diaBlock').classList.toggle('hidden', mode === 'hub');
-  $('segBlock').classList.toggle('hidden', mode !== 'link');
+  $('aggBlock').hidden = mode !== 'agg';
+  $('diaBlock').hidden = mode === 'hub';
+  $('segBlock').hidden = mode !== 'link';
   $('bwLabel').textContent = mode === 'agg' ? 'Ancho de banda por sucursal' : mode === 'hub' ? 'Tráfico agregado del hub' : 'Ancho de banda contratado';
   $('modeHint').textContent = mode === 'agg'
     ? 'Suma lo que las sucursales mandan por el overlay con su simultaneidad; la salida local de cada una no llega aquí.'
@@ -313,7 +313,7 @@ function pintarControles(){
   $('segHint').textContent = (M.SEGURIDAD[$('seguridad').value] || M.SEGURIDAD.ninguna).d;
   // La capa del firewall dedicado solo cuenta (y viaja en el enlace) con «Firewall dedicado aparte».
   const conFw = mode === 'link' && $('seguridad').value === 'desacoplada';
-  $('fwBlock').classList.toggle('hidden', !conFw);
+  $('fwBlock').hidden = !conFw;
   $('fwBlock').toggleAttribute('data-inactivo', !conFw);
   $('fecPct').disabled = !$('chkFec').checked;
   $('poeW').disabled = !$('chkPoe').checked;
@@ -322,7 +322,7 @@ function pintarControles(){
   $('appqoeCon').disabled = !$('chkAppqoe').checked;
   // Sin topología, sus campos no cuentan ni viajan en el enlace (estado.js salta `data-inactivo`).
   const conTopo = !!$('topologia').value;
-  $('topoBlock').classList.toggle('hidden', !conTopo);
+  $('topoBlock').hidden = !conTopo;
   $('topoBlock').toggleAttribute('data-inactivo', !conTopo);
 }
 
@@ -598,14 +598,14 @@ function pintarLicencias(m, p){
   $('licHint').textContent = m.lic === 'cswan' ? `${m.id}: clase ${m.clase || 'no consta'}; la referencia sale de la clase.`
     : m.lic === 'meraki' ? 'Meraki: una licencia por equipo, de la clase del equipo.'
       : 'Catalyst 8000, ISR y ASR: suscripción DNA de 3, 5 o 7 años; el tier sale del tráfico (todo el WAN en SD-WAN, solo el cifrado en autónomo).';
-  $('secExtras').classList.toggle('hidden', !(m.lic === 'cswan' && p.seguridad === 'onbox'));
+  $('secExtras').hidden = !(m.lic === 'cswan' && p.seguridad === 'onbox');
   // Controladores: solo con un overlay de Catalyst SD-WAN (IOS XE gestionado por el SD-WAN Manager).
   const conCtrl = m.lic !== 'meraki' && $('licGestion').value !== 'autonomo';
-  $('ctrlBlock').classList.toggle('hidden', !conCtrl);
+  $('ctrlBlock').hidden = !conCtrl;
   $('ctrlBlock').toggleAttribute('data-inactivo', !conCtrl);
   pintarControladores();
   // Sin SSE, los campos de Secure Access no cuentan ni viajan en el enlace.
-  $('saBlock').classList.toggle('hidden', p.seguridad !== 'sse');
+  $('saBlock').hidden = p.seguridad !== 'sse';
   $('saBlock').toggleAttribute('data-inactivo', p.seguridad !== 'sse');
 }
 
@@ -736,9 +736,9 @@ function renderBom(){
   opciones('modNim', conLista && m.nim ? deTipo('nim') : [], '— ninguno —');
   opciones('modSm', conLista && m.sm ? deTipo('sm') : [], '— ninguno —');
   opciones('modPim', conLista && m.pim ? deTipo('pim') : [], '— ninguno —');
-  $('modNimBlock').classList.toggle('hidden', !(conLista && m.nim));
-  $('modSmBlock').classList.toggle('hidden', !(conLista && m.sm));
-  $('modPimBlock').classList.toggle('hidden', !(conLista && m.pim));
+  $('modNimBlock').hidden = !(conLista && m.nim);
+  $('modSmBlock').hidden = !(conLista && m.sm);
+  $('modPimBlock').hidden = !(conLista && m.pim);
   $('modHint').textContent = !(m.nim || m.sm || m.pim) ? 'Este equipo no tiene ranuras de expansión.'
     : conLista ? `De ${mods.fuente}: uno por ranura.` : 'Los módulos de esta familia salen de su propia guía de pedido: consultar en CCW.';
   const optLista = (m.optics || []).flatMap(k => (OPTICS[k] || []).map(o => ({v:`${k}|${o.sku}`, t:`${OPTIC_LABEL[k] || k} — ${o.sku} · ${o.d}`})));
@@ -911,7 +911,7 @@ function pintarMrr(fin, dto){
 $('copyBtn').addEventListener('click', async () => {
   const t = $('bomOut');
   try { await navigator.clipboard.writeText(t.value); $('copyBtn').textContent = 'Copiado'; }
-  catch { t.classList.remove('hidden'); t.select(); document.execCommand('copy'); t.classList.add('hidden'); $('copyBtn').textContent = 'Copiado'; }
+  catch { t.hidden = false; t.select(); document.execCommand('copy'); t.hidden = true; $('copyBtn').textContent = 'Copiado'; }
   setTimeout(() => $('copyBtn').textContent = 'Copiar como texto', 1600);
 });
 $('xlsBtn').addEventListener('click', async () => {

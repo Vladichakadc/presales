@@ -8,7 +8,7 @@ fetch('/api/cuenta/estado').then(r => r.json()).then(d => {
   $('miRol').textContent = d.rolNombre || d.rol || '—';
   // El enlace se muestra segun el permiso que informa el servidor. Ocultarlo es comodidad:
   // quien lo teclee sin permiso se topa igualmente con el 403 de la ruta.
-  if (d.puedeUsuarios) $('enlaceAdmin').style.display = '';
+  if (d.puedeUsuarios) $('enlaceAdmin').hidden = false;
   // debeCambiar es lo que trajo aqui a la fuerza (server.js redirige cualquier otra pantalla
   // a /cuenta?m=forzado mientras siga en true): el aviso no es un recordatorio de fondo como
   // el de la contrasena semilla, es la razon de estar en esta pagina y no en el portal.

@@ -46,7 +46,7 @@ const PLAT_HINT = {
 };
 function rotular(){
   const transporte = plataforma === 'a800' || plataforma === 'ne8000';
-  $('aggBlock').classList.toggle('hidden', mode !== 'agg');
+  $('aggBlock').hidden = mode !== 'agg';
   $('bwLabel').textContent = mode === 'agg' ? 'Ancho de banda por sede' : transporte ? 'Tráfico que debe conmutar el nodo' : 'Ancho de banda contratado';
   $('modeHint').textContent = mode === 'agg'
     ? (transporte ? 'Suma el tráfico de las sedes que agrega este nodo, aplicando simultaneidad.' : 'Suma los enlaces de todas las sucursales que terminan en este equipo, aplicando simultaneidad.')
@@ -360,10 +360,10 @@ function drawLadder(need, pick, pk){
   $('needLbl').textContent = 'Requiere ' + fmt(need);
   const lbl = $('pickLbl');
   if(pick){
-    lbl.style.display = 'block'; lbl.textContent = pick.m.id;
+    lbl.hidden = false; lbl.textContent = pick.m.id;
     const lp = pos(pick.cap); lbl.style.left = lp + '%';
     lbl.style.transform = lp > 80 ? 'translateX(-90%)' : (lp < 12 ? 'translateX(-10%)' : 'translateX(-50%)');
-  } else lbl.style.display = 'none';
+  } else lbl.hidden = true;
 }
 
 function drawVerdict(pick, next, c){

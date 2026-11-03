@@ -62,7 +62,6 @@ input[type=range]{width:100%;accent-color:var(--red)}
 .checks{display:grid;gap:7px}
 .check{display:flex;gap:8px;align-items:flex-start;font-size:13px;cursor:pointer}
 .check input{margin:3px 0 0;accent-color:var(--red)}
-.hidden{display:none!important}
 
 /* VERDICT */
 .verdict{background:var(--card);border:1px solid var(--rule);border-left:4px solid var(--red);border-radius:3px;padding:22px;margin-bottom:16px}
@@ -948,7 +947,7 @@ h1{font-size:clamp(24px,3.4vw,36px)}
             <label class="check ladder-check"><input type="checkbox" id="chkVerEol"> <span>Ver fuera de venta</span></label>
           </span>
         </div>
-        <div class="track" id="track" role="img" aria-labelledby="trackLbl" aria-describedby="trackNota"><div class="axis"></div><div class="need" id="need"><span id="needLbl">—</span></div><div class="pickLabel" id="pickLbl" style="display:none"></div></div>
+        <div class="track" id="track" role="img" aria-labelledby="trackLbl" aria-describedby="trackNota"><div class="axis"></div><div class="need" id="need"><span id="needLbl">—</span></div><div class="pickLabel" id="pickLbl" hidden></div></div>
         <div class="legend">
           <span><i></i>Capacidad publicada del modelo</span>
           <span style="color:var(--amber)"><i style="background:var(--amber)"></i>Alternativas</span>
@@ -1003,7 +1002,7 @@ h1{font-size:clamp(24px,3.4vw,36px)}
       </span>
     </h2>
     <div id="bomTabla"></div>
-    <textarea id="bomOut" readonly class="hidden" aria-hidden="true" tabindex="-1"></textarea>
+    <textarea id="bomOut" readonly hidden aria-hidden="true" tabindex="-1"></textarea>
   </section>
   <section class="panel">
     <h2>Precio neto y TCO del sitio</h2>

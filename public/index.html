@@ -45,7 +45,7 @@ body{background:var(--paper);color:var(--ink);font-family:'Barlow',system-ui,san
 .nav-btn{display:flex;align-items:center;gap:10px;width:100%;padding:8px 12px;background:none;border:none;border-radius:3px;color:rgba(255,255,255,.6);cursor:pointer;font-family:'Barlow',sans-serif;font-size:13.5px;font-weight:500;text-align:left;transition:all .14s;white-space:nowrap;margin:1px 0}
 .nav-btn:hover{background:rgba(255,255,255,.06);color:#fff}
 .nav-btn.active{background:rgba(199,0,11,.22);color:#fff;font-weight:600}
-.access-summary{display:none;margin:10px 12px 6px;padding:10px 10px 9px;border:1px solid rgba(255,255,255,.1);border-left:2px solid var(--red);background:rgba(255,255,255,.035)}
+.access-summary{margin:10px 12px 6px;padding:10px 10px 9px;border:1px solid rgba(255,255,255,.1);border-left:2px solid var(--red);background:rgba(255,255,255,.035)}
 .access-summary strong{display:block;color:#fff;font-size:12.5px;line-height:1.2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .access-summary span{display:block;margin-top:3px;color:rgba(255,255,255,.58);font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.08em;text-transform:uppercase}
 .nav-btn.nav-logout{margin-top:7px;border-top:1px solid rgba(255,255,255,.1);border-radius:0;padding-top:11px;color:rgba(255,255,255,.56)}
@@ -244,7 +244,7 @@ input:focus-visible,select:focus-visible,button:focus-visible{outline:2px solid 
 @media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 
 /* SYNC MODAL */
-.modal-overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(14,26,43,0.8);z-index:999;align-items:center;justify-content:center}
+.modal-overlay{display:flex;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(14,26,43,0.8);z-index:999;align-items:center;justify-content:center}
 .modal{background:#fff;border-radius:6px;width:90%;max-width:800px;max-height:90vh;display:flex;flex-direction:column;box-shadow:0 10px 30px rgba(0,0,0,0.3)}
 .modal-header{padding:16px 20px;border-bottom:1px solid var(--rule);display:flex;justify-content:space-between;align-items:center}
 .modal-title{font-size:18px;font-weight:600;margin:0}
@@ -331,7 +331,7 @@ input:focus-visible,select:focus-visible,button:focus-visible{outline:2px solid 
   </div>
   <div style="padding:0 12px">
     <div class="sec-title">Acceso</div>
-    <div class="access-summary" id="navAccountSummary" aria-live="polite">
+    <div class="access-summary" id="navAccountSummary" aria-live="polite" hidden>
       <strong id="navAccountName">Cuenta activa</strong>
       <span id="navAccountRole">Sesión iniciada</span>
     </div>
@@ -340,7 +340,7 @@ input:focus-visible,select:focus-visible,button:focus-visible{outline:2px solid 
     </button>
     <!-- Solo se muestra al administrador. Es comodidad, no control: la ruta /usuarios exige
          el permiso en el servidor y devuelve 403 a quien la teclee sin tenerlo. -->
-    <button class="nav-btn" data-abrir="usuarios.html" id="navUsuarios" style="display:none">
+    <button class="nav-btn" data-abrir="usuarios.html" id="navUsuarios" hidden>
       <span class="nav-icon tool">&#9673;</span> Usuarios
     </button>
     <button class="nav-btn nav-logout" id="navLogout" type="button">
@@ -462,7 +462,7 @@ input:focus-visible,select:focus-visible,button:focus-visible{outline:2px solid 
     </div>
     <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
       <button class="btn" id="btnCalcular">Calcular y recomendar</button>
-      <button class="btn ghost" id="csvBtn" style="display:none">&#8681; Exportar recomendación CSV</button>
+      <button class="btn ghost" id="csvBtn" hidden>&#8681; Exportar recomendación CSV</button>
     </div>
   </div>
   <div id="calcOut"></div>
@@ -600,7 +600,7 @@ input:focus-visible,select:focus-visible,button:focus-visible{outline:2px solid 
 
 
 <!-- ════ SYNC MODAL ════ -->
-<div class="modal-overlay" id="syncModal">
+<div class="modal-overlay" id="syncModal" hidden>
   <div class="modal">
     <div class="modal-header">
       <h3 class="modal-title">&#8635; Sincronización Inteligente de Catálogo</h3>
@@ -633,8 +633,8 @@ input:focus-visible,select:focus-visible,button:focus-visible{outline:2px solid 
     </div>
     <div class="modal-footer">
       <button class="btn" style="background:#fff;color:var(--ink);border:1px solid var(--rule)" data-cerrar-sync>Cancelar</button>
-      <button id="btnDescargarPropuesta" class="btn" style="background:var(--ink);border:none;color:#fff;display:none">&#8681; Descargar propuesta (para PR)</button>
-      <button id="btnApplySync" class="btn" style="background:var(--green);border:none;color:#fff;display:none">Aplicar a base local</button>
+      <button id="btnDescargarPropuesta" class="btn" style="background:var(--ink);border:none;color:#fff" hidden>&#8681; Descargar propuesta (para PR)</button>
+      <button id="btnApplySync" class="btn" style="background:var(--green);border:none;color:#fff" hidden>Aplicar a base local</button>
     </div>
   </div>
 </div>

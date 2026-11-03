@@ -1193,7 +1193,7 @@ function pintarEscala(r) {
   const pickLbl = document.createElement('div');
   pickLbl.className = 'pickLabel';
   pickLbl.id = 'pickLbl';
-  pickLbl.style.display = 'none';
+  pickLbl.hidden = true;
   track.appendChild(pickLbl);
   [10, 50, 100, 500, 1000, 5000, 10000, 50000, 100000, 500000, 1000000].forEach((v) => {
     const pct = xPct(v);
@@ -1234,7 +1234,7 @@ function pintarEscala(r) {
   });
   if (sel) {
     pickLbl.textContent = sel.id;
-    pickLbl.style.display = 'block';
+    pickLbl.hidden = false;
     pickLbl.style.left = `${xPct(valorDe(sel.modelo) || need)}%`;
   }
   const ocultos = MODELS.length - visibles.length;
@@ -1582,7 +1582,7 @@ $('copyBtn').addEventListener('click', () => conBoton($('copyBtn'), async (decir
   $('bomOut').value = texto;
   try { await navigator.clipboard.writeText(texto); decir('Copiado'); } catch {
     const t = $('bomOut');
-    t.classList.remove('hidden'); t.select(); document.execCommand('copy'); t.classList.add('hidden');
+    t.hidden = false; t.select(); document.execCommand('copy'); t.hidden = true;
     decir('Copiado');
   }
   await new Promise((res) => { setTimeout(res, 900); });

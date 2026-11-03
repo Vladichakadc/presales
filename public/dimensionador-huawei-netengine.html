@@ -67,7 +67,6 @@ input[type=range]{width:100%;accent-color:var(--red)}
 .checks{display:grid;gap:7px}
 .check{display:flex;gap:8px;align-items:flex-start;font-size:13px;cursor:pointer}
 .check input{margin:3px 0 0;accent-color:var(--red)}
-.hidden{display:none!important}
 /* Distribucion de caudal y callout de plataforma (2026-10-12) */
 .dist{display:flex;height:16px;border-radius:2px;overflow:hidden;background:var(--paper);margin:8px 0}
 .dist i{display:block;height:100%}
@@ -161,7 +160,7 @@ tr.sel td{background:rgba(199,0,11,.05);font-weight:600}
 <div class="tabpane" id="pane-calc">
 <section class="ladder">
   <p class="mono-lbl">Escala de capacidad — throughput publicado vs. requerimiento (logarítmica)</p>
-  <div class="track" id="track"><div class="axis"></div><div class="need" id="need"><span id="needLbl">—</span></div><div class="pickLabel" id="pickLbl" style="display:none"></div></div>
+  <div class="track" id="track"><div class="axis"></div><div class="need" id="need"><span id="needLbl">—</span></div><div class="pickLabel" id="pickLbl" hidden></div></div>
   <div class="legend">
     <span><i></i>Serie AR — throughput de servicio</span>
     <span><i class="sq"></i>A800 E / NE8000 — capacidad de conmutación</span>
@@ -198,7 +197,7 @@ tr.sel td{background:rgba(199,0,11,.05);font-weight:600}
         <select id="unit" style="width:105px" aria-label="Unidad del caudal"><option value="1">Mbps</option><option value="1000">Gbps</option><option value="1000000">Tbps</option></select>
       </div>
     </div>
-    <div id="aggBlock" class="hidden">
+    <div id="aggBlock" hidden>
       <div class="field"><label for="sites">Número de sedes que concentra</label><input type="number" id="sites" min="1" step="1" autocomplete="off"></div>
       <div class="field">
         <label for="conc">Factor de simultaneidad: <span id="concVal" style="font-family:'IBM Plex Mono',monospace">40 %</span></label>
@@ -393,7 +392,7 @@ tr.sel td{background:rgba(199,0,11,.05);font-weight:600}
   <section class="panel">
     <h2>BOM en texto plano</h2>
     <div id="bomTabla"></div>
-    <textarea id="bomOut" readonly class="hidden" aria-hidden="true"></textarea>
+    <textarea id="bomOut" readonly hidden aria-hidden="true"></textarea>
     <p class="hint">Pégalo en la hoja de cotización. Los renglones marcados <code class="pend">POR CONFIRMAR</code> necesitan el código real antes de enviarse al cliente.</p>
   </section>
 <section class="panel">

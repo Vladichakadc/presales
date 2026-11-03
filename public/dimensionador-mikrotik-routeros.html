@@ -67,7 +67,6 @@ input[type=range]{width:100%;accent-color:var(--red)}
 .check{display:flex;gap:8px;align-items:flex-start;font-size:13px;cursor:pointer}
 .check input{margin:3px 0 0;accent-color:var(--red)}
 .sub-field{margin:8px 0 0 22px;padding-left:10px;border-left:2px solid var(--rule)}
-.hidden{display:none!important}
 .tco-tabla{width:100%;border-collapse:collapse;margin-top:6px}
 .tco-tabla th,.tco-tabla td{font-family:'IBM Plex Mono',monospace;font-size:11.5px;padding:6px 8px;border-bottom:1px solid var(--rule);text-align:right}
 .tco-tabla th:first-child,.tco-tabla td:first-child{text-align:left}
@@ -180,7 +179,7 @@ tr.total td{border-top:2px solid var(--ink);border-bottom:0;font-weight:600;padd
         <button type="button" data-v="hub"   aria-pressed="false">Hub / concentrador<br>(varias sedes)</button>
       </div>
     </div>
-    <div class="sub-field hidden" id="hubBox">
+    <div class="sub-field" hidden id="hubBox">
       <div class="row">
         <div style="flex:1"><label for="sedes">Sedes que llegan al hub</label><input type="number" id="sedes" min="1" step="1" placeholder="10" autocomplete="off"></div>
         <div style="flex:1"><label for="conc">Simultaneidad (%)</label><input type="number" id="conc" min="1" max="100" step="1" placeholder="100" autocomplete="off"></div>
@@ -201,7 +200,7 @@ tr.total td{border-top:2px solid var(--ink);border-bottom:0;font-weight:600;padd
       <div id="enlacesBox" role="group" aria-labelledby="enlacesLbl"></div>
       <button type="button" class="btn ghost" id="btnAddEnlace" style="margin-top:6px">+ Añadir enlace (segundo Internet o MPLS)</button>
       <p class="hint">Un <b>respaldo</b> ocupa un puerto pero no suma caudal; dos <b>principales</b> balancean y suman. Se dimensiona con el peor escenario (normal o con un principal caído), sentido por sentido. La entrega (cobre o fibra), la velocidad contratada y la distancia del tramo eligen el puerto y el módulo de la matriz oficial de MikroTik (el primero que llega a esa distancia). Bajada vacía: el caudal del sitio; subida vacía: simétrico; tramo vacío: no se comprueba el alcance.</p>
-      <div class="sub-field hidden" id="respIpsecBox" data-inactivo>
+      <div class="sub-field" hidden id="respIpsecBox" data-inactivo>
         <label class="check"><input type="checkbox" id="chkRespaldoIpsec" checked> <span>Cifrar el respaldo por Internet (IPsec hacia la sede central)<span class="sku">Con la MPLS caída el tráfico corporativo cruza Internet: el equipo también se comprueba con su celda IPsec.</span></span></label>
       </div>
     </div>
@@ -254,12 +253,12 @@ tr.total td{border-top:2px solid var(--ink);border-bottom:0;font-weight:600;padd
       <label class="check"><input type="checkbox" id="chkQos"> <span><b>Colas / shaping</b> (Simple Queue, Queue Tree, PCQ)<span class="sku">Se dimensiona con la fila «25 simple queues» de la ficha. Lo encolado no toma FastTrack ni el offload de hardware.</span></span></label>
       <label class="check"><input type="checkbox" id="chkL3hw"> <span><b>Offload L3 por hardware (L3HW)</b><span class="sku">Solo los CCR2116 y CCR2216 publican esta fila; el resto se aparta con su motivo.</span></span></label>
       <label class="check"><input type="checkbox" id="chkBgp"> <span><b>BGP full table</b> — feeds completos de upstream<span class="sku">Limita por memoria, no por caudal. La RAM por feed es un supuesto de diseño: MikroTik no la publica.</span></span></label>
-      <div class="sub-field hidden" id="bgpBox">
+      <div class="sub-field" hidden id="bgpBox">
         <label for="bgpFeeds">Cantidad de feeds full table</label>
         <input type="number" id="bgpFeeds" min="1" max="20" autocomplete="off">
       </div>
       <label class="check"><input type="checkbox" id="chkPppoe"> <span><b>Concentrador de túneles / HotSpot</b><span class="sku">El nivel de licencia grabado en el equipo fija topes que ninguna cifra de caudal anticipa (tabla oficial de niveles).</span></span></label>
-      <div class="sub-field hidden" id="pppoeBox">
+      <div class="sub-field" hidden id="pppoeBox">
         <label for="pppoeSess">Túneles PPPoE / PPTP / L2TP</label>
         <input type="number" id="pppoeSess" min="0" step="1" autocomplete="off">
         <label for="ovpnTun" style="margin-top:8px">Túneles OpenVPN</label>
@@ -268,7 +267,7 @@ tr.total td{border-top:2px solid var(--ink);border-bottom:0;font-weight:600;padd
         <input type="number" id="hotspotUsers" min="0" step="1" autocomplete="off">
       </div>
       <label class="check"><input type="checkbox" id="chkCapsman"> <span><b>CAPsMAN</b> — controlador Wi-Fi centralizado<span class="sku">Incluido en RouterOS sin licencia adicional. Los AP pasan a la lista de materiales.</span></span></label>
-      <div class="sub-field hidden" id="capsBox">
+      <div class="sub-field" hidden id="capsBox">
         <label for="apCount">Cantidad de AP</label>
         <input type="number" id="apCount" min="1" step="1" autocomplete="off">
         <label for="apModel" style="margin-top:8px">Modelo de AP</label>
@@ -374,7 +373,7 @@ tr.total td{border-top:2px solid var(--ink);border-bottom:0;font-weight:600;padd
       </span>
     </h2>
     <div id="bomTabla"></div>
-    <textarea id="bomOut" readonly class="hidden" aria-hidden="true"></textarea>
+    <textarea id="bomOut" readonly hidden aria-hidden="true"></textarea>
   </section>
   <section class="panel">
     <h2>Precio neto y TCO del sitio</h2>

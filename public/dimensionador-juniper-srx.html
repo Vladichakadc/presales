@@ -80,7 +80,6 @@ input[type=range]{width:100%;accent-color:var(--red)}
 .checks{display:grid;gap:7px}
 .check{display:flex;gap:8px;align-items:flex-start;font-size:13px;cursor:pointer}
 .check input{margin:3px 0 0;accent-color:var(--red)}
-.hidden{display:none!important}
 
 /* VERDICT */
 .verdict{background:var(--card);border:1px solid var(--rule);border-left:4px solid var(--red);border-radius:3px;padding:22px;margin-bottom:16px}
@@ -171,7 +170,7 @@ code{background:var(--paper);padding:1px 5px;border-radius:2px;white-space:nowra
 
 <section class="ladder">
   <p class="mono-lbl" id="ladderLbl">Escala de capacidad — cifra que dimensiona de cada modelo vs. requerimiento (logarítmica)</p>
-  <div class="track" id="track"><div class="axis"></div><div class="need" id="need"><span id="needLbl">—</span></div><div class="pickLabel" id="pickLbl" style="display:none"></div></div>
+  <div class="track" id="track"><div class="axis"></div><div class="need" id="need"><span id="needLbl">—</span></div><div class="pickLabel" id="pickLbl" hidden></div></div>
   <div class="legend">
     <span><i></i>Modelo que cumple</span>
     <span><i style="background:var(--rule)"></i>No llega o no publica la cifra</span>
@@ -255,7 +254,7 @@ code{background:var(--paper);padding:1px 5px;border-radius:2px;white-space:nowra
     </div>
   </section>
 
-  <section class="panel" id="panelSsr" style="display:none">
+  <section class="panel" id="panelSsr" hidden>
     <h2>2 &middot; Session Smart Router</h2>
     <div class="field">
       <label for="ssrRol">Papel del equipo</label>
@@ -384,7 +383,7 @@ code{background:var(--paper);padding:1px 5px;border-radius:2px;white-space:nowra
       </span>
     </h2>
     <div id="bomTabla"></div>
-    <textarea id="bomOut" readonly class="hidden" aria-hidden="true"></textarea>
+    <textarea id="bomOut" readonly hidden aria-hidden="true"></textarea>
   </section>
   <section class="panel perfiles" id="panelPerfiles">
     <h2>Perfiles multi-sede</h2>

@@ -61,3 +61,33 @@ test('ningún display de autor con !important le gana a la regla [hidden]', () =
   }
   assert.deepStrictEqual(malos, []);
 });
+
+// UNA SOLA FORMA DE OCULTAR (2026-11-02, la mejora propuesta al cerrar el PR #115). Convivían otras dos: la
+// clase `.hidden` (su regla copiada en ocho dimensionadores) y `style.display` (35 sitios). Todo pasó al
+// atributo, que la regla de arriba hace ganar siempre. Esta prueba frena la vuelta de las otras dos y del
+// `style="display:none"` en línea, que es lo que el atributo no puede deshacer: al pasar a `hidden`, el
+// panel del SSR de Juniper (`#panelSsr`) se habría quedado oculto para siempre si el HTML conservaba su
+// `display:none`, porque quitar el atributo no quita el estilo en línea.
+const JS = fs.readdirSync(path.join(PUBLICO, 'js')).filter((x) => x.endsWith('.js')).sort();
+
+test('lo que se oculta se oculta con el atributo hidden: ni style.display, ni la clase .hidden, ni display:none en línea', () => {
+  const malos = [];
+  for (const f of JS) {
+    const src = fs.readFileSync(path.join(PUBLICO, 'js', f), 'utf8');
+    for (const [re, que] of [
+      [/\.style\.display\s*=(?!=)/g, 'asigna style.display'],
+      [/classList\.(?:add|remove|toggle)\(\s*'hidden'/g, 'usa la clase hidden'],
+      [/style="[^"]*display:\s*none/g, 'escribe display:none en línea'],
+    ]) {
+      const n = (src.match(re) || []).length;
+      if (n) malos.push(`js/${f}: ${que} (${n})`);
+    }
+  }
+  for (const f of PAGINAS) {
+    const html = leer(f);
+    if (/class="[^"]*\bhidden\b[^"]*"/.test(html)) malos.push(`${f}: usa la clase hidden`);
+    if (/(^|[}\s])\.hidden\s*\{/.test(html)) malos.push(`${f}: define la regla .hidden`);
+    if (/style="[^"]*display:\s*none/.test(html)) malos.push(`${f}: escribe display:none en línea`);
+  }
+  assert.deepStrictEqual(malos, []);
+});

@@ -67,7 +67,6 @@ input:disabled{background:var(--paper);color:var(--steel)}
 .check input{margin:3px 0 0;accent-color:var(--red)}
 .dos{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .dos label{font-size:12px}
-.hidden{display:none!important}
 
 /* Distribución del caudal y avisos del motor */
 .dist{display:flex;height:16px;border-radius:2px;overflow:hidden;background:var(--paper);margin:8px 0}
@@ -175,7 +174,7 @@ tr.sel td{background:rgba(4,159,217,.07);font-weight:600}
 <div class="tabpane" id="pane-calc">
 <section class="ladder">
   <p class="mono-lbl">Escala de capacidad — capacidad equivalente de cada equipo para esta mezcla de tráfico frente a la demanda (logarítmica)</p>
-  <div class="track" id="track"><div class="axis"></div><div class="need" id="need"><span id="needLbl">—</span></div><div class="pickLabel" id="pickLbl" style="display:none"></div></div>
+  <div class="track" id="track"><div class="axis"></div><div class="need" id="need"><span id="needLbl">—</span></div><div class="pickLabel" id="pickLbl" hidden></div></div>
   <div class="legend">
     <span><i></i>Cumple</span>
     <span><i style="background:var(--rule)"></i>No llega o se aparta</span>
@@ -203,7 +202,7 @@ tr.sel td{background:rgba(4,159,217,.07);font-weight:600}
         <select id="unit" style="width:105px" aria-label="Unidad del caudal"><option value="1">Mbps</option><option value="1000">Gbps</option></select>
       </div>
     </div>
-    <div id="aggBlock" class="hidden">
+    <div id="aggBlock" hidden>
       <div class="field"><label for="sites">Número de sucursales que concentra</label><input type="number" id="sites" min="1" autocomplete="off"></div>
       <div class="field">
         <label for="conc">Factor de simultaneidad: <span id="concVal" style="font-family:'IBM Plex Mono',monospace">40 %</span></label>
@@ -262,7 +261,7 @@ tr.sel td{background:rgba(4,159,217,.07);font-weight:600}
       </select>
       <p class="hint" id="segHint"></p>
       <label class="check" style="margin-top:8px"><input type="checkbox" id="chkTls"> <span>Descifrado TLS de la salida a Internet</span></label>
-      <div id="fwBlock" class="hidden" data-inactivo style="margin-top:8px">
+      <div id="fwBlock" hidden data-inactivo style="margin-top:8px">
         <label for="fwCapa">Inspección en el firewall dedicado</label>
         <select id="fwCapa"><option value="ips" selected>Firewall + aplicaciones + IPS (FW + AVC + IPS)</option><option value="avc">Firewall + aplicaciones (FW + AVC)</option></select>
         <p class="hint">Se propone un Cisco Secure Firewall (series 1200, 3100 y 4200) por la cifra de esa capa en su ficha; con descifrado TLS, por la de TLS.</p>
@@ -297,7 +296,7 @@ tr.sel td{background:rgba(4,159,217,.07);font-weight:600}
         <option value="hub">Hub y radios: las sucursales solo con los hubs</option>
         <option value="malla">Malla completa: todas las sedes entre sí</option>
       </select>
-      <div id="topoBlock" class="hidden" data-inactivo>
+      <div id="topoBlock" hidden data-inactivo>
         <div class="dos" style="margin-top:8px">
           <div><label for="topoSedes">Sedes (sin los hubs)</label><input type="number" id="topoSedes" min="1" step="1" autocomplete="off"></div>
           <div><label for="topoHubs">Hubs</label><input type="number" id="topoHubs" min="0" step="1" placeholder="1" autocomplete="off"></div>
@@ -444,14 +443,14 @@ tr.sel td{background:rgba(4,159,217,.07);font-weight:600}
       </div>
       <p class="hint">Solo con «Inspección en el router»: los dos piden además el complemento Threat. La cifra de Threat Protection de las fichas ya está medida con ellos (DIA-NAT + NGFW + IPS + URLF + AMP): marcarlos no la cambia.</p>
     </div>
-    <div class="field hidden" id="ctrlBlock" data-inactivo>
+    <div class="field" hidden id="ctrlBlock" data-inactivo>
       <label for="ctrlEquipos">Controladores SD-WAN: equipos en el overlay</label>
       <input type="number" id="ctrlEquipos" min="0" step="1" placeholder="sedes + hubs" autocomplete="off">
       <label class="check" style="margin-top:8px"><input type="checkbox" id="ctrlSaie"> <span>Con SAIE (estadísticas de aplicaciones)</span></label>
       <div id="ctrlBox" style="margin-top:8px"></div>
       <p class="hint">Recursos recomendados de los componentes de control (versión 20.18.x, sep-2026): el SD-WAN Manager, y los Validators y Controllers ya con la redundancia entre dos centros de datos. En la nube de Cisco los dimensiona Cisco.</p>
     </div>
-    <div class="field hidden" id="saBlock" data-inactivo>
+    <div class="field" hidden id="saBlock" data-inactivo>
       <label>Cisco Secure Access (salida a Internet por SSE)</label>
       <div class="dos">
         <div><label for="saLic">Licencia</label><select id="saLic"><option value="usuario" selected>Por usuario cubierto</option><option value="sede">Por sede (solo SIA Essentials)</option></select></div>
@@ -495,7 +494,7 @@ tr.sel td{background:rgba(4,159,217,.07);font-weight:600}
       </span>
     </h2>
     <div id="bomTabla"></div>
-    <textarea id="bomOut" readonly class="hidden" aria-hidden="true"></textarea>
+    <textarea id="bomOut" readonly hidden aria-hidden="true"></textarea>
   </section>
   <section class="panel">
     <h2>Precio neto y TCO</h2>

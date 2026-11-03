@@ -362,7 +362,7 @@ function runCalc(){
   }
 
   document.getElementById('calcOut').innerHTML=html;
-  document.getElementById('csvBtn').style.display=res.candidatos.length?'block':'none';
+  document.getElementById('csvBtn').hidden=!res.candidatos.length;
 }
 
 
@@ -409,10 +409,10 @@ function escapeHtml(v) {
 let syncEstado = { produccion: false, tieneClave: true };
 
 async function openSyncModal() {
-  document.getElementById('syncModal').style.display = 'flex';
+  document.getElementById('syncModal').hidden = false;
   document.getElementById('syncResult').innerHTML = '<p>Selecciona un fabricante y haz clic en Analizar.</p>';
-  document.getElementById('btnApplySync').style.display = 'none';
-  document.getElementById('btnDescargarPropuesta').style.display = 'none';
+  document.getElementById('btnApplySync').hidden = true;
+  document.getElementById('btnDescargarPropuesta').hidden = true;
   try {
     const res = await fetch('/api/sync/estado');
     if (res.ok) syncEstado = await res.json();
@@ -431,7 +431,7 @@ async function openSyncModal() {
 }
 
 function closeSyncModal() {
-  document.getElementById('syncModal').style.display = 'none';
+  document.getElementById('syncModal').hidden = true;
   pendingChanges = [];
 }
 
@@ -478,8 +478,8 @@ async function analyzeSync() {
   const btnDesc = document.getElementById('btnDescargarPropuesta');
 
   resultDiv.innerHTML = '<p>Analizando el catálogo (una hoja Excel/CSV se contrasta primero sin IA; con un PDF o con columnas que no se reconocen interviene la IA y puede tardar unos minutos)...</p>';
-  btn.style.display = 'none';
-  btnDesc.style.display = 'none';
+  btn.hidden = true;
+  btnDesc.hidden = true;
   
   try {
     const formData = new FormData();
@@ -543,8 +543,8 @@ async function analyzeSync() {
     resultDiv.innerHTML = html;
     // Descargar la propuesta es el camino durable y va siempre. Aplicar a la base local solo
     // se ofrece fuera de produccion, donde esa escritura si sirve para iterar.
-    btnDesc.style.display = 'inline-block';
-    btn.style.display = syncEstado.produccion ? 'none' : 'inline-block';
+    btnDesc.hidden = false;
+    btn.hidden = !!syncEstado.produccion;
   } catch (err) {
     // Se escapa con el helper que ya usa esta pagina: el mensaje puede venir del servidor,
     // y concatenarlo crudo en innerHTML seria una via de XSS en cuanto alguien incluya en
@@ -577,7 +577,7 @@ async function applySync() {
     const skippedNote = data.skippedCount > 0 ? ` (${data.skippedCount} cambios se saltaron por datos inválidos, ver logs del servidor)` : '';
     resultDiv.innerHTML = `<p style="color:var(--green);font-weight:600">Se actualizaron ${data.appliedCount} registros en la base local${skippedNote}.</p>`
       + '<p style="font-size:13px;color:var(--steel)">Estos cambios viven solo en tu base local. Para que lleguen a producción, trasládalos a los archivos de <code>server/seed/legacyData/</code> y despliega — el catálogo de producción se resiembra desde ahí en cada despliegue.</p>';
-    btn.style.display = 'none';
+    btn.hidden = true;
     btn.innerHTML = 'Aprobar e Impactar DB';
     btn.disabled = false;
   } catch (err) {
@@ -661,12 +661,12 @@ fetch('/api/cuenta/estado')
   .then(r => r.ok ? r.json() : null)
   .then(d => {
     if (!d) return;
-    if (d.puedeUsuarios) document.getElementById('navUsuarios').style.display = '';
+    if (d.puedeUsuarios) document.getElementById('navUsuarios').hidden = false;
     // El control para cargar la fuente oficial de cada fabricante (permiso `sync`) lo
     // gobierna js/procedencia.js con su propia lectura de este mismo endpoint.
     document.getElementById('navAccountName').textContent = d.nombre || d.usuario || 'Cuenta activa';
     document.getElementById('navAccountRole').textContent = d.rolNombre || d.rol || 'Sesión iniciada';
-    document.getElementById('navAccountSummary').style.display = 'block';
+    document.getElementById('navAccountSummary').hidden = false;
   })
   .catch(() => {});
 
