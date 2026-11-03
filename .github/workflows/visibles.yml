@@ -53,7 +53,7 @@ jobs:
 
       - name: Traer Playwright y Chromium
         run: |
-          npm install --no-save playwright@1.61.1
+          npm install --no-save playwright@1.64.1
           npx playwright install --with-deps chromium
 
       - name: Lo visible, contra la base del PR

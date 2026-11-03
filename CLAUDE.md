@@ -252,9 +252,12 @@ rojo o sin terminar, en cola, sin despliegue) y lo cierra al desplegarse; un fal
   propósito: `visibles-acepta: #<id>: <motivo>` en la descripción del PR (`test/visibles.test.js`).
 - **`npm run auditar` falla cerrado**: un aviso alto o crítico frena; la salida es una excepción
   declarada con GHSA, motivo y caducidad de 90 días como mucho, nunca apagar el paso.
-- Los jobs de navegador corren en `ubuntu-26.04` con **Playwright 1.61.1**, movidos juntos: la
-  1.62+ activa RenderDocument y la cobertura del contraste solo cuenta el último caso
-  (`test/workflows-imagen.test.js`; `contraste.js` se niega a escribir una cobertura incoherente).
+- Los jobs de navegador corren en `ubuntu-26.04` con **Playwright 1.64.1** (Chromium 156), movidos
+  juntos (`test/workflows-imagen.test.js`). La 1.62+ activa RenderDocument y la cobertura del
+  contraste solo contaría el último caso: **`opcionesDeLanzamiento()` lo apaga**
+  (`--disable-features=RenderDocument`, `test/chromium-lanzamiento.test.js`), y `contraste.js` se
+  niega a escribir una cobertura incoherente. No se vuelve a fijar una versión vieja por eso: su
+  Chromium deja de recibir parches (la 1.61.1 traía el 149, anterior a los zero-days de V8 de 2026).
 
 **Lo que este entorno no alcanza.** El proxy de egreso deniega `presales.up.railway.app`, los
 dominios de HPE, Huawei, Fortinet, Juniper y otros fabricantes: **un 403 del proxy es política de

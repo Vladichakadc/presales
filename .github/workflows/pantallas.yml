@@ -124,10 +124,16 @@ jobs:
       # Subir de la 1.61 pide antes resolver eso. Si se sube sin resolverlo, ya no pasa en
       # silencio: `contraste.js` se niega a escribir una cobertura que da por «sin conducir» la
       # pantalla que un caso acaba de conducir, y este paso sale en rojo.
+      #
+      # 1.64.1 DESDE EL 2026-11-03 (Chromium 156). La 1.61.1 traia Chromium 149, anterior a
+      # varios zero-days de V8 explotados en 2026 (el ultimo, CVE-2026-87491, corregido en
+      # 153.0.8010.36). Resuelto lo de arriba: `scripts/ayuda/chromium.js` lanza Chromium con
+      # --disable-features=RenderDocument, y la cobertura vuelve a sumar entre paginas (medido en
+      # local con la 1.63: 6 incoherencias sin el flag, 8 «sin conducir» y ninguna con el).
       - name: Traer Playwright y Chromium
         id: playwright
         run: |
-          npm install --no-save playwright@1.61.1
+          npm install --no-save playwright@1.64.1
           npx playwright install --with-deps chromium
 
       - name: Arrancar el servidor en modo produccion

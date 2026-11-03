@@ -397,6 +397,14 @@ existen los workflows de transporte. Huawei y HPE niegan además el navegador au
 
 ## Mejoras propuestas sin decidir
 
+- **Un solo lanzamiento de Chromium** (propuesta al cerrar el PR #130). Las 44 baterías e2e y
+  `scripts/visibles.js` llaman a `chromium.launch()` directo; solo `pantallas`, `contraste` y el
+  manual pasan por `opcionesDeLanzamiento()`. Hoy las e2e corren con RenderDocument activo y las
+  medidas sin él: dos navegadores distintos en el mismo job. Pasarlas todas por la ayuda (y una prueba
+  que frene un `chromium.launch(` sin ella) evita que el próximo flag necesario se aplique solo a
+  medias. Cuesta tocar ~45 archivos sin cambiar lo que comprueban; si se hace mal, una batería que hoy
+  pasa podría cambiar de comportamiento al apagar RenderDocument, así que se mide con la e2e entera
+  en CI antes de fusionar. Se decide por el dueño.
 - **Plan de mejora de los dimensionadores, aprobado el 2026-10-31**: lo que queda, en orden. (cada corte se mide con un caso en `scripts/equivalencias/`, `npm run equivalencia`) 3.1 sacar el cálculo de la página de Aruba a módulos puros con prueba en Node (PR #99: ópticas, EdgeHA y puertos; PR #111: el estado comercial derivado; PR #113: la elección del modelo. Hecha); 3.2 lo mismo en la página de Fortinet sin tocar el motor aprobado (hecha: PR #100 y PR #110). La 1.1 (medir el arranque) se hizo en el PR #86.
 - **Vigía semanal del ciclo de vida de Fortinet** (propuesta al cerrar el PR #68). Un workflow que
   cada lunes compare los FortiGate del catálogo con un listado de fin de vida y abra un issue si
