@@ -52,7 +52,8 @@ function escribirCobertura(crudo, paginas) {
     for (const m of malas) console.log(`  ! ${m.modulo} sale «sin conducir» y esta corrida condujo ${m.pagina}`);
     console.log('  La cobertura no se acumula entre navegaciones: solo cuenta la ultima pagina.');
     console.log('  Causa medida (2026-10-02): Playwright 1.62 o posterior deja activado RenderDocument');
-    console.log('  en Chromium. Ver la version fijada en .github/workflows/pantallas.yml.');
+    console.log('  en Chromium. Desde el 2026-11-03 lo apaga opcionesDeLanzamiento() en');
+    console.log('  scripts/ayuda/chromium.js: mira si ese flag sigue ahi y si Chromium aun lo respeta.');
     return false;
   }
   const informe = cobertura.informe(filas, { commit, fecha: new Date().toISOString().slice(0, 10) });

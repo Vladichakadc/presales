@@ -1000,7 +1000,7 @@
     let fuentes = { lista: [] };
     if (vendor) {
       try {
-        const r = await fetch('/api/fuentes');
+        const r = await fetch(`/api/fuentes?vendor=${encodeURIComponent(vendor)}`);
         if (!r.ok) throw new Error(`HTTP ${r.status}`);
         const datos = await r.json();
         fuentes = fuentesDelEquipo(datos[vendor], [s.modelo || (meta && meta.fotos && meta.fotos.modelo), s.serie]);

@@ -124,9 +124,9 @@ const TIPOS_WAN=['MPLS L3','MPLS L2','DIA','Banda Ancha','4G/5G'];
 const MEDIOS_WAN=['RJ45','SFP 1G','SFP+ 10G','SFP28 25G'];
 // Puertos LAN que el appliance necesita además de los enlaces WAN (regla de la auditoría de
 // puertos, SPEC B.3): los cuenta la barra del underlay y los reserva ArubaReglas.asignarPuertos.
-const LAN_RESERVADOS=2;
+const LAN_RESERVADOS=ArubaReglas.LAN_RESERVADOS;
 // Nombre de cada tipo de puerto del inventario (PUERTOS de aruba.js), para los textos.
-const NOMBRE_PUERTO={rj45:'RJ-45', combo:'combo RJ-45/SFP 1G', sfp:'SFP 1G', sfpPlus:'SFP+ 1/10G', sfp28:'SFP28 1/10/25G', celular:'módem 4G/5G integrado'};
+const NOMBRE_PUERTO=ArubaReglas.NOMBRE_PUERTO;
 let wanSeq=0; // ids únicos de fila dentro de la sesión
 // Familia del transporte para el badge de la tarjeta (MPLS / Internet / celular).
 function familiaTipoWan(tipo){
@@ -533,12 +533,10 @@ let accesoriosElegidos={};
 const MEDIOS_OPTICA={'SFP 1G':'1G','SFP+ 10G':'10G','SFP28 25G':'25G'};
 // Ópticas compatibles con un modelo a una velocidad dada: el filtro vive UNA vez aquí
 // (lo comparten los enlaces WAN y la interconexión EdgeHA, pendiente #7 del dueño).
-function opticasPorVelocidad(modeloId, speed){
-  if(!speed||!modeloId) return [];
-  const cfg=ACCESSORY_COMPAT[modeloId]; if(!cfg) return [];
-  return cfg.items.map(sku=>({sku, a:ACCESSORY_CATALOG[sku]}))
-    .filter(x=>x.a&&x.a.speed===speed&&x.a.media!=='DAC'&&!/_TAA$/.test(x.a.media||'')&&x.a.plc!=='ES');
-}
+function opticasPorVelocidad(modeloId, speed){ return ArubaReglas.opticasPorVelocidad(catAccesorios(), modeloId, speed); }
+// El catálogo de accesorios tal como llegó del servidor: lo que el módulo puro necesita para
+// filtrar ópticas (fase 3.1, 2026-10-31: la lógica vive en aruba-reglas.js).
+function catAccesorios(){ return {catalogo:ACCESSORY_CATALOG, compat:ACCESSORY_COMPAT}; }
 // A7 (2026-09-24): «no admite ópticas» era falso cuando lo que faltaba era el dato. Un chasis
 // sin jaulas SFP no admite ninguna; el 9106 SÍ tiene jaulas y lo que falta es que la lista
 // oficial le asigne ópticas. Son dos respuestas distintas que mandan a sitios distintos. (La
@@ -569,12 +567,9 @@ function necesidadesOptica(links){
 // El predicado, una sola vez: EdgeConnect, par HA marcado y ≥2 enlaces WAN activos.
 // Devuelve los enlaces activos (ya filtrados) o null — así el llamador no repite el
 // filtro ni arriesga una condición distinta en cada sitio.
-function parEdgeHA(esEC, unidades, links){
-  const act=(links||[]).filter(l=>l.down>0||l.up>0);
-  return (esEC&&unidades===2&&act.length>=2)?act:null;
-}
+function parEdgeHA(esEC, unidades, links){ return ArubaReglas.parEdgeHA(esEC, unidades, links); }
 // Velocidad de las ópticas del catálogo, en Mbps por dirección (full-duplex).
-const VELOCIDAD_OPTICA={'1G':1000,'10G':10000,'25G':25000};
+const VELOCIDAD_OPTICA=ArubaReglas.VELOCIDAD_OPTICA;
 // Regla de ingeniería de la casa (2026-09-17, DECLARADA — el VSG no fija la velocidad
 // del enlace EdgeHA): por la interconexión cruza el tráfico de los underlays que NO
 // aterrizan en el chasis activo, así que dimensionarla al AGREGADO WAN del sitio deja
@@ -582,13 +577,7 @@ const VELOCIDAD_OPTICA={'1G':1000,'10G':10000,'25G':25000};
 // recomienda la MENOR velocidad de óptica compatible con el modelo que cubre ese
 // agregado; null si ninguna la cubre (o el modelo no tiene jaulas: entonces la salida
 // honesta es cobre directo o confirmar con HPE — se declara, no se inventa).
-function velocidadEdgeHA(modeloId, agregadoMbps){
-  const cfg=ACCESSORY_COMPAT[modeloId]; if(!cfg) return null;
-  const speeds=[...new Set(cfg.items.map(s=>ACCESSORY_CATALOG[s]&&ACCESSORY_CATALOG[s].speed).filter(Boolean))];
-  const caben=speeds.filter(s=>(VELOCIDAD_OPTICA[s]||0)>=agregadoMbps)
-    .sort((a,b)=>VELOCIDAD_OPTICA[a]-VELOCIDAD_OPTICA[b]);
-  return caben[0]||null;
-}
+function velocidadEdgeHA(modeloId, agregadoMbps){ return ArubaReglas.velocidadEdgeHA(catAccesorios(), modeloId, agregadoMbps); }
 // Unidades del sitio (petición del dueño, 2026-09-15): SIN campo de cantidad — en
 // EdgeConnect un sitio lleva un appliance o un par HA 1+1 (arquitectura oficial), así
 // que las unidades se deducen de la casilla HA: marcada → 2, sin marcar → 1.
@@ -797,9 +786,21 @@ $('accBtn').addEventListener('click',()=>{
   if(!m||!ACCESSORY_COMPAT[m.id]) return;
   pintarAccModal(m);
   $('accModal').hidden=false;
+  // El foco entra en la ventana (la primera cantidad, o «Cerrar» si no hay ninguna), como en el
+  // consolidado desde el PR #62: quien navega con teclado no se queda detrás del velo.
+  ($('accLista').querySelector('input')||$('accCerrar')).focus();
 });
-$('accCerrar').addEventListener('click',()=>{ $('accModal').hidden=true; });
-$('accModal').addEventListener('click',e=>{ if(e.target===$('accModal')) $('accModal').hidden=true; });
+// Cerrar, de las tres maneras, devuelve el foco al botón que la abrió (2026-11-01, mejora propuesta
+// al cerrar el PR #95). Escape se escucha en la propia ventana y no sube al documento: así no cierra
+// a la vez otra ventana que escuche Escape en `document` (la del consolidado).
+function cerrarAcc(){
+  if($('accModal').hidden) return;
+  $('accModal').hidden=true;
+  $('accBtn').focus();
+}
+$('accCerrar').addEventListener('click',cerrarAcc);
+$('accModal').addEventListener('click',e=>{ if(e.target===$('accModal')) cerrarAcc(); });
+$('accModal').addEventListener('keydown',e=>{ if(e.key==='Escape'){ e.stopPropagation(); cerrarAcc(); } });
 $('accLista').addEventListener('input',e=>{
   const sku=e.target.dataset&&e.target.dataset.acc;
   if(!sku) return;
@@ -1187,11 +1188,7 @@ document.addEventListener('change',e=>{
   renderBom();
 });
 
-function fmt(m){
-  if(m==null) return '—';
-  if(m>=1000)return (m/1000).toFixed(m%1000?1:0)+' Gbps';
-  return Math.round(m)+' Mbps';
-}
+function fmt(m){ return ArubaReglas.fmt(m); }
 const miles=n=>n==null?'—':n.toLocaleString('en-US');
 
 /* ══ Trazas aritméticas vivas (mejora 2026-09-17, plan 16) ══════════════════════
@@ -1328,20 +1325,10 @@ function capacidadComparable(m){
 // En la serie 9200 la licencia perpetua amplia tambien clientes y APs, no solo el
 // throughput: filtrar por la cifra de solo-hardware descartaba un 9240 que si cumple con
 // Gold. Se compara contra el techo alcanzable y luego se informa que nivel hace falta.
-function clientesMax(m){
-  if(m.licCap&&m.licCap.length) return Math.max(...m.licCap.map(t=>t.clients));
-  return m.clients;
-}
-function apsMax(m){
-  if(m.licCap&&m.licCap.length) return Math.max(...m.licCap.map(t=>t.aps));
-  return m.aps;
-}
+function clientesMax(m){ return ArubaReglas.clientesMax(m); }
+function apsMax(m){ return ArubaReglas.apsMax(m); }
 // Nivel de licencia que cubre a la vez throughput, clientes y APs.
-function nivelLicenciaNecesario(m,need,users,aps){
-  if(!m.licCap) return null;
-  return m.licCap.find(t=>t.fw>=need&&t.clients>=(users||0)&&t.aps>=(aps||0))
-    ||m.licCap[m.licCap.length-1];
-}
+function nivelLicenciaNecesario(m,need,users,aps){ return ArubaReglas.nivelLicenciaNecesario(m,need,users,aps); }
 
 // C1 de la auditoria 2026-09-17: el tier se elige SOLO entre los que existen para el
 // nivel deducido. Antes recorria los 8 tiers de SIZING.bwTiers sin mirar el nivel y
@@ -1390,10 +1377,7 @@ const SPEC_LABELS=[
 // repiten en cada modelo porque el documento las declara a nivel de línea.
 const EC_AMBIENTE='Operación 0 – 40 °C · almacenamiento -40 – 65 °C · altitud 3.048 m operando / 12.192 m almacenado · humedad 5 – 95 % sin condensar';
 // Boost se licencia en bloques de 100 Mbps que forman un pool del fabric.
-function bloquesBoost(mbps){
-  const b=(SIZING.boost&&SIZING.boost.bloque)||100;
-  return Math.max(1,Math.ceil(mbps/b));
-}
+function bloquesBoost(mbps){ return ArubaReglas.bloquesBoost(SIZING,mbps); }
 
 /* ══ REFACTOR ARQUITECTÓNICO 2026-09-13 (petición del dueño, documento «Actúa como un
    Arquitecto de Soluciones de Redes») ══
@@ -1406,14 +1390,7 @@ function bloquesBoost(mbps){
 // simultáneas» del datasheet (spec.conexiones, texto con miles); los gateways como
 // sesiones de firewall (fwSess, ya numérico). null = la fuente no lo publica para ese
 // modelo (EC-V) y el motor lo declara en vez de inventarlo.
-function flujosDe(m){
-  if(m.fam==='ec'){
-    const s=m.spec&&m.spec.conexiones;
-    const n=s?parseInt(String(s).replace(/\D/g,''),10):NaN;
-    return Number.isFinite(n)?n:null;
-  }
-  return m.fwSess!=null?m.fwSess:null;
-}
+function flujosDe(m){ return ArubaReglas.flujosDe(m); }
 // Tasa de flujos por usuario según el perfil de entorno. Brief del duenyo 2026-09-13
 // (fase 11): 80 estandar / 150 intensivo — punto medio del rango 80-100 / 150-200 que la
 // arquitectura declaro en fase 9. SIN FUENTE oficial: HPE no publica flujos por usuario;
@@ -1464,12 +1441,14 @@ function porqueNivelEC(nivel){
    `ifaces` oficial) y ArubaReglas.asignarPuertos pone cada enlace en un puerto real: lo que no
    tiene puerto descarta el modelo y el dimensionador pasa al siguiente que sí lo tenga. */
 // ¿El chasis no tiene ninguna jaula SFP? Del inventario; sin él no se afirma nada.
-function sinJaulasSfp(modelo){
-  const p=modelo&&modelo.puertos;
-  if(!p) return false; // EC-V (virtual) o sin inventario
-  return !(p.sfp||p.combo||p.sfpPlus||p.sfp28);
-}
-// Texto del inventario para los motivos: «4x RJ-45 · 2x SFP+».
+function sinJaulasSfp(modelo){ return ArubaReglas.sinJaulasSfp(modelo); }
+// Velocidades de óptica que la jaula `tipo` de ESTE modelo admite y el catálogo trae.
+function velocidadesJaula(m, tipo){ return ArubaReglas.velocidadesJaula(catAccesorios(), m, tipo); }
+// Lo que la auditoría del par necesita para elegir la interconexión POR VELOCIDAD (mejora
+// aprobada, 2026-10-27): el agregado del sitio y cuánto alcanza cada tipo de puerto en este
+// modelo (cobre, 1 GbE; una jaula, su óptica más rápida del catálogo; sin óptica, no se usa).
+// La usan interconexionEdgeHA y auditarPuertos, para que las dos vean el mismo puerto.
+function opcionesHa(m, enlacesPar){ return ArubaReglas.opcionesHa(catAccesorios(), m, enlacesPar); }
 // LA INTERCONEXIÓN, POR EL PUERTO QUE LE TOCA (mejora aprobada, 2026-10-27). La auditoría del
 // par (ArubaReglas.asignarPuertosPar) ya elige el puerto de la interconexión: el mismo tipo en
 // los dos chasis y primero el RJ-45 (Orchestrator, «Deployment - EdgeHA»). El builder, el
@@ -1480,104 +1459,18 @@ function sinJaulasSfp(modelo){
 //   · jaula: 2 ópticas de la menor velocidad que admite esa jaula y cubre el agregado;
 //   · sin puerto común libre: se dice, y la auditoría ya aparta el chasis.
 // Sin inventario de puertos (equipo virtual) se queda la regla anterior, por velocidad.
-const VEL_JAULA={sfp:['1G'], sfpPlus:['1G','10G'], sfp28:['1G','10G','25G']};
-// Velocidades de óptica que la jaula `tipo` de ESTE modelo admite y el catálogo trae.
-function velocidadesJaula(m, tipo){
-  const cfg=ACCESSORY_COMPAT[m.id];
-  const delModelo=new Set(cfg?cfg.items.map(k=>ACCESSORY_CATALOG[k]&&ACCESSORY_CATALOG[k].speed).filter(Boolean):[]);
-  return (VEL_JAULA[tipo]||[]).filter(v=>delModelo.has(v)&&opticasPorVelocidad(m.id, v).length);
-}
-// Lo que la auditoría del par necesita para elegir la interconexión POR VELOCIDAD (mejora
-// aprobada, 2026-10-27): el agregado del sitio y cuánto alcanza cada tipo de puerto en este
-// modelo (cobre, 1 GbE; una jaula, su óptica más rápida del catálogo; sin óptica, no se usa).
-// La usan interconexionEdgeHA y auditarPuertos, para que las dos vean el mismo puerto.
-function opcionesHa(m, enlacesPar){
-  if(!m||!enlacesPar) return undefined;
-  return {
-    haMbps:enlacesPar.reduce((s,l)=>s+l.down,0),
-    haVel:t=>(t==='rj45'||t==='combo')?VELOCIDAD_OPTICA['1G']
-      :Math.max(0,...velocidadesJaula(m,t).map(v=>VELOCIDAD_OPTICA[v]||0)),
-  };
-}
-function interconexionEdgeHA(m, unidades, links, pick){
-  const enlaces=m?parEdgeHA(m.fam==='ec', unidades, links):null;
-  if(!enlaces) return null;
-  const agregado=enlaces.reduce((s,l)=>s+l.down,0);
-  const r={enlaces, agregado, puerto:null, modo:'optica', vel:null, ops:[], sku:null, aviso:null};
-  if(m.puertos){
-    const asig=ArubaReglas.asignarPuertosPar(m.puertos, links, LAN_RESERVADOS, opcionesHa(m, enlaces));
-    r.puerto=asig.ha;
-    if(!asig.ha){ r.modo='sinPuerto'; return r; }
-    if(asig.ha==='rj45'||asig.ha==='combo'){
-      r.modo='cobre';
-      if(agregado>(VELOCIDAD_OPTICA['1G'])) r.aviso=`el RJ-45 es de 1 GbE y el agregado del sitio es ${fmt(agregado)}: la regla de la casa pide ≥ agregado, y no queda libre en los dos chasis una jaula con óptica que lo cubra; si importa, libera una del mismo tipo en ambos`;
-      return r;
-    }
-    const admitidas=velocidadesJaula(m, asig.ha);
-    r.vel=admitidas.find(v=>(VELOCIDAD_OPTICA[v]||0)>=agregado)||null;
-    if(!r.vel){
-      r.modo='sinOptica';
-      r.aviso=admitidas.length
-        ?`la jaula ${NOMBRE_PUERTO[asig.ha]} admite como mucho ${admitidas[admitidas.length-1]} en el catálogo y el agregado del sitio es ${fmt(agregado)}`
-        :`el catálogo no trae ópticas para la jaula ${NOMBRE_PUERTO[asig.ha]} de ${m.id}`;
-      return r;
-    }
-  }else{
-    r.vel=velocidadEdgeHA(m.id, agregado);
-    if(!r.vel){ r.modo='sinOptica'; r.aviso=`el agregado del sitio (${fmt(agregado)}) supera las ópticas del catálogo para ${m.id}`; return r; }
-  }
-  r.ops=opticasPorVelocidad(m.id, r.vel);
-  if(!r.ops.length){ r.modo='sinOptica'; r.aviso=`no hay óptica ${r.vel} compatible con ${m.id} en el catálogo`; return r; }
-  const p=pick&&pick.EdgeHA;
-  r.sku=p&&r.ops.some(o=>o.sku===p)?p:(r.ops.length===1?r.ops[0].sku:null);
-  return r;
-}
-function inventarioTxt(p){
-  if(!p) return 'sin chasis (virtual)';
-  return Object.keys(NOMBRE_PUERTO).filter(k=>p[k]).map(k=>`${p[k]}x ${NOMBRE_PUERTO[k]}`).join(' + ');
-}
+// La lógica vive en ArubaReglas.interconexionEdgeHA (fase 3.1, 2026-10-31).
+function interconexionEdgeHA(m, unidades, links, pick){ return ArubaReglas.interconexionEdgeHA(catAccesorios(), m, unidades, links, pick); }
+// Texto del inventario para los motivos: «4x RJ-45 · 2x SFP+».
+function inventarioTxt(p){ return ArubaReglas.inventarioTxt(p); }
 // ¿Tiene el modelo un transceptor 1000BASE-T certificado? Es la salida para un enlace de cobre
 // en un chasis sin RJ-45 libre: declarar «SFP 1G» y elegir ese transceptor.
-function cobreSfp(modelo){
-  return opticasPorVelocidad(modelo.id,'1G').filter(o=>o.a.media==='COPPER').map(o=>o.sku);
-}
+function cobreSfp(modelo){ return ArubaReglas.cobreSfp(catAccesorios(), modelo); }
 // Con el par EdgeHA (2026-10-27) se audita el par: los enlaces se reparten entre los dos chasis
 // y cada uno reserva sus LAN y el puerto de la interconexión (ArubaReglas.asignarPuertosPar).
-function auditarPuertos(modelo, wanLinks){
-  const enlaces=(wanLinks||[]).filter(l=>l.down>0||l.up>0);
-  const enlacesPar=modelo?parEdgeHA(modelo.fam==='ec', unidadesSitio(), wanLinks):null;
-  const par=!!enlacesPar;
-  return {
-    par,
-    puertosNecesarios:enlaces.length+LAN_RESERVADOS*(par?2:1)+(par?2:0),
-    hayFibra:enlaces.some(l=>/^SFP/.test(l.medio)),
-    asignacion:par?ArubaReglas.asignarPuertosPar(modelo.puertos, wanLinks, LAN_RESERVADOS, opcionesHa(modelo, enlacesPar))
-      :ArubaReglas.asignarPuertos(modelo?modelo.puertos:null, wanLinks, LAN_RESERVADOS),
-  };
-}
+function auditarPuertos(modelo, wanLinks){ return ArubaReglas.auditarPuertos(catAccesorios(), modelo, wanLinks, unidadesSitio()); }
 // El porqué de un «no cabe», con el número de enlace y lo que hay que cambiar.
-function motivoPuertos(modelo, asig){
-  const inv=inventarioTxt(modelo.puertos);
-  const partes=[];
-  const porMedio={};
-  asig.sinAsignar.forEach(x=>{ (porMedio[x.medio]=porMedio[x.medio]||[]).push(x.enlace); });
-  Object.entries(porMedio).forEach(([medio,ns])=>{
-    const cuales=`enlace${ns.length>1?'s':''} ${ns.join(', ')}`;
-    if(medio==='RJ45'){
-      const cu=cobreSfp(modelo);
-      partes.push(`${cuales} por RJ-45 sin puerto de cobre libre${cu.length?` — si va a una jaula SFP, declara el medio «SFP 1G» y elige el transceptor 1000BASE-T (${cu.join(', ')})`:''}`);
-    }else{
-      partes.push(`${cuales} por ${medio} sin jaula libre que lo admita`);
-    }
-  });
-  if(asig.porChasis){
-    if(asig.lanFaltan) partes.push(`${asig.lanFaltan===1?'falta 1':`faltan ${asig.lanFaltan}`} de los ${LAN_RESERVADOS} puertos LAN de cada chasis`);
-    if(asig.haFalta) partes.push('no queda en los dos chasis un puerto libre del mismo tipo para la interconexión EdgeHA (mismo medio y velocidad en los dos extremos, nunca el MGMT)');
-    return `Cada ${modelo.id} del par EdgeHA tiene ${inv}, con los enlaces repartidos entre los dos: ${partes.join('; ')}.`;
-  }
-  if(asig.lanFaltan) partes.push(`${asig.lanFaltan===1?'falta 1':`faltan ${asig.lanFaltan}`} de los ${LAN_RESERVADOS} puertos LAN`);
-  return `El ${modelo.id} tiene ${inv}: ${partes.join('; ')}.`;
-}
+function motivoPuertos(modelo, asig){ return ArubaReglas.motivoPuertos(catAccesorios(), modelo, asig); }
 // Semáforo de puertos (etapa A, 2026-09-14): UNA SOLA regla con tres niveles, usada por el
 // descarte del dimensionador (rojo = el modelo sale y se escala), por la barra #wanResumen,
 // la ficha y la revisión del diseño. El aviso que ve el ingeniero mientras teclea es el que
@@ -1585,19 +1478,7 @@ function motivoPuertos(modelo, asig){
 //   rojo  → algún enlace (o los LAN) no tiene puerto en el chasis.
 //   ámbar → cabe, pero algún enlace declara más caudal del que lleva su medio.
 //   verde → cabe sin condiciones.
-function evaluarPuertos(modelo, wanLinks){
-  const a=auditarPuertos(modelo,wanLinks);
-  let nivel='verde', motivo='';
-  const sobre=ArubaReglas.enlacesSobreMedio((wanLinks||[]).filter(l=>l.down>0||l.up>0));
-  if(modelo&&!a.asignacion.cabe){
-    nivel='rojo';
-    motivo=motivoPuertos(modelo,a.asignacion);
-  }else if(sobre.length){
-    nivel='ambar';
-    motivo=sobre.map(l=>`El enlace ${l.n} declara ${fmt(Math.max(l.down,l.up))} por ${l.medio}, que lleva ${fmt(ArubaReglas.MEDIO_MBPS[l.medio])}`).join('; ')+' — cambia el medio.';
-  }
-  return {...a, nivel, motivo};
-}
+function evaluarPuertos(modelo, wanLinks){ return ArubaReglas.evaluarPuertos(catAccesorios(), modelo, wanLinks, unidadesSitio()); }
 
 // Lo que de los enlaces decide los puertos: medio, transporte y si lleva caudal. Una elección
 // manual se suelta solo si esto cambia después de hacerla (ver el oyente de #pickModel).
@@ -2053,7 +1934,7 @@ function render(){
   const track=$('track');
   track.querySelectorAll('.dot,.tick,.pickLabel').forEach(e=>e.remove());
   const pickLbl=document.createElement('div');
-  pickLbl.className='pickLabel'; pickLbl.id='pickLbl'; pickLbl.style.display='none';
+  pickLbl.className='pickLabel'; pickLbl.id='pickLbl'; pickLbl.hidden=true;
   track.appendChild(pickLbl);
   [10,50,100,500,1000,5000,10000,40000].forEach(v=>{
     const pct=xPct(v);if(pct<0||pct>100)return;
@@ -2072,85 +1953,12 @@ function render(){
     track.appendChild(dot);
   });
 
-  let outByBoost=0,outByClients=0,outByAps=0,outBySinDato=0,outByFlujos=0,outByPersona=0,sobrado=[];
-  // Fase 1 de la auditoria 2026-09-17: tres descartes nuevos, cada uno con su porque.
-  const outBySo=[], outByDtd=[], outByBoostRec=[];
-  // gwsec (2026-09-24): gateways sin nivel «+ Security» en el documento oficial (7000/7200),
-  // y los que no llegan (o no publican) el throughput de IDS/IPS del VSG.
-  const outBySinSec=[], outByIds=[], outByIdsEc=[];
-  // M2 · Auditoría de puertos (SPEC B.3, para todo chasis desde el 2026-10-15): un modelo en
-  // el que algún enlace no tiene puerto queda fuera. Se anota con su motivo y solo si habría
-  // cumplido todo lo demás: es lo que dispara #alertaEscalado y el porqué del veredicto.
-  const outByPuertos=[];
-  // Criptografía post-cuántica exigida (2026-10-27): la regla única de pqc.js, también al final.
-  const outByPqc=[];
-  const nivelPqc=$('reqPqc').value;
-  const candidates=MODELS.filter(m=>{
-    if(!coincideFiltro(m,famMode)) return false;
-    // Arquetipo de sede (fase 11): restringe el catalogo a los modelos que el VSG
-    // posiciona para ese tamanyo de sitio. Libre = no restringe.
-    if(personaMode!=='auto'&&personaMode!=='micro'&&PERSONA_MODELOS[personaMode]
-      &&!PERSONA_MODELOS[personaMode].includes(m.id)){ outByPersona++; return false; }
-    if(boost&&m.boostMax==null){ outByBoost++; return false; }
-    // A1: Dynamic Threat Defense solo corre en EdgeConnect, y no en el modelo que el catálogo
-    // marque `dtd:false`. Antes era un aviso rojo debajo de un equipo que seguía saliendo
-    // RECOMENDADO y cotizaba la licencia DTD.
-    if(secMode==='dtd'&&!ArubaReglas.admiteDtd(m)){ if(m.fam==='ec') outByDtd.push(m.id); return false; }
-    // Y donde el fabricante publica la capacidad de IDS/IPS del EdgeConnect (hoy el EC-XS, en
-    // su spec sheet: 300 Mbps en línea), es un techo duro, con la misma degradación IMIX que el
-    // eje de IDS/IPS de los gateways (2026-10-06). Sin cifra, sigue la reserva del motor.
-    if(secMode==='dtd'&&m.fam==='ec'&&m.idsMbps!=null&&m.idsMbps*IMIX_FACTOR<needProc){
-      outByIdsEc.push({id:m.id, motivo:`IDS/IPS en línea ${fmt(m.idsMbps)} (×${IMIX_FACTOR} IMIX) por debajo de ${fmt(needProc)}`}); return false; }
-    // IDS/IPS en el gateway (gwsec, 2026-09-24): solo los gateways cuya serie tiene nivel
-    // «+ Security» en el documento oficial de Central (9000, 9100, 9200). EdgeConnect lo hace
-    // con DTD y la línea 7000/7200 no tiene ese nivel.
-    if(secMode==='gwsec'&&(m.fam==='ec'||!centralParaModelo(m, 'foundation', 1, true))){ if(m.fam!=='ec') outBySinSec.push(m.id); return false; }
-    // Y el eje de IDS/IPS con la cifra oficial del VSG (idsMbps), con la misma degradación
-    // IMIX que el firewall del gateway. Sin cifra publicada (9004-LTE) no se afirma que cumpla:
-    // se aparta con su motivo, nunca con la cifra de firewall ni con la de su hermano.
-    if(secMode==='gwsec'&&m.fam==='gw'){
-      if(m.idsMbps==null){ outByIds.push({id:m.id, motivo:'sin cifra de IDS/IPS en el VSG'}); return false; }
-      if(m.idsMbps*IMIX_FACTOR<needProc){ outByIds.push({id:m.id, motivo:`IDS/IPS ${fmt(m.idsMbps)} (×${IMIX_FACTOR} IMIX) por debajo de ${fmt(needProc)}`}); return false; }
-    }
-    // C2/C3: un gateway sin cifras para el SO elegido (9114 en AOS 8, series 7000/7200 en
-    // AOS 10) no puede afirmarse que cumpla — se descarta y se dice por qué.
-    if(m.sinCifraSo){ outBySo.push(m); return false; }
-    // EC-V no publica rango: se dimensiona por licencia y vCPU, no por hardware.
-    if(m.fam==='ec'&&m.wanMax==null) return false;
-    const cap=capacidadMax(m);
-    // Sin cifra publicada no se puede afirmar que cumpla: se descarta y se explica, en
-    // vez de colarlo con un numero inventado o de omitirlo en silencio.
-    if(cap==null){ outBySinDato++; return false; }
-    // Factor IMIX (regla de trabajo del duenyo): la mezcla real de trafico rinde menos
-    // que el UDP de laboratorio. En EdgeConnect la degradación vive YA en el
-    // requerimiento del motor de ingeniería (÷IMIX según perfil) y se compara contra el
-    // nominal; en gateways se conserva el ×0,70 del lado capacidad (ver
-    // capacidadComparable — brief carrier-grade 2026-09-13, sin doble conteo).
-    if(capacidadComparable(m)<needDe(m)) return false;
-    const cMax=clientesMax(m), aMax=apsMax(m);
-    if(cMax!=null&&users&&cMax<users){ outByClients++; return false; }
-    if(aMax!=null&&aps&&aMax<aps){ outByAps++; return false; }
-    // Flujos simultáneos: el chasis debe soportar con holgura los flujos calculados.
-    // null (EC-V) = la fuente no publica el dato: no descarta, se declara.
-    const fl=flujosDe(m);
-    if(flujosReq>0&&fl!=null&&fl<flujosReq){ outByFlujos++; return false; }
-    // C4: el Boost que necesita la sede no puede superar el que HPE recomienda optimizar
-    // en ese appliance (EC-10104 200 Mbps, EC-S 500 Mbps, EC-M 1 Gbps…). null = sin dato
-    // publicado: no descarta, se declara.
-    if(boost&&m.fam==='ec'&&D.boostMbps>0){
-      const rec=ArubaReglas.boostRecMbps(m);
-      if(rec!=null&&D.boostMbps>rec){ outByBoostRec.push(m.id); return false; }
-    }
-    // Auditoría de puertos: la regla se evalúa AL FINAL para saber si el modelo habría
-    // cumplido todo lo demás (y por tanto el dimensionador está escalando por los puertos o
-    // el medio de los enlaces, no por capacidad). La MISMA regla del semáforo de #wanResumen.
-    const ev=evaluarPuertos(m,D.wanLinks);
-    if(ev.nivel==='rojo'){ outByPuertos.push({m, motivo:ev.motivo}); return false; }
-    // El SO del escenario va con la regla: la PPK de los gateways es de AOS-8 (pqc.so); los
-    // EdgeConnect corren ECOS y su `pqc` no declara SO, así que el selector no les afecta.
-    const motPqc=PQC.motivo(m,nivelPqc,{so:soMode, soNombre:SO_NOMBRE[soMode]||soMode});
-    if(motPqc){ outByPqc.push({m, motivo:motPqc}); return false; }
-    return true;
+  let sobrado=[];
+  // Fase 3.1, tercera entrega (2026-11-01): el filtro de candidatos vive en aruba-reglas.js, con su
+  // cuerpo intacto; aquí se le pasa lo que leía de este render() y de la página.
+  const { candidates, outByBoost, outByClients, outByAps, outBySinDato, outByFlujos, outByPersona, outBySo, outByDtd, outByBoostRec, outBySinSec, outByIds, outByIdsEc, outByPuertos, outByPqc } = ArubaReglas.filtrarCandidatos(MODELS, {
+    coincideFiltro, famMode, personaMode, PERSONA_MODELOS, boost, secMode, ArubaReglas, IMIX_FACTOR, needProc, fmt, centralParaModelo, capacidadMax, capacidadComparable, needDe, clientesMax, apsMax, users, aps, flujosDe, flujosReq, D, evaluarPuertos, PQC, soMode, SO_NOMBRE,
+    nivelPqc: $('reqPqc').value,
   });
   // Generacion actual primero: entre dos que cumplen, la linea AOS 8 (series 7000/7200)
   // solo se propone si no hay un equivalente vigente. Sigue apareciendo como alternativa y
@@ -2531,7 +2339,7 @@ function render(){
   };
 
   const pintarDependientes=m=>{
-    $('pickLbl').textContent=m.id; $('pickLbl').style.display='block';
+    $('pickLbl').textContent=m.id; $('pickLbl').hidden=false;
     $('pickLbl').style.left=xPct(capacidadMax(m))+'%';
   };
 
@@ -2704,12 +2512,12 @@ function accesoriosInyectados(m,D){
 // Término genérico y1/y3/y5/y7 (2026-09-15, pendiente #28): antes y=7 caía al else de
 // y3 y cotizaba 7 años A PRECIO DE 3 — una subcotización silenciosa. Clave directa y
 // null cuando el peldaño no publica ese término (la interfaz muestra «consultar»).
-function tierPrice(t,y){ if(!t) return null; const v=t['y'+y]; return v==null?null:v; }
+function tierPrice(t,y){ return ArubaReglas.tierPrice(t,y); }
 // El SKU de una suscripción depende de la duración (1/3/5/7 años — y7 desde el
 // 2026-09-15, pendiente #28): `sku` puede ser un objeto {y1,y3,y5,y7}. Se acepta
 // también la forma plana por compatibilidad. Misma corrección que tierPrice: clave
 // directa, sin else que cotizara 7 años a precio de 3.
-function tierSku(t,y){ if(!t||t.sku==null) return null; if(typeof t.sku==='string') return t.sku; return t.sku['y'+y]||null; }
+function tierSku(t,y){ return ArubaReglas.tierSku(t,y); }
 // A3 (2026-09-24): la suscripción de Central que corresponde a ESTE gateway — por su serie, su
 // nivel (foundation/advanced), el término y si lleva «+ Security» (IDS/IPS, estrategia gwsec).
 // El SKU sale de CENTRAL_SERIE (documento oficial de HPE); el precio, solo de lo verificado:
@@ -2717,25 +2525,8 @@ function tierSku(t,y){ if(!t||t.sku==null) return null; if(typeof t.sku==='strin
 // Devuelve null si el documento no publica ese nivel para esa serie (p. ej. Security en 70xx).
 // A4: el nivel Foundation Base (o Base + Security con gwsec) que aplica a este gateway y a
 // este número de usuarios, o null. Modelos y tope de clientes, del documento oficial.
-function baseParaModelo(m, D){
-  const fam=Object.values(CENTRAL_SERIE).find(f=>(f.series||[]).includes(m.serie));
-  const t=fam&&fam[secMode==='gwsec'?'foundationBaseSec':'foundationBase'];
-  if(!t||!(t.modelos||[]).includes(m.id)||!(D.users<=t.maxClientes)) return null;
-  return {n:t.n, sku:(t.sku&&t.sku['y'+D.termYrs])||null, maxClientes:t.maxClientes};
-}
-function centralParaModelo(m, nivel, termYrs, conSeguridad){
-  if(!m||!nivel) return null;
-  const fam=Object.values(CENTRAL_SERIE).find(f=>(f.series||[]).includes(m.serie));
-  if(!fam) return null;
-  const t=fam[nivel+(conSeguridad?'Sec':'')];
-  if(!t||(t.soloSeries&&!t.soloSeries.includes(m.serie))) return null;
-  const sku=(t.sku&&t.sku['y'+termYrs])||null;
-  let precio=null;
-  const base=CENTRAL[nivel];
-  if(sku&&base&&tierSku(base,termYrs)===sku) precio=tierPrice(base,termYrs);
-  else if(sku){ const f=(SKU_CAT||[]).find(x=>x.sku===sku); if(f&&f.p!=null) precio=f.p; }
-  return {n:t.n, sku, precio};
-}
+function baseParaModelo(m, D){ return ArubaReglas.baseParaModelo(CENTRAL_SERIE, m, D, secMode); }
+function centralParaModelo(m, nivel, termYrs, conSeguridad){ return ArubaReglas.centralParaModelo({centralSerie:CENTRAL_SERIE, central:CENTRAL, skuCat:SKU_CAT}, m, nivel, termYrs, conSeguridad); }
 
 // M6 (auditoría 2026-09-17, corregido 2026-09-24): con la página vacía el desplegable cae a
 // su primera opción (EC-XS) y el BOM cotizaba ese equipo con precio y «[OK] Diseño coherente»
@@ -3381,7 +3172,7 @@ $('skuTaa').addEventListener('click',()=>{
 $('copyBtn').addEventListener('click',async()=>{
   const t=$('bomOut');
   try{await navigator.clipboard.writeText(t.value);$('copyBtn').textContent='Copiado';}
-  catch{t.classList.remove('hidden');t.select();document.execCommand('copy');t.classList.add('hidden');$('copyBtn').textContent='Copiado';}
+  catch{t.hidden = false;t.select();document.execCommand('copy');t.hidden = true;$('copyBtn').textContent='Copiado';}
   setTimeout(()=>$('copyBtn').textContent='Copiar como texto',1600);
 });
 

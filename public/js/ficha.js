@@ -285,12 +285,12 @@
     const tabs = n.querySelector('.ficha-vista-tabs');
     const caras = carasDe(d);
     if (caras.length > 1) {
-      tabs.style.display = '';
+      tabs.hidden = false;
       tabs.innerHTML = caras.map((c) =>
         `<button type="button" class="ficha-vista-tab${c === d.cual ? ' on' : ''}" data-vista="${c}" role="tab" aria-selected="${c === d.cual}">${CARAS[c]}</button>`).join('');
       tabs.querySelectorAll('.ficha-vista-tab').forEach((tb) =>
         tb.addEventListener('click', () => { lupaDatos.cual = tb.dataset.vista; pintarLupa(); }));
-    } else { tabs.innerHTML = ''; tabs.style.display = 'none'; }
+    } else { tabs.innerHTML = ''; tabs.hidden = true; }
   }
   function abrirLupa(fig) {
     const tabOn = fig.querySelector('.ficha-vista-tab.on');

@@ -57,3 +57,33 @@ test('la carpeta se ordena por fecha y PR, sin la plantilla ni el README, y el r
   assert.match(r, /2026-10-31 · PR #100 · Algo que cambió/);
   assert.doesNotMatch(r, /PR #120/);
 });
+
+// El arranque de cada sesión enseña las tres últimas (2026-10-31, mejora aprobada al cerrar el PR #98):
+// sin la cabecera de RELEVO.md, una sesión nueva no veía qué se entregó lo último. Como el listado de
+// temas en curso, va antes de `npm install` y dentro de un `if` con tiempo límite: no corta el arranque.
+test('session-start.sh enseña las tres últimas entregas sin poder cortar el arranque', () => {
+  const hook = fs.readFileSync(path.join(__dirname, '..', '.claude/hooks/session-start.sh'), 'utf8');
+  const i = hook.indexOf('node scripts/entregas.js');
+  assert.ok(i > 0, 'session-start.sh no corre scripts/entregas.js');
+  assert.ok(i < hook.indexOf('npm install --no-audit'), 'va antes de npm install: no necesita dependencias');
+  const linea = hook.slice(hook.lastIndexOf('\n', i) + 1, hook.indexOf('\n', i));
+  assert.match(linea, /^if ! timeout \d+ node scripts\/entregas\.js --n=3\b/, 'dentro de un if con timeout, las tres últimas');
+});
+
+// El resumen nombra siempre las entregas mal formadas, también las que no muestra (2026-11-01, mejora
+// aprobada al cerrar el PR #101): el arranque enseña tres, y una rota más vieja hacía saltar el aviso
+// sin decir cuál era.
+test('una entrega rota fuera de las mostradas se nombra con su archivo y su motivo', () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'entregas-'));
+  for (const pr of [101, 102, 103]) {
+    fs.writeFileSync(path.join(dir, `2026-10-31-pr-${pr}.md`), BUENA.replace('PR #98', `PR #${pr}`));
+  }
+  fs.writeFileSync(path.join(dir, '2026-10-30-pr-90.md'), '# 2026-10-30 · PR #90 · Rota\n');
+  const L = leerEntregas(dir);
+  const r = resumen(L, 3);
+  assert.doesNotMatch(r, /2026-10-30 · PR #90 · Rota/, 'no se muestra entera: no está entre las tres');
+  assert.match(r, /Mal formadas fuera de las mostradas \(1\):/);
+  assert.match(r, /! 2026-10-30-pr-90\.md: falta «- \*\*Encargo:\*\* …»/);
+  assert.doesNotMatch(resumen(L.slice(0, 3), 3), /Mal formadas/, 'sin rotas fuera, nada que decir');
+  assert.doesNotMatch(resumen(L, 0), /Mal formadas fuera/, 'con --todas ya se ven todas: no se repite');
+});

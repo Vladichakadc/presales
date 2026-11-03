@@ -53,6 +53,7 @@ const globalsNavegador = {
   // mismo patron UMD: /js/fortinet-reglas.js.
   FortinetReglas: 'readonly',
   FortinetMotor: 'readonly',
+  FortinetExplicacion: 'readonly',
   // Requisito de criptografía post-cuántica (2026-10-27): la regla única, /js/pqc.js.
   PQC: 'readonly',
 };

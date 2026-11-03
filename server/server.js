@@ -3,6 +3,7 @@ require('dotenv').config();
 const path = require('path');
 const express = require('express');
 const helmet = require('helmet');
+const compression = require('compression');
 
 const auth = require('./auth');
 const { sequelize, Vendor, Product } = require('./models');
@@ -56,6 +57,20 @@ app.use(helmet({
       'object-src': ["'none'"],
     },
   },
+}));
+// RESPUESTAS COMPRIMIDAS (2026-11-01, petición del dueño: «optimizar la página»). Medido en modo
+// producción: un dimensionador bajaba ~1 MB sin comprimir (Fortinet 1.147 KB, Aruba 1.084 KB), casi
+// todo JSON y JS, que con gzip o brotli ocupan alrededor de un 70 % menos. `compression` es el
+// middleware oficial de Express (expressjs/compression, sin scripts de instalación, versión fijada);
+// elige brotli o gzip según `Accept-Encoding` y deja sin comprimir lo que no es texto o pesa menos de
+// 1 KB.
+// FUERA, LO QUE LLEVA UN SECRETO (BREACH): comprimir una respuesta que mezcla un secreto con texto que
+// controla quien pide deja adivinarlo por el tamaño. El alta de usuario devuelve la contraseña
+// generada, el acceso y el cambio de contraseña llevan credenciales: esas rutas no se comprimen.
+const SIN_COMPRIMIR = ['/login', '/logout', '/api/cuenta/', '/api/usuarios'];
+const sinComprimir = (ruta) => SIN_COMPRIMIR.some((p) => ruta === p || ruta.startsWith(p.endsWith('/') ? p : `${p}/`) || ruta === p.replace(/\/$/, ''));
+app.use(compression({
+  filter: (req, res) => !sinComprimir(req.path) && compression.filter(req, res),
 }));
 app.use(express.json({ limit: '1mb' }));
 

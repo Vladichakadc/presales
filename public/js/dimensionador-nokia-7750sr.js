@@ -310,7 +310,7 @@
     $('copyBtn').onclick = () => {
       const out = $('bomOut');
       out.value = BOM.comoTexto(filas, { titulo: `NOKIA ${m.id}` });
-      out.classList.remove('hidden');
+      out.hidden = false;
       out.select();
       document.execCommand('copy');
     };

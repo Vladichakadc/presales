@@ -286,9 +286,9 @@ function tituloRevision(item){
 function renderBom(){
   guardarBom();
   const empty = bom.length===0;
-  $('emptyState').style.display = empty ? 'flex' : 'none';
-  $('tableWrap').style.display = empty ? 'none' : 'block';
-  $('summaryBar').style.display = empty ? 'none' : 'flex';
+  $('emptyState').hidden = !empty;
+  $('tableWrap').hidden = empty;
+  $('summaryBar').hidden = empty;
 
   if(!empty){
     $('bomBody').innerHTML = bom.map(item=>`

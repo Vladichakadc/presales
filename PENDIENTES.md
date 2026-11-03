@@ -778,7 +778,13 @@ sesión de Huawei abierta, o la app de GitHub para lanzar Actions). En orden de 
    R24C00») — por el mismo workflow. Para integrar al dimensionador: escala por despliegue
    (dispositivos, sitios y APs gestionados), modelo de licencia por equipo y si NCE-WAN va en la
    nube de Huawei o en sitio. Hoy la línea «Suscripción iMaster NCE-WAN» no tiene código ni tope.
-   El 2026-10-14 WebFetch dio ROBOTS_DISALLOWED.
+   El 2026-10-14 WebFetch dio ROBOTS_DISALLOWED. **2026-11-01 (PR #112)**: traída por Actions
+   (`fuente/nce-2026-10-29`, en `fuentes.js` con su huella): **no publica** escala, licencias ni nube o
+   en sitio, solo qué gestiona y el modelo de tres niveles (sistema, MSP, inquilino). La ficha del
+   modelo de negocio N1 (feb-2022) dice que el paquete N1 «combines the NCE controller», para las
+   series AR6300 a AR600. La línea del BOM ya no afirma cómo se licencia: lo dice así y pide
+   confirmarlo. **Lo que falta**: código y modelo de licencia del controlador hoy; los da la «License
+   Usage Guide» de la versión actual (support.huawei.com, pide cuenta) o Huawei.
 5. **Fuentes de serie de cinco AR** — **en parte cerrado el 2026-10-14**: el L14 trae dos fuentes AC
    integradas; el L26 y el L50 admiten PAC350S12-CR, PAC180S12-CN o PDC240S12-CN. El L26, el L50, el
    AR6710-H y el AR8700-8 siguen sin decir cuántas vienen: la descripción de hardware solo da dos

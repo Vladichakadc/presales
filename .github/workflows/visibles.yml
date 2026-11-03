@@ -1,0 +1,63 @@
+name: visibles
+
+# LO VISIBLE, CONTRA LA BASE DEL PR (2026-11-03, mejora propuesta al cerrar el PR #127).
+#
+# Conduce el mismo recorrido contra la base del PR, levantada desde un worktree, y contra el PR, y
+# compara los id que se ven en cada paso (scripts/visibles.js). El recorrido es el portal, la cuenta,
+# los usuarios, la guia, el cotizador y cada pestana, boton segmentado y casilla de los nueve
+# dimensionadores. Frena lo que deja de verse y lo que la base ocultaba y ahora se ve; un id nuevo
+# solo avisa. Ninguna otra comprobacion mira eso: un `hidden` de mas o un display:none en linea que
+# quitar el atributo ya no deshace (el #panelSsr de Juniper, PR #127) no los ve nadie si nadie
+# escribio una prueba para ESA pantalla.
+#
+# Un cambio hecho a proposito se acepta en la descripcion del PR, con una linea:
+#   visibles-acepta: #<id>: <motivo de al menos diez caracteres>
+# La descripcion entra como variable de entorno, nunca interpolada en el shell.
+#
+# SOLO EN LOS PR QUE TOCAN public/ (o la herramienta). No corre en el push a main: alli no hay base
+# con la que comparar, y Railway espera a los checks de ese commit. Va en su propio workflow, en
+# paralelo al de pantallas, para no alargar ese job. Los hallazgos salen como anotaciones (titulo
+# `visibles`): los logs de Actions viven en un dominio que el proxy de las sesiones deniega.
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'public/**'
+      - 'scripts/visibles.js'
+      - 'test/e2e/ayuda.js'
+      - '.github/workflows/visibles.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  visibles:
+    # La imagen y Playwright, los mismos que en pantallas (test/workflows-imagen.test.js).
+    runs-on: ubuntu-26.04
+    timeout-minutes: 20
+
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # Historial entero: la base se levanta desde un worktree de origin/<rama base>.
+          fetch-depth: 0
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: package.json
+          cache: npm
+
+      - name: Instalar dependencias
+        run: npm ci
+
+      - name: Traer Playwright y Chromium
+        run: |
+          npm install --no-save playwright@1.64.1
+          npx playwright install --with-deps chromium
+
+      - name: Lo visible, contra la base del PR
+        env:
+          BASE_REF: ${{ github.base_ref }}
+          PR_BODY: ${{ github.event.pull_request.body }}
+        run: node scripts/visibles.js --ref="origin/$BASE_REF"

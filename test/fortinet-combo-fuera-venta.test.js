@@ -22,10 +22,12 @@ const JS = fs.readFileSync(path.join(__dirname, '..', 'public', 'js', 'dimension
 
 // Las dos piezas de la página, ejecutadas tal cual están escritas (no una copia de su lógica).
 function piezaDeLaPagina() {
-  const fn = /function fueraDeVentaQueCumplen\(r\) \{[\s\S]*?\n\}\n/.exec(JS);
+  // Desde el 2026-10-31 (fase 3.2) la página delega en FortinetExplicacion: se ejecuta su envoltorio
+  // tal cual, con el módulo real en el contexto.
+  const fn = /function fueraDeVentaQueCumplen\(r\) \{ return FortinetExplicacion\.fueraDeVentaQueCumplen\(r\); \}\n/.exec(JS);
   const cf = /const comoFicha = [^\n]*\n/.exec(JS);
   assert.ok(fn && cf, 'la página ya no tiene fueraDeVentaQueCumplen o comoFicha');
-  const ctx = {};
+  const ctx = { FortinetExplicacion: require('../public/js/fortinet-explicacion.js') };
   vm.runInNewContext(`${fn[0]}${cf[0]}this.f = fueraDeVentaQueCumplen; this.c = comoFicha;`, ctx);
   return { fueraDeVentaQueCumplen: ctx.f, comoFicha: ctx.c };
 }

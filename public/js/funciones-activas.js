@@ -54,9 +54,10 @@
     return [...col.querySelectorAll('label > input[type="checkbox"]')].filter((cb) => {
       const l = cb.parentElement;
       if (l.matches(EXCLUIDAS)) return false;
-      // Oculto dentro de la columna (bloque condicional): no aplica al cálculo.
+      // Oculto dentro de la columna (bloque condicional): no aplica al cálculo. Desde el 2026-11-02 todo
+      // lo que se oculta se oculta con el atributo `hidden` (no hay clase `.hidden`).
       for (let n = l; n && n !== col; n = n.parentElement) {
-        if (n.hidden || n.classList.contains('hidden')) return false;
+        if (n.hidden) return false;
       }
       return true;
     });

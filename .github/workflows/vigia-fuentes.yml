@@ -100,7 +100,7 @@ jobs:
           } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Guardar lo medido para el job que publica
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: vigia
           path: |
@@ -127,7 +127,7 @@ jobs:
           node-version-file: package.json
 
       - name: Bajar lo medido
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: vigia
           path: ${{ runner.temp }}/vigia
@@ -174,7 +174,7 @@ jobs:
 
       - name: Guardar el contraste para el job que publica
         if: ${{ steps.pendiente.outputs.pendiente == 'true' }}
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: matrix
           path: ${{ runner.temp }}/matrix/matrix.json
@@ -213,7 +213,7 @@ jobs:
           } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Guardar el contraste para el job que publica
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: cisco
           path: ${{ runner.temp }}/cisco/cisco.json
@@ -246,7 +246,7 @@ jobs:
       - name: Bajar lo medido
         id: bajar
         if: ${{ needs.medir.result == 'success' }}
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: vigia
           path: ${{ runner.temp }}/vigia
@@ -254,7 +254,7 @@ jobs:
       - name: Bajar el contraste del Product Matrix
         id: bajar-matrix
         if: ${{ needs.contrastar.result == 'success' && needs.contrastar.outputs.pendiente == 'true' }}
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: matrix
           path: ${{ runner.temp }}/matrix
@@ -262,7 +262,7 @@ jobs:
       - name: Bajar el contraste de las fichas de Cisco
         id: bajar-cisco
         if: ${{ needs.contrastar_cisco.result == 'success' }}
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: cisco
           path: ${{ runner.temp }}/cisco
