@@ -1707,4 +1707,17 @@ module.exports = [
   { archivo: 'huawei-nce-campus-r24c00.pdf', tipo: 'pdf', para: 'HUAWEI', urls: [
     'https://e.huawei.com/marketingcloud/pep/asset/20000001/Material/e3ae1dc4d0e34e08871f529f499579c7/M3T1A590N1069706146884108541/iMaster%20NCE-Campus%20Product%20Datasheet%20R24C00%201130.pdf',
   ] },
+  // 2026-11-03 (pendiente: la PQC de los gateways Aruba con AOS-10). Lo cierra la referencia de CLI
+  // de AOS-10 que nombre la PPK en el gateway. La guía de CLI de AOS-10 en PDF (comandos show, con la
+  // versión en que entra cada uno), el índice «What's New in AOS-10 CLI» de la CLI-Bank (enlaza a lo
+  // nuevo en 10.8.0.0 y 10.8.1.0) y las notas «What's New» de AOS-10.8.0.0, que nombran ppk-mandatory.
+  { archivo: 'aruba-aos10-cli-guide.pdf', tipo: 'pdf', para: 'ARUBA', urls: [
+    'https://arubanetworking.hpe.com/techdocs/AOS_10.x_Books/AOS10_CLI_Guide.pdf',
+  ] },
+  { archivo: 'aruba-aos10-cli-whats-new.html', tipo: 'html', para: 'ARUBA', debeContener: 'AOS-10.8', urls: [
+    'https://arubanetworking.hpe.com/techdocs/CLI-Bank/Content/aos10/whats-new/main.htm',
+  ] },
+  { archivo: 'aruba-aos10-108-whats-new.html', tipo: 'html', para: 'ARUBA', debeContener: 'ppk-mandatory', urls: [
+    'https://arubanetworking.hpe.com/techdocs/AOS_10.x_RN_WebHelp/Content/10.8/00/features-10800.htm',
+  ] },
 ];
