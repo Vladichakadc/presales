@@ -397,6 +397,14 @@ existen los workflows de transporte. Huawei y HPE niegan además el navegador au
 
 ## Mejoras propuestas sin decidir
 
+- **Un solo lanzamiento de Chromium** (propuesta al cerrar el PR #130). Las 44 baterías e2e y
+  `scripts/visibles.js` llaman a `chromium.launch()` directo; solo `pantallas`, `contraste` y el
+  manual pasan por `opcionesDeLanzamiento()`. Hoy las e2e corren con RenderDocument activo y las
+  medidas sin él: dos navegadores distintos en el mismo job. Pasarlas todas por la ayuda (y una prueba
+  que frene un `chromium.launch(` sin ella) evita que el próximo flag necesario se aplique solo a
+  medias. Cuesta tocar ~45 archivos sin cambiar lo que comprueban; si se hace mal, una batería que hoy
+  pasa podría cambiar de comportamiento al apagar RenderDocument, así que se mide con la e2e entera
+  en CI antes de fusionar. Se decide por el dueño.
 - **`npm run reservar` en la rama de la sesión** (propuesta al cerrar el PR #129). Hoy `reservar` siempre
   crea y empuja `claude/<tema>`. Una sesión que trabaja en una rama fija (las de la nube la traen
   asignada) deja así una rama de sobra que declara los mismos archivos que la suya, y que a veces no
