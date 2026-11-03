@@ -107,16 +107,10 @@
     },
     "fortinet::https://fortinetweb.s3.amazonaws.com/docs.fortinet.com/v2/attachments/51fcbb4f-33ff-11ef-bfe5-fa163e15d75b/fortios-v7.6.0-release-notes.pdf": {
       "documento": "FortiOS 7.6 Release Notes (7.6.0 y 7.6.3)",
-      "hashVerificado": "57d385ea38e13f7786ea9b8ddea339a94a759a939caa254d90fcbe1463422a06",
-      "bytes": 1338345,
-      "medido": "2026-10-26T12:35:29.169Z",
-      "clase": "bytes",
-      "visto": {
-        "hash": "45ca3cade24308a8bbf139010119c7bd8cc55223f238ed3382c9af9675d6a10d",
-        "bytes": 1338351,
-        "medido": "2026-11-03T02:53:37.205Z"
-      },
-      "pendienteDesde": "2026-11-03T02:52:25.322Z"
+      "hashVerificado": "45ca3cade24308a8bbf139010119c7bd8cc55223f238ed3382c9af9675d6a10d",
+      "bytes": 1338351,
+      "medido": "2026-11-03T02:53:37.205Z",
+      "clase": "bytes"
     },
     "fortinet::https://fortinetweb.s3.amazonaws.com/docs.fortinet.com/v2/attachments/c7e69026-9283-11eb-b70b-00505692583a/fortigate-7121F-system-guide.pdf": {
       "documento": "FortiGate 7081F System Guide (7.0.5) y FortiGate-7121F System Guide (7.4.4)",
@@ -127,16 +121,10 @@
     },
     "juniper::https://www.juniper.net/documentation/us/en/hardware/srx1600/index.html": {
       "documento": "Hardware guides por modelo (SRX300/320/340/345/1500/1600/2300/4100/4200/4300/4700)",
-      "hashVerificado": "217679ceb7a8f90c49a3f6e6116308a070836ad60853a3bd57d57d0d756212e8",
-      "bytes": 9734,
-      "medido": "2026-10-26T12:35:29.169Z",
-      "clase": "texto",
-      "visto": {
-        "hash": "ee8fbcb3ab0c7831b7bcbfeb42626ca3f5e882d71a347b3e96db0e1b90818ded",
-        "bytes": 6699,
-        "medido": "2026-11-03T02:53:37.205Z"
-      },
-      "pendienteDesde": "2026-11-03T02:52:46.492Z"
+      "hashVerificado": "ee8fbcb3ab0c7831b7bcbfeb42626ca3f5e882d71a347b3e96db0e1b90818ded",
+      "bytes": 6699,
+      "medido": "2026-11-03T02:53:37.205Z",
+      "clase": "texto"
     },
     "mikrotik::https://mikrotik.com/product/RB750Gr3": {
       "documento": "Ficha de producto MikroTik RB750Gr3",
@@ -546,16 +534,10 @@
     },
     "aruba::https://www.hpe.com/psnow/downloadDoc/a00067608enw.pdf?id=a00067608enw": {
       "documento": "Fichas de las series 9000, 9100 y 9200 de gateways (data sheet de la serie 9000 a00067608enw Rev. 2 y QuickSpecs 9100 y 9200)",
-      "hashVerificado": "98e55d1e7b62747b61952c3651413f5b0cb3ce5147319e3c041894ded29620bd",
-      "bytes": 1081426,
-      "medido": "2026-10-28T12:00:00.000Z",
-      "clase": "bytes",
-      "visto": {
-        "hash": "1b087c5d6e94f1b9540fee6a29bfbfad4d79e2f4938aae014f9bfd082eeee875",
-        "bytes": 463410,
-        "medido": "2026-11-03T02:53:37.205Z"
-      },
-      "pendienteDesde": "2026-11-03T02:53:32.836Z"
+      "hashVerificado": "1b087c5d6e94f1b9540fee6a29bfbfad4d79e2f4938aae014f9bfd082eeee875",
+      "bytes": 463410,
+      "medido": "2026-11-03T02:53:37.205Z",
+      "clase": "bytes"
     },
     "aruba::https://arubanetworking.hpe.com/techdocs/VSG/docs/070-sd-branch-design/Media/PDF/Aruba_VSG_SD-Branch-Design.pdf": {
       "documento": "Validated Solution Guide SD-Branch y data sheet de suscripciones EdgeConnect (HPE, oficiales)",
@@ -1242,6 +1224,13 @@
       "clase": "bytes",
       "bytes": 1011474,
       "medido": "2026-11-03T02:53:37.205Z"
+    },
+    "juniper::https://www.hpe.com/psnow/downloadDoc/a00150819enw.pdf?id=a00150819enw": {
+      "documento": "HPE Networking SRX1500 Firewall data sheet (a00150819ENW, Rev. 2)",
+      "hashVerificado": "4ae274e3994f841bf49a91a7e88bdb0b69fdb014712944c4cf9f899e612c25a3",
+      "clase": "bytes",
+      "bytes": 338780,
+      "medido": "2026-11-03T02:30:00.000Z"
     }
   },
   "revisado": "2026-11-03T02:53:37.205Z"

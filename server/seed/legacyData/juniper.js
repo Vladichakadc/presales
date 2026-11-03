@@ -182,7 +182,8 @@
 const MODELS = [
   // ── Línea SRX300: sucursal ────────────────────────────────────────────────
   // Los cinco, del datasheet vigente de la línea (2026-10-02, ver PROCEDENCIA). El `atp` del
-  // 340 y del 345 sigue siendo de la matriz de 2020: el datasheet no publica esa capa.
+  // 340 y del 345 sigue siendo de la matriz de 2020: el datasheet no publica esa capa (tampoco su
+  // Rev. 2 en psnow, a00150823ENW, leída el 2026-11-03), y la matriz da 404 desde ese día.
   {id:'SRX300', redund:false, psu:{tipo:'adaptador de corriente externo, único', volts:'100-240 V AC, 50-60 Hz', amps:'1 A máximo (pico de arranque 7 A a 220 V)', texto:'Se alimenta con el adaptador que viene con el equipo, sin opción de una segunda fuente. La guía de hardware no publica consumo para este modelo.'}, ser:'SRX 300', seg:'SOHO / Teletrabajo',
    fw:1900, fwImix:600, vpn:336, vpnImix:116, ips:200, atp:null, sess:64000, cps:5000,
    ifaces:'8x GE (6 RJ45 + 2 SFP)'},
@@ -202,9 +203,11 @@ const MODELS = [
    ifaces:'16x GE PoE+ + 4x 10GE SFP+ · fuente redundante',
    redund:true, psu:{texto:'Fuente redundante, según el datasheet Juniper del SRX380.'}},
 
-  // ── SRX1500: fw/fwImix/ips/atp ya verificados; vpn y sess corregidos 2026-09-02 ──
+  // ── SRX1500: desde el 2026-11-03, de su ficha vigente (psnow a00150819ENW Rev. 2), como la
+  // generación 2024: `ips` y `atp` por el método CPS. La matriz de 2020 de la que salían antes
+  // (fwImix 5.000, vpn 1.300, ips 3.000, atp 1.600) da 404 y la ficha nueva la contradice. ──
   {id:'SRX1500', redund:'opcional', psu:{tipo:'una fuente instalada, admite una segunda (AC o DC)', volts:'100-127 V AC (2,5 A) o 200-240 V AC (1,3 A), 47-63 Hz', texto:'La segunda fuente es opcional y solo con las dos instaladas se pueden cambiar en caliente. La guía de hardware no publica consumo para este modelo.'}, ser:'SRX 1500', seg:'Campus / DC pequeño',
-   fw:9000, fwImix:5000, vpn:1300, vpnImix:null, ips:3000, atp:1600, sess:2000000, cps:90000,
+   fw:9000, fwImix:4500, vpn:4000, vpnImix:1000, ips:2000, atp:1000, sess:2000000, cps:90000,
    eolAnnounced:{pid:'SRX1500-SYS-JB-AC', lastOrder:'2026-04-15', url:'https://supportportal.juniper.net/s/article/End-Of-Life-Notification-SRX1500-Transform'},
    ifaces:'16x GE + 4x 10GE SFP+ · 1U'},
 
