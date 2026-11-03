@@ -515,6 +515,16 @@ module.exports = [
     'https://www.hpe.com/us/en/juniper-srx-firewall.html',
     'https://www.hpe.com/emea_europe/en/juniper-srx-firewall.html',
   ] },
+  // Las fichas que enlaza hoy la página de la serie en hpe.com (su tarjeta de cada modelo).
+  { archivo: 'hpe-a00150833enw.pdf', tipo: 'pdf', para: 'JUNIPER', urls: [
+    'https://www.hpe.com/psnow/downloadDoc/a00150833enw.pdf?id=a00150833enw',
+  ] },
+  { archivo: 'hpe-a00150834enw.pdf', tipo: 'pdf', para: 'JUNIPER', urls: [
+    'https://www.hpe.com/psnow/downloadDoc/a00150834enw.pdf?id=a00150834enw',
+  ] },
+  { archivo: 'hpe-a00150836enw.pdf', tipo: 'pdf', para: 'JUNIPER', urls: [
+    'https://www.hpe.com/psnow/downloadDoc/a00150836enw.pdf?id=a00150836enw',
+  ] },
   { archivo: 'juniper-srx300-ds.html', tipo: 'html', para: 'JUNIPER', debeContener: 'SRX340', urls: [
     'https://www.juniper.net/us/en/products/security/srx-series/srx300-line-firewalls-branch-datasheet.html',
     'https://www.juniper.net/gb/en/products/security/srx-series/srx300-line-firewalls-branch-datasheet.html',
