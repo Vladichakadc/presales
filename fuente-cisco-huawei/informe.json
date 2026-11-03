@@ -1,0 +1,17 @@
+[
+  {
+    "archivo": "aruba-aos10-cli-whats-new.html",
+    "para": "ARUBA",
+    "guardado": true,
+    "exploracion": true,
+    "intentos": [
+      {
+        "url": "https://arubanetworking.hpe.com/techdocs/CLI-Bank/Content/aos10/whats-new/main.htm",
+        "status": 200,
+        "bytes": 19052,
+        "guardado": true,
+        "verificado": false
+      }
+    ]
+  }
+]
