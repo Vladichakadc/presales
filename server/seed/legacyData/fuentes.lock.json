@@ -945,13 +945,6 @@
       "bytes": 4280442,
       "medido": "2026-10-28T14:30:00.000Z"
     },
-    "juniper::https://www.juniper.net/content/dam/www/assets/datasheets/us/en/routers/ssr1000-line-of-routers-datasheet.pdf": {
-      "documento": "SSR1000 Line of Routers Datasheet (1000757-002-EN)",
-      "hashVerificado": "f2dc263205b00175fae71b07f848796ec1de5605d256f667a1f0c0b6dbd9bdf7",
-      "clase": "bytes",
-      "bytes": 697450,
-      "medido": "2026-10-26T12:35:29.169Z"
-    },
     "juniper::https://www.hpe.com/psnow/downloadDoc/a00150825enw.pdf?id=a00150825enw": {
       "documento": "MX 204/240/480/960 Series Universal Routing Platforms Datasheet (a00150825ENW, Rev. 1)",
       "hashVerificado": "dd37a225da8ea1f064fed5a274919357a68f1dea89e6db6c67a7e3f818b3d883",
@@ -1035,6 +1028,13 @@
       "clase": "bytes",
       "bytes": 294210,
       "medido": "2026-11-03T02:10:00.000Z"
+    },
+    "juniper::https://www.hpe.com/psnow/downloadDoc/a00150832enw.pdf?id=a00150832enw": {
+      "documento": "Juniper Networks SSR1000 line of Routers data sheet (a00150832ENW)",
+      "hashVerificado": "8825a4c2bfe219ec9bef9e59accb139143c1dd722ab6cbc59a2082033f4c51b5",
+      "clase": "bytes",
+      "bytes": 1205884,
+      "medido": "2026-11-03T02:30:00.000Z"
     }
   },
   "revisado": "2026-10-26T12:35:29.169Z"
