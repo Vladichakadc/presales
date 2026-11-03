@@ -318,6 +318,30 @@ test('H-13 · el plazo de las suscripciones sale en el texto de cada línea', ()
   assert.match(t(undefined), /12 meses/, 'sin plazo declarado rige el año de siempre');
 });
 
+// EL CONTROLADOR, CON LO QUE DICEN SUS DOCUMENTOS (2026-11-01). La línea afirmaba «se licencia por
+// nodo administrado» sin fuente. La ficha del modelo de negocio N1 (feb-2022) dice que el paquete N1
+// ya combina el controlador NCE, para las series de entonces; la de iMaster NCE-Campus R24C00 no da
+// escala ni licencias. La línea lo dice y pide confirmarlo; ninguna de las dos vuelve a afirmarlo.
+test('la línea de iMaster NCE-WAN dice lo que publican sus documentos, no un modelo de licencia sin fuente', () => {
+  const r = M.evaluar(esc({ bw: 500 }), MODELS);
+  const nce = M.licencias(r.pick, { need: r.need, aps: 0, svc: r.svc, pk: r.pk, anios: 1 }).find((l) => /NCE-WAN/.test(l.t));
+  assert.ok(nce, 'la línea sigue en el BOM con SD-WAN');
+  assert.match(nce.d, /paquete N1 ya combina el controlador NCE/);
+  assert.match(nce.d, /iMaster NCE-Campus R24C00 no da escala ni licencias/);
+  assert.match(nce.d, /Confirmar con Huawei/);
+  assert.ok(!nce.sku, 'sin código publicado no lleva SKU');
+  const fs = require('fs');
+  const path = require('path');
+  for (const f of ['huawei-motor.js', 'dimensionador-huawei-netengine.js']) {
+    assert.doesNotMatch(fs.readFileSync(path.join(__dirname, '..', 'public', 'js', f), 'utf8'), /licencia(do)? por nodo administrado/,
+      `${f}: vuelve a afirmar sin fuente cómo se licencia el controlador`);
+  }
+  const { FUENTES } = require('../server/seed/legacyData/fuentes.js');
+  const docs = (FUENTES.huawei || []).map((x) => x.documento);
+  assert.ok(docs.includes('Huawei SD-WAN N1 Business Model (datasheet, V100R019)') && docs.includes('iMaster NCE-Campus Product Datasheet R24C00'),
+    'los dos documentos que cita están en fuentes.js');
+});
+
 const { OPTICS } = require('../server/seed/legacyData/huawei.js');
 const ar = MODELS.find((m) => m.id === 'AR5710-S8T2X');
 

@@ -55,8 +55,12 @@ test('el semáforo de #wanResumen y el escalado usan la MISMA regla (evaluarPuer
   // La regla de densidad de puertos se extrae a una sola función: si vuelve a haber dos
   // copias, la barra avisará una cosa y el dimensionador escalará por otra.
   assert.ok(js.includes('function evaluarPuertos('), 'falta evaluarPuertos (regla única de densidad)');
-  assert.ok(js.includes('const ev=evaluarPuertos(m,D.wanLinks)'),
+  // Desde el 2026-11-01 (fase 3.1) el filtro de candidatos vive en aruba-reglas.js, y la página le
+  // pasa SU evaluarPuertos: el mismo que pinta el semáforo.
+  const reglas = require('fs').readFileSync(require('path').join(__dirname, '..', 'public/js/aruba-reglas.js'), 'utf8');
+  assert.ok(reglas.includes('const ev=evaluarPuertos(m,D.wanLinks)'),
     'el descarte por puertos ya no usa evaluarPuertos — regla duplicada otra vez');
+  assert.match(js, /ArubaReglas\.filtrarCandidatos\(MODELS, \{[^}]*\bevaluarPuertos\b/, 'la página no pasa su evaluarPuertos al filtro');
   assert.ok(js.includes('const ev=evaluarPuertos(m,links)'),
     '#wanResumen ya no usa evaluarPuertos — regla duplicada otra vez');
 });

@@ -170,7 +170,7 @@ $('capaSeg').addEventListener('click', (e) => {
 // porque un parámetro que no cuenta no puede viajar como si contara.
 function marcar(id, activo) {
   const n = $(id); if (!n) return;
-  n.style.display = activo ? '' : 'none';
+  n.hidden = !activo;
   n.toggleAttribute('data-inactivo', !activo);
 }
 function aplicarDependencias() {
@@ -529,7 +529,7 @@ function pintarEscala(lista, k, needMbps, elegido, nombre) {
     t.innerHTML = `<i></i><b>${v >= 1e6 ? `${v / 1e6}T` : v >= 1000 ? `${v / 1000}G` : `${v}M`}</b>`;
     track.appendChild(t);
   });
-  const lbl = document.createElement('div'); lbl.className = 'pickLabel'; lbl.id = 'pickLbl'; lbl.style.display = 'none';
+  const lbl = document.createElement('div'); lbl.className = 'pickLabel'; lbl.id = 'pickLbl'; lbl.hidden = true;
   track.appendChild(lbl);
   for (const m of lista) {
     if (typeof m[k] !== 'number') continue;
@@ -537,7 +537,7 @@ function pintarEscala(lista, k, needMbps, elegido, nombre) {
     d.className = `dot${m[k] >= needMbps ? ' ok' : ''}${elegido && m.id === elegido.id ? ' pick' : ''}`;
     d.style.left = `${x(m[k])}%`; d.title = `${m.id}: ${fmt(m[k])}`;
     track.appendChild(d);
-    if (elegido && m.id === elegido.id) { lbl.textContent = m.id; lbl.style.left = `${x(m[k])}%`; lbl.style.display = 'block'; }
+    if (elegido && m.id === elegido.id) { lbl.textContent = m.id; lbl.style.left = `${x(m[k])}%`; lbl.hidden = false; }
   }
 }
 
@@ -692,8 +692,8 @@ function renderBom() {
 $('copyBtn').addEventListener('click', async () => {
   const t = $('bomOut');
   try { await navigator.clipboard.writeText(t.value); $('copyBtn').textContent = 'Copiado'; } catch {
-    t.classList.remove('hidden'); t.select(); document.execCommand('copy');
-    t.classList.add('hidden'); $('copyBtn').textContent = 'Copiado';
+    t.hidden = false; t.select(); document.execCommand('copy');
+    t.hidden = true; $('copyBtn').textContent = 'Copiado';
   }
   setTimeout(() => { $('copyBtn').textContent = 'Copiar como texto'; }, 1600);
 });

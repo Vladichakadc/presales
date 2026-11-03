@@ -6,6 +6,14 @@
    en Nokia). Lo que aquí quiere decir «fuera de venta» es un rojo fijo, nunca esa variable; lo que
    quiere decir «activado» sí usa el color de marca, que es el acento de la página. */
 
+/* `hidden` GANA SIEMPRE (2026-11-01, la mejora propuesta al cerrar el PR #112). El atributo es un
+   `display:none` de la hoja del navegador y cualquier `display` de autor le gana: la casilla de la
+   licencia única de Fortinet (un `.checks`, `display:grid`) se veía en producción sin alta
+   disponibilidad. Una sola regla en vez de una por clase, con `!important` para ganar también a un
+   `#id{display:flex}` (la ventana del consolidado) y al `style=` en línea.
+   `test/oculto-visible.test.js` exige que cada página la alcance. */
+[hidden] { display: none !important; }
+
 :root {
   --ciclo-rojo: #B42318;       /* 6,6:1 sobre blanco (AA en texto normal) */
   --ciclo-rojo-fondo: #FEF3F2;
@@ -204,7 +212,6 @@ label.fa-por-destino { outline: 2px solid var(--red, #0E1A2B); outline-offset: 2
   display: flex; align-items: center; justify-content: center; padding: 20px;
   background: color-mix(in srgb, var(--ink, #0E1A2B) 45%, transparent);
 }
-#modalConsolidado[hidden], #accModal[hidden] { display: none; }
 #modalConsolidado .acc-caja, #accModal .acc-caja {
   width: 100%; max-height: 86vh; overflow: auto; padding: 20px;
   background: var(--card, #FFF); border: 1px solid var(--rule, #C6CFDA); border-radius: 6px;

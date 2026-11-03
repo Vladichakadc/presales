@@ -50,7 +50,7 @@ segClick('modoSeg',v=>{modo=v;});
 segClick('tramaSeg',v=>{trama=Number(v)||M.TRAMA_DEFECTO;});
 // Los sub-campos solo existen mientras su opcion este activa.
 [['chkBgp','bgpBox'],['chkPppoe','pppoeBox'],['chkCapsman','capsBox']].forEach(([chk,box])=>{
-  $(chk).addEventListener('change',()=>$(box).classList.toggle('hidden',!$(chk).checked));
+  $(chk).addEventListener('change',()=>{ $(box).hidden = !$(chk).checked; });
 });
 ['bw','head','dirMult','sedes','conc','firewall','cifrado','chkVirtual','chkQos','chkL3hw','chkBgp','bgpFeeds',
  'chkPppoe','pppoeSess','ovpnTun','hotspotUsers','chkCapsman','apCount','apModel','chkPoe','poeFuente','chkHa','reqPqc']
@@ -208,15 +208,15 @@ function pintarAvisos(ev){
 
 function render(){
   $('headVal').textContent=Math.round((parseFloat($('head').value)||0))+' %';
-  $('hubBox').classList.toggle('hidden',modo!=='hub');
+  $('hubBox').hidden = modo!=='hub';
   $('bwLbl').textContent=modo==='hub'?'Caudal por sede (por sentido)':'Caudal del sitio (por sentido)';
   // Lo que no aplica al perfil se marca inactivo: no viaja en el enlace del escenario.
   if(profile==='ipsec') $('cifradoBox').removeAttribute('data-inactivo'); else $('cifradoBox').setAttribute('data-inactivo','');
-  $('cifradoBox').classList.toggle('hidden',profile!=='ipsec');
+  $('cifradoBox').hidden = profile!=='ipsec';
   if(modo==='hub') $('hubBox').removeAttribute('data-inactivo'); else $('hubBox').setAttribute('data-inactivo','');
   const enl=leerEnlaces();
   const hayRespCif=profile==='fwd'&&enl.some(e=>e.rol==='principal'&&e.tipo==='mpls')&&enl.some(e=>e.rol==='respaldo'&&e.tipo==='internet');
-  $('respIpsecBox').classList.toggle('hidden',!hayRespCif);
+  $('respIpsecBox').hidden = !hayRespCif;
   if(hayRespCif) $('respIpsecBox').removeAttribute('data-inactivo'); else $('respIpsecBox').setAttribute('data-inactivo','');
 
   const ev=evaluarEscenario();
@@ -487,7 +487,7 @@ function populateSelects(){
 function renderOpticsPicker(m){
   const cages=m.cages||{};
   const codes=Object.keys(cages).filter(c=>OPTICS[c]&&OPTICS[c].length);
-  $('opticsPanel').classList.toggle('hidden',!codes.length);
+  $('opticsPanel').hidden = !codes.length;
   if(!codes.length){$('opticsPicker').innerHTML='';return;}
   $('opticsPicker').innerHTML=codes.map(c=>`
     <div class="field">
@@ -698,7 +698,7 @@ function renderLicTables(){
 $('copyBtn').addEventListener('click',async()=>{
   const t=$('bomOut');
   try{await navigator.clipboard.writeText(t.value);$('copyBtn').textContent='Copiado';}
-  catch{t.classList.remove('hidden');t.select();document.execCommand('copy');t.classList.add('hidden');$('copyBtn').textContent='Copiado';}
+  catch{t.hidden = false;t.select();document.execCommand('copy');t.hidden = true;$('copyBtn').textContent='Copiado';}
   setTimeout(()=>$('copyBtn').textContent='Copiar como texto',1600);
 });
 

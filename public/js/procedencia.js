@@ -127,11 +127,16 @@
   async function renderProcedencia() {
     const cajas = document.querySelectorAll('[data-procedencia]');
     if (!cajas.length) return;
+    // Cada caja pinta un fabricante: se pide solo el suyo (`?vendor=`), no los siete.
     let datos;
     try {
-      const res = await fetch('/api/fuentes');
-      if (!res.ok) throw new Error('respuesta no válida');
-      datos = await res.json();
+      const codigos = [...new Set([...cajas].map((c) => c.dataset.procedencia))];
+      const partes = await Promise.all(codigos.map(async (code) => {
+        const res = await fetch(`/api/fuentes?vendor=${encodeURIComponent(code)}`);
+        if (!res.ok) throw new Error('respuesta no válida');
+        return res.json();
+      }));
+      datos = Object.assign({}, ...partes);
     } catch {
       cajas.forEach((c) => { c.textContent = 'No se pudo cargar la procedencia del catálogo.'; });
       return;
@@ -272,11 +277,11 @@
     const fuente = document.getElementById('contrasteFuente');
     const btnDesc = document.getElementById('btnDescargarContraste');
     contrasteActual = null;
-    btnDesc.style.display = 'none';
-    fuente.style.display = 'none';
+    btnDesc.hidden = true;
+    fuente.hidden = true;
     resumen.innerHTML = '';
     result.innerHTML = '<p>Contrastando el documento con el catálogo…</p>';
-    modal.style.display = 'flex';
+    modal.hidden = false;
 
     const nombre = archivo.name || 'documento';
     if (/\.pdf$/i.test(nombre)) { result.innerHTML = mensajeNoTabular('Es un PDF'); return; }
@@ -345,13 +350,13 @@
     }
 
     result.innerHTML = html;
-    fuente.style.display = r.cambios.length ? 'block' : 'none';
-    btnDesc.style.display = r.cambios.length ? 'inline-block' : 'none';
+    fuente.hidden = !r.cambios.length;
+    btnDesc.hidden = !r.cambios.length;
   }
 
   function closeContrasteModal() {
     const modal = document.getElementById('contrasteModal');
-    if (modal) modal.style.display = 'none';
+    if (modal) modal.hidden = true;
     contrasteActual = null;
   }
 
@@ -382,7 +387,7 @@
     if (document.getElementById('contrasteModal')) return;
     const style = document.createElement('style');
     style.textContent = `
-      .modal-overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(14,26,43,0.8);z-index:999;align-items:center;justify-content:center}
+      .modal-overlay{display:flex;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(14,26,43,0.8);z-index:999;align-items:center;justify-content:center}
       .modal{background:#fff;border-radius:6px;width:90%;max-width:800px;max-height:90vh;display:flex;flex-direction:column;box-shadow:0 10px 30px rgba(0,0,0,0.3)}
       .modal-header{padding:16px 20px;border-bottom:1px solid var(--rule);display:flex;justify-content:space-between;align-items:center}
       .modal-title{font-size:18px;font-weight:600;margin:0}
@@ -400,6 +405,7 @@
     const div = document.createElement('div');
     div.className = 'modal-overlay';
     div.id = 'contrasteModal';
+    div.hidden = true;
     div.innerHTML = `
       <div class="modal">
         <div class="modal-header">
@@ -412,7 +418,7 @@
           </div>
           <div id="contrasteResumen" style="font-size:13px;margin-bottom:12px;"></div>
           <div id="contrasteResult"></div>
-          <div id="contrasteFuente" style="margin-top:16px;display:none">
+          <div id="contrasteFuente" style="margin-top:16px" hidden>
             <p style="margin:0 0 5px 0;font-size:12.5px;font-weight:600;">URL de la fuente oficial (obligatoria para el PR)</p>
             <p style="margin:0 0 8px 0;font-size:11px;color:var(--steel);">El importador solo acepta un cambio con URL de fuente oficial (<code>https://…</code>) y si su valor anterior casa con lo que el catálogo dice hoy. Sin ella, la descarga sirve para revisar pero el workflow la rechazará.</p>
             <input type="url" id="contrasteUrl" placeholder="https://…" style="width:100%;box-sizing:border-box;padding:7px 9px;font-size:12.5px;border:1px solid var(--rule);border-radius:5px" />
@@ -420,7 +426,7 @@
         </div>
         <div class="modal-footer">
           <button class="btn" style="background:#fff;color:var(--ink);border:1px solid var(--rule)" data-cerrar-contraste>Cerrar</button>
-          <button id="btnDescargarContraste" class="btn" style="background:var(--ink);border:none;color:#fff;display:none">&#8681; Descargar propuesta (para PR)</button>
+          <button id="btnDescargarContraste" class="btn" style="background:var(--ink);border:none;color:#fff" hidden>&#8681; Descargar propuesta (para PR)</button>
         </div>
       </div>`;
     document.body.appendChild(div);
@@ -443,10 +449,30 @@
     }
   });
 
-  renderProcedencia();
+  // La tabla de fuentes se pide cuando alguien la va a ver, no al abrir la página: las cajas viven
+  // en la pestaña «Fuentes», oculta al entrar, y /api/fuentes trae los siete fabricantes (~250 KB
+  // sin comprimir). Antes se pedía al arrancar y, a un administrador, dos veces. Un navegador sin
+  // IntersectionObserver la pide en el acto, como siempre: fallar hacia «cargada», nunca hacia vacía.
+  let vista = false;
+  function alVerse() {
+    if (vista) return;
+    vista = true;
+    renderProcedencia();
+  }
+  const cajasIniciales = document.querySelectorAll('[data-procedencia]');
+  if (cajasIniciales.length) {
+    if (typeof global.IntersectionObserver !== 'function') {
+      alVerse();
+    } else {
+      const obs = new global.IntersectionObserver((entradas) => {
+        if (entradas.some((e) => e.isIntersecting)) { obs.disconnect(); alVerse(); }
+      }, { rootMargin: '400px' });
+      cajasIniciales.forEach((c) => obs.observe(c));
+    }
+  }
   fetch('/api/cuenta/estado')
     .then((r) => (r.ok ? r.json() : null))
-    .then((d) => { if (d && d.puedeSync) { puedeSync = true; renderProcedencia(); } })
+    .then((d) => { if (d && d.puedeSync) { puedeSync = true; if (vista) renderProcedencia(); } })
     .catch(() => {});
 
   // Las etiquetas de Estado y Vigilancia, para que la hoja «Supuestos» del Excel (bom.js) diga lo

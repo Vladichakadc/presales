@@ -350,6 +350,14 @@ const CU01 = new URLSearchParams({
   const filasNodo = await page.$$eval('#bomTabla tbody tr', (trs) => trs.map((tr) => tr.textContent));
   t.ok(filasNodo.some((t2) => /FG-60F-BDL/.test(t2)) && !filasNodo.some((t2) => /FG-60F-HA/.test(t2)),
     'HA-UNICA: desmarcada, vuelve la suscripción por nodo con el SKU combinado');
+  // Que se VEA, no solo el atributo: `.checks` pone `display:grid` y le ganaba a `hidden`, así que
+  // la casilla se veía en activo-activo y sin HA (2026-11-01).
+  await page.selectOption('#haModo', 'ha-aa');
+  await asentar(page);
+  const enAA = await page.isVisible('#chkHaLicUnica');
+  await page.uncheck('#chkHa');
+  await asentar(page);
+  t.ok(!enAA && !(await page.isVisible('#chkHaLicUnica')), 'HA-UNICA: en activo-activo y sin HA la casilla no se ve');
 
   /* ── T22 · VDOM POR ENCIMA DE LOS INCLUIDOS ──────────────────────────────────────── */
   await abrir(CU01);
