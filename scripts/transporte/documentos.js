@@ -489,6 +489,21 @@ module.exports = [
   ] },
   { archivo: 'aruba-7205-ig.pdf', tipo: 'pdf', para: 'ARUBA', urls: [],
     descubrirEnlace: { de: 'aruba-7205-pagina.html', contiene: '/ig/', dominios: ['arubanetworks.com', 'hpe.com'], base: 'https://arubanetworking.hpe.com/techdocs/hardware/DocumentationPortal/Content/ArubaTopics/gatecontroller/7205.htm' } },
+  // 2026-11-03 (issue #123): el vigía del 2026-11-02 leyó como texto la ficha PDF del SRX1600 que
+  // el lock guarda como un PDF de 484 KB. Se trae como PDF (si ya no lo es, el informe da la firma)
+  // y la misma URL como página, para ver qué sirve Juniper ahora; y las otras dos fichas de la serie.
+  { archivo: 'juniper-srx1600-ds.pdf', tipo: 'pdf', para: 'JUNIPER', urls: [
+    'https://www.juniper.net/content/dam/www/assets/datasheets/us/en/security/srx1600-firewall-datasheet.pdf',
+  ] },
+  { archivo: 'juniper-srx1600-ds-respuesta.html', tipo: 'html', para: 'JUNIPER', exploracion: true, urls: [
+    'https://www.juniper.net/content/dam/www/assets/datasheets/us/en/security/srx1600-firewall-datasheet.pdf',
+  ] },
+  { archivo: 'juniper-srx2300-ds.pdf', tipo: 'pdf', para: 'JUNIPER', urls: [
+    'https://www.juniper.net/content/dam/www/assets/datasheets/us/en/security/srx2300-firewall-datasheet.pdf',
+  ] },
+  { archivo: 'juniper-srx4300-ds.pdf', tipo: 'pdf', para: 'JUNIPER', urls: [
+    'https://www.juniper.net/content/dam/www/assets/datasheets/us/en/security/srx4300-firewall-datasheet.pdf',
+  ] },
   { archivo: 'juniper-srx300-ds.html', tipo: 'html', para: 'JUNIPER', debeContener: 'SRX340', urls: [
     'https://www.juniper.net/us/en/products/security/srx-series/srx300-line-firewalls-branch-datasheet.html',
     'https://www.juniper.net/gb/en/products/security/srx-series/srx300-line-firewalls-branch-datasheet.html',

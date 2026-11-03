@@ -3,10 +3,10 @@
 - **Tema:** vigia-srx1600
 - **Rama:** claude/vigia-srx1600
 - **Cuenta:** (no consta)
-- **Estado:** reservado
+- **Estado:** en curso: transporte de las fichas SRX lanzado
 - **Actualizado:** 2026-11-02 20:52
 - **Archivos que toca:** scripts/transporte/documentos.js, server/seed/legacyData/fuentes.js, server/seed/legacyData/fuentes.lock.json
-- **Siguiente paso:** empezar: el tema está reservado y todavía no tiene código
+- **Siguiente paso:** leer la rama `fuente/srx1600-2026-11-03` y decidir qué hacer con la entrada del lock (issue #123)
 
 ## Encargo del dueño
 
