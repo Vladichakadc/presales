@@ -1,0 +1,92 @@
+[
+  {
+    "archivo": "hpe-a00150819enw.pdf",
+    "para": "JUNIPER",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://www.hpe.com/psnow/downloadDoc/a00150819enw.pdf?id=a00150819enw",
+        "status": 200,
+        "bytes": 338780,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "hpe-a00150823enw.pdf",
+    "para": "JUNIPER",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://www.hpe.com/psnow/downloadDoc/a00150823enw.pdf?id=a00150823enw",
+        "status": 200,
+        "bytes": 411035,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "hpe-a00150832enw.pdf",
+    "para": "JUNIPER",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://www.hpe.com/psnow/downloadDoc/a00150832enw.pdf?id=a00150832enw",
+        "status": 200,
+        "bytes": 1205884,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "hpe-a00150852enw.pdf",
+    "para": "JUNIPER",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://www.hpe.com/psnow/downloadDoc/a00150852enw.pdf?id=a00150852enw",
+        "status": 200,
+        "bytes": 1638603,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "hpe-a00154678enw.pdf",
+    "para": "JUNIPER",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://www.hpe.com/psnow/downloadDoc/a00154678enw.pdf?id=a00154678enw",
+        "status": 200,
+        "bytes": 199168,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "hpe-a50015856enw.pdf",
+    "para": "JUNIPER",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://www.hpe.com/psnow/downloadDoc/a50015856enw.pdf?id=a50015856enw",
+        "status": 200,
+        "bytes": 313638,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  }
+]
