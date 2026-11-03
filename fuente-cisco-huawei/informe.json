@@ -1,0 +1,57 @@
+[
+  {
+    "archivo": "juniper-srx1600-ds.pdf",
+    "para": "JUNIPER",
+    "guardado": false,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://www.juniper.net/content/dam/www/assets/datasheets/us/en/security/srx1600-firewall-datasheet.pdf",
+        "status": 200,
+        "firma": "203c21444f435459",
+        "nota": "no es un PDF"
+      }
+    ]
+  },
+  {
+    "archivo": "juniper-srx1600-ds-respuesta.html",
+    "para": "JUNIPER",
+    "guardado": true,
+    "exploracion": true,
+    "intentos": [
+      {
+        "url": "https://www.juniper.net/content/dam/www/assets/datasheets/us/en/security/srx1600-firewall-datasheet.pdf",
+        "status": 200,
+        "bytes": 369801,
+        "guardado": true,
+        "verificado": false
+      }
+    ]
+  },
+  {
+    "archivo": "juniper-srx2300-ds.pdf",
+    "para": "JUNIPER",
+    "guardado": false,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://www.juniper.net/content/dam/www/assets/datasheets/us/en/security/srx2300-firewall-datasheet.pdf",
+        "status": 200,
+        "firma": "203c21444f435459",
+        "nota": "no es un PDF"
+      }
+    ]
+  },
+  {
+    "archivo": "juniper-srx4300-ds.pdf",
+    "para": "JUNIPER",
+    "guardado": false,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://www.juniper.net/content/dam/www/assets/datasheets/us/en/security/srx4300-firewall-datasheet.pdf",
+        "status": 404
+      }
+    ]
+  }
+]
