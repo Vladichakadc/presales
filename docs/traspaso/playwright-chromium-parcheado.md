@@ -4,8 +4,8 @@
 - **Rama:** claude/playwright-chromium-parcheado
 - **Cuenta:** vladichakadc (claude.ai, sesión remota)
 - **Estado:** en curso
-- **Actualizado:** 2026-11-03 07:55
-- **Archivos que toca:** scripts/ayuda/chromium.js, scripts/contraste.js, .github/workflows/pantallas.yml, .github/workflows/limites.yml, test/chromium-lanzamiento.test.js
+- **Actualizado:** 2026-11-03 08:00
+- **Archivos que toca:** scripts/ayuda/chromium.js, scripts/contraste.js, .github/workflows/pantallas.yml, .github/workflows/limites.yml, .github/workflows/visibles.yml, test/chromium-lanzamiento.test.js
 - **Siguiente paso:** Mirar la comprobación `pantallas` del PR: el paso de contraste debe escribir la cobertura (8 «sin conducir», ninguna incoherencia) y la batería e2e pasar con Chromium 156. Si pasa, entrega y fusión; si no, leer las anotaciones `contraste`/`e2e`.
 
 ## Encargo del dueño
@@ -15,7 +15,7 @@
 ## Hecho
 
 - `opcionesDeLanzamiento()` añade `--disable-features=RenderDocument` (sin pisar los `args` del que llama).
-- `pantallas.yml` y `limites.yml` pasan de Playwright 1.61.1 (Chromium 149) a 1.64.1 (Chromium 156.0.8078.4).
+- `pantallas.yml`, `limites.yml` y `visibles.yml` (llegó a main con el PR #129, fijada en 1.61.1; `test/workflows-imagen.test.js` exige una sola versión) pasan de Playwright 1.61.1 (Chromium 149) a 1.64.1 (Chromium 156.0.8078.4).
 - `test/chromium-lanzamiento.test.js`: el flag está, no muta al que llama, y una versión 1.62+ en un workflow exige el flag.
 
 ## Falta
@@ -31,5 +31,5 @@
 
 ## Verificación
 
-- `npm run verificar`: 1389 pruebas en verde. `npm run auditar`: 0 avisos que frenen.
+- `npm run verificar`: 1389 pruebas en verde; tras fusionar main (PR #129), 1399. La primera corrida de `verificar` del PR falló por la versión de `visibles.yml`. `npm run auditar`: 0 avisos que frenen.
 - `npm run contraste -- --todos` en local, con y sin el flag (arriba).
