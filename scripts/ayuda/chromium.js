@@ -54,10 +54,26 @@ function requerirPlaywright() {
 // `executablePath` en ese caso.
 const chromiumDisponible = () => RUTAS_CHROMIUM.find((r) => fs.existsSync(r));
 
+/* RENDERDOCUMENT, APAGADO AQUI (2026-11-03). Desde la 1.62, Playwright deja activado
+ * RenderDocument en Chromium: cada navegacion abre un documento nuevo cuyo V8 no conserva la
+ * cobertura del anterior, y el informe del contraste solo contaba la ULTIMA pagina (medido en CI
+ * el 2026-10-02 con la 1.63, y en local el 2026-11-03 con la 1.63 y Chromium 153: seis modulos
+ * «sin conducir» que la corrida acababa de conducir). Por eso Playwright estaba fijado en la
+ * 1.61.1, con Chromium 149, anterior a varios zero-days de V8 explotados en 2026 (el ultimo,
+ * CVE-2026-87491, corregido en Chromium 153.0.8010.36). Apagar la funcion en el lanzamiento
+ * devuelve la cobertura acumulada sin quedarse atras de version.
+ *
+ * Se anade a los `args` que traiga el que llama, sin pisarlos, y solo si no la nombra ya. */
+const SIN_RENDER_DOCUMENT = '--disable-features=RenderDocument';
+
 // Azucar para el caso comun: `chromium.launch(opcionesDeLanzamiento())`.
 function opcionesDeLanzamiento(extra) {
   const ejecutable = chromiumDisponible();
-  return Object.assign({}, extra, ejecutable ? { executablePath: ejecutable } : {});
+  const opciones = Object.assign({}, extra, ejecutable ? { executablePath: ejecutable } : {});
+  const args = Array.isArray(opciones.args) ? opciones.args.slice() : [];
+  if (!args.some((a) => /RenderDocument/.test(a))) args.push(SIN_RENDER_DOCUMENT);
+  opciones.args = args;
+  return opciones;
 }
 
-module.exports = { requerirPlaywright, chromiumDisponible, opcionesDeLanzamiento, RUTAS_PLAYWRIGHT, RUTAS_CHROMIUM };
+module.exports = { requerirPlaywright, chromiumDisponible, opcionesDeLanzamiento, SIN_RENDER_DOCUMENT, RUTAS_PLAYWRIGHT, RUTAS_CHROMIUM };
