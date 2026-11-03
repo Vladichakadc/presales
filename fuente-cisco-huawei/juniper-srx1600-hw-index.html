@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html><html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en-us" lang="en-us">
+<head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+
+<meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=0" />
+<meta name="description" content="Use this guide to install the hardware and perform initial software configuration, routine maintenance, and troubleshooting for the Juniper Networks® SRX1600 Firewall. After completing the installation and basic configuration procedures covered in this guide, you can refer to the Junos® OS documentation for information about further software configuration." /><meta name="topicid" content="xi911580" /><meta name="branchId" content="1" /><meta name="jdoc-content-type" content="dita-guide" /><script type="application/ld+json">{"@context": "http://schema.org","@type": "WebPage","name": "SRX1600 Firewall Hardware Guide | Juniper Networks","@id": "https://www.juniper.net/documentation/us/en/hardware/srx1600/index.html#WebPage","url": "https://www.juniper.net/documentation/us/en/hardware/srx1600/index.html"}</script><title>SRX1600 Firewall Hardware Guide | Juniper Networks</title><link rel="icon" type="image/x-icon" href="/documentation/webstatic/favicon.ico" />
+<link rel="dns-prefetch" href="//h50007.www5.hpe.com" />
+<link rel="preconnect" href="https://h50007.www5.hpe.com" crossorigin />
+<link rel="stylesheet" href="https://h50007.www5.hpe.com/hfws-static/6/min/css/hpe-hfws-fontface-core.css" />
+<link rel="stylesheet" href="https://h50007.www5.hpe.com/hfws-static/6/min/css/hpe-hfws-hf.css" />
+<link rel="dns-prefetch" href="//www.hpe.com" />
+<link rel="preconnect" href="https://www.hpe.com" crossorigin />
+<link rel="preload" href="https://www.hpe.com/content/dam/hpe/fonts/graphik/HPEGraphik-Light-Web.woff2" as="font" type="font/woff2" crossorigin />
+<link rel="preload" href="https://www.hpe.com/content/dam/hpe/fonts/graphik/HPEGraphik-Regular-Web.woff2" as="font" type="font/woff2" crossorigin />
+<link rel="preload" href="https://www.hpe.com/content/dam/hpe/fonts/graphik/HPEGraphik-Medium-Web.woff2" as="font" type="font/woff2" crossorigin />
+<link rel="preload" href="https://www.hpe.com/content/dam/hpe/fonts/graphik/HPEGraphik-Semibold-Web.woff2" as="font" type="font/woff2" crossorigin />
+<link rel="preload" href="/documentation/webstatic/fonts/swmaterialicon.woff2" as="font" type="font/woff2" crossorigin />
+<link rel="modulepreload" crossorigin="" href="/documentation/webstatic/js/vue-core-CVlDq3yY.js"><link rel="modulepreload" crossorigin="" href="/documentation/webstatic/js/vendor-B42H1B2c.js"><link rel="modulepreload" crossorigin="" href="/documentation/webstatic/js/common-CqzIqGhN.js"><link rel="stylesheet" crossorigin="" href="/documentation/webstatic/css/common-C6PA429W.css"><link rel="stylesheet" crossorigin="" href="/documentation/webstatic/css/dita-CH-pxgM4.css"><script>
+	function insertcanonical() {
+		var canonicalexists = !!document.querySelector("link[rel='canonical']");
+		if (!canonicalexists) {
+			var tag = document.createElement("link");
+			var pathname = location.pathname;
+			var pattern = /\/$/;
+			if(pattern.test(pathname)){
+				pathname = pathname.replace(pattern,"/index.html");
+			}
+			// check if last character is slash else add / to be consistent
+			var href = "https://networkingdocs.hpe.com" + pathname;
+			tag.setAttribute("rel", "canonical");
+			tag.setAttribute("href", href);
+			document.head.appendChild(tag);
+		}
+	}
+	insertcanonical();
+</script>
+<!-- START ANALYTICS SCRIPT -->
+<script
+  type="text/javascript"
+  async
+  defer
+  src="https://www.hpe.com/global/metrics/easy/basic_measurement.js"
+></script>
+<!-- END ANALYTICS SCRIPT -->
+<script type="text/javascript" src="__toc.js?v+20261006T231951" basepath="" id="tocscript"></script></head>
+<body style="visibility:hidden;"><!-- Google Tag Manager removed--><script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@id": "https://www.hpe.com/#organization",
+    "@type": "Organization",
+    "name": "Hewlett Packard Enterprise",
+    "url": "https://www.hpe.com/",
+    "sameAs": [
+      "https://www.linkedin.com/company/hewlett-packard-enterprise/",
+      "https://www.youtube.com/@HPE"
+    ]
+  }
+</script>
+
+<script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@id": "https://networkingdocs.hpe.com/documentation/#website",
+    "@type": "WebSite",
+    "url": "https://networkingdocs.hpe.com/documentation/",
+    "name": "HPE Networking Documentation",
+    "alternateName": "HPE Juniper Networking Documentation",
+    "publisher": {
+      "@id": "https://www.hpe.com/#organization"
+    }
+  }
+</script><div id="app"><sw-app inline-template=""><div><sw-header></sw-header><sw-change-widget></sw-change-widget><div class="main wrapper"><sw-leftnav> </sw-leftnav><sw-rightnav></sw-rightnav><div class="l-body"><div class="page-options clearfix"><sw-breadcrumb> </sw-breadcrumb></div><div class="topic-index"><h1 class="title topictitle1 booktitle"><span class="ph mainbooktitle">SRX1600 Firewall Hardware Guide</span></h1><sw-topic-details date="2026-10-07"></sw-topic-details><sw-guide-intro basepath="topics/concept/"><div class="body conbody">
+    <p class="p">Use this guide to install the hardware and perform initial software configuration, routine
+      maintenance, and troubleshooting for the Juniper Networks® SRX1600 Firewall. After completing
+      the installation and basic configuration procedures covered in this guide, you can refer to
+      the Junos® OS documentation for information about further software configuration.</p>
+
+  <div class="section" id="xd_64f541fde8744db6-67433a73-187648c6401--7dfe__section_conref_doc_conventions"><h2 class="title sectiontitle">Documentation Conventions</h2>
+            
+            <p class="p">For information about the notice icons and text and syntax conventions used in the
+                documentation, see <a class="xref" href="https://www.juniper.net/documentation/us/en/software/help/using-documentation/topics/concept/documentation-conventions.html" target="_blank">Documentation Conventions</a>.</p>
+
+        </div>
+</div>
+</sw-guide-intro><sw-pwp-get-start> </sw-pwp-get-start><sw-list-popular-topics> </sw-list-popular-topics><sw-guide-intro basepath="topics/concept/"></sw-guide-intro><sw-comments> </sw-comments></div></div></div><sw-pop-over></sw-pop-over><sw-footer></sw-footer></div></sw-app></div><script type="module" crossorigin="" src="/documentation/webstatic/js/dita-CTJXOf1l.js"></script><!-- Analytics removed --></body></html>

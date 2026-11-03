@@ -1,0 +1,47 @@
+[
+  {
+    "archivo": "fortios-7.6.0-release-notes.pdf",
+    "para": "FORTINET",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://fortinetweb.s3.amazonaws.com/docs.fortinet.com/v2/attachments/51fcbb4f-33ff-11ef-bfe5-fa163e15d75b/fortios-v7.6.0-release-notes.pdf",
+        "status": 200,
+        "bytes": 1338351,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "juniper-srx1600-hw-index.html",
+    "para": "JUNIPER",
+    "guardado": true,
+    "exploracion": true,
+    "intentos": [
+      {
+        "url": "https://www.juniper.net/documentation/us/en/hardware/srx1600/index.html",
+        "status": 200,
+        "bytes": 6699,
+        "guardado": true,
+        "verificado": false
+      }
+    ]
+  },
+  {
+    "archivo": "aruba-9000-ds-a00067608enw.pdf",
+    "para": "ARUBA",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://www.hpe.com/psnow/downloadDoc/a00067608enw.pdf?id=a00067608enw",
+        "status": 200,
+        "bytes": 463410,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  }
+]
