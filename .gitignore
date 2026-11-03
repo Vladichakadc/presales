@@ -32,6 +32,9 @@ database.sqlite
 !/.claude/skills/
 !/.claude/hooks/
 !/.claude/settings.json
+# Los subagentes de solo lectura (search, grep, docs) son del proyecto: van versionados para
+# que cada sesion, de cualquier cuenta, los tenga.
+!/.claude/agents/
 /.claude/settings.local.json
 
 # Bytecode de Python (las skills traen scripts .py)

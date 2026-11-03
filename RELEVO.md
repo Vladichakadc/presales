@@ -397,6 +397,7 @@ existen los workflows de transporte. Huawei y HPE niegan además el navegador au
 
 ## Mejoras propuestas sin decidir
 
+- **Que el segundo fallo seguido del mismo comando recuerde consultar al asesor** (propuesta al cerrar el PR #94). La regla de `CLAUDE.md` dice «cuando el mismo error aparece dos veces» y ningún ajuste la fuerza. Un hook `PostToolUse` sobre `Bash`, con el estado que ya lleva `aprendizaje.sh` en `.claude/learning/runs.jsonl`, devolvería un aviso («segundo fallo de `npm run …`: consulta al asesor antes de reintentar») cuando el mismo comando falla dos veces seguidas. Evita reintentos a ciegas; es la parte de «reintentar o parar» del encargo de Jev que no necesita a Jev. Cuesta unas 30 líneas en `.claude/hooks/` y su prueba; si se hace mal, avisa de más (cuenta como fallo un comando que falla a propósito, como una prueba en rojo esperada).
 - **Un solo lanzamiento de Chromium** (propuesta al cerrar el PR #130). Las 44 baterías e2e y
   `scripts/visibles.js` llaman a `chromium.launch()` directo; solo `pantallas`, `contraste` y el
   manual pasan por `opcionesDeLanzamiento()`. Hoy las e2e corren con RenderDocument activo y las
@@ -424,9 +425,10 @@ existen los workflows de transporte. Huawei y HPE niegan además el navegador au
 
 ## Decisiones del dueño abiertas
 
+- **Enrutar micro-forks con Jev** (punto 4 del encargo del PR #94: «Enruta forks determinísticos rápidos —elección de herramienta, selección de ruta, reintentos— a través de JEV»). Falta saber cómo se accede a Jev (clave de TypeSafe u OpenRouter) y el alcance: los routers de Jev que existen eligen el modelo por turno y romperían Sonnet fijo con asesor; lo compatible es un hook que decida reintentar o parar tras un fallo y valide la llamada que propone la sesión.
 - La protección de `main` (aprobada, falta configurarla) y el aviso de Railway (ver arriba).
 - Borrar la rama `claude/visibles-contra-main`: sobra, la creó `npm run reservar` en una sesión con rama
   fija, y desde esa sesión borrarla da 403 (`git push origin --delete claude/visibles-contra-main`; PR #129).
   Desde el PR #135 ya no bloquea: `npm run traspasos` la marca CERRADO EN MAIN y `reservar` no la cuenta.
-- Nada más: las dos de la IA y la de las variantes fuera del catálogo se tomaron el 2026-10-27 por
+- Tomadas: las dos de la IA y la de las variantes fuera del catálogo se tomaron el 2026-10-27 por
   la opción recomendada (ver *Decisiones* en `PENDIENTES.md`).
