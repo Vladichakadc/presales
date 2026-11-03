@@ -1,0 +1,47 @@
+[
+  {
+    "archivo": "hpe-a00150833enw.pdf",
+    "para": "JUNIPER",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://www.hpe.com/psnow/downloadDoc/a00150833enw.pdf?id=a00150833enw",
+        "status": 200,
+        "bytes": 294210,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "hpe-a00150834enw.pdf",
+    "para": "JUNIPER",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://www.hpe.com/psnow/downloadDoc/a00150834enw.pdf?id=a00150834enw",
+        "status": 200,
+        "bytes": 269390,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "hpe-a00150836enw.pdf",
+    "para": "JUNIPER",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://www.hpe.com/psnow/downloadDoc/a00150836enw.pdf?id=a00150836enw",
+        "status": 200,
+        "bytes": 539640,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  }
+]
