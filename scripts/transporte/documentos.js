@@ -529,8 +529,25 @@ module.exports = [
   { archivo: 'juniper-comparativa-seguridad.pdf', tipo: 'pdf', para: 'JUNIPER', urls: [
     'https://www.juniper.net/content/dam/www/assets/datasheets/us/en/security/security-products-comparison-chart.pdf',
   ] },
-  { archivo: 'juniper-ssr1000-ds.pdf', tipo: 'pdf', para: 'JUNIPER', urls: [
-    'https://www.juniper.net/content/dam/www/assets/datasheets/us/en/routers/ssr1000-line-of-routers-datasheet.pdf',
+  // Fichas de psnow que enlazan las páginas SRX de hpe.com y aún no se habían identificado: se
+  // traen para leer de qué modelo es cada una (sustitutas de la ficha del SSR1000 y de la matriz SRX).
+  { archivo: 'hpe-a00150819enw.pdf', tipo: 'pdf', para: 'JUNIPER', urls: [
+    'https://www.hpe.com/psnow/downloadDoc/a00150819enw.pdf?id=a00150819enw',
+  ] },
+  { archivo: 'hpe-a00150823enw.pdf', tipo: 'pdf', para: 'JUNIPER', urls: [
+    'https://www.hpe.com/psnow/downloadDoc/a00150823enw.pdf?id=a00150823enw',
+  ] },
+  { archivo: 'hpe-a00150832enw.pdf', tipo: 'pdf', para: 'JUNIPER', urls: [
+    'https://www.hpe.com/psnow/downloadDoc/a00150832enw.pdf?id=a00150832enw',
+  ] },
+  { archivo: 'hpe-a00150852enw.pdf', tipo: 'pdf', para: 'JUNIPER', urls: [
+    'https://www.hpe.com/psnow/downloadDoc/a00150852enw.pdf?id=a00150852enw',
+  ] },
+  { archivo: 'hpe-a00154678enw.pdf', tipo: 'pdf', para: 'JUNIPER', urls: [
+    'https://www.hpe.com/psnow/downloadDoc/a00154678enw.pdf?id=a00154678enw',
+  ] },
+  { archivo: 'hpe-a50015856enw.pdf', tipo: 'pdf', para: 'JUNIPER', urls: [
+    'https://www.hpe.com/psnow/downloadDoc/a50015856enw.pdf?id=a50015856enw',
   ] },
   { archivo: 'juniper-srx300-ds.html', tipo: 'html', para: 'JUNIPER', debeContener: 'SRX340', urls: [
     'https://www.juniper.net/us/en/products/security/srx-series/srx300-line-firewalls-branch-datasheet.html',
