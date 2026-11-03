@@ -1707,4 +1707,27 @@ module.exports = [
   { archivo: 'huawei-nce-campus-r24c00.pdf', tipo: 'pdf', para: 'HUAWEI', urls: [
     'https://e.huawei.com/marketingcloud/pep/asset/20000001/Material/e3ae1dc4d0e34e08871f529f499579c7/M3T1A590N1069706146884108541/iMaster%20NCE-Campus%20Product%20Datasheet%20R24C00%201130.pdf',
   ] },
+  // 2026-11-03 (pendiente: la PQC de los gateways Aruba con AOS-10). Lo cierra la referencia de CLI
+  // de AOS-10 que nombre la PPK en el gateway. La guía de CLI de AOS-10 en PDF (comandos show, con la
+  // versión en que entra cada uno), el índice «What's New in AOS-10 CLI» de la CLI-Bank (enlaza a lo
+  // nuevo en 10.8.0.0 y 10.8.1.0) y las notas «What's New» de AOS-10.8.0.0, que nombran ppk-mandatory.
+  { archivo: 'aruba-aos10-cli-guide.pdf', tipo: 'pdf', para: 'ARUBA', urls: [
+    'https://arubanetworking.hpe.com/techdocs/AOS_10.x_Books/AOS10_CLI_Guide.pdf',
+  ] },
+  // El índice respondió 200 sin el texto «AOS-10.8» en su HTML (corrida 41666380506): se pide como
+  // exploración para leer a qué páginas enlaza.
+  { archivo: 'aruba-aos10-cli-whats-new.html', tipo: 'html', para: 'ARUBA', exploracion: true, urls: [
+    'https://arubanetworking.hpe.com/techdocs/CLI-Bank/Content/aos10/whats-new/main.htm',
+  ] },
+  { archivo: 'aruba-aos10-108-whats-new.html', tipo: 'html', para: 'ARUBA', debeContener: 'ppk-mandatory', urls: [
+    'https://arubanetworking.hpe.com/techdocs/AOS_10.x_RN_WebHelp/Content/10.8/00/features-10800.htm',
+  ] },
+  // Las dos páginas de comandos nuevos de 10.8 a las que enlaza ese índice (corrida 41666623064,
+  // rama fuente/aruba-aos10-ppk-2-2026-11-03: «10.8.htm» y «10.8.1.htm», relativas a su carpeta).
+  { archivo: 'aruba-aos10-cli-10800.html', tipo: 'html', para: 'ARUBA', exploracion: true, urls: [
+    'https://arubanetworking.hpe.com/techdocs/CLI-Bank/Content/aos10/whats-new/10.8.htm',
+  ] },
+  { archivo: 'aruba-aos10-cli-10810.html', tipo: 'html', para: 'ARUBA', exploracion: true, urls: [
+    'https://arubanetworking.hpe.com/techdocs/CLI-Bank/Content/aos10/whats-new/10.8.1.htm',
+  ] },
 ];

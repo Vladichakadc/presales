@@ -20,7 +20,9 @@ lleve nada consigo, y para que dos sesiones a la vez no se pisen.
    "ruta, carpeta/, …" --descripcion "…"` empuja en ese momento `claude/<tema>` con su traspaso
    (estado «reservado») y se niega si otra rama o un PR abierto declara alguno de esos archivos. Así
    el tema se ve en `npm run traspasos` desde el primer minuto y no tras la primera hora de trabajo,
-   que es como el 2026-10-28 tres sesiones hicieron la misma mejora (PR #60, #62 y #63).
+   que es como el 2026-10-28 tres sesiones hicieron la misma mejora (PR #60, #62 y #63). **Una sesión
+   con rama fija** (las de la nube la traen asignada) reserva con `--en-esta-rama`: el traspaso va en un
+   commit de su rama, sin crear `claude/<tema>`, que dejaba una rama de sobra con los mismos archivos.
 3. **Commit y push frecuentes** (cada paso que funcione, como mucho cada media hora de trabajo), y
    en cada uno el traspaso al día. Lo que no está empujado se pierde si la sesión se corta.
 4. **Retomar un tema** es: `git fetch`, cambiar a su rama, leer su traspaso entero y seguir por su
@@ -61,6 +63,15 @@ a los PR y sigue. Solo lee: no cambia de rama ni escribe nada.
 `PARADA`, con los PR que nombra y ya se fusionaron, y cómo cerrarla; bajo uno «cerrado…», `CERRADO`
 (ya no bloquea a `reservar`). Solo avisa: borrar la rama es de una persona.
 
+**Temas cerrados en main** (2026-11-03, PR #135). Una reserva en `claude/<tema>` cuyo tema se trabajó y
+se fusionó desde otra rama seguía declarando sus archivos: `claude/visibles-contra-main` bloqueó los de
+`npm run visibles` cuando ya estaban en `main`. El commit de cierre borra en `main` el mismo
+`docs/traspaso/<tema>.md`. Si lo borró después del último commit de la rama, sale `CERRADO EN MAIN`,
+con el commit del borrado y cómo borrar la rama, y `npm run reservar` deja de contarla. Una rama con
+commits posteriores al borrado sigue viva: es un tema que se retomó. El borrado se busca con
+`--full-history`, porque el traspaso entra y sale por la rama del tema y, sin la opción, git
+simplifica el merge y no lo ve.
+
 ## Qué hace `npm run reservar`
 
 Trae las ramas y lee lo mismo que `npm run traspasos` (traspasos de las ramas y archivos de los PR
@@ -76,3 +87,11 @@ misma rama a la vez, GitHub rechaza el segundo push y la reserva es de la primer
 solo mira. Las reglas y la carrera se prueban sin red en `test/reservar.test.js`. Desde el 2026-11-01 (PR #116) dice
 también qué caso de `scripts/equivalencias/` vigila los archivos reservados (se mide en cada PR) y cómo
 declarar un cambio de comportamiento hecho a propósito; queda escrito en el traspaso.
+
+**`--en-esta-rama`** (2026-11-03, mejora propuesta al cerrar el PR #129). Pone el traspaso en un commit
+sobre la rama actual y lo empuja sin `--force`. Solo entra ese archivo: lo que la sesión tenga a medias
+se queda como estaba. Se niega en `main` y en una rama que ya lleva un traspaso (una rama, un tema).
+Empujar a la rama propia siempre funciona, así que GitHub ya no arbitra la carrera: tras empujar se
+vuelve a mirar, y si otra rama declaró lo mismo **manda la reserva más antigua**, por la fecha del
+commit que añadió cada traspaso y, a igual segundo, por el nombre de la rama. Las dos sesiones hacen
+la misma cuenta; la que pierde retira su traspaso con otro commit y sale con 1.

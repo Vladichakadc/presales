@@ -15,8 +15,10 @@
 //
 // Uso:
 //   npm run reservar -- <tema> --archivos "ruta, ruta/, …" [--descripcion "…"] [--cuenta "…"]
-//                          [--siguiente "…"] [--aunque <rama>]… [--comprobar] [--sin-fetch]
+//                          [--siguiente "…"] [--aunque <rama>]… [--comprobar] [--sin-fetch] [--en-esta-rama]
 //   --comprobar   solo dice si hay choque; no crea nada.
+//   --en-esta-rama  el traspaso va en un commit de la rama actual, no en claude/<tema>: para la sesión que
+//                 trabaja en una rama fija (las de la nube la traen asignada). Ver «EN LA RAMA DE LA SESIÓN».
 //   --aunque      no cuenta los archivos de esa rama (una rama parada cuyo tema ya está en main);
 //                 se dice en el traspaso, para que quede constancia de a quién se pasó por alto.
 // Sale con 0 si reservó (o si --comprobar no ve choque), 1 si hay choque y 2 si falla otra cosa.
@@ -24,7 +26,7 @@ const { execFileSync } = require('child_process');
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
-const { leerCabecera, archivosDeTema, prsSinTraspaso, repoDeOrigen, RAMA_NO_TEMA } = require('./traspasos');
+const { leerCabecera, archivosDeTema, prsSinTraspaso, repoDeOrigen, RAMA_NO_TEMA, cerradoEnMain, borradoEnMain } = require('./traspasos');
 
 const RAIZ = path.join(__dirname, '..');
 const CARPETA = 'docs/traspaso/';
@@ -39,6 +41,22 @@ const COMUNES_AL_CIERRE = ['PENDIENTES.md', 'RELEVO.md', 'CLAUDE.md', 'docs/entr
 const DIAS_PARADA = 3;
 
 const TEMA_VALIDO = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+
+// EN LA RAMA DE LA SESIÓN (2026-11-03, mejora propuesta al cerrar el PR #129). Una sesión que trabaja en
+// una rama fija dejaba, al reservar, una rama `claude/<tema>` de sobra que declaraba los mismos archivos
+// que la suya y que a veces no podía borrar (el proxy de git dio 403 al borrar claude/visibles-contra-main).
+// Con --en-esta-rama el traspaso va en un commit de la rama actual. Lo que se pierde es el arbitraje de
+// GitHub, que se negaba a crear una rama que ya existe: empujar a la rama propia siempre funciona. Por eso,
+// tras empujar se vuelve a mirar, y si otra rama declaró lo mismo MANDA LA RESERVA MÁS ANTIGUA (la fecha
+// del commit que añadió cada traspaso; a igual segundo, el nombre de la rama). Las dos sesiones hacen la
+// misma cuenta y llegan a lo mismo: la que pierde retira su traspaso con otro commit y sale con 1.
+function ganaLaReserva(propia, rival) {
+  const a = Date.parse(propia.fecha);
+  const b = Date.parse(rival.fecha);
+  if (Number.isFinite(a) && Number.isFinite(b) && a !== b) return a < b;
+  if (!Number.isFinite(b) && Number.isFinite(a)) return false; // sin fecha que comparar, manda lo que ya estaba
+  return String(propia.rama) < String(rival.rama);
+}
 
 // «a, b/ (solo el final), c» → ['a', 'b/', 'c']. Lo que va entre paréntesis es una nota del
 // traspaso, no parte de la ruta; «(no consta)» o vacío es ninguno.
@@ -151,6 +169,7 @@ function argumentos(argv) {
     else if (a === '--aunque') o.aunque.push(String(sig() || '').replace(/^origin\//, ''));
     else if (a === '--comprobar') o.comprobar = true;
     else if (a === '--sin-fetch') o.sinFetch = true;
+    else if (a === '--en-esta-rama') o.enEstaRama = true;
     else if (!a.startsWith('--') && !o.tema) o.tema = a;
     else throw new Error(`argumento no reconocido: ${a}`);
   }
@@ -176,9 +195,16 @@ function ocupadosRemotos() {
     for (const nombre of archivosDeTema(listado)) {
       const cab = leerCabecera(git(['show', `${ref}:${CARPETA}${nombre}`]));
       const rama = ref.replace(/^origin\//, '');
+      // Un tema que main ya cerró (borró este traspaso después del último commit de la rama) no
+      // bloquea: su rama es una reserva que nadie borró (`npm run traspasos` lo marca CERRADO EN MAIN).
+      const borrado = borradoEnMain(git, `${CARPETA}${nombre}`);
+      if (borrado && cerradoEnMain({ borrado: borrado.fecha, ultimoCommitRama: fecha })) continue;
       ramasConTraspaso.push(rama);
       temas.add(nombre.replace(/\.md$/, ''));
-      ocupados.push({ origen: rama, tema: cab.Tema, estado: cab.Estado, fecha, archivos: normalizarArchivos(cab['Archivos que toca']) });
+      // Cuándo se reservó: el commit que añadió el traspaso (el arbitraje de --en-esta-rama).
+      let reservado = null;
+      try { reservado = git(['log', '-1', '--diff-filter=A', '--format=%cI', ref, '--', `${CARPETA}${nombre}`]).trim() || null; } catch { reservado = null; }
+      ocupados.push({ origen: rama, tema: cab.Tema, estado: cab.Estado, fecha, reservado, archivos: normalizarArchivos(cab['Archivos que toca']) });
     }
   }
   let avisoPrs = null;
@@ -213,6 +239,41 @@ function empujarReserva(rama, ruta, contenido, mensaje) {
   }
 }
 
+// --en-esta-rama: un commit con el traspaso sobre HEAD, empujado sin --force (si origin/<rama> no es
+// antecesor de HEAD, el push se niega). Solo entra ese archivo: el resto del índice y del árbol, lo que la
+// sesión tenga a medias, se queda como estaba; la rama local avanza y el archivo queda en el índice y en
+// el árbol, así que `git status` no lo ve como cambio.
+function commitSobreHead(rama, cambio, mensaje) {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'reservar-'));
+  const env = { ...process.env, GIT_INDEX_FILE: path.join(tmp, 'index') };
+  try {
+    const head = git(['rev-parse', 'HEAD']).trim();
+    git(['read-tree', head], { env });
+    cambio(env);
+    const arbol = git(['write-tree'], { env }).trim();
+    const commit = git(['commit-tree', arbol, '-p', head, '-m', mensaje]).trim();
+    git(['push', 'origin', `${commit}:refs/heads/${rama}`]);
+    git(['update-ref', `refs/heads/${rama}`, commit, head]);
+    return commit;
+  } finally {
+    fs.rmSync(tmp, { recursive: true, force: true });
+  }
+}
+function empujarEnEstaRama(rama, ruta, contenido, mensaje) {
+  const blob = git(['hash-object', '-w', '--stdin'], { input: contenido, stdio: ['pipe', 'pipe', 'pipe'] }).trim();
+  const commit = commitSobreHead(rama, (env) => git(['update-index', '--add', '--cacheinfo', `100644,${blob},${ruta}`], { env }), mensaje);
+  git(['update-index', '--add', '--cacheinfo', `100644,${blob},${ruta}`]);
+  fs.mkdirSync(path.dirname(path.join(repoGit, ruta)), { recursive: true });
+  fs.writeFileSync(path.join(repoGit, ruta), contenido);
+  return commit;
+}
+function retirarEnEstaRama(rama, ruta, mensaje) {
+  const commit = commitSobreHead(rama, (env) => git(['update-index', '--force-remove', ruta], { env }), mensaje);
+  git(['update-index', '--force-remove', ruta]);
+  fs.rmSync(path.join(repoGit, ruta), { force: true });
+  return commit;
+}
+
 // `opts.raiz` y `opts.gh` existen para probar sin red (test/reservar.test.js).
 function main(argv, opts = {}) {
   repoGit = opts.raiz || RAIZ;
@@ -228,7 +289,22 @@ function main(argv, opts = {}) {
     console.error('Falta --archivos: sin los archivos que el tema va a tocar, la reserva no protege nada.');
     return 2;
   }
-  const rama = `claude/${o.tema}`;
+  let rama = `claude/${o.tema}`;
+  if (o.enEstaRama) {
+    let actual = '';
+    try { actual = git(['symbolic-ref', '--short', '-q', 'HEAD']).trim(); } catch { actual = ''; }
+    if (!actual || actual === 'main' || RAMA_NO_TEMA.test(`origin/${actual}`)) {
+      console.error(`Con --en-esta-rama hace falta estar en la rama de trabajo de la sesión, no en ${actual || 'un HEAD suelto'}.`);
+      return 2;
+    }
+    rama = actual;
+    // Una rama, un tema: si ya lleva un traspaso, ese tema sigue abierto aquí.
+    const propios = archivosDeTema(git(['ls-tree', '--name-only', 'HEAD', CARPETA]));
+    if (propios.length) {
+      console.log(`CHOQUE: ${rama} ya lleva el traspaso de ${propios.join(', ')}. Una rama, un tema: ciérralo (se borra al fusionar) antes de reservar otro.`);
+      return 1;
+    }
+  }
   if (!o.sinFetch) {
     try { git(['fetch', '--prune', '--quiet', 'origin']); } catch (e) {
       console.error(`No se pudieron traer las ramas (git fetch): ${String(e.stderr || e.message).trim()}. Sin ellas no se sabe qué está tomado.`);
@@ -239,7 +315,7 @@ function main(argv, opts = {}) {
   if (avisoPrs) console.log(`AVISO: ${avisoPrs}.`);
   let existe = false;
   try { git(['rev-parse', '--verify', '--quiet', `refs/remotes/origin/${rama}`]); existe = true; } catch { existe = false; }
-  if (existe || temas.has(o.tema)) {
+  if ((existe && !o.enEstaRama) || temas.has(o.tema)) {
     console.log(`CHOQUE: el tema «${o.tema}» ya tiene rama o traspaso en origin. Elige otro nombre o retoma ese (npm run traspasos).`);
     return 1;
   }
@@ -268,19 +344,37 @@ function main(argv, opts = {}) {
     siguiente: o.siguiente, ignoradas: o.aunque, fecha: horaBogota(), vigilan });
   let commit;
   try {
-    commit = empujarReserva(rama, ruta, contenido, `Reserva: ${o.descripcion || o.tema}`);
+    commit = o.enEstaRama
+      ? empujarEnEstaRama(rama, ruta, contenido, `Reserva: ${o.descripcion || o.tema}`)
+      : empujarReserva(rama, ruta, contenido, `Reserva: ${o.descripcion || o.tema}`);
   } catch (e) {
     console.log(`CHOQUE o fallo al empujar ${rama}: ${String(e.stderr || e.message).trim().split('\n').slice(-2).join(' ')}`);
-    console.log('Si otra sesión creó la rama a la vez, la reserva es suya: npm run traspasos.');
+    console.log(o.enEstaRama
+      ? 'La rama de origin no es antecesora de la local (¿falta un pull?) o el push se denegó: no se reservó nada.'
+      : 'Si otra sesión creó la rama a la vez, la reserva es suya: npm run traspasos.');
     return 1;
+  }
+  if (o.enEstaRama) {
+    // Tras empujar, se vuelve a mirar: sin la creación de rama, la carrera la decide la reserva más antigua.
+    try { git(['fetch', '--prune', '--quiet', 'origin']); } catch { /* se mira con lo que haya */ }
+    const propia = { rama, fecha: git(['show', '-s', '--format=%cI', commit]).trim() };
+    const rivales = choques(archivos, ocupadosRemotos().ocupados, { ignorar: [...o.aunque, rama] });
+    const antes = rivales.filter((r) => !ganaLaReserva(propia, { rama: r.origen, fecha: r.reservado || r.fecha }));
+    if (antes.length) {
+      const retirada = retirarEnEstaRama(rama, ruta, `Retira la reserva de ${o.tema}: ${antes.map((r) => r.origen).join(', ')} reservó antes`);
+      console.log(`CHOQUE tras empujar: ${antes.map((r) => `${r.origen} (${r.pisa.join(', ')})`).join('; ')} reservó lo mismo antes.`);
+      console.log(`Manda la reserva más antigua: se retiró la de ${rama} (${retirada.slice(0, 7)}).`);
+      return 1;
+    }
+    for (const r of rivales) console.log(`AVISO: ${r.origen} declaró ${r.pisa.join(', ')} después; manda esta reserva, la más antigua.`);
   }
   console.log(`Reservado: ${rama} (${commit.slice(0, 7)}) con ${ruta}.`);
   if (vigilan.length) console.log(avisoEquivalencias(vigilan));
-  console.log(`Para trabajar en él: git fetch origin && git switch ${rama}  (o git switch -c ${rama} --track origin/${rama}).`);
+  if (!o.enEstaRama) console.log(`Para trabajar en él: git fetch origin && git switch ${rama}  (o git switch -c ${rama} --track origin/${rama}).`);
   return 0;
 }
 
 if (require.main === module) process.exitCode = main(process.argv.slice(2));
 
-module.exports = { main, casosQueVigilan, avisoEquivalencias, normalizarArchivos, solapan, choques, esComun, traspasoInicial, horaBogota, argumentos, diasDesde,
+module.exports = { main, ganaLaReserva, casosQueVigilan, avisoEquivalencias, normalizarArchivos, solapan, choques, esComun, traspasoInicial, horaBogota, argumentos, diasDesde,
   COMUNES_AL_CIERRE, DIAS_PARADA };
