@@ -63,6 +63,15 @@ a los PR y sigue. Solo lee: no cambia de rama ni escribe nada.
 `PARADA`, con los PR que nombra y ya se fusionaron, y cómo cerrarla; bajo uno «cerrado…», `CERRADO`
 (ya no bloquea a `reservar`). Solo avisa: borrar la rama es de una persona.
 
+**Temas cerrados en main** (2026-11-03, PR #135). Una reserva en `claude/<tema>` cuyo tema se trabajó y
+se fusionó desde otra rama seguía declarando sus archivos: `claude/visibles-contra-main` bloqueó los de
+`npm run visibles` cuando ya estaban en `main`. El commit de cierre borra en `main` el mismo
+`docs/traspaso/<tema>.md`. Si lo borró después del último commit de la rama, sale `CERRADO EN MAIN`,
+con el commit del borrado y cómo borrar la rama, y `npm run reservar` deja de contarla. Una rama con
+commits posteriores al borrado sigue viva: es un tema que se retomó. El borrado se busca con
+`--full-history`, porque el traspaso entra y sale por la rama del tema y, sin la opción, git
+simplifica el merge y no lo ve.
+
 ## Qué hace `npm run reservar`
 
 Trae las ramas y lee lo mismo que `npm run traspasos` (traspasos de las ramas y archivos de los PR

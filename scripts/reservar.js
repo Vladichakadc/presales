@@ -26,7 +26,7 @@ const { execFileSync } = require('child_process');
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
-const { leerCabecera, archivosDeTema, prsSinTraspaso, repoDeOrigen, RAMA_NO_TEMA } = require('./traspasos');
+const { leerCabecera, archivosDeTema, prsSinTraspaso, repoDeOrigen, RAMA_NO_TEMA, cerradoEnMain, borradoEnMain } = require('./traspasos');
 
 const RAIZ = path.join(__dirname, '..');
 const CARPETA = 'docs/traspaso/';
@@ -195,6 +195,10 @@ function ocupadosRemotos() {
     for (const nombre of archivosDeTema(listado)) {
       const cab = leerCabecera(git(['show', `${ref}:${CARPETA}${nombre}`]));
       const rama = ref.replace(/^origin\//, '');
+      // Un tema que main ya cerró (borró este traspaso después del último commit de la rama) no
+      // bloquea: su rama es una reserva que nadie borró (`npm run traspasos` lo marca CERRADO EN MAIN).
+      const borrado = borradoEnMain(git, `${CARPETA}${nombre}`);
+      if (borrado && cerradoEnMain({ borrado: borrado.fecha, ultimoCommitRama: fecha })) continue;
       ramasConTraspaso.push(rama);
       temas.add(nombre.replace(/\.md$/, ''));
       // Cuándo se reservó: el commit que añadió el traspaso (el arbitraje de --en-esta-rama).

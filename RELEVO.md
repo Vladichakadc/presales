@@ -419,5 +419,6 @@ existen los workflows de transporte. Huawei y HPE niegan además el navegador au
 - La protección de `main` (aprobada, falta configurarla) y el aviso de Railway (ver arriba).
 - Borrar la rama `claude/visibles-contra-main`: sobra, la creó `npm run reservar` en una sesión con rama
   fija, y desde esa sesión borrarla da 403 (`git push origin --delete claude/visibles-contra-main`; PR #129).
+  Desde el PR #135 ya no bloquea: `npm run traspasos` la marca CERRADO EN MAIN y `reservar` no la cuenta.
 - Nada más: las dos de la IA y la de las variantes fuera del catálogo se tomaron el 2026-10-27 por
   la opción recomendada (ver *Decisiones* en `PENDIENTES.md`).

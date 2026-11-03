@@ -137,7 +137,7 @@ npm run lista-aruba # lista del distribuidor de Aruba: dry-run salvo --aplicar
 npm run propuesta   # aplica una propuesta de la sincronización sobre legacyData/, con anclaje
 
 # Fuentes y documentos (lo que descarga necesita salida a internet: IMPORTAR-CATALOGO.md)
-npm run traspasos   # temas en curso: ramas con docs/traspaso/<tema>.md y PR abiertos sin él; marca las paradas (solo lee)
+npm run traspasos   # temas en curso: ramas con docs/traspaso/<tema>.md y PR abiertos sin él; marca las paradas y las cerradas en main (solo lee)
 npm run reservar    # reserva un tema antes de escribir código: empuja claude/<tema> con su traspaso si nadie declara sus archivos (--en-esta-rama: en la rama de la sesión); avisa del caso de equivalencia que los vigila
 npm run equivalencia # mide main contra la versión nueva de un script de public/js/ (caso en scripts/equivalencias/; exige mutación de control; --todos en cada PR)
 npm run entregas    # las entregas más recientes, de docs/entregas/ (--todas, --n=N; solo lee)
