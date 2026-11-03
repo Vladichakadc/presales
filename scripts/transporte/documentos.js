@@ -1722,4 +1722,12 @@ module.exports = [
   { archivo: 'aruba-aos10-108-whats-new.html', tipo: 'html', para: 'ARUBA', debeContener: 'ppk-mandatory', urls: [
     'https://arubanetworking.hpe.com/techdocs/AOS_10.x_RN_WebHelp/Content/10.8/00/features-10800.htm',
   ] },
+  // Las dos páginas de comandos nuevos de 10.8 a las que enlaza ese índice (corrida 41666623064,
+  // rama fuente/aruba-aos10-ppk-2-2026-11-03: «10.8.htm» y «10.8.1.htm», relativas a su carpeta).
+  { archivo: 'aruba-aos10-cli-10800.html', tipo: 'html', para: 'ARUBA', exploracion: true, urls: [
+    'https://arubanetworking.hpe.com/techdocs/CLI-Bank/Content/aos10/whats-new/10.8.htm',
+  ] },
+  { archivo: 'aruba-aos10-cli-10810.html', tipo: 'html', para: 'ARUBA', exploracion: true, urls: [
+    'https://arubanetworking.hpe.com/techdocs/CLI-Bank/Content/aos10/whats-new/10.8.1.htm',
+  ] },
 ];
