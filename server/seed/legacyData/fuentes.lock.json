@@ -126,13 +126,6 @@
       "bytes": 9734,
       "medido": "2026-10-26T12:35:29.169Z"
     },
-    "juniper::https://www.juniper.net/content/dam/www/assets/datasheets/us/en/security/srx1600-firewall-datasheet.pdf": {
-      "documento": "Fichas por modelo de la generacion 2024 (SRX1600, SRX2300, SRX4300)",
-      "hashVerificado": "2175d9142d15811c57eb9562163fb91a242b1cc87166ac705fe20e28f04474fb",
-      "clase": "bytes",
-      "bytes": 484008,
-      "medido": "2026-10-26T12:35:29.169Z"
-    },
     "mikrotik::https://mikrotik.com/product/RB750Gr3": {
       "documento": "Ficha de producto MikroTik RB750Gr3",
       "hashVerificado": "0b94606903a872123a1026dd3331334ea4e4990574f482bd70dc9812ccaa2ebc",
@@ -952,13 +945,6 @@
       "bytes": 4280442,
       "medido": "2026-10-28T14:30:00.000Z"
     },
-    "juniper::https://www.juniper.net/content/dam/www/assets/datasheets/us/en/routers/ssr1000-line-of-routers-datasheet.pdf": {
-      "documento": "SSR1000 Line of Routers Datasheet (1000757-002-EN)",
-      "hashVerificado": "f2dc263205b00175fae71b07f848796ec1de5605d256f667a1f0c0b6dbd9bdf7",
-      "clase": "bytes",
-      "bytes": 697450,
-      "medido": "2026-10-26T12:35:29.169Z"
-    },
     "juniper::https://www.hpe.com/psnow/downloadDoc/a00150825enw.pdf?id=a00150825enw": {
       "documento": "MX 204/240/480/960 Series Universal Routing Platforms Datasheet (a00150825ENW, Rev. 1)",
       "hashVerificado": "dd37a225da8ea1f064fed5a274919357a68f1dea89e6db6c67a7e3f818b3d883",
@@ -1035,6 +1021,20 @@
       "clase": "bytes",
       "bytes": 1196653,
       "medido": "2026-11-01T19:00:00.000Z"
+    },
+    "juniper::https://www.hpe.com/psnow/downloadDoc/a00150833enw.pdf?id=a00150833enw": {
+      "documento": "HPE Networking SRX1600 Firewall data sheet (a00150833ENW); SRX2300 en a00150834ENW y SRX4300 en a00150836ENW",
+      "hashVerificado": "8fc4414610ef3af189cfea23f2bcbcba1f32922eb404ee90238322d00db119db",
+      "clase": "bytes",
+      "bytes": 294210,
+      "medido": "2026-11-03T02:10:00.000Z"
+    },
+    "juniper::https://www.hpe.com/psnow/downloadDoc/a00150832enw.pdf?id=a00150832enw": {
+      "documento": "Juniper Networks SSR1000 line of Routers data sheet (a00150832ENW)",
+      "hashVerificado": "8825a4c2bfe219ec9bef9e59accb139143c1dd722ab6cbc59a2082033f4c51b5",
+      "clase": "bytes",
+      "bytes": 1205884,
+      "medido": "2026-11-03T02:30:00.000Z"
     }
   },
   "revisado": "2026-10-26T12:35:29.169Z"

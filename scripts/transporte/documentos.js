@@ -489,6 +489,66 @@ module.exports = [
   ] },
   { archivo: 'aruba-7205-ig.pdf', tipo: 'pdf', para: 'ARUBA', urls: [],
     descubrirEnlace: { de: 'aruba-7205-pagina.html', contiene: '/ig/', dominios: ['arubanetworks.com', 'hpe.com'], base: 'https://arubanetworking.hpe.com/techdocs/hardware/DocumentationPortal/Content/ArubaTopics/gatecontroller/7205.htm' } },
+  // 2026-11-03 (issue #123): el vigía del 2026-11-02 leyó como texto la ficha PDF del SRX1600 que
+  // el lock guarda como un PDF de 484 KB. Se trae como PDF (si ya no lo es, el informe da la firma)
+  // y la misma URL como página, para ver qué sirve Juniper ahora; y las otras dos fichas de la serie.
+  { archivo: 'juniper-srx1600-ds.pdf', tipo: 'pdf', para: 'JUNIPER', urls: [
+    'https://www.juniper.net/content/dam/www/assets/datasheets/us/en/security/srx1600-firewall-datasheet.pdf',
+  ] },
+  { archivo: 'juniper-srx1600-ds-respuesta.html', tipo: 'html', para: 'JUNIPER', exploracion: true, urls: [
+    'https://www.juniper.net/content/dam/www/assets/datasheets/us/en/security/srx1600-firewall-datasheet.pdf',
+  ] },
+  { archivo: 'juniper-srx2300-ds.pdf', tipo: 'pdf', para: 'JUNIPER', urls: [
+    'https://www.juniper.net/content/dam/www/assets/datasheets/us/en/security/srx2300-firewall-datasheet.pdf',
+  ] },
+  { archivo: 'juniper-srx4300-ds.pdf', tipo: 'pdf', para: 'JUNIPER', urls: [
+    'https://www.juniper.net/content/dam/www/assets/datasheets/us/en/security/srx4300-firewall-datasheet.pdf',
+  ] },
+  // Donde enlaza hoy la ficha: la página del producto en juniper.net y la de la serie en hpe.com.
+  { archivo: 'juniper-srx1600-pagina.html', tipo: 'html', para: 'JUNIPER', exploracion: true, urls: [
+    'https://www.juniper.net/us/en/products/security/srx-series/srx1600-data-center-and-enterprise-firewall.html',
+  ] },
+  { archivo: 'juniper-srx1600-specs.html', tipo: 'html', para: 'JUNIPER', exploracion: true, urls: [
+    'https://www.juniper.net/us/en/products/security/srx-series/srx1600-data-center-and-enterprise-firewall/specs.html',
+  ] },
+  { archivo: 'hpe-srx-serie.html', tipo: 'html', para: 'JUNIPER', exploracion: true, urls: [
+    'https://www.hpe.com/us/en/juniper-srx-firewall.html',
+    'https://www.hpe.com/emea_europe/en/juniper-srx-firewall.html',
+  ] },
+  // Las fichas que enlaza hoy la página de la serie en hpe.com (su tarjeta de cada modelo).
+  { archivo: 'hpe-a00150833enw.pdf', tipo: 'pdf', para: 'JUNIPER', urls: [
+    'https://www.hpe.com/psnow/downloadDoc/a00150833enw.pdf?id=a00150833enw',
+  ] },
+  { archivo: 'hpe-a00150834enw.pdf', tipo: 'pdf', para: 'JUNIPER', urls: [
+    'https://www.hpe.com/psnow/downloadDoc/a00150834enw.pdf?id=a00150834enw',
+  ] },
+  { archivo: 'hpe-a00150836enw.pdf', tipo: 'pdf', para: 'JUNIPER', urls: [
+    'https://www.hpe.com/psnow/downloadDoc/a00150836enw.pdf?id=a00150836enw',
+  ] },
+  // Los otros dos PDF de juniper.net que el lock vigila como bytes: ¿siguen siendo PDF?
+  { archivo: 'juniper-comparativa-seguridad.pdf', tipo: 'pdf', para: 'JUNIPER', urls: [
+    'https://www.juniper.net/content/dam/www/assets/datasheets/us/en/security/security-products-comparison-chart.pdf',
+  ] },
+  // Fichas de psnow que enlazan las páginas SRX de hpe.com y aún no se habían identificado: se
+  // traen para leer de qué modelo es cada una (sustitutas de la ficha del SSR1000 y de la matriz SRX).
+  { archivo: 'hpe-a00150819enw.pdf', tipo: 'pdf', para: 'JUNIPER', urls: [
+    'https://www.hpe.com/psnow/downloadDoc/a00150819enw.pdf?id=a00150819enw',
+  ] },
+  { archivo: 'hpe-a00150823enw.pdf', tipo: 'pdf', para: 'JUNIPER', urls: [
+    'https://www.hpe.com/psnow/downloadDoc/a00150823enw.pdf?id=a00150823enw',
+  ] },
+  { archivo: 'hpe-a00150832enw.pdf', tipo: 'pdf', para: 'JUNIPER', urls: [
+    'https://www.hpe.com/psnow/downloadDoc/a00150832enw.pdf?id=a00150832enw',
+  ] },
+  { archivo: 'hpe-a00150852enw.pdf', tipo: 'pdf', para: 'JUNIPER', urls: [
+    'https://www.hpe.com/psnow/downloadDoc/a00150852enw.pdf?id=a00150852enw',
+  ] },
+  { archivo: 'hpe-a00154678enw.pdf', tipo: 'pdf', para: 'JUNIPER', urls: [
+    'https://www.hpe.com/psnow/downloadDoc/a00154678enw.pdf?id=a00154678enw',
+  ] },
+  { archivo: 'hpe-a50015856enw.pdf', tipo: 'pdf', para: 'JUNIPER', urls: [
+    'https://www.hpe.com/psnow/downloadDoc/a50015856enw.pdf?id=a50015856enw',
+  ] },
   { archivo: 'juniper-srx300-ds.html', tipo: 'html', para: 'JUNIPER', debeContener: 'SRX340', urls: [
     'https://www.juniper.net/us/en/products/security/srx-series/srx300-line-firewalls-branch-datasheet.html',
     'https://www.juniper.net/gb/en/products/security/srx-series/srx300-line-firewalls-branch-datasheet.html',
