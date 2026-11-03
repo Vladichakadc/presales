@@ -525,6 +525,13 @@ module.exports = [
   { archivo: 'hpe-a00150836enw.pdf', tipo: 'pdf', para: 'JUNIPER', urls: [
     'https://www.hpe.com/psnow/downloadDoc/a00150836enw.pdf?id=a00150836enw',
   ] },
+  // Los otros dos PDF de juniper.net que el lock vigila como bytes: ¿siguen siendo PDF?
+  { archivo: 'juniper-comparativa-seguridad.pdf', tipo: 'pdf', para: 'JUNIPER', urls: [
+    'https://www.juniper.net/content/dam/www/assets/datasheets/us/en/security/security-products-comparison-chart.pdf',
+  ] },
+  { archivo: 'juniper-ssr1000-ds.pdf', tipo: 'pdf', para: 'JUNIPER', urls: [
+    'https://www.juniper.net/content/dam/www/assets/datasheets/us/en/routers/ssr1000-line-of-routers-datasheet.pdf',
+  ] },
   { archivo: 'juniper-srx300-ds.html', tipo: 'html', para: 'JUNIPER', debeContener: 'SRX340', urls: [
     'https://www.juniper.net/us/en/products/security/srx-series/srx300-line-firewalls-branch-datasheet.html',
     'https://www.juniper.net/gb/en/products/security/srx-series/srx300-line-firewalls-branch-datasheet.html',

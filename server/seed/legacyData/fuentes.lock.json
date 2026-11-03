@@ -126,13 +126,6 @@
       "bytes": 9734,
       "medido": "2026-10-26T12:35:29.169Z"
     },
-    "juniper::https://www.juniper.net/content/dam/www/assets/datasheets/us/en/security/srx1600-firewall-datasheet.pdf": {
-      "documento": "Fichas por modelo de la generacion 2024 (SRX1600, SRX2300, SRX4300)",
-      "hashVerificado": "2175d9142d15811c57eb9562163fb91a242b1cc87166ac705fe20e28f04474fb",
-      "clase": "bytes",
-      "bytes": 484008,
-      "medido": "2026-10-26T12:35:29.169Z"
-    },
     "mikrotik::https://mikrotik.com/product/RB750Gr3": {
       "documento": "Ficha de producto MikroTik RB750Gr3",
       "hashVerificado": "0b94606903a872123a1026dd3331334ea4e4990574f482bd70dc9812ccaa2ebc",
@@ -1035,6 +1028,13 @@
       "clase": "bytes",
       "bytes": 1196653,
       "medido": "2026-11-01T19:00:00.000Z"
+    },
+    "juniper::https://www.hpe.com/psnow/downloadDoc/a00150833enw.pdf?id=a00150833enw": {
+      "documento": "HPE Networking SRX1600 Firewall data sheet (a00150833ENW); SRX2300 en a00150834ENW y SRX4300 en a00150836ENW",
+      "hashVerificado": "8fc4414610ef3af189cfea23f2bcbcba1f32922eb404ee90238322d00db119db",
+      "clase": "bytes",
+      "bytes": 294210,
+      "medido": "2026-11-03T02:10:00.000Z"
     }
   },
   "revisado": "2026-10-26T12:35:29.169Z"
