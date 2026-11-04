@@ -277,7 +277,7 @@ test('AT-08 · monitoring u orquestacion derivan UNA linea, con SKU y precio de 
 
 test('F2 · el SD-WAN Service sale de la price list y la familia se contrasta con el Ordering Guide', () => {
   const svc = (id) => porId(`FortiGate ${id}`).lic.sdwanSvc;
-  const conSku = MODELS.filter((m) => m.lic && m.lic.sdwanSvc && m.lic.sdwanSvc.addon);
+  const conSku = MODELS.filter((m) => !m.variante && m.lic && m.lic.sdwanSvc && m.lic.sdwanSvc.addon);
   // 54 de 58: todos los que tienen bloque en la price list. No se fija por comodidad: es lo
   // que dice la lista hoy, y si baja es que un modelo perdio su SKU sin que nadie lo decida.
   assert.strictEqual(conSku.length, 54);
@@ -458,8 +458,10 @@ test('F3 · licencia FortiGuard única en A-P: la serie, el SKU de HA y el heart
   assert.match(aa.find((a) => a.codigo === 'ha-licencia-por-nodo').mensaje, /solo vale en activo-pasivo de dos unidades/);
   // Cada modelo marcado cita la guía, y los ocho son los de las cinco series.
   const marcados = MODELS.filter((m) => m.haLicenciaUnica);
-  assert.deepStrictEqual(marcados.map((m) => m.id).sort(), ['FortiGate 100F', 'FortiGate 40F', 'FortiGate 60F', 'FortiGate 61F',
+  // «40F and variants»: el 40F-3G4G (2026-11-04) entra con su propio SKU de HA de la lista.
+  assert.deepStrictEqual(marcados.map((m) => m.id).sort(), ['FortiGate 100F', 'FortiGate 40F', 'FortiGate 40F-3G4G', 'FortiGate 60F', 'FortiGate 61F',
     'FortiGate 70F', 'FortiGate 71F', 'FortiGate 80F', 'FortiGate 81F']);
+  assert.strictEqual(porId('FortiGate 40F-3G4G').haLicenciaUnica.skuHa, 'FG-40F-3G4G-HA');
   for (const m of marcados) assert.match(m.haLicenciaUnica.urls[0], /administration-guide\/246857$/);
 });
 
@@ -478,7 +480,7 @@ test('el campo ssl es null explicito donde el catalogo no lo trae, nunca undefin
     assert.ok(Object.prototype.hasOwnProperty.call(m, 'ssl'), `${m.id} sin campo ssl`);
     assert.ok(m.ssl === null || m.ssl > 0, `${m.id} tiene un ssl que no es ni null ni una cifra`);
   }
-  const conDato = MODELS.filter((m) => m.ssl != null);
+  const conDato = MODELS.filter((m) => !m.variante && m.ssl != null);
   assert.strictEqual(conDato.length, 58,
     '58 modelos con cifra oficial: 27 filas del Matrix + 24 variantes + 5 fichas por serie (100F, 200F, 400F, 600F, 1000F) + 2 variantes (401F, 1001F)');
   // Ninguno sin dato desde el 2026-09-24. Se enumera igual: si manana uno lo perdiera, la
@@ -788,7 +790,7 @@ test('los siete campos del Matrix llegan a los 58 modelos como null o como cifra
       assert.ok(m[k] === null || m[k] > 0, `${m.id}.${k} no es ni null ni una cifra`);
     }
   }
-  const cuenta = (k) => MODELS.filter((m) => m[k] != null).length;
+  const cuenta = (k) => MODELS.filter((m) => !m.variante && m[k] != null).length;
   // 51 del Matrix + 7 de las fichas por serie: 400F, 600F y 1000F con 401F y 1001F (en
   // ingles) y 100F y 200F (en coreano, la inglesa da 404).
   assert.strictEqual(cuenta('tunGw'), 58);
