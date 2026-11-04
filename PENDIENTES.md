@@ -2322,6 +2322,27 @@ Un modelo que se incorpore sale de `REVISADAS` (la prueba lo frena si se queda).
   los G2-MX): variantes celular y Wi-Fi con ficha propia en documentation.meraki.com. Como el
   catálogo no cita esas fichas, `npm run cisco` no las mira y el aviso no las puede ver.
 
+## Abierto: Fortinet, Wi-Fi y WAN celular (2026-11-04, PR #140)
+
+Lo que dejó la entrega de FortiWiFi, FortiGate con módem 4G/5G y FortiExtender
+(`docs/entregas/2026-11-04-pr-140.md`):
+
+1. **Precio y licencias de los FortiWiFi y de los FortiExtender.** La lista firmada no se extrajo para
+   ellos: `scripts/importar-skus-fortinet.js` solo casa bloques `FortiGate-XX` anclados a un SKU y un
+   precio ya verificados, y estos no los tienen. Lo cierra ampliar el importador a esas filas (ancla
+   propuesta: el SKU exacto de la «Ordering Information» de su ficha) y correrlo con la lista, que tiene
+   el dueño. Hasta entonces van «consultar», y la pantalla lo dice como «no se extrajo».
+2. **PQC de las once variantes**: «no consta», porque la Maximum Values Table no las nombra. Lo cierra la
+   página «Supported models» de las Release Notes de FortiOS 7.6.7, si lista los FWF y las variantes
+   celulares (por transporte).
+3. **Caudal del módem integrado** (40F-3G4G, 50G-5G, 51G-5G y FortiWiFi 50G-5G-II): su ficha no lo publica
+   y el motor lo avisa en vez de comprobarlo. Lo cierra un documento de Fortinet con esa cifra.
+4. **Figuras de las variantes**: la ficha del equipo no las trae todavía. Las fichas por serie traen las
+   figuras de cada columna (página «Hardware»).
+5. **Fuera a propósito**: FEX-511G-WiFi (el mismo equipo con radio, sin caso en el dimensionador),
+   FortiExtender Vehicle y Rugged. Los FortiWiFi 40F, 60F y 80F-2R y el FG-80F-3G4G no son un pendiente:
+   las fichas vigentes de esas series (R49/R51/R48, 2026-10-01) ya no los publican.
+
 ## ~~Abierto~~ Cerrado: herramienta externa Cisco (2026-10-20)
 
 Todo lo que la entrega del dimensionador Cisco dejó abierto se cerró el mismo día, en dos tandas

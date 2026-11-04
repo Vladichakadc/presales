@@ -1304,5 +1304,75 @@ for (const m of MODELS) {
     urls:['https://docs.fortinet.com/document/fortigate/7.6.6/administration-guide/246857']};
 }
 
+/* ── FORTIWIFI Y FORTIGATE CON MODEM 4G/5G (2026-11-04) ─────────────────────────────────────
+   Los datos y su procedencia estan en fortinetVariantes.js. Aqui se materializan AL FINAL, cuando
+   el modelo base ya tiene todo lo que le ponen los bucles de arriba: la variante copia de su base
+   las cifras que la ficha por serie imprime en una celda comun a las dos columnas (rendimiento,
+   limites del Matrix, escala del Fabric, ASIC) y sustituye lo que la ficha publica por columna.
+   Lo que viene de un documento que no nombra a la variante (PQC, BGP, fin de venta, figuras) no
+   se copia. Las licencias se construyen por SKU EXACTO de la lista firmada con el codigo de modelo
+   de la variante; si la lista extraida no trae su bloque (los FortiWiFi), no hay licencias y la
+   variante lo declara (`listaSinExtraer`). Una variante no compite en el dimensionador salvo que
+   el escenario pida su funcion o se elija a mano (fortinet-motor.js). */
+const { VARIANTES, FICHAS: FICHAS_VARIANTES, FORTIEXTENDER } = require('./fortinetVariantes.js');
+const tierDeLista=(sku)=>{
+  const t={sku, y1:null, y3:null, y5:null};
+  let alguno=false;
+  for (const [y, suf] of [['y1','12'],['y3','36'],['y5','60']]) {
+    const p=PRECIO_DECLARADO.get(sku.replace(/-DD$/, `-${suf}`));
+    if (p!=null) { t[y]=p; alguno=true; }
+  }
+  return alguno?t:null;
+};
+const licDeLista=(cod, bdl, refs)=>{
+  const fc=(fam)=>tierDeLista(`FC-10-${cod}-${fam}-02-DD`);
+  const conv=PRECIO_DECLARADO.get(`FC-10-${cod}-189-02-12`);
+  const lista=addonDeLista(refs, cod);
+  return {
+    ent:fc('809'), utp:fc('950'), atp:fc('928'),
+    entBdl:bdl?tierDeLista(`${bdl}-809-DD`):null, utpBdl:bdl?tierDeLista(`${bdl}-950-DD`):null,
+    care:{essential:fc('314'), premium:fc('247'), elite:fc('284')},
+    converter: conv==null ? {sku:null, fee:null, fueraDeLista:true} : {sku:`FC-10-${cod}-189-02-12`, fee:conv},
+    eliteUpg:fc('204'), sandboxAi:fc('577'), logCloud:fc('585'),
+    sdwanSvc: lista.tier ? {addon:lista.tier, fuente:FUENTE_SDWAN, origen:'lista', nota:'el Ordering Guide no tabula esta variante y remite a la price list'}
+      : {addon:null, fuente:FUENTE_SDWAN, motivo:'la price list de septiembre no trae el SD-WAN Service de esta variante'},
+  };
+};
+const COPIA_DE_BASE=['seg','fw','ips','ngfw','tp','vpn','sess','cps','redund','ssl','tunGw','tunCli','sslVpn','sslVpnUsers',
+  'policies','vdomMax','matrixDe','limitesDe','vdomDef','aps','apsTun','switches','tokens','formato','notasMatrix',
+  'plataformaFuente','modular','asic','np','cp','soc','asicSrc'];
+for (const v of VARIANTES) {
+  const base=MODELS.find((m)=>m.id===v.de);
+  if (!base) throw new Error(`fortinetVariantes: ${v.id} declara como base ${v.de}, que no esta en MODELS`);
+  const m={id:v.id};
+  for (const k of COPIA_DE_BASE) if (k in base) m[k]=JSON.parse(JSON.stringify(base[k]));
+  const ficha=FICHAS_VARIANTES[v.ficha];
+  const refs=SKUS_POR_MODELO[v.de]||[];
+  const hw=refs.find((r)=>r.t==='HW' && r.sku===v.sku);
+  Object.assign(m, {
+    ifaces:v.ifaces, hwSku:v.sku, eolAnnounced:null, datasheetUrl:null,
+    psu:{watts:v.psu.watts, tipo:base.psu?base.psu.tipo:'no consta', volts:base.psu?base.psu.volts:null, amps:v.psu.amps,
+      texto:`Consumo medio ${v.psu.watts} W y máximo ${v.psu.maxW} W (ficha ${ficha}, columna ${v.sku}).`},
+    puertos:v.puertos, puertosFuente:`ficha por serie ${ficha} (Hardware Specifications)`,
+    almacenamientoGB:v.almacenamientoGB,
+    poe:!!v.poe, poeVariante:false, poeDetalle:v.poe||null,
+    bgpPeers:null, bgpDe:null, pqc:null,
+    wifi:v.wifi||null, celular:v.celular||null,
+    variante:{de:v.de, ficha, rc:!!v.rc, fuente:`ficha por serie ${ficha}`},
+    // El precio del equipo lo pone el cotizador (cotizadorCatalog.js), y la prueba de la regla
+    // del dueño lo busca por este mismo SKU en la lista. Sin bloque en la lista, no hay licencias.
+    lic: v.lic ? licDeLista(v.lic, v.bdl, refs) : null,
+    listaSinExtraer: !v.lic,
+  });
+  if (v.lic && !hw) throw new Error(`fortinetVariantes: ${v.id} declara licencias de la lista y su SKU ${v.sku} no esta en el bloque de ${v.de}`);
+  // «40F and variants» (FortiOS 7.6.6, licencia FortiGuard unica del par A-P): la variante 3G4G
+  // tiene su propio SKU de HA en la lista firmada.
+  if (v.skuHa && base.haLicenciaUnica) {
+    const ha=refs.find((r)=>r.t==='HW' && r.sku===v.skuHa);
+    m.haLicenciaUnica={...base.haLicenciaUnica, skuHa:ha?ha.sku:null, precioHa:ha&&ha.p!=null?ha.p:null};
+  }
+  MODELS.push(m);
+}
+
 module.exports = { EOL_ANNOUNCED, MODELS, BUNDLES, CARE, LICENSES, HW_SKU, FUNCIONES, SERVICIOS_SDWAN, SDWAN_SERVICIO, EMS_LICENCIAS, SASE_USUARIOS, TERMINOS, MATRIX_LIMITES,
-  FICHAS_LIMITES, MATRIX_PLATAFORMA, FICHAS_PLATAFORMA, PUERTOS, FORTIOS, REANCLAJE, MVT_LIMITES };
+  FICHAS_LIMITES, MATRIX_PLATAFORMA, FICHAS_PLATAFORMA, PUERTOS, FORTIOS, REANCLAJE, MVT_LIMITES, FORTIEXTENDER };

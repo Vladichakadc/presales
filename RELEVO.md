@@ -344,6 +344,10 @@ traspaso (el #37, de otra sesión, se fusionó mientras se cerraba esta).
 5. **Cuenta de Huawei** (Info-Finder pide sesión): sin ella no hay ciclo de vida de Huawei, ni el
    tope de túneles y rutas por modelo AR.
 
+- **Precio de FortiWiFi y FortiExtender** (PR #140): la lista firmada (`2026Q3 Mid Price list…`) la tiene el
+  dueño. Con el importador ampliado (mejora propuesta abajo), correr `npm run skus -- <lista.xlsx>` y fusionar
+  el diff de `fortinetSkus.js`. Hasta entonces esas líneas van «consultar».
+
 ### Se pueden hacer desde una sesión, sin acceso especial
 
 1. **Mejoras propuestas**: las de abajo, cuando el dueño las apruebe (no se hacen solas).
@@ -392,6 +396,9 @@ traspaso (el #37, de otra sesión, se fusionó mientras se cerraba esta).
   le sirven un cascarón: lo cierra una persona que las abra en el navegador.
 - **Fortinet**: el resto de F4, F5 (derates), 17 renovaciones sin precio en la lista firmada y
   co-term. F3 cerrado (PR #56); el heartbeat, dicho para las series con licencia única.
+  Del PR #140: la PQC de las once variantes Wi-Fi y celulares (la cierra «Supported models» de las
+  Release Notes de FortiOS 7.6.7), el caudal del módem integrado (ninguna ficha lo publica) y las
+  figuras de las variantes (están en sus fichas por serie).
 
 ### Bloqueado por acceso (se reporta, no se rodea)
 
@@ -400,6 +407,15 @@ fabricantes (y `presales.up.railway.app`); los ejecutores de GitHub Actions sí 
 existen los workflows de transporte. Huawei y HPE niegan además el navegador automatizado (Akamai).
 
 ## Mejoras propuestas sin decidir
+
+- **Que el importador de la lista de Fortinet extraiga también FortiWiFi y FortiExtender** (propuesta al
+  cerrar el PR #140). `importar-skus-fortinet.js` ancla cada bloque al SKU y al precio del FortiGate ya
+  verificados; para estos equipos no hay precio verificado, así que el ancla sería el SKU exacto de la
+  «Ordering Information» de su ficha (FWF-30G-[RC] → las filas `FWF-30G-<código>`; FEX-211G…), más que
+  el bloque nombre el mismo modelo. Evita que los FortiWiFi y los FortiExtender salgan siempre
+  «consultar». Cuesta ampliar el importador y su prueba con una lista sintética, y que el dueño lo corra
+  con la lista. Si se hace mal, entrarían filas de otro modelo con nombre parecido (`FWF-50G` frente a
+  `FWF-50G-5G-II`): la guarda de nombre anclado del importador ya existe para eso.
 
 - **Plan de mejora de los dimensionadores, aprobado el 2026-10-31**: lo que queda, en orden. (cada corte se mide con un caso en `scripts/equivalencias/`, `npm run equivalencia`) 3.1 sacar el cálculo de la página de Aruba a módulos puros con prueba en Node (PR #99: ópticas, EdgeHA y puertos; PR #111: el estado comercial derivado; PR #113: la elección del modelo. Hecha); 3.2 lo mismo en la página de Fortinet sin tocar el motor aprobado (hecha: PR #100 y PR #110). La 1.1 (medir el arranque) se hizo en el PR #86.
 - **Vigía semanal del ciclo de vida de Fortinet** (propuesta al cerrar el PR #68). Un workflow que

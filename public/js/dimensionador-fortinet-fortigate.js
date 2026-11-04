@@ -122,6 +122,9 @@ const UI = [
   ['escala.bgpPeers', 'bgpPeers', 'num', 0],
   ['fisico.poeW', 'poeW', 'num', 0],
   ['fisico.psuRedundante', 'chkPsuRed', 'chk'],
+  ['fisico.wifi', 'chkWifi', 'chk'],
+  ['fisico.celular', 'celularGen', 'txt'],
+  ['fisico.celularVia', 'celularVia', 'txt'],
   ['fisico.registro', 'registroDestino', 'txt'],
   ['fisico.registroGbDia', 'registroGbDia', 'num', 0],
   ['fisico.registroDias', 'registroDias', 'num', 0],
@@ -166,6 +169,7 @@ const CAMPO_N = {
   'remoto.usuarios': 'usuarios de acceso remoto', 'remoto.mbps': 'caudal de acceso remoto', 'remoto.mfa': 'doble factor',
   'seguridad.tlsCifradoPct': 'parte cifrada del tráfico', 'seguridad.tlsExentoPct': 'tráfico exento de inspección TLS',
   'seguridad.pqc': 'criptografía post-cuántica exigida',
+  'fisico.celularVia': 'cómo llega el enlace 4G/5G',
   'fisico.registroGbDia': 'GB/día de registro', 'fisico.registroDias': 'días de retención',
   'comercial.emsEndpoints': 'endpoints de FortiClient EMS', 'comercial.sandbox': 'modo de FortiSandbox',
   'comercial.emsDespliegue': 'despliegue de FortiClient EMS', 'comercial.saseEdicion': 'edición de FortiSASE',
@@ -192,7 +196,7 @@ const CAMPOS_ESCENARIO = ['nombreCliente', 'refProyecto', 'wanLinksData',
   'chkRemoto', 'vpnTipo', 'vpnUsers', 'vpnMbps', 'chkMfa',
   'users', 'sesUser', 'sessNeed', 'vidaSes', 'cpsMedido', 'vdoms', 'fortiAps', 'fortiSwitches', 'bgpPeers',
   'pt_rj45_1g', 'pt_rj45_10g', 'pt_sfp_1g', 'pt_sfpp_10g', 'pt_sfp28_25g', 'pt_qsfp28_100g',
-  'poeW', 'chkPsuRed', 'reqPqc', 'registroDestino', 'registroGbDia', 'registroDias', 'head', 'techoUtil',
+  'poeW', 'chkPsuRed', 'chkWifi', 'celularGen', 'celularVia', 'reqPqc', 'registroDestino', 'registroGbDia', 'registroDias', 'head', 'techoUtil',
   'motivoCompra', 'serieInstalada', 'pickModel', 'justificacionEol', 'termYears', 'licBundle', 'careLevel',
   'chkSdwanMon', 'chkSdwanOrq', 'chkSdwanSase', 'saseUsuarios', 'saseEdicion', 'chkEms', 'emsEndpoints', 'emsDespliegue',
   'chkConverter', 'selDescuento', 'dtoCustom'];
@@ -482,6 +486,10 @@ function leerEscenario() {
   s.comercial.sdwan = Object.entries(CHK_SDWAN).filter(([, id]) => $(id).checked).map(([k]) => k);
   s.comercial.sandbox = $('chkSandbox').checked ? $('sandboxModo').value : 'ninguno';
   s.seleccion = { manual: seleccionManual };
+  // Wi-Fi y celular solo existen en el escenario cuando se piden (su huella no cambia si no).
+  if (!s.fisico.wifi) delete s.fisico.wifi;
+  if (!s.fisico.celular) delete s.fisico.celular;
+  if (!s.fisico.celularVia) delete s.fisico.celularVia;
   return s;
 }
 
@@ -601,7 +609,7 @@ const NUMERICOS = UI.filter(([, , t]) => t === 'num').map(([, id]) => id).concat
 for (const id of NUMERICOS) { const n = $(id); if (n) n.addEventListener('input', () => programar(n.type === 'range', id)); }
 const INMEDIATOS = ['fortiOS', 'modoInspeccion', 'chkHa', 'haModo', 'chkAv', 'chkWeb', 'chkIotDlp', 'chkSsl', 'pctCifrado',
   'pctTlsExento', 'chkSandbox', 'sandboxModo', 'sandboxModalidad', 'chkNoConcurrente', 'chkRemoto', 'vpnTipo', 'chkMfa',
-  'chkPsuRed', 'reqPqc', 'registroDestino', 'techoUtil', 'motivoCompra', 'termYears', 'licBundle', 'careLevel',
+  'chkPsuRed', 'chkWifi', 'celularGen', 'celularVia', 'reqPqc', 'registroDestino', 'techoUtil', 'motivoCompra', 'termYears', 'licBundle', 'careLevel',
   'chkHaLicUnica', 'chkSdwanMon', 'chkSdwanOrq', 'chkSdwanSase', 'saseEdicion', 'chkEms', 'emsDespliegue', 'chkConverter'];
 for (const id of INMEDIATOS) { const n = $(id); if (n) n.addEventListener(n.tagName === 'SELECT' ? 'change' : 'input', () => programar(true, id)); }
 // Los selects tambien disparan `input` en los navegadores actuales; con `change` basta y
@@ -672,6 +680,28 @@ function irAlCampo(campo) {
   n.focus();
 }
 
+/* El FortiExtender elegido, con su porqué y lo que se apartó (2026-11-04). Lo decide el motor
+   (`r.celular.extender`); aquí solo se pinta. */
+function pintarCelular(r) {
+  const caja = $('celularResultado');
+  if (!caja) return;
+  const fex = r && r.celular && r.celular.extender;
+  if (!fex) { caja.hidden = true; caja.textContent = ''; return; }
+  const cel = r.celular;
+  const x = fex.recomendado;
+  const cifra = (e) => (e.bajada != null ? `bajada/subida ${e.bajada}/${e.subida} Mbps` : 'sin caudal de módem publicado');
+  const partes = [];
+  partes.push(cel.bajada ? `Enlace 4G/5G más exigente: <b>${esc(String(cel.bajada))} Mbps</b> de bajada.`
+    : 'Sin enlace de tipo 4G/5G con caudal: se elige solo por generación.');
+  partes.push(x ? `FortiExtender: <b>${esc(x.id)}</b> × ${fex.qty} (${esc(x.categoria)}, ${esc(cifra(x))}; ${esc(x.regionN)}).`
+    : '<b>Ningún FortiExtender de la ficha cumple.</b>');
+  if (fex.alternativas.length) partes.push(`Alternativas: ${fex.alternativas.map((a) => `${esc(a.id)} (${esc(cifra(a))}${a.region === 'EA' || a.region === 'AM' ? `, solo ${esc(a.regionN)}` : ''})`).join('; ')}.`);
+  if (fex.descartados.length) partes.push(`Apartados: ${fex.descartados.map((d) => `${esc(d.x.id)}, ${esc(d.motivo)}`).join('; ')}.`);
+  if (fex.fuente) partes.push(`Fuente: ${fex.url ? `<a href="${esc(fex.url)}" target="_blank" rel="noopener">${esc(fex.fuente)}</a>` : esc(fex.fuente)}.`);
+  caja.innerHTML = partes.join(' ');
+  caja.hidden = false;
+}
+
 /* ══ PINTADO ══════════════════════════════════════════════════════════════════════════════ */
 function pintarTodo() {
   const r = RES;
@@ -692,6 +722,7 @@ function pintarTodo() {
   pintarBom();
   pintarPasos(r);
   pintarFuentesCalculo(r);
+  pintarCelular(r);
   anunciarCambio(r);
   if (ST && ST.volcar) ST.volcar();
 }
@@ -1068,7 +1099,14 @@ function seccionesDe(r, m) {
     { titulo: 'Plataforma', filas: [
       ['VDOM incluidos / máximo', `${m.vdomDef != null ? m.vdomDef : '—'} / ${m.vdomMax != null ? m.vdomMax : '—'}`],
       ['Disco local', m.almacenamientoGB == null ? sinDato : m.almacenamientoGB ? `${cifra(m.almacenamientoGB)} GB` : 'sin disco (la variante terminada en 1 lo trae)'],
-      ['PoE', m.poe == null ? sinDato : m.poe ? 'sí' : (m.poeVariante ? 'no en el SKU base (existe variante -POE)' : 'no')],
+      ['PoE', m.poe == null ? sinDato : m.poe ? (m.poeDetalle ? `sí — ${cifra(m.poeDetalle.puertos)} puertos, ${cifra(m.poeDetalle.presupuestoW)} W en total (${esc(m.poeDetalle.nota)})` : 'sí')
+        : (m.poeVariante ? 'no en el SKU base (existe variante -POE)' : 'no')],
+      // Wi-Fi y módem (2026-11-04): de la columna de la variante en su ficha por serie.
+      ['Wi-Fi integrado', m.wifi ? `${esc(m.wifi.estandar)}, ${esc(m.wifi.radios)}${m.wifi.mimo ? ` · ${esc(m.wifi.mimo)}` : ''}${m.wifi.velocidades ? ` · ${esc(m.wifi.velocidades)}` : ''}`
+        : m.variante ? 'no' : 'no (existe como FortiWiFi donde la serie lo publica)', true],
+      ['Módem celular', m.celular ? `${esc(m.celular.gen)} · ${esc(m.celular.categoria)} · ${esc(m.celular.modem)} · ${esc(m.celular.sims)}${m.celular.antenas ? ` · ${esc(m.celular.antenas)}` : ''} · la ficha no publica su caudal`
+        : 'no (para 4G/5G: una variante con módem o un FortiExtender)', true],
+      ...(m.variante ? [['Variante de', `${esc(m.variante.de)}: misma tabla de rendimiento en la ${esc(m.variante.fuente)}`, true]] : []),
       ['FortiAP gestionados (túnel)', m.aps != null ? `${cifra(m.aps)}${m.apsTun != null ? ` (${cifra(m.apsTun)})` : ''}` : sinDato],
       ['FortiSwitch / FortiToken', `${m.switches != null ? cifra(m.switches) : '—'} / ${m.tokens != null ? cifra(m.tokens) : '—'}`],
       ['Vecinos BGP (máximo de configuración)', m.bgpPeers != null ? `${cifra(m.bgpPeers)} <span class="sku">${esc(m.bgpDe ? m.bgpDe.fuente : '')}</span>` : `${sinDato} — la Maximum Values Table de FortiOS 7.6.7 no lo lista o no casa con el catálogo`],

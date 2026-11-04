@@ -128,8 +128,11 @@ test('Cisco: redund sigue con cobertura completa (no se toco el dato, solo se mo
 // segun se lean mas documentos- sino las tres reglas que importan.
 test('Fortinet: alimentacion solo donde se leyo un documento, y con los cuatro estados bien', () => {
   const { MODELS } = require('../server/seed/legacyData/fortinet.js');
-  const con = MODELS.filter((m) => m.redund !== undefined);
+  // Las variantes FortiWiFi y 4G/5G (2026-11-04) se cuentan aparte: su alimentacion es la de su
+  // columna en la ficha por serie.
+  const con = MODELS.filter((m) => !m.variante && m.redund !== undefined);
   assert.strictEqual(con.length, 58, 'cobertura leida de fichas por serie y System Guides');
+  for (const v of MODELS.filter((m) => m.variante)) assert.match(v.psu.texto, /ficha F[GW]/, `${v.id}: su consumo cita su ficha`);
 
   // 1. El que no tiene dato se queda en `undefined`. Nunca en `false`, que seria inventar un
   //    dato negativo, y nunca en `null`. Desde el 2026-09-11 ya no queda ninguno sin dato.

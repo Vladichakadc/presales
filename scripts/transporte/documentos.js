@@ -1730,4 +1730,52 @@ module.exports = [
   { archivo: 'aruba-aos10-cli-10810.html', tipo: 'html', para: 'ARUBA', exploracion: true, urls: [
     'https://arubanetworking.hpe.com/techdocs/CLI-Bank/Content/aos10/whats-new/10.8.1.htm',
   ] },
+  // 2026-11-04 (encargo del dueño: FortiWiFi y FortiExtender 4G/5G en el dimensionador de Fortinet).
+  // Las fichas de FortiGate 40F, 60F y 80F de fuente/fortinet-serie solo traen las columnas FortiGate
+  // (R47-R50 de 2026): los FortiWiFi de esas series tienen ficha propia. Y no hay en el repositorio
+  // ninguna ficha de FortiExtender. Las URL de los PDF no se adivinan: se descubren en las páginas de
+  // producto, que se piden primero (las fichas de terceros que da el buscador no son fuente).
+  { archivo: 'fortinet-fortiextender-pagina.html', tipo: 'html', para: 'FORTINET', debeContener: 'FortiExtender', urls: [
+    'https://www.fortinet.com/products/wireless-wan-fortiextender',
+    'https://www.fortinet.com/products/extender',
+  ] },
+  { archivo: 'fortinet-fortiextender-ds.pdf', tipo: 'pdf', para: 'FORTINET', urls: [],
+    descubrirEnlace: { de: 'fortinet-fortiextender-pagina.html', contiene: 'xtender', dominios: ['fortinet.com'],
+      base: 'https://www.fortinet.com/products/wireless-wan-fortiextender' } },
+  // La guía de pedido de FortiExtender, enlazada desde la misma página (corrida 41845481466).
+  { archivo: 'fortinet-fortiextender-og.pdf', tipo: 'pdf', para: 'FORTINET', urls: [],
+    descubrirEnlace: { de: 'fortinet-fortiextender-pagina.html', contiene: 'og-fortiextender', dominios: ['fortinet.com'],
+      base: 'https://www.fortinet.com/products/wireless-wan-fortiextender' } },
+  // Corrida 41845481466: 200 sin el texto «FortiWiFi» en su HTML; se pide como exploración para ver a
+  // qué fichas enlaza (la ruta de los PDF va en minúsculas: se busca «wifi-40f»…).
+  { archivo: 'fortinet-entry-level-pagina.html', tipo: 'html', para: 'FORTINET', exploracion: true, urls: [
+    'https://www.fortinet.com/products/next-generation-firewall/entry-level',
+  ] },
+  // La página enlaza la ficha sin «.pdf» (rama fuente/fortinet-wifi-celular-2-2026-11-04):
+  // «/resources/data-sheets/fortigate-fortiwifi-40f-series», que sirve HTML, no el PDF (rama
+  // fuente/fortinet-wifi-celular-3-2026-11-04). Se guarda como exploración y el PDF se descubre en ella.
+  { archivo: 'fortinet-fortiwifi-40f-pagina.html', tipo: 'html', para: 'FORTINET', exploracion: true, urls: [
+    'https://www.fortinet.com/resources/data-sheets/fortigate-fortiwifi-40f-series',
+  ] },
+  { archivo: 'fortinet-fortiwifi-40f-ds.pdf', tipo: 'pdf', para: 'FORTINET', urls: [],
+    descubrirEnlace: { de: 'fortinet-fortiwifi-40f-pagina.html', contiene: '40f', dominios: ['fortinet.com'],
+      base: 'https://www.fortinet.com/resources/data-sheets/fortigate-fortiwifi-40f-series' } },
+  // La página enlaza la ficha sin «.pdf» (rama fuente/fortinet-wifi-celular-2-2026-11-04):
+  // «/resources/data-sheets/fortigate-fortiwifi-60f-series», que sirve HTML, no el PDF (rama
+  // fuente/fortinet-wifi-celular-3-2026-11-04). Se guarda como exploración y el PDF se descubre en ella.
+  { archivo: 'fortinet-fortiwifi-60f-pagina.html', tipo: 'html', para: 'FORTINET', exploracion: true, urls: [
+    'https://www.fortinet.com/resources/data-sheets/fortigate-fortiwifi-60f-series',
+  ] },
+  { archivo: 'fortinet-fortiwifi-60f-ds.pdf', tipo: 'pdf', para: 'FORTINET', urls: [],
+    descubrirEnlace: { de: 'fortinet-fortiwifi-60f-pagina.html', contiene: '60f', dominios: ['fortinet.com'],
+      base: 'https://www.fortinet.com/resources/data-sheets/fortigate-fortiwifi-60f-series' } },
+  // La página enlaza la ficha sin «.pdf» (rama fuente/fortinet-wifi-celular-2-2026-11-04):
+  // «/resources/data-sheets/fortigate-fortiwifi-80f-series», que sirve HTML, no el PDF (rama
+  // fuente/fortinet-wifi-celular-3-2026-11-04). Se guarda como exploración y el PDF se descubre en ella.
+  { archivo: 'fortinet-fortiwifi-80f-pagina.html', tipo: 'html', para: 'FORTINET', exploracion: true, urls: [
+    'https://www.fortinet.com/resources/data-sheets/fortigate-fortiwifi-80f-series',
+  ] },
+  { archivo: 'fortinet-fortiwifi-80f-ds.pdf', tipo: 'pdf', para: 'FORTINET', urls: [],
+    descubrirEnlace: { de: 'fortinet-fortiwifi-80f-pagina.html', contiene: '80f', dominios: ['fortinet.com'],
+      base: 'https://www.fortinet.com/resources/data-sheets/fortigate-fortiwifi-80f-series' } },
 ];

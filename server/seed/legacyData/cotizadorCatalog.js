@@ -130,6 +130,10 @@ module.exports = [
   {vendor:'Fortinet',color:'#EE3124',model:'FortiGate 3500G', seg:'DC core', spec:'FW {fw} · NGFW {ngfw} · IPsec {vpn} · 2x400GE QSFP-DD + 4x100GE QSFP28 + 30x25GE SFP28', elp:'~ $302,702', elpN:302702},
   {vendor:'Fortinet',color:'#EE3124',model:'FortiGate 3800G', seg:'DC core / Carrier', spec:'FW {fw} · NGFW {ngfw} · IPsec {vpn} · 4x400GE + 6x200GE QSFP56 + 18x10GE SFP56', elp:'~ $494,471', elpN:494471},
   {vendor:'Fortinet',color:'#EE3124',model:'FortiGate 40F', seg:'SOHO', spec:'FW {fw} · NGFW {ngfw} · IPsec {vpn} · 5 GE', elp:'~ $873', elpN:873},
+  // Variantes con módem 4G/5G (2026-11-04): precio del SKU de hardware en la lista firmada.
+  {vendor:'Fortinet',color:'#EE3124',model:'FortiGate 40F-3G4G', seg:'SOHO', spec:'FW {fw} · NGFW {ngfw} · IPsec {vpn} · 5 GE + módem 3G/4G LTE CAT-12', elp:'~ $1,464', elpN:1464},
+  {vendor:'Fortinet',color:'#EE3124',model:'FortiGate 50G-5G', seg:'SOHO / Sucursal peq', spec:'FW {fw} · NGFW {ngfw} · IPsec {vpn} · 5 GE + módem 5G', elp:'~ $2,380', elpN:2380},
+  {vendor:'Fortinet',color:'#EE3124',model:'FortiGate 51G-5G', seg:'SOHO / Sucursal peq', spec:'FW {fw} · NGFW {ngfw} · IPsec {vpn} · 5 GE + módem 5G + 64GB SSD', elp:'~ $2,664', elpN:2664},
   {vendor:'Fortinet',color:'#EE3124',model:'FortiGate 60F', seg:'Sucursal peq', spec:'FW {fw} · NGFW {ngfw} · IPsec {vpn} · 10 GE + Wi-Fi opcional', elp:'~ $990', elpN:990},
   {vendor:'Fortinet',color:'#EE3124',model:'FortiGate 71F', seg:'Sucursal peq', spec:'FW {fw} · NGFW {ngfw} · IPsec {vpn} · 10 GE RJ45 + 128GB SSD onboard', elp:'~ $1,348', elpN:1348},
   {vendor:'Fortinet',color:'#EE3124',model:'FortiGate 80F', seg:'Sucursal + PoE', spec:'FW {fw} · NGFW {ngfw} · IPsec {vpn} · 8 GE + 2 SFP', elp:'~ $1,852', elpN:1852},

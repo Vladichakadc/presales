@@ -475,6 +475,9 @@ async function toDimensionadorFortinet() {
     // Compatibilidad FortiOS x funcion x modelo (hallazgo P0 F02 del 23-sep), con la fuente
     // de cada regla. La lee el mismo motor en la pagina y en /api/v1/fortinet/evaluations.
     fortios: fortinetData.FORTIOS,
+    // FortiExtender (2026-11-04): el enlace 4G/5G fuera del FortiGate, de su ficha. No son
+    // filas de Product: no se dimensionan como firewall, solo los elige el motor.
+    extenders: fortinetData.FORTIEXTENDER,
   };
   /* VERSION DEL CATALOGO, derivada del CONTENIDO y no de una fecha escrita a mano. Es lo que
      el navegador envia al pedir una salida comercial: si el servidor tiene otro catalogo
