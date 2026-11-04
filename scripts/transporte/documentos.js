@@ -1742,16 +1742,18 @@ module.exports = [
   { archivo: 'fortinet-fortiextender-ds.pdf', tipo: 'pdf', para: 'FORTINET', urls: [],
     descubrirEnlace: { de: 'fortinet-fortiextender-pagina.html', contiene: 'xtender', dominios: ['fortinet.com'],
       base: 'https://www.fortinet.com/products/wireless-wan-fortiextender' } },
-  { archivo: 'fortinet-entry-level-pagina.html', tipo: 'html', para: 'FORTINET', debeContener: 'FortiWiFi', urls: [
+  // Corrida 41845481466: 200 sin el texto «FortiWiFi» en su HTML; se pide como exploración para ver a
+  // qué fichas enlaza (la ruta de los PDF va en minúsculas: se busca «wifi-40f»…).
+  { archivo: 'fortinet-entry-level-pagina.html', tipo: 'html', para: 'FORTINET', exploracion: true, urls: [
     'https://www.fortinet.com/products/next-generation-firewall/entry-level',
   ] },
   { archivo: 'fortinet-fortiwifi-40f-ds.pdf', tipo: 'pdf', para: 'FORTINET', urls: [],
-    descubrirEnlace: { de: 'fortinet-entry-level-pagina.html', contiene: 'fortiwifi-40f', dominios: ['fortinet.com'],
+    descubrirEnlace: { de: 'fortinet-entry-level-pagina.html', contiene: 'wifi-40f', dominios: ['fortinet.com'],
       base: 'https://www.fortinet.com/products/next-generation-firewall/entry-level' } },
   { archivo: 'fortinet-fortiwifi-60f-ds.pdf', tipo: 'pdf', para: 'FORTINET', urls: [],
-    descubrirEnlace: { de: 'fortinet-entry-level-pagina.html', contiene: 'fortiwifi-60f', dominios: ['fortinet.com'],
+    descubrirEnlace: { de: 'fortinet-entry-level-pagina.html', contiene: 'wifi-60f', dominios: ['fortinet.com'],
       base: 'https://www.fortinet.com/products/next-generation-firewall/entry-level' } },
   { archivo: 'fortinet-fortiwifi-80f-ds.pdf', tipo: 'pdf', para: 'FORTINET', urls: [],
-    descubrirEnlace: { de: 'fortinet-entry-level-pagina.html', contiene: 'fortiwifi-80f', dominios: ['fortinet.com'],
+    descubrirEnlace: { de: 'fortinet-entry-level-pagina.html', contiene: 'wifi-80f', dominios: ['fortinet.com'],
       base: 'https://www.fortinet.com/products/next-generation-firewall/entry-level' } },
 ];
