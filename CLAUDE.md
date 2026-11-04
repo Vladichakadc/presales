@@ -179,10 +179,13 @@ sigue ignorado):
   porque `PostToolUse` no se dispara cuando el comando falla. Antes de cada corrida, si las dos
   últimas de la misma acción acabaron mal, **recuerda consultar al asesor** (`lib-fallos.js`, en
   `additionalContext`, nunca `permissionDecision`: avisa, no aprueba ni frena;
-  `test/aprendizaje-hook.test.js`). No ve un fallo en tubería: `npm run x | tail` sale con el código
-  de `tail`.
+  `test/aprendizaje-hook.test.js`). Cuando el código de la línea no es el de npm (npm seguido de `|`,
+  `;` o `||`, o en segundo plano) apunta **`rc: null`, «no se sabe», nunca 0** (`rcEsDeNpm` en
+  `lib-comando.js`; decisión del dueño, 2026-11-04): cuenta con `&&` detrás, o con `set -o pipefail`
+  antes de la tubería.
 - `pre-push.sh`: **avisa, no bloquea**, si el último `verificar` en verde (o el último `auditar`,
-  que caduca a las 12 h) es anterior al último cambio. Los dos usan `lib-comando.js`, que distingue
+  que caduca a las 12 h) es anterior al último cambio, o si el último `verificar` es de resultado
+  desconocido. Los dos usan `lib-comando.js`, que distingue
   un comando que se ejecuta de uno que solo se menciona dentro de una cadena.
 
 **Modelo, asesor y subagentes** (2026-10-31, PR #94, petición del dueño). `.claude/settings.json`
