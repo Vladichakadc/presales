@@ -136,6 +136,9 @@ test('FortiExtender: por generación y bajada del enlace, uno por enlace, y sin 
   const l5 = r.bom.filas.find((f) => f.cat === 'WAN celular');
   assert.strictEqual(l5.sku, null, 'FEW-50G-AM o -EA: se elige por región');
   assert.match(l5.nota, /FEW-50G-AM para Norteamérica/);
+  // Tres enlaces 4G/5G: un FortiGate admite dos FortiExtender en extensión de WAN.
+  r = ev(esc({ celular: '4g', celularVia: 'extender' }, enl(100, 3)));
+  assert.ok(r.bloqueos.some((b) => b.codigo === 'fex-demasiados' && /2 per FGT/.test(b.mensaje)));
   // A 5 Gbps no llega ninguno: bloqueo con los motivos.
   r = ev(esc({ celular: '5g', celularVia: 'extender' }, [{ id: 1, tipo: '4G/5G', down: 5000 }]));
   assert.strictEqual(r.celular.extender.recomendado, null);

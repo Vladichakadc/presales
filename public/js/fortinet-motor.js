@@ -683,7 +683,8 @@
     elegibles.sort(orden);
     const recomendado = elegibles.find((x) => !regional(x)) || null;
     return { recomendado, alternativas: elegibles.filter((x) => x !== recomendado), descartados,
-      qty: Math.max(1, cel.enlaces), fuente: (cat.extenders && cat.extenders.fuente) || null,
+      qty: Math.max(1, cel.enlaces), max: (cat.extenders && cat.extenders.maxPorFortiGate) || null,
+      fuente: (cat.extenders && cat.extenders.fuente) || null,
       url: (cat.extenders && cat.extenders.url) || null };
   }
 
@@ -894,6 +895,11 @@
         mensaje: 'Ningún FortiExtender de la ficha cumple el enlace 4G/5G pedido: '
           + (fex.descartados.map((d) => `${d.x.id}, ${d.motivo}`).join('; ') || 'no hay ninguno de esa generación') + '.' });
       return;
+    }
+    if (fex.max && fex.qty > fex.max.n) {
+      bloqueos.push({ codigo: 'fex-demasiados', nivel: 'bloqueo',
+        mensaje: `Hay ${fex.qty} enlaces 4G/5G y un FortiGate admite ${fex.max.n} FortiExtender en extensión de WAN (${fex.max.fuente}).`,
+        correccion: 'Juntar enlaces celulares, o un FortiGate por cada dos FortiExtender.' });
     }
     const unico = x.skus.length === 1;
     filas.push({ req: 'fisico.celular', cat: 'WAN celular', desc: `${x.id} (${x.categoria})`, sku: unico ? x.skus[0] : null, qty: fex.qty, unit: null,

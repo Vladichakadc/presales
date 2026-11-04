@@ -147,6 +147,10 @@ const VARIANTES = [
 const FORTIEXTENDER = {
   fuente: 'FortiExtender 5G/LTE Gateways Series Data Sheet (FEXT-DAT-R57-20260831)',
   url: 'https://www.fortinet.com/content/dam/fortinet/assets/data-sheets/FortiExtender.pdf',
+  // «FortiGate WAN Extension: 2 per FGT», en todas las columnas de su guía de pedido (traída el
+  // 2026-11-04 en la rama fuente/fortinet-wifi-celular-2-2026-11-04, enlazada desde la misma página).
+  maxPorFortiGate: { n: 2, fuente: 'FortiExtender Ordering Guide (FEX-OG-R18-20250626), «FortiGate WAN Extension: 2 per FGT»',
+    url: 'https://www.fortinet.com/content/dam/fortinet/assets/data-sheets/og-fortiextender.pdf' },
   modelos: [
     { id: 'FortiExtender 101G', skus: ['FEX-101G'], gen: '4G', categoria: 'LTE CAT-6', modem: 'Telit LN920A6-WW',
       modems: 1, bajada: 300, subida: 50, nat: 900, ipsec: 160, region: null, regionN: 'operadores globales',
