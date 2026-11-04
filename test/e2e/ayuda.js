@@ -8,12 +8,15 @@
 // construiría más lento por algo que producción nunca usa. Se resuelve en este orden:
 // dependencia local (npm i -D playwright), instalación global (npm i -g playwright —
 // `npm root -g` la encuentra aunque NODE_PATH no venga en el entorno) o error claro.
+// Lo que devuelve lleva su `chromium` envuelto: cada `chromium.launch()` pasa por
+// `opcionesDeLanzamiento()` (RenderDocument apagado, scripts/ayuda/chromium.js), como pantallas y contraste.
 function cargarPlaywright() {
-  try { return require('playwright'); } catch { /* sigue */ }
+  const { conPlaywright } = require('../../scripts/ayuda/chromium');
+  try { return conPlaywright(require('playwright')); } catch { /* sigue */ }
   try {
     const { execSync } = require('child_process');
     const path = require('path');
-    return require(path.join(execSync('npm root -g').toString().trim(), 'playwright'));
+    return conPlaywright(require(path.join(execSync('npm root -g').toString().trim(), 'playwright')));
   } catch { /* cae al mensaje */ }
   console.error('Playwright no está disponible. Instálalo con:');
   console.error('  npm i -D playwright && npx playwright install chromium');
