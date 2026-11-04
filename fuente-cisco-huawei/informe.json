@@ -1,0 +1,44 @@
+[
+  {
+    "archivo": "fortinet-fortiwifi-40f-ds.pdf",
+    "para": "FORTINET",
+    "guardado": false,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://www.fortinet.com/resources/data-sheets/fortigate-fortiwifi-40f-series",
+        "status": 200,
+        "firma": "0a202020203c2164",
+        "nota": "no es un PDF"
+      }
+    ]
+  },
+  {
+    "archivo": "fortinet-fortiwifi-60f-ds.pdf",
+    "para": "FORTINET",
+    "guardado": false,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://www.fortinet.com/resources/data-sheets/fortigate-fortiwifi-60f-series",
+        "status": 200,
+        "firma": "0a202020203c2164",
+        "nota": "no es un PDF"
+      }
+    ]
+  },
+  {
+    "archivo": "fortinet-fortiwifi-80f-ds.pdf",
+    "para": "FORTINET",
+    "guardado": false,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://www.fortinet.com/resources/data-sheets/fortigate-fortiwifi-80f-series",
+        "status": 200,
+        "firma": "0a202020203c2164",
+        "nota": "no es un PDF"
+      }
+    ]
+  }
+]
