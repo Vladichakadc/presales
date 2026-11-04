@@ -1231,6 +1231,20 @@
       "clase": "bytes",
       "bytes": 338780,
       "medido": "2026-11-03T02:30:00.000Z"
+    },
+    "fortinet::https://www.fortinet.com/content/dam/fortinet/assets/data-sheets/FortiExtender.pdf": {
+      "documento": "FortiExtender 5G/LTE Gateways Series Data Sheet (FEXT-DAT-R57-20260831)",
+      "hashVerificado": "2f41c6aee18bfebffe309c3f7e67dd5a118e6e04410737ec0e2a1282b2458925",
+      "clase": "bytes",
+      "bytes": 4013073,
+      "medido": "2026-11-04T14:20:00.000Z"
+    },
+    "fortinet::https://www.fortinet.com/content/dam/fortinet/assets/data-sheets/og-fortiextender.pdf": {
+      "documento": "FortiExtender Ordering Guide (FEX-OG-R18-20250626)",
+      "hashVerificado": "4167944fdc2d4086ba84c65213fc3864bab2dd0587a3733f4f663982c9848a45",
+      "clase": "bytes",
+      "bytes": 201200,
+      "medido": "2026-11-04T14:20:00.000Z"
     }
   },
   "revisado": "2026-11-03T02:53:37.205Z"

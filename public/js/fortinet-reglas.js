@@ -510,8 +510,8 @@
     if (sinExtraer) {
       bloquear({ codigo: 'lista-sin-extraer',
         mensaje: `De la lista de precios firmada solo se extrajeron las filas que nombran un FortiGate: el precio, las licencias `
-          + `y el soporte de ${m.id} no están en este catálogo (pendiente de extraer con npm run skus). Van «consultar»; `
-          + 'no es que la lista no los traiga.' });
+          + `y el soporte de ${m.id} no están en este catálogo: el importador de la lista (npm run skus) solo extrae los bloques de FortiGate `
+          + 'anclados a un SKU ya verificado, y habría que ampliarlo a las filas FortiWiFi. Van «consultar»; no es que la lista no los traiga.' });
     }
     // [RC]: el código regional de la radio, que la ficha imprime en el SKU de los FortiWiFi.
     if (!sinEquipo && m.variante && m.variante.rc) {

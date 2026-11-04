@@ -910,7 +910,7 @@
     filas.push({ req: 'fisico.celular', cat: 'Soporte', desc: `FortiCare Premium de ${x.id}`, sku: care && care.exacto ? care.sku : null,
       qty: fex.qty, unit: null, nota: `${care ? '' : `${x.care} · `}SKU de la «Ordering Information» de su ficha con el término de la cotización` });
     bloqueos.push({ codigo: 'fex-sin-precio', nivel: 'borrador',
-      mensaje: `${x.id}: de la lista de precios firmada solo se extrajeron las filas que nombran un FortiGate, así que el equipo y su soporte van «consultar»`
+      mensaje: `${x.id}: de la lista de precios firmada solo se extrajeron las filas que nombran un FortiGate (el importador no extrae las de FortiExtender), así que el equipo y su soporte van «consultar»`
         + `${unico ? '' : ` y hay que elegir el SKU de la región (${x.regionN})`}. No es que la lista no los traiga.` });
     if (x.bajada == null) {
       avisos.push({ codigo: 'fex-sin-caudal', nivel: 'warning',

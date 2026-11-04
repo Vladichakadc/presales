@@ -1751,19 +1751,31 @@ module.exports = [
   { archivo: 'fortinet-entry-level-pagina.html', tipo: 'html', para: 'FORTINET', exploracion: true, urls: [
     'https://www.fortinet.com/products/next-generation-firewall/entry-level',
   ] },
-  // La página enlaza la ficha sin «.pdf» (corrida de la rama fuente/fortinet-wifi-celular-2-2026-11-04):
-  // «/resources/data-sheets/fortigate-fortiwifi-40f-series». Es la URL que da la página, no una adivinada.
-  { archivo: 'fortinet-fortiwifi-40f-ds.pdf', tipo: 'pdf', para: 'FORTINET', urls: [
+  // La página enlaza la ficha sin «.pdf» (rama fuente/fortinet-wifi-celular-2-2026-11-04):
+  // «/resources/data-sheets/fortigate-fortiwifi-40f-series», que sirve HTML, no el PDF (rama
+  // fuente/fortinet-wifi-celular-3-2026-11-04). Se guarda como exploración y el PDF se descubre en ella.
+  { archivo: 'fortinet-fortiwifi-40f-pagina.html', tipo: 'html', para: 'FORTINET', exploracion: true, urls: [
     'https://www.fortinet.com/resources/data-sheets/fortigate-fortiwifi-40f-series',
   ] },
-  // La página enlaza la ficha sin «.pdf» (corrida de la rama fuente/fortinet-wifi-celular-2-2026-11-04):
-  // «/resources/data-sheets/fortigate-fortiwifi-60f-series». Es la URL que da la página, no una adivinada.
-  { archivo: 'fortinet-fortiwifi-60f-ds.pdf', tipo: 'pdf', para: 'FORTINET', urls: [
+  { archivo: 'fortinet-fortiwifi-40f-ds.pdf', tipo: 'pdf', para: 'FORTINET', urls: [],
+    descubrirEnlace: { de: 'fortinet-fortiwifi-40f-pagina.html', contiene: '40f', dominios: ['fortinet.com'],
+      base: 'https://www.fortinet.com/resources/data-sheets/fortigate-fortiwifi-40f-series' } },
+  // La página enlaza la ficha sin «.pdf» (rama fuente/fortinet-wifi-celular-2-2026-11-04):
+  // «/resources/data-sheets/fortigate-fortiwifi-60f-series», que sirve HTML, no el PDF (rama
+  // fuente/fortinet-wifi-celular-3-2026-11-04). Se guarda como exploración y el PDF se descubre en ella.
+  { archivo: 'fortinet-fortiwifi-60f-pagina.html', tipo: 'html', para: 'FORTINET', exploracion: true, urls: [
     'https://www.fortinet.com/resources/data-sheets/fortigate-fortiwifi-60f-series',
   ] },
-  // La página enlaza la ficha sin «.pdf» (corrida de la rama fuente/fortinet-wifi-celular-2-2026-11-04):
-  // «/resources/data-sheets/fortigate-fortiwifi-80f-series». Es la URL que da la página, no una adivinada.
-  { archivo: 'fortinet-fortiwifi-80f-ds.pdf', tipo: 'pdf', para: 'FORTINET', urls: [
+  { archivo: 'fortinet-fortiwifi-60f-ds.pdf', tipo: 'pdf', para: 'FORTINET', urls: [],
+    descubrirEnlace: { de: 'fortinet-fortiwifi-60f-pagina.html', contiene: '60f', dominios: ['fortinet.com'],
+      base: 'https://www.fortinet.com/resources/data-sheets/fortigate-fortiwifi-60f-series' } },
+  // La página enlaza la ficha sin «.pdf» (rama fuente/fortinet-wifi-celular-2-2026-11-04):
+  // «/resources/data-sheets/fortigate-fortiwifi-80f-series», que sirve HTML, no el PDF (rama
+  // fuente/fortinet-wifi-celular-3-2026-11-04). Se guarda como exploración y el PDF se descubre en ella.
+  { archivo: 'fortinet-fortiwifi-80f-pagina.html', tipo: 'html', para: 'FORTINET', exploracion: true, urls: [
     'https://www.fortinet.com/resources/data-sheets/fortigate-fortiwifi-80f-series',
   ] },
+  { archivo: 'fortinet-fortiwifi-80f-ds.pdf', tipo: 'pdf', para: 'FORTINET', urls: [],
+    descubrirEnlace: { de: 'fortinet-fortiwifi-80f-pagina.html', contiene: '80f', dominios: ['fortinet.com'],
+      base: 'https://www.fortinet.com/resources/data-sheets/fortigate-fortiwifi-80f-series' } },
 ];
