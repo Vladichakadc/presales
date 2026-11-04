@@ -176,7 +176,11 @@ sigue ignorado):
   inventa `AUTH_PASSWORD`, no siembra la base.
 - `aprendizaje.sh`: anota cada `npm run …` en `.claude/learning/runs.jsonl` con tres estados
   (`PreToolUse` abre, `PostToolUse` cierra, lo que queda abierto lo salda el arranque como fallo),
-  porque `PostToolUse` no se dispara cuando el comando falla.
+  porque `PostToolUse` no se dispara cuando el comando falla. Antes de cada corrida, si las dos
+  últimas de la misma acción acabaron mal, **recuerda consultar al asesor** (`lib-fallos.js`, en
+  `additionalContext`, nunca `permissionDecision`: avisa, no aprueba ni frena;
+  `test/aprendizaje-hook.test.js`). No ve un fallo en tubería: `npm run x | tail` sale con el código
+  de `tail`.
 - `pre-push.sh`: **avisa, no bloquea**, si el último `verificar` en verde (o el último `auditar`,
   que caduca a las 12 h) es anterior al último cambio. Los dos usan `lib-comando.js`, que distingue
   un comando que se ejecuta de uno que solo se menciona dentro de una cadena.
@@ -185,7 +189,8 @@ sigue ignorado):
 fija la sesión en Sonnet 5.5 (`model`) con Opus 5.5 de asesor (`advisorModel`); quien quiera otro
 modelo lo pone en su `settings.local.json`. **Se consulta al asesor antes de fijar un plan, cuando
 el mismo error aparece dos veces y antes de dar una tarea por terminada**: ningún ajuste fuerza la
-consulta, la fuerza esta regla. El asesor aconseja; las decisiones siguen siendo del dueño y no se
+consulta, la fuerza esta regla; el segundo fallo seguido de un mismo `npm run` la recuerda
+(`aprendizaje.sh`, 2026-11-04). El asesor aconseja; las decisiones siguen siendo del dueño y no se
 toman por silencio. Para mapear, buscar y leer documentación se delega en los subagentes de
 `.claude/agents/` (versionados), los tres en Haiku 5.5 y de solo lectura —Write, Edit,
 NotebookEdit y Bash denegados en su lista de herramientas, no en su prompt—: `search` (mapa del

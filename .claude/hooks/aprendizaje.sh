@@ -50,6 +50,17 @@ const id=h.tool_use_id||"";
 const ts=new Date().toISOString();
 
 if(h.hook_event_name==="PreToolUse"){
+  // ANTES de abrir la nueva, lo que ya paso: si las dos ultimas corridas de esta accion acabaron
+  // mal, se recuerda consultar al asesor (lib-fallos.js). Va en `additionalContext`, que la sesion
+  // lee junto al resultado; nunca en `permissionDecision`: avisa, no aprueba ni frena nada.
+  try{
+    const {fallosSeguidos,recordatorio,MINIMO}=require(path.join(dir,"..","hooks","lib-fallos.js"));
+    const leer=(f)=>{ try{ return fs.readFileSync(f,"utf8"); }catch{ return ""; } };
+    const n=fallosSeguidos(accion, leer(runs), leer(enCurso), id);
+    if(n>=MINIMO) process.stdout.write(JSON.stringify({
+      hookSpecificOutput:{ hookEventName:"PreToolUse", additionalContext:recordatorio(accion,n) },
+    }));
+  }catch{}
   fs.appendFileSync(enCurso, JSON.stringify({ts,id,skill:"npm",action:accion})+"\n");
   process.exit(0);
 }
