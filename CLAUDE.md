@@ -599,6 +599,17 @@ Módulos compartidos:
   cotiza —2 × SKU de HA con `precioHa` y un bundle, sin el combinado— si todo lo que pide la guía está; si
   no, sigue por nodo con su motivo. Los SKU a la carta no se registran al vSN: siguen por unidad y avisan.
   La página lo dice con `licenciaHa()` y `unicaCotizada()`.
+  **Wi-Fi y WAN celular** (2026-11-04, PR #140, encargo del dueño): los FortiWiFi y los FortiGate con módem
+  son **variantes** (`fortinetVariantes.js`, `m.variante`) que copian de su base solo la celda común de su
+  ficha por serie y ponen lo de su columna (SKU, consumo, radio `wifi`, módem `celular`); PQC, BGP y fin de
+  venta no se heredan. **Una variante solo compite si se pide su función o se elige a mano** (`variantePedida`),
+  así que nada cambia sin pedirla. `fisico.wifi`, `fisico.celular` (`4g`/`5g`) y `fisico.celularVia`
+  (`integrado`/`extender`, obligatorio con celular) solo existen si se piden: la huella de lo guardado no
+  cambia. Con `extender`, el FortiGate se elige como siempre y el FortiExtender (`FORTIEXTENDER`, de su ficha)
+  por generación y bajada de los enlaces `4G/5G`, uno por enlace y dos como mucho por FortiGate. Los FortiWiFi
+  llevan el SKU con `[RC]` (código regional, no se elige) y, como los FortiExtender, van «consultar»
+  (`listaSinExtraer`: la lista no se extrajo para ellos, que no es «no la trae»); las variantes celulares
+  se cotizan por SKU exacto de la lista (`test/fortinet-wifi-celular.test.js`, `e2e-fortinet-wifi-celular.js`).
 - **Aruba** (`dimensionador-aruba-edgeconnect.js`, `aruba-reglas.js`, `motor-ingenieria.js`). El
   caudal es el **Multi-Underlay Builder** (filas `{tipo, medio, down, up, rol}`; un respaldo ocupa
   puerto pero no suma); `migrarEstadoV1()` traduce los enlaces viejos. **Cada enlace va a un puerto

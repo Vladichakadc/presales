@@ -32,16 +32,22 @@
    se instala la radio, y la ficha no dice cual corresponde a cada pais: se conserva tal cual y la
    linea del BOM pide elegirlo. No se elige uno a ojo.
 
-   LO QUE QUEDA PENDIENTE (RELEVO.md): los FortiWiFi 40F, 60F y 80F-2R tienen ficha propia que no
-   esta en el repositorio (la de fuente/fortinet-serie de esas series solo trae las columnas
-   FortiGate); y la variante FG-80F-3G4G que el Product Matrix nombra. */
+   LO QUE NO ENTRA, Y POR QUE (2026-11-04). Los FortiWiFi 40F, 60F y 80F-2R y el FG-80F-3G4G, que el
+   Product Matrix nombra como variantes. Las fichas vigentes que Fortinet publica en la URL de esas
+   series («fortigate-fortiwifi-40f/60f/80f-series.pdf», ediciones FG-40F-DAT-R49, FG-60F-DAT-R51 y
+   FG-80F-DAT-R48, todas del 2026-10-01; rama fuente/fortinet-wifi-celular-4-2026-11-04) ya no traen
+   columnas FortiWiFi ni el 80F-3G4G en su tabla ni en su «Ordering Information»: el documento vigente
+   no los publica, y sin el no hay de donde sacar su SKU, su consumo ni su radio. El 40F-3G4G si sigue
+   en la R49, con la misma columna que la R48. */
 
 // ── FICHAS POR SERIE DE DONDE SALE CADA COLUMNA ─────────────────────────────────────────────
 // Las cuatro se trajeron el 2026-09-03 a la rama fuente/fortinet-serie (archivos
 // fortigate-fortiwifi-<serie>-series.pdf). El identificador es el que la ficha imprime al pie.
 const FICHAS = {
   '30G': 'FGFWF-30G-DAT-R07-20260414',
-  '40F': 'FG-40F-DAT-R48-20260421',
+  // La R49 (2026-10-01, rama fuente/fortinet-wifi-celular-4-2026-11-04) imprime la misma columna
+  // del 40F-3G4G que la R48 de fuente/fortinet-serie.
+  '40F': 'FG-40F-DAT-R49-20261001',
   '50G': 'FGFWF-50G-DAT-R17-20260901',
   '70G': 'FGFWF-70G-DAT-R09-20260527',
 };
