@@ -1730,4 +1730,28 @@ module.exports = [
   { archivo: 'aruba-aos10-cli-10810.html', tipo: 'html', para: 'ARUBA', exploracion: true, urls: [
     'https://arubanetworking.hpe.com/techdocs/CLI-Bank/Content/aos10/whats-new/10.8.1.htm',
   ] },
+  // 2026-11-04 (encargo del dueño: FortiWiFi y FortiExtender 4G/5G en el dimensionador de Fortinet).
+  // Las fichas de FortiGate 40F, 60F y 80F de fuente/fortinet-serie solo traen las columnas FortiGate
+  // (R47-R50 de 2026): los FortiWiFi de esas series tienen ficha propia. Y no hay en el repositorio
+  // ninguna ficha de FortiExtender. Las URL de los PDF no se adivinan: se descubren en las páginas de
+  // producto, que se piden primero (las fichas de terceros que da el buscador no son fuente).
+  { archivo: 'fortinet-fortiextender-pagina.html', tipo: 'html', para: 'FORTINET', debeContener: 'FortiExtender', urls: [
+    'https://www.fortinet.com/products/wireless-wan-fortiextender',
+    'https://www.fortinet.com/products/extender',
+  ] },
+  { archivo: 'fortinet-fortiextender-ds.pdf', tipo: 'pdf', para: 'FORTINET', urls: [],
+    descubrirEnlace: { de: 'fortinet-fortiextender-pagina.html', contiene: 'xtender', dominios: ['fortinet.com'],
+      base: 'https://www.fortinet.com/products/wireless-wan-fortiextender' } },
+  { archivo: 'fortinet-entry-level-pagina.html', tipo: 'html', para: 'FORTINET', debeContener: 'FortiWiFi', urls: [
+    'https://www.fortinet.com/products/next-generation-firewall/entry-level',
+  ] },
+  { archivo: 'fortinet-fortiwifi-40f-ds.pdf', tipo: 'pdf', para: 'FORTINET', urls: [],
+    descubrirEnlace: { de: 'fortinet-entry-level-pagina.html', contiene: 'fortiwifi-40f', dominios: ['fortinet.com'],
+      base: 'https://www.fortinet.com/products/next-generation-firewall/entry-level' } },
+  { archivo: 'fortinet-fortiwifi-60f-ds.pdf', tipo: 'pdf', para: 'FORTINET', urls: [],
+    descubrirEnlace: { de: 'fortinet-entry-level-pagina.html', contiene: 'fortiwifi-60f', dominios: ['fortinet.com'],
+      base: 'https://www.fortinet.com/products/next-generation-firewall/entry-level' } },
+  { archivo: 'fortinet-fortiwifi-80f-ds.pdf', tipo: 'pdf', para: 'FORTINET', urls: [],
+    descubrirEnlace: { de: 'fortinet-entry-level-pagina.html', contiene: 'fortiwifi-80f', dominios: ['fortinet.com'],
+      base: 'https://www.fortinet.com/products/next-generation-firewall/entry-level' } },
 ];
