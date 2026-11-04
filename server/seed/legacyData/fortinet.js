@@ -448,22 +448,23 @@ const hermanasDe=(b)=>MODELS.filter((m)=>m!==b
 //
 // PROCEDENCIA, DICHA COMO ES. La fuente de verdad es la herramienta Product Life Cycle del
 // portal de soporte de Fortinet, que exige cuenta FortiCloud y no llega desde este entorno. Las
-// fechas se transcribieron el 2026-10-29 de dos repertorios que la reproducen (eol.network,
-// ficha por modelo, que enlaza el aviso oficial; fortineteol.com, «Fortinet last update
-// 2026-08-03»), y solo donde los dos casan o, en los anunciados despues de agosto, donde
-// eol.network trae la ficha del modelo. Por eso NO se declara `eolAnnounced` en `campos` de
-// fuentes.js (el semaforo no pinta «vigente» a nadie por esto) y cada fila lleva `confirmar`,
-// que la ficha ensena: hasta confirmarlo en el portal, es un dato a verificar, no un boletin.
+// fechas se transcribieron el 2026-10-29 de dos repertorios que la reproducen (eol.network, ficha
+// por modelo; fortineteol.com) y cada fila llevaba `confirmar`. EL 2026-11-04 EL DUEÑO LAS CONFIRMO
+// EN EL PORTAL: preguntado en la sesion, respondio que las ocho fechas (ultimo pedido y fin de
+// soporte) coinciden con lo que da Product Life Cycle, y que el 4200F, el 7081F y el 7121F no tienen
+// fecha. Por eso las filas ya no llevan `confirmar`, y la fuente esta en `fuentes.js` (sin URL: el
+// portal pide sesion). No respalda el semaforo de ciclo de vida (`campos: null`): el semaforo va
+// por fabricante, y declarar `eolAnnounced` pintaria de vigentes a los FortiGate que nadie miro en
+// el portal; el dueño eligio confirmar solo estos (test/fortinet-fin-de-venta-fechas.test.js).
 //
-// LOS QUE NO ESTAN NO SON «VIGENTES POR DECLARACION»: es que ningun repertorio trae aviso
-// (400F, 401F, 40F, 71F, 80F, 81F, 1800F, 2600F, 3000F, 3200F, 3500F, 3700F, 4400F, 4800F y la
-// serie G el 2026-10-29). Quedan sin afirmar, que es el tercer estado. 4200F, 7081F y 7121F no
-// se pudieron leer ese dia (error del sitio); quedan igual, sin afirmar.
-// `endOfSupport` = `lastOrder` + 60 meses, que es lo que publica cada aviso (no un calculo
-// propio: en los ocho casa con la ficha). `sucesor` en null: el aviso no se ha leido.
+// LOS QUE NO ESTAN NO SON «VIGENTES POR DECLARACION». 4200F, 7081F y 7121F: confirmados sin fecha el
+// 2026-11-04, siguen sin afirmar en la ficha porque el semaforo no esta respaldado. 400F, 401F, 40F,
+// 71F, 80F, 81F, 1800F, 2600F, 3000F, 3200F, 3500F, 3700F, 4400F, 4800F y la serie G: ningun
+// repertorio traia aviso el 2026-10-29 y nadie los ha mirado en el portal. Quedan sin afirmar, que es
+// el tercer estado. `endOfSupport` = `lastOrder` + 60 meses, que es lo que publica cada aviso (en los
+// ocho casa con el portal). `sucesor` en null: el aviso no se ha leido.
 const PORTAL_CICLO_VIDA='https://support.fortinet.com/Information/ProductLifeCycle.aspx';
-const CONFIRMAR_CICLO='Fechas transcritas el 2026-10-29 de repertorios que reproducen la herramienta Product Life Cycle de Fortinet; confirmar en el portal de soporte (requiere cuenta FortiCloud) antes de comprometerlas con un cliente.';
-const finDeVenta=(pid, lastOrder, endOfSupport)=>({pid, lastOrder, endOfSupport, sucesor:null, url:PORTAL_CICLO_VIDA, confirmar:CONFIRMAR_CICLO});
+const finDeVenta=(pid, lastOrder, endOfSupport)=>({pid, lastOrder, endOfSupport, sucesor:null, url:PORTAL_CICLO_VIDA});
 const EOL_ANNOUNCED={
   // Anunciados y aun pedibles: se proponen con normalidad hasta el 13-ene-2027.
   '60F':   finDeVenta('FG-60F',   '2027-01-13', '2032-01-13'),

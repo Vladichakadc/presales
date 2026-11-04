@@ -181,6 +181,16 @@ const FUENTES = {
       fecha: '2026-10-26', hash: null, modelos: ['FortiGate 400G', 'FortiGate 401G', 'FortiGate 3000G', 'FortiGate 3001G', 'FortiGate 3500G', 'FortiGate 3501G'],
       cubre: 'que el FortiGate 400G y el 401G (build 6689), el 3000G y el 3001G (build 6570) y el 3500G y el 3501G (build 6632) corren una rama especial de FortiOS 7.6.6 (punto de rama 3652), posterior a la 7.6.1 que trae ML-KEM en IPsec', campos: ['pqc'],
       nota: 'Traidas el 2026-10-27 por traer-cisco-huawei.yml (rama fuente/relevo-2-2026-10-27), la pagina y el PDF (fortios-v7.6.6-release-notes.pdf, ultima entrada del registro de cambios: 26-oct-2026): el proxy de egreso de este entorno no llega a docs.fortinet.com.' },
+    // El ciclo de vida, confirmado por el dueño en el portal (2026-11-04); al final de la lista porque
+    // el banner de la pagina toma como «Fuente tecnica» la primera que no es de precio. Sin URL: Product Life Cycle
+    // pide sesion de FortiCloud y el vigia no lo podria leer (como el export de CCW o la lista firmada).
+    { documento: 'Fortinet Product Life Cycle (portal de soporte, cuenta FortiCloud), consultado por el dueño el 2026-11-04',
+      url: null, fecha: '2026-11-04', hash: null,
+      modelos: ['FortiGate 60F', 'FortiGate 61F', 'FortiGate 70F', 'FortiGate 100F', 'FortiGate 200F', 'FortiGate 600F', 'FortiGate 1000F', 'FortiGate 1001F', 'FortiGate 4200F', 'FortiGate 7081F', 'FortiGate 7121F'],
+      cubre: 'el ultimo pedido (End of Order) y el fin de soporte (End of Support) de los FortiGate 60F, 61F, 70F, 100F, 200F, 600F, 1000F y 1001F, los mismos que se transcribieron el 2026-10-29; y que el 4200F, el 7081F y el 7121F no tienen fecha',
+      campos: null,
+      porQue: 'respalda las fechas de esos once y no el resto de la linea: declararla como respaldo de eolAnnounced pintaria de vigentes a los FortiGate que nadie miro en el portal. Pasa a campos: [\'eolAnnounced\'] cuando el dueño confirme en el portal que el resto no tiene fecha',
+      nota: 'Confirmacion del dueño en la sesion del 2026-11-04, respondiendo a la pregunta de si las ocho fechas coinciden con Product Life Cycle (https://support.fortinet.com/Information/ProductLifeCycle.aspx): «coinciden todas», y el 4200F, el 7081F y el 7121F no tienen fecha. No se trajo captura ni la fecha de ultima extension de servicio (LSED), que el catalogo no usa. Sustituye la marca confirmar de las filas de EOL_ANNOUNCED.' },
   ],
 
   cisco: [
