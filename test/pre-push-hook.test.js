@@ -101,3 +101,19 @@ test('un push que solo se menciona no dispara el aviso', () => {
   assert.strictEqual(empujar(dir, 'git commit -m "hacer git push luego"'), null);
   assert.ok(empujar(dir), 'y el mismo escenario con un push de verdad sí avisa');
 });
+
+// UN VERIFICAR DE RESULTADO DESCONOCIDO (2026-11-04). rc=null es una corrida en tuberia, tras un ";"
+// o "||", o en segundo plano: hasta ese dia llegaba como rc=0 y aqui contaba como verde.
+test('un verificar de resultado desconocido no cuenta como verde: lo dice y pide confirmación', () => {
+  const r = empujar(escenario({ codigo: 3 * HORA, corridas: [['verificar', 2 * HORA], ['verificar', HORA, null], ['auditar', HORA]] }));
+  assert.strictEqual(r.permissionDecision, 'ask');
+  assert.match(r.permissionDecisionReason, /no se sabe como acabo/);
+  assert.match(r.permissionDecisionReason, /el ultimo en verde es de/);
+  assert.match(r.permissionDecisionReason, /set -o pipefail/);
+});
+
+test('con solo verificar de resultado desconocido también lo dice; uno en verde posterior lo calla', () => {
+  const solo = empujar(escenario({ corridas: [['verificar', HORA, null]] }));
+  assert.match(solo.permissionDecisionReason, /no hay ninguno en verde registrado/);
+  assert.strictEqual(empujar(escenario({ corridas: [['verificar', 2 * HORA, null], ['verificar', HORA], ['auditar', HORA]] })), null);
+});

@@ -39,7 +39,7 @@ node -e '
 const fs=require("fs"), path=require("path");
 let h; try { h=JSON.parse(process.argv[1]); } catch { process.exit(0); }
 const dir=process.argv[2];
-const {accionNpm}=require(path.join(dir,"..","hooks","lib-comando.js"));
+const {accionNpm,rcEsDeNpm}=require(path.join(dir,"..","hooks","lib-comando.js"));
 // Se agrupa por la accion de npm y no por el comando entero: asi un
 // `npm run pantallas -- --base=...` cuenta como `pantallas` sin guardar rutas ni claves.
 const accion=accionNpm((h.tool_input||{}).command||"");
@@ -65,11 +65,17 @@ if(h.hook_event_name==="PreToolUse"){
   process.exit(0);
 }
 if(h.hook_event_name==="PostToolUse"){
-  // Llego el cierre: la corrida termino bien. Se escribe con el esquema que
-  // `skill-usage-insights` sabe leer (ts, skill, action, rc, duration).
+  // Llego el cierre: la LINEA termino bien. Si su codigo es el de npm, la corrida tambien (rc=0).
+  // Si no lo es —npm seguido de `|`, `;` o `||`, o lanzado en segundo plano, que cierra al
+  // arrancar—, no se sabe como acabo npm y se apunta rc=null, nunca 0 (lib-comando.js,
+  // `rcEsDeNpm`). Se escribe con el esquema que `skill-usage-insights` sabe leer.
+  const ti=h.tool_input||{};
+  const fondo=ti.run_in_background===true;
+  const fiable=!fondo && rcEsDeNpm(ti.command||"");
   fs.appendFileSync(runs, JSON.stringify({
-    ts, skill:"npm", action:accion, rc:0,
-    duration:(h.duration_ms||0)/1000, error:"", hint:"", note:"",
+    ts, skill:"npm", action:accion, rc:fiable?0:null,
+    duration:(h.duration_ms||0)/1000, error:"", hint:"",
+    note:fiable?"":(fondo?"rc desconocido: en segundo plano":"rc desconocido: npm no es el ultimo programa de la linea"),
   })+"\n");
   // Y se retira de en-curso, para que el saldo del arranque no la cuente como fallida.
   try{

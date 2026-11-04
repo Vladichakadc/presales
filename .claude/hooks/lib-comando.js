@@ -53,4 +53,41 @@ function esGitPush(cmd) {
   return false;
 }
 
-module.exports = { accionNpm, esGitPush, programaDe };
+/* SI EL CODIGO DE SALIDA DE LA LINEA ES EL DE NPM (2026-11-04, decision del dueño: «apuntar
+ * desconocido»). Claude Code solo ve el codigo de la linea entera, que es el de su ULTIMO programa:
+ * en `npm run verificar | tail` es el de `tail`, en `npm run verificar > log; echo rc=$?` el de
+ * `echo`, y en los dos un verificar en rojo llegaba al registro como rc=0 —un verde que nadie vio,
+ * justo el que `pre-push.sh` lee antes de un push que despliega—. Se midio con dos `reservar` en
+ * tuberia que fallaron y quedaron en verde.
+ *
+ * Es fiable si detras de npm solo hay `&&` (un fallo corta la cadena y la linea sale con el codigo
+ * de npm), o `|` con `set -o pipefail` antes. Cualquier otra cosa detras (`;`, `||`, `|` sin
+ * pipefail) lo hace desconocido. Ante la duda, desconocido: un caso que no se entiende solo cuesta
+ * una pregunta de mas, nunca un verde falso. */
+const PARTES = /(&&|\|\||;|\n|\|)/;
+const NPM = /^npm\s+(?:run\s+[\w:-]+|test)\b/;
+const PIPEFAIL = /\bset\s+-[a-z]*o\s+pipefail\b/;
+
+// Lo que va entre comillas no separa nada: el `|` de `grep -E "^# (pass|fail)"` no es una tuberia.
+// Se vacia antes de partir; un npm entre comillas tampoco se ejecuta, asi que deja de contar igual.
+const COMILLAS = /"(?:[^"\\]|\\.)*"|'[^']*'/g;
+
+function rcEsDeNpm(cmd) {
+  const partes = String(cmd || '').replace(COMILLAS, '""').split(PARTES);   // segmento, operador, ...
+  let i = -1;
+  for (let k = 0; k < partes.length; k += 2) {
+    if (NPM.test(programaDe(partes[k]))) { i = k; break; }
+  }
+  if (i < 0) return false;
+  let pipefail = false;
+  for (let k = 0; k < i; k += 2) if (PIPEFAIL.test(partes[k])) pipefail = true;
+  for (let k = i + 1; k < partes.length; k += 2) {
+    if (!partes.slice(k + 1).join('').trim()) break;  // `npm run x;` o un salto final: detras no hay nada
+    const op = partes[k];
+    if (op === '&&' || (op === '|' && pipefail)) continue;
+    return false;
+  }
+  return true;
+}
+
+module.exports = { accionNpm, esGitPush, programaDe, rcEsDeNpm };

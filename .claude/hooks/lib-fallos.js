@@ -16,8 +16,8 @@
 //     entrada abierta es un fallo (o una interrupcion, que tambien merece pensarlo).
 //
 // LO QUE NO VE. Una corrida en tuberia (`npm run x | tail`) sale con el codigo del ultimo programa,
-// no con el de npm: para Claude Code termino bien, PostToolUse la cierra con rc=0 y aqui cuenta como
-// un verde. Medido el 2026-11-04 con dos `npm run reservar ... | tail` que fallaron y quedaron con rc=0.
+// no con el de npm. Desde el 2026-11-04 el registro la apunta con rc=null («no se sabe») y aqui no
+// cuenta ni como fallo ni como acierto; si la linea entera fallo, sigue abierta y cuenta como fallo.
 //
 // AVISA, NO BLOQUEA. Un fallo esperado (una prueba que se pone en rojo a proposito para ver que
 // muerde) tambien cuenta: por eso es un recordatorio en el contexto de la sesion, nunca un
@@ -40,7 +40,10 @@ function fallosSeguidos(accion, runsTexto, enCursoTexto, excluirId) {
   if (!accion) return 0;
   const corridas = [];
   for (const r of lineas(runsTexto)) {
-    if (r.action === accion && r.skill === 'npm') corridas.push({ ts: Date.parse(r.ts), mal: r.rc !== 0 });
+    // rc=null es «no se sabe» (en tuberia o en segundo plano): ni corta la racha ni la alarga.
+    if (r.action === accion && r.skill === 'npm' && typeof r.rc === 'number') {
+      corridas.push({ ts: Date.parse(r.ts), mal: r.rc !== 0 });
+    }
   }
   for (const r of lineas(enCursoTexto)) {
     if (r.action === accion && r.skill === 'npm' && !(excluirId && r.id === excluirId)) {
