@@ -1,0 +1,83 @@
+[
+  {
+    "archivo": "fortinet-fortiextender-pagina.html",
+    "para": "FORTINET",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://www.fortinet.com/products/wireless-wan-fortiextender",
+        "status": 200,
+        "bytes": 371727,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "fortinet-fortiextender-og.pdf",
+    "para": "FORTINET",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://www.fortinet.com/content/dam/fortinet/assets/data-sheets/og-fortiextender.pdf",
+        "status": 200,
+        "bytes": 201200,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "fortinet-entry-level-pagina.html",
+    "para": "FORTINET",
+    "guardado": true,
+    "exploracion": true,
+    "intentos": [
+      {
+        "url": "https://www.fortinet.com/products/next-generation-firewall/entry-level",
+        "status": 200,
+        "bytes": 566703,
+        "guardado": true,
+        "verificado": false
+      }
+    ]
+  },
+  {
+    "archivo": "fortinet-fortiwifi-40f-ds.pdf",
+    "para": "FORTINET",
+    "guardado": false,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "fortinet-entry-level-pagina.html",
+        "error": "la pagina no enlaza ningun PDF con wifi-40f"
+      }
+    ]
+  },
+  {
+    "archivo": "fortinet-fortiwifi-60f-ds.pdf",
+    "para": "FORTINET",
+    "guardado": false,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "fortinet-entry-level-pagina.html",
+        "error": "la pagina no enlaza ningun PDF con wifi-60f"
+      }
+    ]
+  },
+  {
+    "archivo": "fortinet-fortiwifi-80f-ds.pdf",
+    "para": "FORTINET",
+    "guardado": false,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "fortinet-entry-level-pagina.html",
+        "error": "la pagina no enlaza ningun PDF con wifi-80f"
+      }
+    ]
+  }
+]
