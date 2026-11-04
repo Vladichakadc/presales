@@ -712,6 +712,23 @@ h1{font-size:clamp(24px,3.4vw,36px)}
     <div class="checks">
       <label class="check"><input type="checkbox" id="chkPsuRed"> <span>Fuente de alimentación redundante<span class="sku">Aparta los modelos de una sola fuente fija. Si el equipo admite la segunda como opción, la línea entra en la cotización.</span></span></label>
     </div>
+    <!-- WI-FI Y WAN CELULAR (2026-11-04). Los FortiWiFi y los FortiGate con módem son variantes
+         de su modelo base (misma tabla de rendimiento en su ficha): solo compiten cuando se pide
+         lo que los distingue. El FortiExtender es el enlace 4G/5G fuera del FortiGate. -->
+    <div class="checks">
+      <label class="check"><input type="checkbox" id="chkWifi" aria-describedby="wifiHint"> <span>Wi-Fi integrado en el equipo (FortiWiFi)<span class="sku" id="wifiHint">Solo compiten los FortiWiFi, con su radio Wi-Fi 6 de doble banda. Para cubrir más que una radio, puntos de acceso FortiAP gestionados por el FortiGate (cuéntalos en «FortiAP gestionados»).</span></span></label>
+    </div>
+    <div class="field" style="margin-top:14px">
+      <label for="celularGen">WAN celular 4G/5G</label>
+      <select id="celularGen" aria-describedby="celularHint"><option value="">No se pide</option><option value="4g">4G LTE</option><option value="5g">5G</option></select>
+      <p class="hint" id="celularHint">El caudal que se comprueba es la bajada de los enlaces de tipo «4G/5G» del paso 1. La categoría LTE o 5G de un módem es el máximo de la tecnología, no un caudal garantizado: depende de la cobertura del operador.</p>
+    </div>
+    <div class="field" id="fldCelularVia" data-regla="fisico.celularVia" hidden>
+      <label for="celularVia">Cómo llega el enlace celular</label>
+      <select id="celularVia" aria-describedby="celularViaHint"><option value="">Elegir…</option><option value="integrado">Módem en el propio equipo (40F-3G4G, 50G-5G, 51G-5G o FortiWiFi 50G-5G-II)</option><option value="extender">FortiExtender junto al FortiGate (equipo aparte, en el BOM)</option></select>
+      <p class="hint" id="celularViaHint">Con módem integrado solo compiten las variantes que lo traen; con FortiExtender el FortiGate se elige como siempre y el FortiExtender se elige por la generación y la bajada del enlace, uno por enlace 4G/5G.</p>
+      <div id="celularResultado" class="hint" hidden></div>
+    </div>
     <div class="field" style="margin-top:14px">
       <label for="reqPqc">Criptografía post-cuántica (exigir)</label>
       <select id="reqPqc" aria-describedby="reqPqcHint"><option value="">No se exige</option><option value="clave">Mecanismo quantum-safe documentado (PPK, MACsec/ANYsec o ML-KEM)</option><option value="mlkem">Algoritmo post-cuántico ML-KEM (FIPS 203)</option></select>

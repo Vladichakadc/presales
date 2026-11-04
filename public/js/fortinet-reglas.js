@@ -503,6 +503,23 @@
     const bdlTier = (e.construccion === 'bdl' && !sinEquipo && lic && bundle && !aplicaUnica) ? lic[`${bundleCod}Bdl`] : null;
     const usaBdl = !!(bdlTier && bdlTier.sku && m.hwSku);
 
+    /* FortiWiFi (2026-11-04): de la lista firmada solo se extrajeron las filas que nombran un
+       FortiGate, y las del FortiWiFi no lo hacen. Sus licencias no faltan en la lista: faltan en
+       este catalogo, y la linea tiene que decir eso y no «no tiene SKU vigente». */
+    const sinExtraer = !!m.listaSinExtraer;
+    if (sinExtraer) {
+      bloquear({ codigo: 'lista-sin-extraer',
+        mensaje: `De la lista de precios firmada solo se extrajeron las filas que nombran un FortiGate: el precio, las licencias `
+          + `y el soporte de ${m.id} no están en este catálogo (pendiente de extraer con npm run skus). Van «consultar»; `
+          + 'no es que la lista no los traiga.' });
+    }
+    // [RC]: el código regional de la radio, que la ficha imprime en el SKU de los FortiWiFi.
+    if (!sinEquipo && m.variante && m.variante.rc) {
+      bloquear({ codigo: 'sku-codigo-regional',
+        mensaje: `${m.hwSku}: [RC] es el código regional de la radio Wi-Fi (A, B, D, E, F, I, J, N, P, S, V o Y, según el país `
+          + 'de instalación). La ficha no dice cuál corresponde a cada país: elegirlo con el distribuidor antes de pedir.' });
+    }
+
     // ── Equipo ────────────────────────────────────────────────────────────────────────
     if (usaBdl) {
       const s = skuTermino(bdlTier.sku, anios, terminos);
@@ -521,7 +538,7 @@
     } else if (!sinEquipo) {
       filas.push({ cat: 'Equipo', desc: m.id, sku: m.hwSku || null, qty,
         unit: m.elpN != null ? m.elpN : null,
-        nota: `${m.seg} · ${m.ifaces}${m.eol ? ' · DESCONTINUADO (EOL)' : ''}` });
+        nota: `${m.seg} · ${m.ifaces}${m.eol ? ' · DESCONTINUADO (EOL)' : ''}${m.variante && m.variante.rc ? ' · [RC] = código regional: elegir' : ''}` });
       if (!m.hwSku) {
         bloquear({ codigo: 'sin-sku-hardware',
           mensaje: `${m.id} no tiene SKU de hardware vigente en el price list (equipo descontinuado): `
@@ -538,9 +555,10 @@
       // Ya va dentro del SKU combinado: una segunda linea lo cobraria dos veces.
     } else if (!licTier) {
       bloquear({ codigo: 'sin-sku-bundle',
-        mensaje: `${bundle ? bundle.n : bundleCod} no tiene SKU vigente para ${m.id} en el price list.` });
+        mensaje: sinExtraer ? `${bundle ? bundle.n : bundleCod} de ${m.id}: la lista firmada no se extrajo para este equipo.`
+          : `${bundle ? bundle.n : bundleCod} no tiene SKU vigente para ${m.id} en el price list.` });
       filas.push({ cat: 'Licencias FortiGuard', desc: bundle ? bundle.n : bundleCod, sku: null, qty, unit: null,
-        nota: `${termino} · sin SKU vigente para este modelo` });
+        nota: `${termino} · ${sinExtraer ? 'consultar: la lista no se extrajo para este equipo' : 'sin SKU vigente para este modelo'}` });
     } else {
       const s = skuTermino(licTier.sku, anios, terminos);
       if (!s.exacto) bloquear({ codigo: 'sku-dd', mensaje: `Bundle FortiGuard: ${s.motivo}.` });
@@ -565,7 +583,7 @@
             + 'contrato de soporte ni derecho a RMA ni a actualizaciones de FortiOS.' });
     } else if (!incluyeSoporte) {
       // Sin bundle que lo traiga, el soporte es una linea propia y obligatoria.
-      const s = careTier ? skuTermino(careTier.sku, anios, terminos) : { sku: null, exacto: false, motivo: 'sin SKU para este modelo' };
+      const s = careTier ? skuTermino(careTier.sku, anios, terminos) : { sku: null, exacto: false, motivo: sinExtraer ? 'la lista firmada no se extrajo para este equipo' : 'sin SKU para este modelo' };
       if (!s.exacto) bloquear({ codigo: 'sku-soporte', mensaje: `Soporte FortiCare: ${s.motivo}.` });
       filas.push({ cat: 'Soporte', desc: nivelCare ? nivelCare.n : careCod, sku: s.sku, qty, unit: precio(careTier),
         nota: `${termino} · ${nivelCare ? nivelCare.sla : ''}` });
@@ -596,7 +614,7 @@
           mensaje: 'FortiCare Elite se cotiza como MEJORA del Premium que el bundle ya trae, con el SKU propio '
             + 'de la price list (familia -204), no como un segundo contrato de soporte completo.' });
       } else {
-        const s = careTier ? skuTermino(careTier.sku, anios, terminos) : { sku: null, exacto: false, motivo: 'sin SKU para este modelo' };
+        const s = careTier ? skuTermino(careTier.sku, anios, terminos) : { sku: null, exacto: false, motivo: sinExtraer ? 'la lista firmada no se extrajo para este equipo' : 'sin SKU para este modelo' };
         if (!s.exacto) bloquear({ codigo: 'sku-soporte', mensaje: `Soporte FortiCare: ${s.motivo}.` });
         filas.push({ cat: 'Soporte', desc: `${nivelCare ? nivelCare.n : careCod} — upgrade sobre el Premium incluido en ${bundle.n}`,
           sku: s.sku, qty, unit: precio(careTier),

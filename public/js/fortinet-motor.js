@@ -45,7 +45,8 @@
 }(typeof window !== 'undefined' ? window : globalThis, function (R, PQC) {
 
   // 7.1.0 (2026-10-27): el requisito de criptografía post-cuántica (`seguridad.pqc`).
-  const VERSION_MOTOR = '7.1.0';
+  // 7.2.0 (2026-11-04): Wi-Fi integrado y WAN celular 4G/5G (`fisico.wifi`, `fisico.celular`, `fisico.celularVia`).
+  const VERSION_MOTOR = '7.2.0';
   const ESQUEMA = 1;
   // Encapsulacion ESP sobre la fraccion que viaja por el overlay. Supuesto de la herramienta,
   // no una cifra de Fortinet, y por eso se declara en `supuestos` en cada evaluacion.
@@ -169,6 +170,10 @@
       puertos: Object.fromEntries(TIPOS_PUERTO.map((p) => [p.k, I(0, 10000)])),
       poeW: N(0, 1e6), psuRedundante: B,
       registro: E(['ninguno', 'local', 'nube', 'faz', 'syslog']), registroGbDia: N(0, 1e7), registroDias: I(0, 3650),
+      // Wi-Fi integrado y WAN celular (2026-11-04). Sin valor por defecto a proposito, como
+      // `comercial.haLicenciaUnica`: solo existen cuando se piden (ver `normalizar`), y asi la
+      // huella de los escenarios guardados antes no cambia.
+      wifi: B, celular: E(['4g', '5g']), celularVia: E(['integrado', 'extender']),
     },
     disponibilidad: { modo: E(['standalone', 'ha-ap', 'ha-aa']) },
     politica: { crecimientoPct: N(0, 1000), techoPct: N(10, 100) },
@@ -331,6 +336,10 @@
     // (dos unidades del SKU de HA): en una renovación o un co-term la guía no la cubre.
     { campo: 'comercial.haLicenciaUnica', visible: (s) => s.disponibilidad.modo === 'ha-ap'
       && !['renovacion', 'coterm'].includes(s.comercial.motivo), afecta: ['bom'] },
+    // Como llega el enlace 4G/5G lo decide quien disena (modem del FortiGate o FortiExtender):
+    // sin elegirlo no hay a que equipos comparar, y no se elige por silencio.
+    { campo: 'fisico.celularVia', visible: (s) => !!s.fisico.celular, requerido: (s) => !!s.fisico.celular,
+      afecta: ['candidatos', 'bom'] },
     { campo: 'comercial.justificacionEol', visible: (s, ctx) => s.comercial.motivo !== 'nueva' && !!(ctx && ctx.manualEsEol),
       requerido: (s, ctx) => s.comercial.motivo !== 'nueva' && !!(ctx && ctx.manualEsEol), afecta: ['puerta'] },
   ];
@@ -349,6 +358,9 @@
     const s = validarRama(ESQ, entrada, POR_DEFECTO, '', errores);
     // Un campo opcional que no se pidió no entra en la huella: `false` y «no está» son lo mismo.
     if (s.comercial.haLicenciaUnica !== true) delete s.comercial.haLicenciaUnica;
+    if (s.fisico.wifi !== true) delete s.fisico.wifi;
+    if (!s.fisico.celular) delete s.fisico.celular;
+    if (!s.fisico.celularVia) delete s.fisico.celularVia;
     // FortiSandbox como FUNCION y el sandbox como LINEA son el mismo pedido: sin la funcion
     // marcada no hay linea, y con ella marcada sin modo elegido se asume la cobertura del
     // bundle, que es lo que la pagina hacia hasta ahora (no anadia linea).
@@ -372,7 +384,10 @@
       if (!visible) {
         const neutro = leerRuta(POR_DEFECTO, r.campo);
         if (JSON.stringify(leerRuta(s, r.campo)) !== JSON.stringify(neutro)) inactivos.push(r.campo);
-        ponerRuta(s, r.campo, clonar(neutro));
+        if (neutro === undefined) {
+          const ks = r.campo.split('.'); const ult = ks.pop();
+          delete ks.reduce((a, k) => a[k], s)[ult];
+        } else ponerRuta(s, r.campo, clonar(neutro));
       }
       const requerido = visible && !!(r.requerido && r.requerido(s, ctx));
       const falta = requerido && vacio(leerRuta(s, r.campo));
@@ -479,7 +494,9 @@
   }
 
   /* ── 5 · COMPATIBILIDAD FortiOS × FUNCION × MODELO (F02) ─────────────────────────────── */
-  const ID_CORTO = (m) => String(m.id).replace('FortiGate ', '');
+  // Una variante (FortiWiFi, 3G4G, 5G) comparte columna y reglas con su base: las Release Notes
+  // las nombran juntas («40F and variants»).
+  const ID_CORTO = (m) => String(m.variante ? m.variante.de : m.id).replace('FortiGate ', '');
   function compatibilidad(m, funcion, s, fortios) {
     const reglas = ((fortios && fortios.reglas) || []).filter((r) => r.funcion === funcion
       && r.versiones.includes(s.software.fortiOS));
@@ -594,6 +611,28 @@
           correccion: 'Cubrir PoE con un FortiSwitch PoE gestionado por FortiLink, o cotizar la variante -POE desde su ficha.' });
       }
     }
+    // Wi-Fi integrado (2026-11-04): solo un FortiWiFi lleva radio.
+    if (s.fisico.wifi === true && !m.wifi) {
+      b.push({ codigo: 'WIFI_NO_INTEGRADO', mensaje: `${m.id} no trae radio Wi-Fi integrada.`,
+        correccion: 'Un FortiWiFi, o puntos de acceso FortiAP gestionados por el FortiGate (cuenta en «FortiAP gestionados»).' });
+    }
+    // WAN celular por el modem del propio equipo.
+    if (s.fisico.celular && s.fisico.celularVia === 'integrado') {
+      const gen = s.fisico.celular === '5g' ? '5G' : '4G';
+      if (!m.celular) {
+        b.push({ codigo: 'CELULAR_NO_INTEGRADO', mensaje: `${m.id} no trae módem celular.`,
+          correccion: 'Una variante con módem (40F-3G4G, 50G-5G, 51G-5G o FortiWiFi 50G-5G-II), o un FortiExtender junto al FortiGate.' });
+      } else if (gen === '5G' && m.celular.gen !== '5G') {
+        b.push({ codigo: 'CELULAR_SIN_5G', mensaje: `${m.id} lleva un módem ${m.celular.categoria}: no es 5G.`,
+          correccion: 'Una variante 5G (50G-5G, 51G-5G o FortiWiFi 50G-5G-II), o un FortiExtender 5G.' });
+      } else {
+        const cel = req.celular || {};
+        av.push({ codigo: 'CELULAR_SIN_CAUDAL', confianza: 'media',
+          mensaje: `La ficha de ${m.id} no publica el caudal de su módem (${m.celular.modem}, ${m.celular.categoria})`
+            + (cel.bajada ? `: el enlace 4G/5G de ${cel.bajada} Mbps no se comprobó contra él.` : '.')
+            + ' La categoría LTE o 5G no es un caudal garantizado: depende de la cobertura del operador.' });
+      }
+    }
     // Alimentacion redundante.
     if (s.fisico.psuRedundante) {
       if (m.redund == null) b.push({ codigo: 'PSU_SIN_DATO', mensaje: `El catálogo no dice si ${m.id} admite fuente redundante.` });
@@ -603,6 +642,49 @@
       }
     }
     return { bloqueos: b, avisos: av };
+  }
+
+  /* ── 6 bis · WI-FI INTEGRADO Y WAN CELULAR (2026-11-04) ─────────────────────────────────
+     El enlace celular se dimensiona por los enlaces de tipo «4G/5G» que se declaren: su bajada
+     es la que tiene que llegar por el modem. Sin enlace de ese tipo el equipo se elige solo por
+     generacion, y se dice. */
+  function variantePedida(m, s) {
+    if (s.fisico.wifi === true && m.wifi) return true;
+    return !!(s.fisico.celular && s.fisico.celularVia === 'integrado' && m.celular);
+  }
+  function demandaCelular(s) {
+    const enlaces = s.topologia.enlaces.filter((l) => l.tipo === '4G/5G' && l.down > 0);
+    return { pedido: !!s.fisico.celular, gen: s.fisico.celular === '5g' ? '5G' : s.fisico.celular === '4g' ? '4G' : null,
+      via: s.fisico.celularVia || null, enlaces: enlaces.length,
+      bajada: enlaces.length ? Math.max(...enlaces.map((l) => l.down)) : 0 };
+  }
+  /* FortiExtender: el de la generacion pedida (un 5G tambien da LTE, pero con 4G pedido van
+     antes los 4G), que llegue a la bajada del enlace por su modem y por su reenvio LAN-WAN
+     publicados, primero el que publica las dos cifras y despues el de menor reenvio. Los de un
+     solo SKU regional (201F para EMEA/APAC, 202F para Norteamerica) no se recomiendan solos:
+     salen como alternativa con su region. Uno por enlace 4G/5G («Max WAN Uplinks Supported: 1»). */
+  function elegirExtender(cel, cat) {
+    const tabla = (cat.extenders && cat.extenders.modelos) || [];
+    const elegibles = [];
+    const descartados = [];
+    for (const x of tabla) {
+      if (cel.gen === '5G' && x.gen !== '5G') { descartados.push({ x, motivo: `su módem es ${x.categoria}: no es 5G` }); continue; }
+      if (cel.bajada && x.bajada != null && x.bajada < cel.bajada) {
+        descartados.push({ x, motivo: `su módem publica ${x.bajada} Mbps de bajada y el enlace pide ${cel.bajada}` }); continue;
+      }
+      if (cel.bajada && x.nat != null && x.nat < cel.bajada) {
+        descartados.push({ x, motivo: `reenvía ${x.nat} Mbps de LAN a WAN y el enlace pide ${cel.bajada}` }); continue;
+      }
+      elegibles.push(x);
+    }
+    const regional = (x) => x.region === 'EA' || x.region === 'AM';
+    const orden = (a, b) => (cel.gen === '4G' ? (a.gen === '4G' ? 0 : 1) - (b.gen === '4G' ? 0 : 1) : 0)
+      || (a.bajada == null ? 1 : 0) - (b.bajada == null ? 1 : 0) || (a.nat || 0) - (b.nat || 0);
+    elegibles.sort(orden);
+    const recomendado = elegibles.find((x) => !regional(x)) || null;
+    return { recomendado, alternativas: elegibles.filter((x) => x !== recomendado), descartados,
+      qty: Math.max(1, cel.enlaces), fuente: (cat.extenders && cat.extenders.fuente) || null,
+      url: (cat.extenders && cat.extenders.url) || null };
   }
 
   /* ── 7 · EVALUACION COMPLETA ──────────────────────────────────────────────────────────
@@ -684,8 +766,14 @@
       return tope === Infinity ? m.fw : tope;
     };
 
-    const req = { almacenamientoGB };
+    const celular = demandaCelular(s);
+    const req = { almacenamientoGB, celular };
+    res.celular = celular.pedido ? { ...celular, extender: celular.via === 'extender' ? elegirExtender(celular, cat) : null } : null;
     for (const m of modelos) {
+      // Una variante (FortiWiFi, 3G4G, 5G) tiene el mismo rendimiento que su base y otro precio:
+      // solo compite cuando el escenario pide lo que la distingue, o si se eligio a mano. Sin
+      // esto empataria con su base en cada escenario y cambiaria recomendaciones sin motivo.
+      if (m.variante && m.id !== s.seleccion.manual && !variantePedida(m, s)) continue;
       const ev = R.evaluarModelo(m, demandas, politica);
       const rs = restricciones(m, s, req, cat);
       const elegible = ev.estado === 'ok' && !rs.bloqueos.length;
@@ -708,7 +796,9 @@
     // mismo segmento. Treinta referencias mezcladas de sucursal y carrier no son una
     // comparacion (F16): el catalogo completo sigue en su pestana.
     if (rec) {
-      const siguientes = vivos.filter((c) => c !== rec && c.soporta >= rec.soporta);
+      // Una variante elegida a mano que el escenario no pide no es una alternativa que ofrecer.
+      const siguientes = vivos.filter((c) => c !== rec && c.soporta >= rec.soporta
+        && !(c.modelo.variante && !variantePedida(c.modelo, s)));
       const mismos = siguientes.filter((c) => rx && rx.test(c.modelo.seg));
       res.alternativas = mismos.concat(siguientes.filter((c) => !mismos.includes(c))).slice(0, 2)
         .map((c) => ({ ...c, porQue: porQueAlternativa(c, rec) }));
@@ -779,6 +869,8 @@
     // no hay ningun candidato — que es cuando mas falta hace decir que el bundle no alcanza.
     const bloqueos = com.bloqueos.slice();
     const avisos = com.avisos.slice();
+    const fex = s.fisico.celular && s.fisico.celularVia === 'extender' ? elegirExtender(demandaCelular(s), cat) : null;
+    if (fex) lineasExtender(fex, s, cat, com.filas, bloqueos, avisos);
     // F07. Un chasis no se cotiza como una linea: sin FIM, FPM, fuentes, ventiladores y opticas
     // la cotizacion es de una caja vacia. Este catalogo no trae ese configurador.
     if (m.modular) {
@@ -791,6 +883,38 @@
     // otras palabras en la misma lista.
     return { modelo: m.id, nodos, construccion: com.bdl ? 'bdl' : 'separado', filas: com.filas, avisos, bloqueos,
       soporteIncluido: com.soporteIncluido };
+  }
+
+  // El FortiExtender va en su linea, con su FortiCare Premium (SKU de su «Ordering Information»).
+  // La lista extraida no trae FortiExtender: SKU y precio se confirman con el distribuidor.
+  function lineasExtender(fex, s, cat, filas, bloqueos, avisos) {
+    const x = fex.recomendado;
+    if (!x) {
+      bloqueos.push({ codigo: 'fex-sin-candidato', nivel: 'bloqueo',
+        mensaje: 'Ningún FortiExtender de la ficha cumple el enlace 4G/5G pedido: '
+          + (fex.descartados.map((d) => `${d.x.id}, ${d.motivo}`).join('; ') || 'no hay ninguno de esa generación') + '.' });
+      return;
+    }
+    const unico = x.skus.length === 1;
+    filas.push({ req: 'fisico.celular', cat: 'WAN celular', desc: `${x.id} (${x.categoria})`, sku: unico ? x.skus[0] : null, qty: fex.qty, unit: null,
+      nota: `${x.modems > 1 ? `${x.modems} módems` : '1 módem'} ${x.modem} · `
+        + (x.bajada != null ? `bajada/subida ${x.bajada}/${x.subida} Mbps (máximo de la categoría) · ` : 'la ficha no publica el caudal del módem · ')
+        + `${x.puertos} · ${unico ? x.regionN : `elegir: ${x.regionN}`} · ${fex.fuente}` });
+    const care = /^FC-10-[A-Z0-9]+-247-02-DD$/.test(x.care) ? R.skuTermino(x.care, s.comercial.anios, cat.terminos) : null;
+    filas.push({ req: 'fisico.celular', cat: 'Soporte', desc: `FortiCare Premium de ${x.id}`, sku: care && care.exacto ? care.sku : null,
+      qty: fex.qty, unit: null, nota: `${care ? '' : `${x.care} · `}SKU de la «Ordering Information» de su ficha con el término de la cotización` });
+    bloqueos.push({ codigo: 'fex-sin-precio', nivel: 'borrador',
+      mensaje: `${x.id}: de la lista de precios firmada solo se extrajeron las filas que nombran un FortiGate, así que el equipo y su soporte van «consultar»`
+        + `${unico ? '' : ` y hay que elegir el SKU de la región (${x.regionN})`}. No es que la lista no los traiga.` });
+    if (x.bajada == null) {
+      avisos.push({ codigo: 'fex-sin-caudal', nivel: 'warning',
+        mensaje: `La ficha de ${x.id} no publica el caudal de su módem: solo se comprobó su reenvío LAN-WAN (${x.nat} Mbps).` });
+    }
+    if (!fex.qty || !demandaCelular(s).enlaces) {
+      avisos.push({ codigo: 'fex-sin-enlace', nivel: 'warning',
+        mensaje: 'No hay ningún enlace de tipo 4G/5G con su bajada: el FortiExtender se eligió solo por generación. '
+          + 'Declara el enlace (tipo 4G/5G) para comprobar el caudal.' });
+    }
   }
 
   /* ── 9 · PUERTA DE COTIZACION Y CONFIANZA ─────────────────────────────────────────────
@@ -814,7 +938,8 @@
     'fisico.registroDias': 'días de retención', 'comercial.emsEndpoints': 'endpoints gestionados de FortiClient EMS',
     'comercial.saseUsuarios': 'usuarios de FortiSASE', 'comercial.sandboxModalidad': 'modalidad del FortiSandbox dedicado',
     'comercial.emsDespliegue': 'despliegue de FortiClient EMS', 'comercial.saseEdicion': 'edición de FortiSASE',
-    'comercial.serieInstalada': 'modelo y número de serie instalado', 'comercial.justificacionEol': 'justificación del equipo fuera de venta',
+    'comercial.serieInstalada': 'modelo y número de serie instalado',
+    'fisico.celularVia': 'cómo llega el enlace 4G/5G (módem del FortiGate o FortiExtender)', 'comercial.justificacionEol': 'justificación del equipo fuera de venta',
   };
 
   function cerrar(res, s, cat, o) {
@@ -898,6 +1023,12 @@
         if (salud.bloquea) av.push({ codigo: 'precios-vencidos', nivel: 'borrador', mensaje: salud.mensaje });
       }
     }
+    if (!res.errores.length && !s.fisico.celular && s.topologia.enlaces.some((l) => l.tipo === '4G/5G' && l.down > 0)) {
+      av.push({ codigo: 'enlace-celular-sin-equipo', nivel: 'warning',
+        mensaje: 'Hay un enlace 4G/5G y no se pidió cómo llega al FortiGate: marca «WAN celular» (módem integrado o FortiExtender) '
+          + 'para que el equipo o el FortiExtender entren en el dimensionamiento y en el BOM.' });
+    }
+    if (s.fisico.celular) sup.push('WAN celular: la categoría LTE o 5G del módem es un máximo de la tecnología, no un caudal garantizado; depende de la cobertura del operador en el sitio.');
     sup.push(`Encapsulación ESP del ${Math.round(OVERHEAD_ESP * 100)} % sobre la fracción que viaja por el overlay (supuesto de la herramienta, no una cifra de Fortinet).`);
     if (s.escala.sesionesPorUsuario && !s.escala.cpsMedido) sup.push(`Sesiones nuevas por segundo derivadas de una vida media de sesión de ${s.escala.vidaSesionS} s.`);
     if (s.topologia.rol === 'hub') sup.push(`Simultaneidad de los spokes del ${s.topologia.simultaneidadPct} %.`);
