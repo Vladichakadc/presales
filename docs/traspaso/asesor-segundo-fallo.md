@@ -3,28 +3,30 @@
 - **Tema:** El segundo fallo seguido del mismo npm run recuerda consultar al asesor (hook de aprendizaje.sh)
 - **Rama:** claude/elegant-pascal-7ymts7
 - **Cuenta:** vladichakadc@gmail.com (sesión 01TxCQ3W2sHYVmimAdMKht3j)
-- **Estado:** reservado
+- **Estado:** en curso
 - **Actualizado:** 2026-11-04 05:45
 - **Archivos que toca:** .claude/hooks/aprendizaje.sh, .claude/hooks/lib-fallos.js, test/aprendizaje-hook.test.js
-- **Siguiente paso:** lib-fallos.js y su prueba, el recordatorio en aprendizaje.sh, CLAUDE.md
+- **Siguiente paso:** abrir el PR y cerrar con su entrega (CLAUDE.md en el commit de cierre)
 
 ## Encargo del dueño
 
-<Las palabras del dueño, literales, y lo que se entendió de ellas.>
+«Ejecuta los pendientes como un arquitecto senior con las Skills instaladas y las propuestas de mejora; no pares hasta no tener resuelto». Es la mejora «Que el segundo fallo seguido del mismo comando recuerde consultar al asesor», propuesta al cerrar el PR #94.
 
 ## Hecho
 
-- <Lo terminado, con el commit que lo contiene.>
+- `.claude/hooks/lib-fallos.js`: cuenta los fallos seguidos de una acción con `runs.jsonl` y `en-curso.jsonl`.
+- `.claude/hooks/aprendizaje.sh`: en `PreToolUse`, antes de abrir la corrida, devuelve el recordatorio en `additionalContext` si van dos o más.
+- `test/aprendizaje-hook.test.js`: conduce el hook con el JSON de Claude Code (también el registro, que no tenía prueba).
 
 ## Falta
 
-- <Lo pendiente de este tema, en orden.>
+- PR, entrega, relevo y `CLAUDE.md` en el cierre.
 
 ## Decisiones y hallazgos
 
-
-- <Lo decidido y su porqué; lo medido; lo que no funcionó, para no repetirlo.>
+- `additionalContext` en `PreToolUse` lo documenta code.claude.com/docs/en/hooks; sin `permissionDecision`, que aprobaría o frenaría.
+- Una corrida en tubería (`| tail`) queda con rc=0 aunque npm falle: medido con dos `reservar` que fallaron.
 
 ## Verificación
 
-- <Qué se corrió (`npm run verificar`, `auditar`, `pantallas`…) y con qué resultado.>
+- `node --test test/aprendizaje-hook.test.js`: 5/5; caen los sabotajes (la regla no cuenta, o el hook devuelve `permissionDecision`).
