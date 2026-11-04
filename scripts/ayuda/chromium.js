@@ -38,10 +38,13 @@ const RUTAS_CHROMIUM = [
 ].filter(Boolean);
 
 // Sale del proceso con codigo 1 y diciendo QUE instalar, en vez de lanzar un error de
-// `require` que obliga a leer el codigo para entenderlo.
+// `require` que obliga a leer el codigo para entenderlo. Lo que devuelve lleva su `chromium`
+// envuelto por `conLanzamiento` (ver mas abajo).
 function requerirPlaywright() {
   for (const ruta of RUTAS_PLAYWRIGHT) {
-    try { return require(ruta); } catch { /* probar la siguiente */ }
+    let pw;
+    try { pw = require(ruta); } catch { continue; /* probar la siguiente */ }
+    return conPlaywright(pw);
   }
   console.error('No se encontro el paquete "playwright". Instalalo sin guardarlo en '
     + 'package.json y trae un Chromium:\n\n'
@@ -76,4 +79,36 @@ function opcionesDeLanzamiento(extra) {
   return opciones;
 }
 
-module.exports = { requerirPlaywright, chromiumDisponible, opcionesDeLanzamiento, SIN_RENDER_DOCUMENT, RUTAS_PLAYWRIGHT, RUTAS_CHROMIUM };
+/* UN SOLO LANZAMIENTO (2026-11-04, decision del dueño). Hasta ese dia solo `pantallas`, `contraste`
+ * y el manual pasaban por `opcionesDeLanzamiento()`; las 46 baterias e2e y `scripts/visibles.js`
+ * llamaban a `chromium.launch()` a secas y corrian con RenderDocument activo: dos navegadores
+ * distintos en el mismo job, y el proximo flag necesario se habria aplicado a medias.
+ *
+ * En vez de tocar cada llamada, se envuelve el `chromium` que dan los DOS cargadores de Playwright
+ * del repositorio (`requerirPlaywright` aqui y `cargarPlaywright` en `test/e2e/ayuda.js`): su
+ * `launch(extra)` pasa por `opcionesDeLanzamiento(extra)`, que es idempotente, asi que la llamada
+ * explicita de pantallas y contraste sigue valiendo. El resto de metodos se llama sobre el objeto
+ * real (Playwright depende de su `this`). `test/chromium-lanzamiento.test.js` frena un tercer
+ * cargador y un cargador que deje de envolver. */
+// Un Proxy que sustituye una propiedad y deja el resto en el objeto real, con su `this`.
+function sustituir(objetivo, clave, valor) {
+  return new Proxy(objetivo, {
+    get(o, k) {
+      if (k === clave) return valor;
+      const v = Reflect.get(o, k, o);
+      return typeof v === 'function' ? v.bind(o) : v;
+    },
+  });
+}
+
+function conLanzamiento(tipo) {
+  if (!tipo || typeof tipo.launch !== 'function') return tipo;
+  return sustituir(tipo, 'launch', (extra) => tipo.launch(opcionesDeLanzamiento(extra)));
+}
+
+// El modulo de Playwright con su `chromium` envuelto; lo demas, tal cual.
+function conPlaywright(pw) {
+  return sustituir(pw, 'chromium', conLanzamiento(pw.chromium));
+}
+
+module.exports = { requerirPlaywright, chromiumDisponible, opcionesDeLanzamiento, conLanzamiento, conPlaywright, SIN_RENDER_DOCUMENT, RUTAS_PLAYWRIGHT, RUTAS_CHROMIUM };
