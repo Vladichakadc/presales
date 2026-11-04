@@ -1742,6 +1742,10 @@ module.exports = [
   { archivo: 'fortinet-fortiextender-ds.pdf', tipo: 'pdf', para: 'FORTINET', urls: [],
     descubrirEnlace: { de: 'fortinet-fortiextender-pagina.html', contiene: 'xtender', dominios: ['fortinet.com'],
       base: 'https://www.fortinet.com/products/wireless-wan-fortiextender' } },
+  // La guía de pedido de FortiExtender, enlazada desde la misma página (corrida 41845481466).
+  { archivo: 'fortinet-fortiextender-og.pdf', tipo: 'pdf', para: 'FORTINET', urls: [],
+    descubrirEnlace: { de: 'fortinet-fortiextender-pagina.html', contiene: 'og-fortiextender', dominios: ['fortinet.com'],
+      base: 'https://www.fortinet.com/products/wireless-wan-fortiextender' } },
   // Corrida 41845481466: 200 sin el texto «FortiWiFi» en su HTML; se pide como exploración para ver a
   // qué fichas enlaza (la ruta de los PDF va en minúsculas: se busca «wifi-40f»…).
   { archivo: 'fortinet-entry-level-pagina.html', tipo: 'html', para: 'FORTINET', exploracion: true, urls: [
