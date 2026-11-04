@@ -101,3 +101,41 @@ test('la regla, sin shell: cuenta hacia atras desde la mas reciente y no cuenta 
   assert.strictEqual(fallosSeguidos(null, runs, abiertas), 0);
   assert.strictEqual(MINIMO, 2, 'CLAUDE.md dice «dos veces»');
 });
+
+// EL CODIGO QUE NO ES DE NPM (2026-11-04, decision del dueño: «apuntar desconocido»). Claude Code
+// solo ve el codigo de la linea, que es el de su ultimo programa: con npm seguido de `|`, `;` o `||`,
+// o en segundo plano, un fallo de npm llegaba como rc=0. Ahora se apunta rc=null.
+test('el registro apunta rc=null cuando el codigo de la linea no es el de npm, y 0 solo cuando lo es', () => {
+  const casos = [
+    ['npm run verificar', false, 0],
+    ['cd /repo && npm run verificar && echo listo', false, 0],
+    ['set -o pipefail; npm run verificar 2>&1 | tail -5', false, 0],
+    ['npm run verificar > log 2>&1 && grep -E "^# (pass|fail)" log', false, 0],
+    ["npm run reservar -- t --descripcion 'a; b' --archivos \"x | y\"", false, 0],
+    ['npm run verificar 2>&1 | tail -5', false, null],
+    ['npm run verificar > log 2>&1; echo rc=$?', false, null],
+    ['npm run verificar || true', false, null],
+    ['npm run e2e', true, null],
+  ];
+  for (const [comando, fondo, rc] of casos) {
+    const dir = repo();
+    const entrada = (evento) => JSON.stringify({ hook_event_name: evento, tool_name: 'Bash', tool_use_id: 't1',
+      tool_input: { command: comando, ...(fondo ? { run_in_background: true } : {}) } });
+    for (const ev of ['PreToolUse', 'PostToolUse']) {
+      cp.execFileSync('bash', [path.join(dir, '.claude', 'hooks', 'aprendizaje.sh')], { input: entrada(ev), env: { ...process.env, CLAUDE_PROJECT_DIR: dir } });
+    }
+    const r = JSON.parse(leer(dir, 'runs.jsonl').trim());
+    assert.strictEqual(r.rc, rc, `${comando}${fondo ? ' (en segundo plano)' : ''}`);
+    if (rc === null) assert.match(r.note, /rc desconocido/);
+    assert.strictEqual(leer(dir, 'en-curso.jsonl').trim(), '', 'y se cierra igual');
+  }
+});
+
+test('un rc desconocido ni corta la racha de fallos ni la alarga', () => {
+  const dir = repo();
+  historia(dir, { runs: [['verificar', 30, 1], ['verificar', 20, null]], abiertas: [['verificar', 10, 'a']] });
+  assert.ok(hook(dir, 'PreToolUse', 'npm run verificar'), 'fallo, desconocido, fallo: son dos fallos seguidos');
+  const otro = repo();
+  historia(otro, { runs: [['verificar', 30, null], ['verificar', 20, null]], abiertas: [['verificar', 10, 'a']] });
+  assert.strictEqual(hook(otro, 'PreToolUse', 'npm run verificar'), null, 'dos desconocidos y un fallo: uno solo');
+});

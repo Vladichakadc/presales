@@ -40,17 +40,21 @@ const {esGitPush}=require(path.join(raiz,".claude","hooks","lib-comando.js"));
 if(!esGitPush((h.tool_input||{}).command||"")) process.exit(0);
 const runs=path.join(raiz,".claude","learning","runs.jsonl");
 
-// El ultimo verde de cada comprobacion que interesa aqui.
-const ultimoVerde={};
+// El ultimo verde de cada comprobacion que interesa aqui, y el ultimo verificar de resultado
+// DESCONOCIDO (rc=null: corrio en tuberia, tras un ";" o "||", o en segundo plano; lib-comando.js,
+// `rcEsDeNpm`). Hasta el 2026-11-04 ese caso llegaba como rc=0 y aqui contaba como verde.
+const ultimoVerde={}, ultimoDudoso={};
 try{
   for(const l of fs.readFileSync(runs,"utf8").split("\n")){
     if(!l.trim()) continue;
     let r; try{ r=JSON.parse(l); }catch{ continue; }
-    if(r.rc===0 && (r.action==="verificar" || r.action==="auditar")) ultimoVerde[r.action]=Date.parse(r.ts);
+    if(r.action!=="verificar" && r.action!=="auditar") continue;
+    if(r.rc===0) ultimoVerde[r.action]=Date.parse(r.ts);
+    else if(r.rc===null) ultimoDudoso[r.action]=Date.parse(r.ts);
   }
 }catch{ process.exit(0); }          // sin registro todavia: no hay nada que afirmar
-const ultima=ultimoVerde.verificar;
-if(!ultima) process.exit(0);
+const ultima=ultimoVerde.verificar, dudosa=ultimoDudoso.verificar;
+if(!ultima && !dudosa) process.exit(0);
 
 // Lo mas reciente que se toco de lo que la puerta cubre. `git ls-files` en vez de recorrer
 // el arbol: node_modules y las capturas no cuentan, y la lista sale del indice de git.
@@ -63,7 +67,14 @@ for(const d of vigilados){
   for(const f of lista){ const m=mtime(f); if(m>masNuevo){ masNuevo=m; archivo=f; } }
 }
 const motivos=[];
-if(masNuevo>ultima){
+const iso=(t)=>new Date(t).toISOString();
+if(dudosa && dudosa>(ultima||0)){
+  // El ultimo intento no dice como acabo: no se da por verde, y tampoco se adivina rojo.
+  motivos.push(`El ultimo "npm run verificar" (${iso(dudosa)}) corrio en tuberia, tras un ";" o "||", `
+    +`o en segundo plano, y no se sabe como acabo`
+    +(ultima?`; el ultimo en verde es de ${iso(ultima)}`:"; no hay ninguno en verde registrado")
+    +`. Correlo sin nada detras, con "&&" detras, o con "set -o pipefail" antes de la tuberia.`);
+}else if(masNuevo>ultima){
   const min=Math.round((masNuevo-ultima)/60000);
   motivos.push(`La puerta de verificacion no ha pasado desde el ultimo cambio en el codigo. `
     +`El ultimo "npm run verificar" en verde fue ${new Date(ultima).toISOString()} y `

@@ -4,7 +4,7 @@ description: "Analyze recorded skill usage in this project (.claude/learning/run
 applyTo:
   - **/.claude/learning/runs.jsonl
   - **/.claude/skills/**
-deployedAt: "2026-08-17T15:32:38.855Z"
+deployedAt: "2026-11-04T11:11:34.603Z"
 ---
 
 # skill-usage-insights
@@ -23,7 +23,9 @@ add/remove recommendations.
 - `.claude/skills/<name>/SKILL.md` — skills currently installed in this
   project (one directory per skill).
 - `.claude/learning/runs.jsonl` — append-only JSON-lines log; each line:
-  `{"ts": ..., "skill": ..., "action": ..., "rc": 0|nonzero, "duration": ..., "error": "", "hint": "", "note": ""}`.
+  `{"ts": ..., "skill": ..., "action": ..., "rc": 0|nonzero|null, "duration": ..., "error": "", "hint": "", "note": ""}`.
+  `rc: null` means the exit code was unknown (npm piped, followed by `;` or `||`, or run in the
+  background: the shell reported another program's code); `note` says which.
   If this file doesn't exist, say so plainly — there's no usage history yet,
   not an error. Recommendations in that case are limited to "not yet
   measurable; check back after the self-learning skill has recorded some
@@ -43,7 +45,8 @@ For each installed skill name, and for each distinct `skill` value in
 `runs.jsonl` that matches an installed skill name:
 
 - `runs` — count of matching records.
-- `success_rate` — `rc == 0` count / `runs` (as a percentage).
+- `success_rate` — `rc == 0` count / runs with a known `rc` (as a percentage). Rows with
+  `rc: null` are left out of both counts, never read as failures or successes; report how many.
 - `avg_duration` — mean of `duration` across records that have it.
 - `last_used` — max `ts`; `days_since_last_use` — days between that and now.
 - **Per agent** — when `agent` is set on a row (`claude`, `cursor`, `kiro`,
