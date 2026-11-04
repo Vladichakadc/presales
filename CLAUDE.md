@@ -277,7 +277,10 @@ rojo o sin terminar, en cola, sin despliegue) y lo cierra al desplegarse; un fal
   juntos (`test/workflows-imagen.test.js`). La 1.62+ activa RenderDocument y la cobertura del
   contraste solo contaría el último caso: **`opcionesDeLanzamiento()` lo apaga**
   (`--disable-features=RenderDocument`, `test/chromium-lanzamiento.test.js`), y `contraste.js` se
-  niega a escribir una cobertura incoherente. No se vuelve a fijar una versión vieja por eso: su
+  niega a escribir una cobertura incoherente. **Todo lanzamiento pasa por ella** (2026-11-04, decisión
+  del dueño): los dos cargadores de Playwright, `requerirPlaywright()` y `cargarPlaywright()`
+  (`test/e2e/ayuda.js`), devuelven `chromium` envuelto por `conLanzamiento`, así que las e2e, `visibles`
+  y `limites` corren con el mismo navegador que las medidas; la prueba frena un tercer cargador. No se vuelve a fijar una versión vieja por eso: su
   Chromium deja de recibir parches (la 1.61.1 traía el 149, anterior a los zero-days de V8 de 2026).
 
 **Lo que este entorno no alcanza.** El proxy de egreso deniega `presales.up.railway.app`, los
