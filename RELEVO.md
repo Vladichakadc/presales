@@ -344,9 +344,11 @@ traspaso (el #37, de otra sesión, se fusionó mientras se cerraba esta).
 5. **Cuenta de Huawei** (Info-Finder pide sesión): sin ella no hay ciclo de vida de Huawei, ni el
    tope de túneles y rutas por modelo AR.
 
-- **Precio de FortiWiFi y FortiExtender** (PR #140): la lista firmada (`2026Q3 Mid Price list…`) la tiene el
-  dueño. Con el importador ampliado (mejora propuesta abajo), correr `npm run skus -- <lista.xlsx>` y fusionar
-  el diff de `fortinetSkus.js`. Hasta entonces esas líneas van «consultar».
+- **Precio de FortiWiFi y FortiExtender** (PR #140; importador ampliado en el PR #142): la lista firmada
+  (`2026Q3 Mid Price list…`) la tiene el dueño. Correr `npm run skus -- <lista.xlsx> --dry` y mirar la línea
+  «FortiWiFi y FortiExtender: N» y sus RECHAZOS; sin `--dry`, fusionar el diff de `fortinetSkus.js`. Trae
+  un bloque por FortiWiFi y por FortiExtender, que la ficha ya enseña en «Referencias de pedido»; el BOM sigue
+  «consultar» hasta que las variantes lean ese bloque (mejora propuesta abajo).
 
 ### Se pueden hacer desde una sesión, sin acceso especial
 
@@ -408,14 +410,16 @@ existen los workflows de transporte. Huawei y HPE niegan además el navegador au
 
 ## Mejoras propuestas sin decidir
 
-- **Que el importador de la lista de Fortinet extraiga también FortiWiFi y FortiExtender** (propuesta al
-  cerrar el PR #140). `importar-skus-fortinet.js` ancla cada bloque al SKU y al precio del FortiGate ya
-  verificados; para estos equipos no hay precio verificado, así que el ancla sería el SKU exacto de la
-  «Ordering Information» de su ficha (FWF-30G-[RC] → las filas `FWF-30G-<código>`; FEX-211G…), más que
-  el bloque nombre el mismo modelo. Evita que los FortiWiFi y los FortiExtender salgan siempre
-  «consultar». Cuesta ampliar el importador y su prueba con una lista sintética, y que el dueño lo corra
-  con la lista. Si se hace mal, entrarían filas de otro modelo con nombre parecido (`FWF-50G` frente a
-  `FWF-50G-5G-II`): la guarda de nombre anclado del importador ya existe para eso.
+- **Que los FortiWiFi y los FortiExtender se coticen con su bloque de la lista** (propuesta al cerrar el
+  PR #142, para cuando el dueño haya corrido el importador). Hoy `fortinet.js` construye las licencias de una
+  variante solo con `lic` escrito a mano y el bloque de su FortiGate; con el bloque propio en
+  `fortinetSkus.js`, el FortiWiFi tomaría de ahí el precio de su hardware (el mismo para los doce códigos
+  regionales, o «consultar» si difieren) y sus licencias, `listaSinExtraer` pasaría a `false` y el aviso
+  `lista-sin-extraer` de `fortinet-reglas.js` dejaría de salir; el FortiExtender, su FortiCare (hoy con el
+  marcador `-DD`, «consultar»). Evita que un FortiWiFi bloquee la cotización con el precio ya en el catálogo.
+  Cuesta leer el bloque en `fortinet.js` con el código de licencia que la lista imprima (sin inventarlo:
+  si el bloque no lo trae, sigue «consultar»), declarar `equivalencia-acepta` en `fortinet-porque` y
+  ampliar `fortinet-wifi-celular.test.js`. Sin datos de la lista no se puede probar con cifras reales.
 
 - **Plan de mejora de los dimensionadores, aprobado el 2026-10-31**: lo que queda, en orden. (cada corte se mide con un caso en `scripts/equivalencias/`, `npm run equivalencia`) 3.1 sacar el cálculo de la página de Aruba a módulos puros con prueba en Node (PR #99: ópticas, EdgeHA y puertos; PR #111: el estado comercial derivado; PR #113: la elección del modelo. Hecha); 3.2 lo mismo en la página de Fortinet sin tocar el motor aprobado (hecha: PR #100 y PR #110). La 1.1 (medir el arranque) se hizo en el PR #86.
 - **Vigía semanal del ciclo de vida de Fortinet** (propuesta al cerrar el PR #68). Un workflow que

@@ -608,7 +608,11 @@ Módulos compartidos:
   cambia. Con `extender`, el FortiGate se elige como siempre y el FortiExtender (`FORTIEXTENDER`, de su ficha)
   por generación y bajada de los enlaces `4G/5G`, uno por enlace y dos como mucho por FortiGate. Los FortiWiFi
   llevan el SKU con `[RC]` (código regional, no se elige) y, como los FortiExtender, van «consultar»
-  (`listaSinExtraer`: la lista no se extrajo para ellos, que no es «no la trae»); las variantes celulares
+  (`listaSinExtraer`: la lista no se extrajo para ellos, que no es «no la trae»; desde el 2026-11-06, PR #142,
+  `npm run skus` sí los extrae —`extraerSinFortiGate`, ancla doble: el SKU exacto de su ficha, `[RC]` como uno de
+  los doce códigos regionales, en un bloque que nombra el mismo modelo; un nombre conocido más largo se lleva sus
+  filas y el hardware de otro modelo rechaza el bloque, `test/importar-skus-fortinet.test.js`—, falta correrlo
+  con la lista firmada); las variantes celulares
   se cotizan por SKU exacto de la lista (`test/fortinet-wifi-celular.test.js`, `e2e-fortinet-wifi-celular.js`).
 - **Aruba** (`dimensionador-aruba-edgeconnect.js`, `aruba-reglas.js`, `motor-ingenieria.js`). El
   caudal es el **Multi-Underlay Builder** (filas `{tipo, medio, down, up, rol}`; un respaldo ocupa
