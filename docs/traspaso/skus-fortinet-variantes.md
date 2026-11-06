@@ -3,28 +3,29 @@
 - **Tema:** El importador de la lista de Fortinet extrae también FortiWiFi y FortiExtender, anclados por SKU exacto
 - **Rama:** claude/skus-fortinet-variantes
 - **Cuenta:** (no consta)
-- **Estado:** reservado
+- **Estado:** en revisión (PR abierto)
 - **Actualizado:** 2026-11-06 05:51
 - **Archivos que toca:** scripts/importar-skus-fortinet.js, test/importar-skus-fortinet.test.js, server/seed/legacyData/fortinetVariantes.js
-- **Siguiente paso:** empezar: el tema está reservado y todavía no tiene código
+- **Siguiente paso:** esperar CI del PR y escribir el commit de cierre (entrega, RELEVO, CLAUDE.md)
 
 ## Encargo del dueño
 
-<Las palabras del dueño, literales, y lo que se entendió de ellas.>
+«Conéctate al repositorio con escritura […] y avanza con los Skills instalados» (2026-11-06). Se entiende como aprobar la única mejora viva del relevo: que el importador de la lista de Fortinet extraiga también FortiWiFi y FortiExtender.
 
 ## Hecho
 
-- <Lo terminado, con el commit que lo contiene.>
+- `extraerSinFortiGate` en `scripts/importar-skus-fortinet.js` y su prueba con lista sintética.
 
 ## Falta
 
-- <Lo pendiente de este tema, en orden.>
+- Que el dueño corra `npm run skus -- <lista>` con la lista firmada; después, que las variantes lean su bloque.
 
 ## Decisiones y hallazgos
 
 
-- <Lo decidido y su porqué; lo medido; lo que no funcionó, para no repetirlo.>
+- Ancla doble: SKU exacto de la ficha + bloque que nombra el modelo; un nombre más largo conocido se lleva sus filas; hardware ajeno rechaza el bloque.
+- No se toca `fortinet-reglas.js`: su mensaje cambia cuando haya datos.
 
 ## Verificación
 
-- <Qué se corrió (`npm run verificar`, `auditar`, `pantallas`…) y con qué resultado.>
+- `node --test test/importar-skus-fortinet.test.js`: 8/8; dos mutaciones de control la ponen en rojo. eslint limpio. Sin `node_modules` (red cerrada): CI hace el resto.

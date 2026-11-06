@@ -23,6 +23,9 @@
        de cada FortiGate; NO trae los FortiWiFi (FWF-...), cuyas filas no nombran un FortiGate.
        Esos van sin precio y sin SKU de suscripcion, diciendo que la lista NO SE EXTRAJO para
        ellos (`listaSinExtraer`), que no es lo mismo que «la lista no los trae» (`fueraDeLista`).
+       Desde el 2026-11-06 `npm run skus` SI sabe extraerlos (y a los FortiExtender), anclados por
+       el SKU exacto de esta tabla en un bloque que nombra el mismo modelo
+       (`extraerSinFortiGate`); falta correrlo con la lista firmada, que no entra al repositorio.
      · la PQC y los vecinos BGP: la Maximum Values Table de FortiOS 7.6.7, que los respalda, lista
        modelos (30G, 50G…) y no nombra a ninguna variante. Sin documento, «no consta».
      · el fin de venta: ningun boletin leido nombra estas referencias.
