@@ -102,3 +102,33 @@ jobs:
       # convivieron dos avisos altos con arreglo publicado sin que nada lo dijera.
       - name: Auditoria de dependencias
         run: npm run auditar
+
+  # Solapes con otros temas abiertos (2026-11-06, scripts/solapes-pr.js): cruza los archivos que el
+  # PR cambia con los que tienen tomados los traspasos de las ramas remotas y los PR abiertos sin
+  # traspaso. Solo avisa (anotacion y resumen; sale siempre en verde). Sin npm ci: el script solo usa
+  # modulos de Node y archivos del repositorio. Lee los PR con el token, que no se guarda en el checkout.
+  solapes:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      pull-requests: read
+
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # Todas las ramas: los traspasos viven en las ramas remotas.
+          fetch-depth: 0
+          persist-credentials: false
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: package.json
+
+      - name: Solapes con otros temas abiertos
+        env:
+          GH_TOKEN: ${{ github.token }}
+          HEAD_REF: ${{ github.head_ref }}
+          BASE_REF: ${{ github.base_ref }}
+        run: node scripts/solapes-pr.js

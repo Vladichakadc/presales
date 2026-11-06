@@ -376,5 +376,5 @@ function main(argv, opts = {}) {
 
 if (require.main === module) process.exitCode = main(process.argv.slice(2));
 
-module.exports = { main, ganaLaReserva, casosQueVigilan, avisoEquivalencias, normalizarArchivos, solapan, choques, esComun, traspasoInicial, horaBogota, argumentos, diasDesde,
+module.exports = { main, ocupadosRemotos, ganaLaReserva, casosQueVigilan, avisoEquivalencias, normalizarArchivos, solapan, choques, esComun, traspasoInicial, horaBogota, argumentos, diasDesde,
   COMUNES_AL_CIERRE, DIAS_PARADA };
