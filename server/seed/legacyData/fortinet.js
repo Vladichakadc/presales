@@ -1314,7 +1314,7 @@ for (const m of MODELS) {
    de la variante; si la lista extraida no trae su bloque (los FortiWiFi), no hay licencias y la
    variante lo declara (`listaSinExtraer`). Una variante no compite en el dimensionador salvo que
    el escenario pida su funcion o se elija a mano (fortinet-motor.js). */
-const { VARIANTES, FICHAS: FICHAS_VARIANTES, FORTIEXTENDER } = require('./fortinetVariantes.js');
+const { VARIANTES, FICHAS: FICHAS_VARIANTES, FORTIEXTENDER, casaSku: casaSkuFicha } = require('./fortinetVariantes.js');
 const tierDeLista=(sku)=>{
   const t={sku, y1:null, y3:null, y5:null};
   let alguno=false;
@@ -1347,8 +1347,10 @@ for (const v of VARIANTES) {
   const m={id:v.id};
   for (const k of COPIA_DE_BASE) if (k in base) m[k]=JSON.parse(JSON.stringify(base[k]));
   const ficha=FICHAS_VARIANTES[v.ficha];
-  const refs=SKUS_POR_MODELO[v.de]||[];
-  const hw=refs.find((r)=>r.t==='HW' && r.sku===v.sku);
+  // Un FortiWiFi tiene bloque propio en la lista (sus filas no nombran un FortiGate) desde que
+  // `npm run skus` lo extrae; las celulares van en el de su FortiGate.
+  const refs=SKUS_POR_MODELO[v.id]||SKUS_POR_MODELO[v.de]||[];
+  const hw=refs.find((r)=>r.t==='HW' && casaSkuFicha(v.sku, r.sku));
   Object.assign(m, {
     ifaces:v.ifaces, hwSku:v.sku, eolAnnounced:null, datasheetUrl:null,
     psu:{watts:v.psu.watts, tipo:base.psu?base.psu.tipo:'no consta', volts:base.psu?base.psu.volts:null, amps:v.psu.amps,
@@ -1372,6 +1374,16 @@ for (const v of VARIANTES) {
     m.haLicenciaUnica={...base.haLicenciaUnica, skuHa:ha?ha.sku:null, precioHa:ha&&ha.p!=null?ha.p:null};
   }
   MODELS.push(m);
+}
+
+/* FortiExtender: el precio sale por SKU EXACTO del bloque que `npm run skus` extrae para cada uno
+   (anclado al nombre y al SKU de su ficha). Sin bloque, `extraida: false` y todo va «consultar»;
+   con bloque, un SKU que la lista no trae sigue sin precio, nunca con el de otro. */
+for (const x of FORTIEXTENDER.modelos) {
+  const refs=SKUS_POR_MODELO[x.id];
+  const precios={};
+  if (refs) for (const r of refs) if (r.p!=null) precios[r.sku]=r.p;
+  x.lista={extraida:!!refs, precios};
 }
 
 module.exports = { EOL_ANNOUNCED, MODELS, BUNDLES, CARE, LICENSES, HW_SKU, FUNCIONES, SERVICIOS_SDWAN, SDWAN_SERVICIO, EMS_LICENCIAS, SASE_USUARIOS, TERMINOS, MATRIX_LIMITES,

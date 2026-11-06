@@ -505,13 +505,15 @@
 
     /* FortiWiFi (2026-11-04): de la lista firmada solo se extrajeron las filas que nombran un
        FortiGate, y las del FortiWiFi no lo hacen. Sus licencias no faltan en la lista: faltan en
-       este catalogo, y la linea tiene que decir eso y no «no tiene SKU vigente». */
+       este catalogo, y la linea tiene que decir eso y no «no tiene SKU vigente». Desde el
+       2026-11-06 el importador extrae su bloque; `listaSinExtraer` cae cuando una persona declara
+       su `lic` en fortinetVariantes.js con lo que el importador sugiere. */
     const sinExtraer = !!m.listaSinExtraer;
     if (sinExtraer) {
       bloquear({ codigo: 'lista-sin-extraer',
-        mensaje: `De la lista de precios firmada solo se extrajeron las filas que nombran un FortiGate: el precio, las licencias `
-          + `y el soporte de ${m.id} no están en este catálogo: el importador de la lista (npm run skus) solo extrae los bloques de FortiGate `
-          + 'anclados a un SKU ya verificado, y habría que ampliarlo a las filas FortiWiFi. Van «consultar»; no es que la lista no los traiga.' });
+        mensaje: `El precio, las licencias y el soporte de ${m.id} todavía no están en este catálogo: el importador de la lista `
+          + '(npm run skus) ya extrae el bloque de cada FortiWiFi, anclado al SKU de su ficha, pero falta correrlo con la lista firmada '
+          + 'y declarar el código de sus licencias. Van «consultar»; no es que la lista no los traiga.' });
     }
     // [RC]: el código regional de la radio, que la ficha imprime en el SKU de los FortiWiFi.
     if (!sinEquipo && m.variante && m.variante.rc) {

@@ -902,16 +902,30 @@
         correccion: 'Juntar enlaces celulares, o un FortiGate por cada dos FortiExtender.' });
     }
     const unico = x.skus.length === 1;
-    filas.push({ req: 'fisico.celular', cat: 'WAN celular', desc: `${x.id} (${x.categoria})`, sku: unico ? x.skus[0] : null, qty: fex.qty, unit: null,
+    // Precio por SKU EXACTO del bloque que `npm run skus` extrae del FortiExtender (fortinet.js,
+    // `x.lista`); sin bloque, o con un SKU que la lista no trae, «consultar». Con dos SKU de región
+    // no hay precio hasta que se elija uno.
+    const lista = x.lista || { extraida: false, precios: {} };
+    const precioDe = (sku) => (sku && lista.precios[sku] != null ? lista.precios[sku] : null);
+    const pEquipo = unico ? precioDe(x.skus[0]) : null;
+    filas.push({ req: 'fisico.celular', cat: 'WAN celular', desc: `${x.id} (${x.categoria})`, sku: unico ? x.skus[0] : null, qty: fex.qty, unit: pEquipo,
       nota: `${x.modems > 1 ? `${x.modems} módems` : '1 módem'} ${x.modem} · `
         + (x.bajada != null ? `bajada/subida ${x.bajada}/${x.subida} Mbps (máximo de la categoría) · ` : 'la ficha no publica el caudal del módem · ')
         + `${x.puertos} · ${unico ? x.regionN : `elegir: ${x.regionN}`} · ${fex.fuente}` });
     const care = /^FC-10-[A-Z0-9]+-247-02-DD$/.test(x.care) ? R.skuTermino(x.care, s.comercial.anios, cat.terminos) : null;
+    const pCare = care && care.exacto ? precioDe(care.sku) : null;
     filas.push({ req: 'fisico.celular', cat: 'Soporte', desc: `FortiCare Premium de ${x.id}`, sku: care && care.exacto ? care.sku : null,
-      qty: fex.qty, unit: null, nota: `${care ? '' : `${x.care} · `}SKU de la «Ordering Information» de su ficha con el término de la cotización` });
-    bloqueos.push({ codigo: 'fex-sin-precio', nivel: 'borrador',
-      mensaje: `${x.id}: de la lista de precios firmada solo se extrajeron las filas que nombran un FortiGate (el importador no extrae las de FortiExtender), así que el equipo y su soporte van «consultar»`
-        + `${unico ? '' : ` y hay que elegir el SKU de la región (${x.regionN})`}. No es que la lista no los traiga.` });
+      qty: fex.qty, unit: pCare, nota: `${care ? '' : `${x.care} · `}SKU de la «Ordering Information» de su ficha con el término de la cotización` });
+    if (pEquipo == null || pCare == null) {
+      const faltan = [pEquipo == null ? 'el equipo' : null, pCare == null ? 'su soporte' : null].filter(Boolean);
+      const falta = `${faltan.join(' y ')} ${faltan.length > 1 ? 'van' : 'va'}`;
+      bloqueos.push({ codigo: 'fex-sin-precio', nivel: 'borrador',
+        mensaje: (lista.extraida
+          ? `${x.id}: ${falta} «consultar»: ${unico ? 'la lista de precios firmada no trae ese SKU' : `hay que elegir el SKU de la región (${x.regionN})`}`
+            + `${!unico && pCare == null ? ' y el de su soporte' : ''}.`
+          : `${x.id}: la lista de precios firmada todavía no se extrajo para los FortiExtender (npm run skus ya extrae su bloque; falta correrlo con la lista), así que ${falta} «consultar»`
+            + `${unico ? '' : ` y hay que elegir el SKU de la región (${x.regionN})`}. No es que la lista no los traiga.`) });
+    }
     if (x.bajada == null) {
       avisos.push({ codigo: 'fex-sin-caudal', nivel: 'warning',
         mensaje: `La ficha de ${x.id} no publica el caudal de su módem: solo se comprobó su reenvío LAN-WAN (${x.nat} Mbps).` });

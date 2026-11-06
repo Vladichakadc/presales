@@ -145,6 +145,24 @@ test('FortiExtender: por generación y bajada del enlace, uno por enlace, y sin 
   assert.ok(r.bloqueos.some((b) => b.codigo === 'fex-sin-candidato'));
 });
 
+test('FortiExtender con su bloque extraído: precio por SKU exacto, y lo que la lista no trae sigue «consultar»', () => {
+  // Hoy ningún FortiExtender tiene bloque: todo va «consultar» con el motivo de siempre.
+  assert.ok(F.FORTIEXTENDER.modelos.every((x) => x.lista && x.lista.extraida === false));
+  // Un bloque simulado (precios de prueba, no de la lista): equipo y FortiCare a 3 años.
+  const conLista = (precios) => ({ ...CAT, extenders: { ...F.FORTIEXTENDER,
+    modelos: F.FORTIEXTENDER.modelos.map((x) => (x.id === 'FortiExtender 211G' ? { ...x, lista: { extraida: true, precios } } : x)) } });
+  const e = esc({ celular: '4g', celularVia: 'extender' }, [{ id: 1, tipo: 'DIA', down: 300 }, { id: 2, tipo: '4G/5G', down: 400, rol: 'respaldo' }]);
+  let r = M.evaluar(e, conLista({ 'FEX-211G': 410, 'FC-10-X211G-247-02-36': 95 }), HOY);
+  assert.strictEqual(r.bom.filas.find((f) => f.cat === 'WAN celular').unit, 410);
+  assert.strictEqual(r.bom.filas.find((f) => f.cat === 'Soporte' && f.sku === 'FC-10-X211G-247-02-36').unit, 95);
+  assert.ok(!r.bom.bloqueos.some((b) => b.codigo === 'fex-sin-precio'));
+  // Sin el FortiCare en el bloque: el equipo con precio, el soporte «consultar», y se dice cuál.
+  r = M.evaluar(e, conLista({ 'FEX-211G': 410 }), HOY);
+  assert.strictEqual(r.bom.filas.find((f) => f.cat === 'Soporte' && f.sku === 'FC-10-X211G-247-02-36').unit, null);
+  const b = r.bom.bloqueos.find((x) => x.codigo === 'fex-sin-precio');
+  assert.match(b.mensaje, /^FortiExtender 211G: su soporte va «consultar»: la lista de precios firmada no trae ese SKU/);
+});
+
 test('un enlace 4G/5G sin decir cómo llega se avisa', () => {
   const r = ev(esc({}, [{ id: 1, tipo: '4G/5G', down: 50 }]));
   assert.ok(r.avisos.some((a) => a.codigo === 'enlace-celular-sin-equipo'));
