@@ -260,6 +260,10 @@ rojo o sin terminar, en cola, sin despliegue) y lo cierra al desplegarse; un fal
   `scripts/transporte/` desde el 2026-10-28 (como `node -e` pasó el tope de 128 KiB de un argumento,
   y como heredoc bash seguía leyéndolo antes que Node). `traer({ docs, solo, fetch, dir })` se prueba
   sin red en `test/transporte-traer.test.js`: una regla nueva del transporte entra con su caso ahí.
+- **Los solapes con otros temas, en cada PR** (`verificar.yml`, job `solapes`, 2026-11-06, PR #145):
+  `scripts/solapes-pr.js` cruza lo que el PR cambia con lo que tienen tomado los traspasos y los PR abiertos
+  sin traspaso (la lectura de `npm run reservar`) y lo dice en una anotación. Solo avisa, nunca frena; no
+  cuentan los archivos de cierre (`test/solapes-pr.test.js`).
 - **Las equivalencias corren en cada PR** (`verificar.yml`, 2026-11-01): `npm run equivalencia -- --todos`
   vuelve a medir cada caso de `scripts/equivalencias/` cuyo `mide` toca el PR, módulo de la base contra el
   del PR; un cambio de comportamiento a propósito se declara en la descripción del PR con
