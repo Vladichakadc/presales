@@ -67,7 +67,7 @@ test('el contraste del Product Matrix instala sin scripts y solo cuando está pe
   assert.match(c, /if: \$\{\{ steps\.pendiente\.outputs\.pendiente == 'true' \}\}\n\s+run: npm ci --ignore-scripts/);
   assert.match(c, /path: \$\{\{ runner\.temp \}\}\/vigia/, 'lo medido va a runner.temp');
   // Y publicar no se cae si contrastar falla o no corre.
-  assert.match(jobs('vigia-fuentes.yml').publicar, /needs: \[medir, contrastar, contrastar_cisco\]\n\s+if: \$\{\{ !cancelled\(\) \}\}/);
+  assert.match(jobs('vigia-fuentes.yml').publicar, /needs: \[medir, contrastar, contrastar_cisco, contrastar_figuras\]\n\s+if: \$\{\{ !cancelled\(\) \}\}/);
 });
 
 // El contraste de las fichas de Cisco y Meraki (2026-10-21): trae contenido de fuera, así que no
@@ -83,7 +83,26 @@ test('el contraste de las fichas de Cisco corre cada semana, sin escritura ni in
   assert.match(c, /name: cisco\n\s+path: \$\{\{ runner\.temp \}\}\/cisco\/cisco\.json/);
   const p = jobs('vigia-fuentes.yml').publicar;
   assert.match(p, /V\.resumenCisco\(/, 'publicar valida el artefacto antes de usarlo');
-  assert.match(p, /V\.cuerpoIssue\(inf, \{ estado, enlace \}, matrix, cisco\)/);
+  assert.match(p, /V\.cuerpoIssue\(inf, \{ estado, enlace \}, matrix, cisco[,)]/);
+});
+
+// Las figuras de Fortinet (2026-11-09): bajan PDF de fortinet.com y los rasterizan, así que no
+// escriben, no guardan el token y no instalan nada de npm (Poppler y Pillow vienen de Ubuntu); y no
+// esperan a un «pendiente», porque el vigía no mide esas fichas.
+test('el contraste de las figuras de Fortinet corre cada semana, sin escritura ni npm', () => {
+  const c = jobs('vigia-fuentes.yml').contrastar_figuras;
+  assert.ok(c, 'existe el job contrastar_figuras');
+  assert.ok(!/: write/.test(c) && /persist-credentials: false/.test(c), 'sin escritura y sin guardar el token');
+  assert.ok(!INSTALA.test(c), 'no instala nada de npm');
+  assert.ok(!/needs:|pendiente/.test(c), 'no depende de que el vigía deje algo pendiente');
+  assert.match(c, /apt-get install -y -q --no-install-recommends poppler-utils webp python3-numpy python3-pil/);
+  assert.match(c, /node scripts\/figuras-fortinet\.js --traer "\$RUNNER_TEMP\/figuras\/pdf" --json/);
+  assert.ok(!/--aplicar/.test(c), 'no reescribe ninguna figura');
+  assert.match(c, /name: figuras\n\s+path: \$\{\{ runner\.temp \}\}\/figuras\/figuras\.json/);
+  const p = jobs('vigia-fuentes.yml').publicar;
+  assert.match(p, /V\.resumenFiguras\(/, 'publicar valida el artefacto antes de usarlo');
+  assert.match(p, /V\.cuerpoIssue\(inf, \{ estado, enlace \}, matrix, cisco, figuras\)/);
+  assert.match(p, /V\.hayQueAvisar\(inf, \{ estado \}, matrix, cisco, figuras\)/);
 });
 
 test('ningún workflow intenta crear un PR desde Actions, y las ramas se empujan con el script compartido', () => {

@@ -15,12 +15,18 @@
 // docs/entregas/, docs/traspaso/) no cuentan (`COMUNES_AL_CIERRE`), y un traspaso «cerrado…» o
 // cerrado en main tampoco. Si no puede leer los PR, lo dice y sigue con los traspasos.
 //
+// LO QUE LEYO, SIEMPRE A LA VISTA (2026-11-09, mejora propuesta al cerrar el PR #145). Desde una sesión
+// no se leen los logs de Actions (el proxy los corta), solo las anotaciones: sin solapes, el job no
+// dejaba ninguna y no se sabía si había corrido ni sobre qué. Ahora deja UNA línea `::notice` por
+// corrida (`notaLectura`), nunca una por archivo, con lo que leyó y contado con los mismos filtros que
+// `choques`: sin la propia rama y sin los temas cerrados, que no se comparan.
+//
 // Uso (en CI): HEAD_REF=<rama del PR> BASE_REF=main node scripts/solapes-pr.js
 // En local: node scripts/solapes-pr.js --base=origin/main --rama=<rama>
 const { execFileSync } = require('child_process');
 const fs = require('fs');
 const path = require('path');
-const { ocupadosRemotos, choques } = require('./reservar');
+const { ocupadosRemotos, choques, esComun } = require('./reservar');
 
 const RAIZ = path.join(__dirname, '..');
 const git = (args) => execFileSync('git', args, { cwd: RAIZ, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] });
@@ -42,12 +48,38 @@ function avisos({ propios, ocupados, rama }) {
   }));
 }
 
+/* Puro: la línea de lo leído. Cuenta lo que `choques` compara de verdad: los otros temas en curso
+   (ni la propia rama, que también aparece como PR sin traspaso al borrar su traspaso, ni los
+   cerrados) y los archivos del PR sin los de cierre. Con `avisoPrs`, los PR no se leyeron y lo dice
+   en vez de contar cero. */
+function notaLectura({ propios, ocupados, rama, base, avisoPrs, solapes }) {
+  const otros = ocupados.filter((o) => o && o.origen !== rama);
+  const cerrado = (o) => /^cerrado/i.test(String(o.estado || '').trim());
+  const esPr = (o) => o.estado === 'PR abierto';
+  const traspasos = otros.filter((o) => !esPr(o) && !cerrado(o)).length;
+  const cerrados = otros.filter((o) => !esPr(o) && cerrado(o)).length;
+  const prs = otros.filter(esPr).length;
+  const cuentan = propios.filter((r) => !esComun(r)).length;
+  const partes = [
+    `${traspasos} traspaso(s) en curso de otras ramas${cerrados ? ` (y ${cerrados} cerrado(s), que no cuentan)` : ''}`,
+    avisoPrs ? 'los PR abiertos no se pudieron leer' : `${prs} PR abierto(s) sin traspaso`,
+    `${propios.length} archivo(s) de este PR contra ${base}, ${cuentan} sin los de cierre`,
+  ];
+  return `Leído: ${partes.join('; ')}. Solapes: ${solapes}.`;
+}
+
 function argumento(argv, nombre) {
   const a = argv.find((x) => x.startsWith(`--${nombre}=`));
   return a ? a.slice(nombre.length + 3) : null;
 }
 
-function main(argv = process.argv.slice(2), env = process.env) {
+const LECTORES = {
+  diff: (base) => git(['diff', '--name-only', `${base}...HEAD`]).split('\n').map((s) => s.trim()).filter(Boolean),
+  ocupados: () => ocupadosRemotos(),
+};
+
+// `lectores` se inyecta en las pruebas (diff y ocupados sin git ni red); en CI, los reales.
+function main(argv = process.argv.slice(2), env = process.env, lectores = LECTORES) {
   const base = argumento(argv, 'base') || (env.BASE_REF ? `origin/${env.BASE_REF}` : 'origin/main');
   const rama = argumento(argv, 'rama') || env.HEAD_REF || git(['rev-parse', '--abbrev-ref', 'HEAD']).trim();
   const resumen = [];
@@ -55,14 +87,14 @@ function main(argv = process.argv.slice(2), env = process.env) {
 
   let propios;
   try {
-    propios = git(['diff', '--name-only', `${base}...HEAD`]).split('\n').map((s) => s.trim()).filter(Boolean);
+    propios = (lectores.diff || LECTORES.diff)(base);
   } catch (e) {
     console.log(`::warning title=solapes::${escaparAnotacion(`No se pudo leer el diff contra ${base}: ${String(e.stderr || e.message).trim().split('\n')[0]}`)}`);
     return 0;
   }
   let lectura;
   try {
-    lectura = ocupadosRemotos();
+    lectura = (lectores.ocupados || LECTORES.ocupados)();
   } catch (e) {
     console.log(`::warning title=solapes::${escaparAnotacion(`No se pudieron leer las ramas remotas: ${String(e.stderr || e.message).trim().split('\n')[0]}`)}`);
     return 0;
@@ -78,6 +110,9 @@ function main(argv = process.argv.slice(2), env = process.env) {
     console.log(`::warning title=solapes::${escaparAnotacion(a.texto)}`);
     resumen.push(`- ${a.texto}`);
   }
+  const nota = notaLectura({ propios, ocupados: lectura.ocupados, rama, base, avisoPrs: lectura.avisoPrs, solapes: lista.length });
+  console.log(`::notice title=solapes::${escaparAnotacion(nota)}`);
+  resumen.push('', nota);
   if (env.GITHUB_STEP_SUMMARY) {
     try { fs.appendFileSync(env.GITHUB_STEP_SUMMARY, `${resumen.join('\n')}\n`); } catch { /* el resumen es comodidad */ }
   }
@@ -86,4 +121,4 @@ function main(argv = process.argv.slice(2), env = process.env) {
 
 if (require.main === module) process.exitCode = main();
 
-module.exports = { avisos, escaparAnotacion, main };
+module.exports = { avisos, notaLectura, escaparAnotacion, main };

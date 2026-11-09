@@ -153,13 +153,16 @@ function informeDe(d, fuentes = fuentesPorClave()) {
   return { informe: { cambiados, inalcanzables, reaparecidas } };
 }
 
-function tituloIssue(inf, matrix, cisco) {
+function tituloIssue(inf, matrix, cisco, figuras) {
   if (inf.cambiados.length) return `Fuentes del catálogo: ${inf.cambiados.length} cambiaron`;
   if (matrix && !matrix.error && !matrix.limpio) return `Product Matrix de Fortinet: ${matrix.nDifieren} cifra(s) distintas del catálogo`;
   if (matrix && matrix.error) return 'Product Matrix de Fortinet: el contraste no se pudo usar';
   if (cisco && !cisco.error && cisco.nDifieren) return `Fichas de Cisco y Meraki: ${cisco.nDifieren} cifra(s) distintas del catálogo`;
   if (cisco && !cisco.limpio) return 'Fichas de Cisco y Meraki: el contraste no se pudo completar';
   if (cisco && !cisco.error && cisco.nFuera) return `Fichas de Cisco y Meraki: ${cisco.nFuera} modelo(s) que el catálogo no trae`;
+  if (figuras && !figuras.error && figuras.nDistintas) return `Figuras de Fortinet: ${figuras.nDistintas} distinta(s) de la ficha publicada`;
+  if (figuras && !figuras.error && figuras.nOtra) return `Figuras de Fortinet: ${figuras.nOtra} ficha(s) con otra edición`;
+  if (figuras && !figuras.limpio) return 'Figuras de Fortinet: el contraste no se pudo completar';
   if (inf.inalcanzables.length) return `Fuentes del catálogo: ${inf.inalcanzables.length} no se pudieron leer`;
   return 'Vigía de fuentes: no se pudo guardar lo medido';
 }
@@ -167,10 +170,11 @@ function tituloIssue(inf, matrix, cisco) {
 // Si hay que escribir en el issue. Además de un cambio o una fuente sin leer, un push que falló:
 // una corrida en rojo que no deja rastro donde se mira es como la vigía pasó tres semanas sin
 // avisar (2026-09-21 y 2026-09-28).
-const hayQueAvisar = (inf, lock, matrix, cisco) => inf.cambiados.length > 0 || inf.inalcanzables.length > 0 || (lock && lock.estado === 'fallida')
+const hayQueAvisar = (inf, lock, matrix, cisco, figuras) => inf.cambiados.length > 0 || inf.inalcanzables.length > 0 || (lock && lock.estado === 'fallida')
   || (inf.reaparecidas || []).length > 0
   || !!(matrix && (matrix.error || !matrix.limpio))
-  || !!(cisco && (!cisco.limpio || cisco.nFuera));
+  || !!(cisco && (!cisco.limpio || cisco.nFuera))
+  || !!(figuras && !figuras.limpio);
 
 // EL CONTRASTE DEL PRODUCT MATRIX (2026-10-14). Lo deja el job `contrastar`, que corrio
 // `npm run matrix` sobre un PDF de fortinet.com: es contenido de fuera y se valida aqui campo a
@@ -311,6 +315,72 @@ function seccionCisco(c) {
   return l;
 }
 
+// LAS FIGURAS DE FORTINET (2026-11-09, mejora propuesta al cerrar el PR #149). Lo deja el job
+// `contrastar_figuras`, que bajó de fortinet.com las fichas del lock de figuras y rehízo las de las
+// que cambiaron. Contenido de fuera: el documento, su URL y cada figura tienen que ser los del lock
+// del repositorio, no lo que diga el artefacto; las cifras, números finitos.
+const LOCK_FIGURAS = path.join(__dirname, 'figuras-fortinet.lock.json');
+const ESTADOS_DOC = new Set(['igual', 'otraEdicion', 'error']);
+const RESULTADOS_FIG = new Set(['igual', 'distinta', 'error']);
+const esCifra = (x) => typeof x === 'number' && Number.isFinite(x) && x >= 0;
+function resumenFiguras(d, lock = JSON.parse(fs.readFileSync(LOCK_FIGURAS, 'utf8'))) {
+  if (!esObjeto(d) || !Array.isArray(d.documentos)) return { error: 'figuras.json no trae la lista de documentos' };
+  const declarados = lock.documentos || {};
+  if (!d.documentos.length || d.documentos.length > Object.keys(declarados).length) return { error: 'figuras.json con un número de documentos imposible' };
+  const vistos = new Set();
+  const documentos = [];
+  for (const x of d.documentos) {
+    if (!esObjeto(x) || !Object.prototype.hasOwnProperty.call(declarados, x.documento) || vistos.has(x.documento)) {
+      return { error: 'un documento del contraste no está en el lock de figuras, o está repetido' };
+    }
+    vistos.add(x.documento);
+    const dec = declarados[x.documento];
+    if (x.url !== dec.url) return { error: `la URL de ${x.documento} no es la del lock de figuras` };
+    if (!ESTADOS_DOC.has(x.estado)) return { error: `estado desconocido en ${x.documento}` };
+    if (x.estado === 'error' && typeof x.error !== 'string') return { error: `${x.documento} falló sin decir por qué` };
+    if (!Array.isArray(x.figuras) || x.figuras.length > MAX_FILAS) return { error: `${x.documento} sin una lista de figuras válida` };
+    const figuras = [];
+    for (const f of x.figuras) {
+      const enLock = esObjeto(f) && lock.figuras[f.ruta];
+      if (!enLock || enLock.documento !== x.documento) return { error: `una figura de ${x.documento} no es suya en el lock` };
+      if (!RESULTADOS_FIG.has(f.resultado)) return { error: `resultado desconocido en ${f.ruta}` };
+      if (f.resultado !== 'error' && !(esCifra(f.diferencia) && esCifra(f.tope))) return { error: `${f.ruta} sin diferencia o tope numéricos` };
+      figuras.push({ ruta: f.ruta, resultado: f.resultado, diferencia: f.diferencia, tope: f.tope,
+        error: f.resultado === 'error' ? corto(f.error) : null });
+    }
+    documentos.push({ documento: x.documento, url: dec.url, estado: x.estado, error: x.estado === 'error' ? corto(x.error) : null, figuras });
+  }
+  const figs = documentos.flatMap((x) => x.figuras);
+  const nOtra = documentos.filter((x) => x.estado === 'otraEdicion').length;
+  const nErrores = documentos.filter((x) => x.estado === 'error').length + figs.filter((f) => f.resultado === 'error').length;
+  const nDistintas = figs.filter((f) => f.resultado === 'distinta').length;
+  return { figuras: { documentos, nDocumentos: documentos.length, nOtra, nErrores, nDistintas, todas: d.todas === true,
+    limpio: !nOtra && !nErrores && !nDistintas } };
+}
+
+function seccionFiguras(g) {
+  const l = ['## Figuras de Fortinet (`npm run figuras-fortinet -- --traer`)', ''];
+  if (g.error) {
+    l.push(`El contraste no se pudo usar: \`${corto(g.error)}\`. Se corre a mano con \`npm run figuras-fortinet -- --rehacer <carpeta>\` sobre las fichas traídas.`, '');
+    return l;
+  }
+  l.push(`${g.nDocumentos} fichas · otra edición ${g.nOtra} · figuras distintas ${g.nDistintas} · sin comprobar ${g.nErrores}`);
+  for (const x of g.documentos.filter((y) => y.estado === 'otraEdicion' || y.figuras.some((f) => f.resultado !== 'igual'))) {
+    l.push('', x.estado === 'otraEdicion' ? `**${x.documento}**: Fortinet publica otra edición (${x.url})` : `**${x.documento}** (misma edición)`);
+    for (const f of x.figuras) {
+      l.push(f.resultado === 'error' ? `- ${f.ruta}: no se pudo rehacer, \`${f.error}\``
+        : `- ${f.ruta}: ${f.resultado === 'igual' ? 'IGUAL' : '**DISTINTA**'} (diferencia ${f.diferencia}, tope ${f.tope})`);
+    }
+  }
+  const mal = g.documentos.filter((x) => x.estado === 'error');
+  if (mal.length) {
+    l.push('', 'Fichas que no se pudieron bajar (esto **no** es «sin cambios»):');
+    for (const x of mal) l.push(`- ${x.documento}: \`${x.error}\``, `  - ${x.url}`);
+  }
+  l.push('', 'IGUAL: con la misma caja, la edición nueva da el mismo dibujo; la figura servida sigue valiendo. DISTINTA: el dibujo cambió o se movió de sitio: hay que traer la ficha a una rama `fuente/*`, mirar su página «Hardware» y volver a medir la caja. Nada se ha escrito en el repositorio.', '');
+  return l;
+}
+
 // Cuando la corrida no llega a publicarse: la medición no terminó, no se pudo bajar o no pasó la
 // validación. El motivo puede citar una clave del artefacto, así que va en código en línea.
 const TITULO_FALLO = 'Vigía de fuentes: la corrida no se publicó';
@@ -328,10 +398,11 @@ function cuerpoFallo(motivo, corrida) {
 // `lock` dice qué pasó con la medición de esta semana: {estado, enlace}. `estado` es el que
 // deja el paso de la rama (empujada, sin-cambios, retenida o fallida) y `enlace`, el PR
 // abierto o el enlace para abrirlo.
-function cuerpoIssue(inf, lock, matrix, cisco) {
+function cuerpoIssue(inf, lock, matrix, cisco, figuras) {
   const l = [];
   if (matrix) l.push(...seccionMatrix(matrix, matrix.url || 'la URL del Product Matrix'));
   if (cisco && (!cisco.limpio || cisco.nFuera)) l.push(...seccionCisco(cisco));
+  if (figuras && !figuras.limpio) l.push(...seccionFiguras(figuras));
   if (inf.cambiados.length) {
     l.push('## Fuentes que cambiaron', '');
     l.push('El documento oficial ya no es el mismo que se usó para verificar el catálogo.');
@@ -413,5 +484,5 @@ if (require.main === module) {
 
 module.exports = {
   RAMA, TITULO_FALLO, fuentesPorClave, validarLock, informeDe, tituloIssue, hayQueAvisar, cuerpoIssue, cuerpoFallo, principal,
-  resumenMatrix, resumenCisco,
+  resumenMatrix, resumenCisco, resumenFiguras,
 };
