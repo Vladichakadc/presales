@@ -3,10 +3,10 @@
 - **Tema:** comparar una rama fuente/* con la copia anterior de cada documento: IGUAL, BYTES o TEXTO con sus líneas (mejora aprobada al cerrar el PR #154)
 - **Rama:** claude/comparar-fuente
 - **Cuenta:** servicioiptv2025@gmail.com (sesión de Claude Code en la nube)
-- **Estado:** reservado
+- **Estado:** en curso
 - **Actualizado:** 2026-11-09 14:23
 - **Archivos que toca:** scripts/comparar-fuente.js, test/comparar-fuente.test.js
-- **Siguiente paso:** empezar: el tema está reservado y todavía no tiene código
+- **Siguiente paso:** esperar CI en el PR; en verde, commit de cierre (entrega, `RELEVO.md`, `CLAUDE.md`, borrar este traspaso) y fusionar. El alias `npm run comparar-fuente` espera a que se cierre el PR #156, que tiene `package.json`
 
 ## Encargo del dueño
 
