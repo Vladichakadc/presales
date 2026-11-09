@@ -1,0 +1,111 @@
+[
+  {
+    "archivo": "mikrotik-compatibilidad-vigente.html",
+    "para": "MIKROTIK",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://manual.mikrotik.com/docs/wired-connections/mikrotik-wired-interface-compatibility",
+        "status": 200,
+        "bytes": 400972,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "mikrotik-manual-ipsec.html",
+    "para": "MIKROTIK",
+    "guardado": true,
+    "exploracion": true,
+    "intentos": [
+      {
+        "url": "https://manual.mikrotik.com/docs/virtual-private-networks/ipsec/",
+        "status": 200,
+        "bytes": 467596,
+        "guardado": true,
+        "verificado": false
+      }
+    ]
+  },
+  {
+    "archivo": "mikrotik-manual-bandwidth-test.html",
+    "para": "MIKROTIK",
+    "guardado": true,
+    "exploracion": true,
+    "intentos": [
+      {
+        "url": "https://manual.mikrotik.com/docs/diagnostics-monitoring-and-troubleshooting/bandwidth-test",
+        "status": 200,
+        "bytes": 87033,
+        "guardado": true,
+        "verificado": false
+      }
+    ]
+  },
+  {
+    "archivo": "juniper-ssr100-ds.html",
+    "para": "JUNIPER",
+    "guardado": false,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://www.juniper.net/us/en/products/routers/session-smart-router/ssr100-line-of-routers-datasheet.html",
+        "status": 200,
+        "bytes": 333756,
+        "nota": "no contiene el texto esperado"
+      },
+      {
+        "url": "https://www.juniper.net/gb/en/products/routers/session-smart-router/ssr100-line-of-routers-datasheet.html",
+        "status": 200,
+        "bytes": 349818,
+        "nota": "no contiene el texto esperado"
+      }
+    ]
+  },
+  {
+    "archivo": "juniper-ssr1000-ds.html",
+    "para": "JUNIPER",
+    "guardado": false,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://www.juniper.net/gb/en/products/routers/session-smart-router/ssr1000-line-of-routers-datasheet.html",
+        "status": 200,
+        "bytes": 349818,
+        "nota": "no contiene el texto esperado"
+      }
+    ]
+  },
+  {
+    "archivo": "meraki-c8111-c8121-ig.html",
+    "para": "CISCO",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://documentation.meraki.com/SASE_and_SD-WAN/MX/Install_and_Get_Started/Installation_Guides/C8111-G2-MX_and_C8121-G2-MX_Installation_Guide",
+        "status": 200,
+        "bytes": 2463430,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "meraki-wan-behavior.html",
+    "para": "CISCO",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://documentation.meraki.com/SASE_and_SD-WAN/MX/Product_Information/Overviews_and_Datasheets/WAN_Behavior_on_MX75%2F%2F85%2F%2F95%2F%2F105",
+        "status": 200,
+        "bytes": 85345,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  }
+]
