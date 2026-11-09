@@ -118,8 +118,9 @@ test('Fortinet: el motor (navegador y servidor) bloquea con PQC_NO_CONSTA y su m
   // Todos los FortiGate del catálogo documentan ML-KEM (Maximum Values Table o Release Notes);
   // uno sin `pqc` es el caso que la regla tiene que bloquear.
   assert.ok(fortinet.MODELS.filter((m) => !m.variante).every((m) => m.pqc && m.pqc.tipo === 'mlkem'));
-  // Las variantes FortiWiFi y 4G/5G no tienen fila en la Maximum Values Table: «no consta».
-  assert.ok(fortinet.MODELS.filter((m) => m.variante).every((m) => m.pqc == null));
+  // Las variantes FortiWiFi y 4G/5G no tienen fila en la Maximum Values Table: la llevan las diez que
+  // nombra «Supported models» de FortiOS 7.6.7 (2026-11-09); el 50G-5G-II, que esa lista no nombra, no.
+  assert.deepStrictEqual(fortinet.MODELS.filter((m) => m.variante && m.pqc == null).map((m) => m.id), ['FortiWiFi 50G-5G-II']);
   const sinDoc = { ...fortinet.MODELS.find((m) => m.id === 'FortiGate 90G'), pqc: null };
   const CAT = { models: [sinDoc], bundles: fortinet.BUNDLES, care: fortinet.CARE, funciones: fortinet.FUNCIONES,
     serviciosSdwan: fortinet.SERVICIOS_SDWAN, terminos: fortinet.TERMINOS, fortios: fortinet.FORTIOS,

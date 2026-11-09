@@ -69,7 +69,10 @@ test('solo lleva `pqc` el equipo que su documento nombra', () => {
   // Los de la Maximum Values Table de 7.6.7 y, desde el 2026-10-27, los diez que no tienen fila
   // en ella pero que sus Release Notes dicen que corren una 7.6 posterior a la 7.6.1.
   const porRn = ['FortiGate 400G', 'FortiGate 401G', 'FortiGate 3000G', 'FortiGate 3001G', 'FortiGate 3500G',
-    'FortiGate 3501G', 'FortiGate 3800G', 'FortiGate 3801G', 'FortiGate 7081F', 'FortiGate 7121F'];
+    'FortiGate 3501G', 'FortiGate 3800G', 'FortiGate 3801G', 'FortiGate 7081F', 'FortiGate 7121F',
+    // Desde el 2026-11-09, las variantes Wi-Fi y celulares que «Supported models» de 7.6.7 nombra.
+    'FortiWiFi 30G', 'FortiWiFi 31G', 'FortiWiFi 50G', 'FortiWiFi 51G', 'FortiWiFi 70G', 'FortiWiFi 70G-POE',
+    'FortiWiFi 71G', 'FortiGate 40F-3G4G', 'FortiGate 50G-5G', 'FortiGate 51G-5G'];
   for (const m of CATALOGOS.fortinet) {
     assert.strictEqual(!!m.pqc, !!m.bgpDe || porRn.includes(m.id), `${m.id}: pqc sin la MVT 7.6.7 ni sus Release Notes, o al revés`);
     if (!m.bgpDe && m.pqc) assert.match(m.pqc.alcance, /Release Notes de FortiOS 7\.6\.[67]/);

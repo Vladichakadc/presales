@@ -24,6 +24,9 @@ const ev = (e) => M.evaluar(e, CAT, HOY);
 const porId = (id) => F.MODELS.find((m) => m.id === id);
 
 test('las once variantes existen, comparten la tabla de su base y citan su ficha', () => {
+  assert.deepStrictEqual(V.VARIANTES.filter((v) => V.RN767_SOPORTADOS.includes(V.codigoRn(v))).map((v) => v.id).sort(),
+    ['FortiGate 40F-3G4G', 'FortiGate 50G-5G', 'FortiGate 51G-5G', 'FortiWiFi 30G', 'FortiWiFi 31G', 'FortiWiFi 50G',
+      'FortiWiFi 51G', 'FortiWiFi 70G', 'FortiWiFi 70G-POE', 'FortiWiFi 71G'], 'las diez que nombra «Supported models» de 7.6.7');
   const vars = F.MODELS.filter((m) => m.variante);
   assert.deepStrictEqual(vars.map((m) => m.id).sort(), V.VARIANTES.map((v) => v.id).sort());
   assert.strictEqual(vars.length, 11);
@@ -34,8 +37,14 @@ test('las once variantes existen, comparten la tabla de su base y citan su ficha
     }
     assert.match(m.variante.fuente, /^ficha por serie F(G|GFWF)-/, m.id);
     assert.ok(m.wifi || m.celular, `${m.id}: una variante existe por su Wi-Fi o su módem`);
-    // Documentos que no nombran a la variante: no se heredan.
-    assert.strictEqual(m.pqc, null, `${m.id}: la Maximum Values Table no la lista`);
+    // La PQC no se hereda de la base: la lleva la variante que «Supported models» de FortiOS
+    // 7.6.7 nombra por su código, con la misma regla que el 3800G; el 50G-5G-II no está en esa lista.
+    const nombrada = V.RN767_SOPORTADOS.includes(V.codigoRn(V.VARIANTES.find((v) => v.id === m.id)));
+    if (nombrada) {
+      assert.deepStrictEqual(m.pqc, porId('FortiGate 3800G').pqc, `${m.id}: la misma PQC que el 3800G`);
+    } else {
+      assert.strictEqual(m.pqc, null, `${m.id}: ningún documento traído lo nombra`);
+    }
     assert.strictEqual(m.bgpPeers, null, m.id);
     assert.strictEqual(m.eolAnnounced, null, m.id);
     assert.notStrictEqual(m.psu.watts, undefined, m.id);
