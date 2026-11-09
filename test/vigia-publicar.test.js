@@ -344,3 +344,55 @@ test('el contraste de las fichas de Cisco se valida, y el issue dice qué cifra 
   assert.ok(V.hayQueAvisar({ cambiados: [], inalcanzables: [] }, null, null, fallo));
   assert.match(V.cuerpoIssue({ cambiados: [], inalcanzables: [] }, null, null, fallo), /no se pudo usar/);
 });
+
+// LAS FIGURAS DE FORTINET (2026-11-09): el artefacto de `contrastar_figuras` se valida contra el
+// lock de figuras del repositorio antes de escribirlo; un fallo también llega al issue.
+test('el contraste de las figuras de Fortinet se valida contra su lock y el issue dice qué figura cambió', () => {
+  const lock = { documentos: { 'a.pdf': { url: 'https://www.fortinet.com/a.pdf' }, 'b.pdf': { url: 'https://www.fortinet.com/b.pdf' } },
+    figuras: { '/img/equipos/fg-a-front.webp': { documento: 'a.pdf' }, '/img/equipos/fg-b-front.webp': { documento: 'b.pdf' } } };
+  const bueno = () => ({ todas: false, documentos: [
+    { documento: 'a.pdf', url: 'https://www.fortinet.com/a.pdf', estado: 'otraEdicion',
+      figuras: [{ ruta: '/img/equipos/fg-a-front.webp', resultado: 'distinta', diferencia: 40, tope: 7 }] },
+    { documento: 'b.pdf', url: 'https://www.fortinet.com/b.pdf', estado: 'error', error: 'HTTP 403', figuras: [] },
+  ] });
+  const { figuras, error } = V.resumenFiguras(bueno(), lock);
+  assert.ok(!error, error);
+  assert.deepStrictEqual([figuras.nOtra, figuras.nDistintas, figuras.nErrores, figuras.limpio], [1, 1, 1, false]);
+  const inf = { cambiados: [], inalcanzables: [], reaparecidas: [] };
+  assert.ok(V.hayQueAvisar(inf, { estado: 'sin-cambios' }, null, null, figuras));
+  assert.match(V.tituloIssue(inf, null, null, figuras), /Figuras de Fortinet: 1 distinta/);
+  const cuerpo = V.cuerpoIssue(inf, { estado: 'sin-cambios' }, null, null, figuras);
+  assert.match(cuerpo, /fg-a-front\.webp: \*\*DISTINTA\*\* \(diferencia 40, tope 7\)/);
+  assert.match(cuerpo, /b\.pdf: `HTTP 403`/);
+  assert.match(cuerpo, /esto \*\*no\*\* es «sin cambios»/);
+
+  // Todo en la misma edición no avisa.
+  const limpio = { documentos: [{ documento: 'a.pdf', url: 'https://www.fortinet.com/a.pdf', estado: 'igual', figuras: [] }] };
+  assert.ok(!V.hayQueAvisar(inf, { estado: 'sin-cambios' }, null, null, V.resumenFiguras(limpio, lock).figuras));
+
+  // Lo que solo un artefacto manipulado produciría.
+  const mal = [
+    (d) => { d.documentos[0].url = 'https://evil.example/a.pdf'; },
+    (d) => { d.documentos[0].documento = 'z.pdf'; },
+    (d) => { d.documentos.push(d.documentos[0]); },
+    (d) => { d.documentos[0].estado = 'sinCambios'; },
+    (d) => { d.documentos[0].figuras[0].ruta = '/img/equipos/fg-b-front.webp'; },
+    (d) => { d.documentos[0].figuras[0].resultado = 'ok'; },
+    (d) => { d.documentos[0].figuras[0].diferencia = 'mucho'; },
+    (d) => { delete d.documentos[1].error; },
+    (d) => { d.documentos = []; },
+  ];
+  for (const m of mal) { const d = bueno(); m(d); assert.ok(V.resumenFiguras(d, lock).error, m.toString()); }
+
+  // Un job que no terminó también llega al issue.
+  const fallo = { error: 'el job contrastar_figuras no terminó (failure)' };
+  assert.ok(V.hayQueAvisar(inf, { estado: 'sin-cambios' }, null, null, fallo));
+  assert.match(V.cuerpoIssue(inf, { estado: 'sin-cambios' }, null, null, fallo), /El contraste no se pudo usar/);
+});
+
+test('el lock real de figuras se lee sin argumentos y acepta el formato de --traer', () => {
+  const lock = JSON.parse(fs.readFileSync(path.join(RAIZ, 'scripts', 'figuras-fortinet.lock.json'), 'utf8'));
+  const [documento, d] = Object.entries(lock.documentos)[0];
+  const r = V.resumenFiguras({ documentos: [{ documento, url: d.url, estado: 'igual', figuras: [] }] });
+  assert.ok(r.figuras && r.figuras.limpio, r.error);
+});
