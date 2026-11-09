@@ -207,6 +207,10 @@ const MODELS_ROUTER = [
 // los 7250 IXR del catálogo no lo dicen: la del IXR-6e/10e da MACsec e IPsec sin llamarlos
 // quantum-safe, la del IXR-X los da como «planned future capabilities» y la del IXR-R no los
 // nombra. Los 7250 IXR y los 7220 IXR siguen en «no consta».
+// 2026-11-09 (corrida 42675660904, rama fuente/pendientes-2-2026-11-09): las cinco fichas son
+// ediciones nuevas, todas Release 26. La del IXR-R ya nombra «MAC security (MACsec) LAN mode» y
+// «WAN mode»; la del IXR-X da «MACsec/IPsec *», con el asterisco «Future software capability»; la
+// del 7220 IXR-D sigue sin nombrar MACsec. Ninguna dice quantum-safe ni ANYsec: siguen en «no consta».
 const PQC_7750 = {
   '7750 SR-1':  'Nokia 7750 Service Router data sheet, Release 26',
   '7750 SR-1x-48D': 'Nokia 7750 Service Router-1x data sheet, Release 26',
