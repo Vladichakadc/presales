@@ -1,0 +1,197 @@
+[
+  {
+    "archivo": "juniper-fe-7502.html",
+    "para": "JUNIPER",
+    "guardado": true,
+    "exploracion": true,
+    "intentos": [
+      {
+        "url": "https://apps.juniper.net/feature-explorer/feature/7502",
+        "status": 200,
+        "bytes": 109112,
+        "guardado": true,
+        "verificado": false
+      }
+    ]
+  },
+  {
+    "archivo": "fortinet-rn-7.6.7.html",
+    "para": "FORTINET",
+    "guardado": true,
+    "exploracion": true,
+    "intentos": [
+      {
+        "url": "https://docs.fortinet.com/document/fortigate/7.6.7/fortios-release-notes/",
+        "status": 200,
+        "bytes": 263206,
+        "guardado": true,
+        "verificado": false
+      }
+    ]
+  },
+  {
+    "archivo": "nokia-7250ixr-r-ds.pdf",
+    "para": "NOKIA",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://www.nokia.com/asset/f/206658/",
+        "status": 200,
+        "bytes": 1970069,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "nokia-7250ixr-x-ds.pdf",
+    "para": "NOKIA",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://www.nokia.com/asset/f/214173/",
+        "status": 200,
+        "bytes": 689668,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "nokia-7250ixr-6e-ds.pdf",
+    "para": "NOKIA",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://www.nokia.com/asset/f/212673/",
+        "status": 200,
+        "bytes": 1353065,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "nokia-7250ixr-e-ds.pdf",
+    "para": "NOKIA",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://www.nokia.com/asset/f/206825/",
+        "status": 200,
+        "bytes": 903275,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "juniper-fe-7502-2.html",
+    "para": "JUNIPER",
+    "guardado": true,
+    "exploracion": true,
+    "intentos": [
+      {
+        "url": "https://apps.juniper.net/feature-explorer/feature/7502",
+        "status": 200,
+        "bytes": 109112,
+        "guardado": true,
+        "verificado": false
+      }
+    ]
+  },
+  {
+    "archivo": "nokia-7220ixr-d-ds.pdf",
+    "para": "NOKIA",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://www.nokia.com/asset/f/207599/",
+        "status": 200,
+        "bytes": 825549,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "cisco-quantum-safe-roadmap.pdf",
+    "para": "CISCO",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://www.cisco.com/c/dam/en_us/about/doing_business/trust-center/docs/quantum-safe-communications-roadmap.pdf",
+        "status": 200,
+        "bytes": 262134,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "aruba-aos10-novedades-10.8.1.0.html",
+    "para": "ARUBA",
+    "guardado": true,
+    "exploracion": true,
+    "intentos": [
+      {
+        "url": "https://arubanetworking.hpe.com/techdocs/new-central/content/aos10x/whats-new-aos10.8.1.0.htm",
+        "status": 200,
+        "bytes": 57196,
+        "guardado": true,
+        "verificado": false
+      }
+    ]
+  },
+  {
+    "archivo": "aruba-aos10-108-whats-new.html",
+    "para": "ARUBA",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://arubanetworking.hpe.com/techdocs/AOS_10.x_RN_WebHelp/Content/10.8/00/features-10800.htm",
+        "status": 200,
+        "bytes": 39764,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "aruba-aos10-cli-10800.html",
+    "para": "ARUBA",
+    "guardado": true,
+    "exploracion": true,
+    "intentos": [
+      {
+        "url": "https://arubanetworking.hpe.com/techdocs/CLI-Bank/Content/aos10/whats-new/10.8.htm",
+        "status": 200,
+        "bytes": 34223,
+        "guardado": true,
+        "verificado": false
+      }
+    ]
+  },
+  {
+    "archivo": "aruba-aos10-cli-10810.html",
+    "para": "ARUBA",
+    "guardado": true,
+    "exploracion": true,
+    "intentos": [
+      {
+        "url": "https://arubanetworking.hpe.com/techdocs/CLI-Bank/Content/aos10/whats-new/10.8.1.htm",
+        "status": 200,
+        "bytes": 37176,
+        "guardado": true,
+        "verificado": false
+      }
+    ]
+  }
+]

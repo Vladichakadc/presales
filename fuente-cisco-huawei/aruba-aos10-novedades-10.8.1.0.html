@@ -1,0 +1,1021 @@
+<!DOCTYPE html>
+<html xmlns:MadCap="http://www.madcapsoftware.com/Schemas/MadCap.xsd" lang="en-us" xml:lang="en-us" class="concept _Skins_Copy_of_new_central_skin" data-mc-search-type="Stem" data-mc-help-system-file-name="Default.xml" data-mc-path-to-help-system="../../" data-mc-has-content-body="True" data-mc-toc-path="Wireless|AOS-10 Overview and Services" data-mc-target-type="WebHelp2" data-mc-runtime-file-type="Topic;Default" data-mc-preload-images="false" data-mc-in-preview-mode="false">
+    <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <meta name="msapplication-config" content="../../Skins/Favicons/browserconfig.xml" />
+        <meta name="robots" content="index, follow" />
+        <link rel="icon" sizes="16x16" href="../../Skins/Favicons/favicon-16x16.png" />
+        <!-- Global site tag (gtag.js) - Google Analytics -->
+        <meta charset="utf-8" /><title>Getting Started</title>
+        <meta http-equiv="Pragma" content="no-cache" />
+        <meta http-equiv="Expires" content="0" />
+        <link href="../../Skins/Default/Stylesheets/Slideshow.css" rel="stylesheet" type="text/css" data-mc-generated="True" />
+        <link href="../../Skins/Default/Stylesheets/TextEffects.css" rel="stylesheet" type="text/css" data-mc-generated="True" />
+        <link href="../../Skins/Default/Stylesheets/Topic.css" rel="stylesheet" type="text/css" data-mc-generated="True" />
+        <link href="../../Skins/Default/Stylesheets/Components/Styles.css" rel="stylesheet" type="text/css" data-mc-generated="True" />
+        <link href="../../Skins/Default/Stylesheets/Components/Tablet.css" rel="stylesheet" type="text/css" data-mc-generated="True" />
+        <link href="../../Skins/Default/Stylesheets/Components/Mobile.css" rel="stylesheet" type="text/css" data-mc-generated="True" />
+        <link href="../../Skins/Default/Stylesheets/Components/Print.css" rel="stylesheet" type="text/css" data-mc-generated="True" />
+        <link href="../../Skins/Fluid/stylesheets/foundation.6.2.3.css" rel="stylesheet" type="text/css" data-mc-generated="True" />
+        <link href="../../Skins/Fluid/stylesheets/styles.css" rel="stylesheet" type="text/css" data-mc-generated="True" />
+        <link href="../../Skins/Fluid/stylesheets/tablet.css" rel="stylesheet" type="text/css" data-mc-generated="True" />
+        <link href="../../Skins/Fluid/stylesheets/mobile.css" rel="stylesheet" type="text/css" data-mc-generated="True" />
+        <link href="../../Skins/Fluid/stylesheets/print.css" rel="stylesheet" type="text/css" data-mc-generated="True" />
+        <style>img
+{
+	max-width: 7.5in;
+}
+
+div.important
+{
+	width: 750px;
+}
+
+#mc-main-content
+{
+	margin-right: 280px;
+	/* leave space for TOC */
+	padding-right: 20px;
+}
+
+:root
+{
+	/* Make header/footer offsets easy to maintain across breakpoints */
+	--toc-top-offset: 225px;
+	/* equals your 'top' */
+}
+
+#page-toc
+{
+	position: fixed;
+	right: 0;
+	top: var(--toc-top-offset);
+	width: 240px;
+	max-height: calc(100vh - var(--toc-top-offset));
+	/* Use max-height instead of height to avoid layout issues if content exceeds */
+	overflow-y: auto;
+	padding: 15px 20px;
+	border-left: 1px solid #ddd;
+	background: #fff;
+	font-family: Arial, sans-serif;
+	font-size: 14px;
+}
+
+#page-toc .toc-title
+{
+	font-weight: bold;
+	font-size: 15px;
+	margin-bottom: 10px;
+	text-transform: uppercase;
+	color: #222;
+}
+
+#page-toc ul
+{
+	list-style: none;
+	padding-left: 0;
+	margin: 0;
+}
+
+#page-toc li
+{
+	margin: 6px 0;
+	line-height: 1.4;
+}
+
+#page-toc a
+{
+	text-decoration: none;
+	color: #006699;
+}
+
+#page-toc a:hover
+{
+	text-decoration: underline;
+}
+
+#page-toc a.active
+{
+	font-weight: bold;
+	color: #01A982;
+	border-left: 3px solid #01A982;
+	padding-left: 6px;
+	background-color: #e6f7f3;
+	/* very light teal tint for contrast */
+	border-radius: 3px;
+}
+
+/* Slightly lighter styling for nested H3s */
+
+#page-toc ul ul a.active
+{
+	font-weight: 600;
+}
+
+html
+{
+	scroll-behavior: smooth;
+}
+
+/* Floating vertical tab like your screenshot */
+
+#feedback-btn
+{
+	position: fixed;
+	right: 0;
+	top: 65%;
+	background: #01A982;
+	color: #fff;
+	font-family: 'MetricHPE';
+	/* font: bold 14px / 1 MetricHPE; */
+	padding: 12px 10px;
+	border-radius: 6px 0 0 6px;
+	text-decoration: none;
+	box-shadow: 0 2px 3px rgba(0, 0, 0, .3);
+	z-index: 9999;
+	writing-mode: sideways-lr;
+	text-align: center;
+}
+
+#feedback-btn:hover
+{
+	background: #7D8A92;
+	cursor: pointer;
+}
+
+@media only screen and (max-width: 600px)
+{
+	div.important
+	{
+		width: 85%;
+	}
+
+	#mc-main-content
+	{
+		margin-right: 280px;
+		padding-right: 20px;
+		width: 100%;
+	}
+
+	#page-toc
+	{
+		display: none;
+	}
+
+	div.important
+	{
+		width: 100%;
+	}
+
+	img
+	{
+		max-width: 100%;
+		display: block;
+		height: auto;
+	}
+
+	.title-bar-layout a.logo
+	{
+		width: 156px;
+		margin-top: -25px;
+		height: 75px;
+		background-size: contain;
+	}
+
+	div.olh-title
+	{
+		margin-left: -80px;
+		margin-right: 50px;
+		margin-top: 52px;
+		font-family: MetricHPE;
+		font-weight: bold;
+		font-size: 1.5em;
+		text-align: center;
+		color: #000000;
+		line-height: 1em;
+	}
+}
+
+@media only screen and (min-width: 600px)
+{
+	div.important
+	{
+		width: 85%;
+	}
+
+	.title-bar-layout a.logo
+	{
+		width: 106px;
+		margin-top: -25px;
+		height: 75px;
+		background-size: contain;
+	}
+
+	div.olh-title
+	{
+		margin-right: 90px;
+		margin-left: 0px;
+		margin-top: 22px;
+		font-family: MetricHPE;
+		font-weight: bold;
+		font-size: 1.5em;
+		text-align: center;
+		color: #000000;
+		line-height: 1em;
+	}
+
+	#page-toc
+	{
+		display: none;
+	}
+}
+
+@media only screen and (min-width: 768px)
+{
+	div.important
+	{
+		width: 85%;
+	}
+
+	.title-bar-layout a.logo
+	{
+		width: 156px;
+		margin-top: -25px;
+		height: 75px;
+		background-size: contain;
+	}
+
+	div.olh-title
+	{
+		margin-right: 190px;
+		margin-left: 0px;
+		margin-top: 22px;
+		font-family: MetricHPE;
+		font-weight: bold;
+		font-size: 2.0em;
+		text-align: center;
+		color: #000000;
+		line-height: 1em;
+	}
+
+	#page-toc
+	{
+		display: none;
+	}
+}
+
+@media only screen and (min-width: 992px)
+{
+	div.important
+	{
+		width: 85%;
+	}
+
+	.title-bar-layout a.logo
+	{
+		width: 156px;
+		margin-top: -25px;
+		height: 75px;
+		background-size: contain;
+	}
+
+	div.olh-title
+	{
+		margin-right: 290px;
+		margin-left: 50px;
+		margin-top: 22px;
+		font-family: MetricHPE;
+		font-weight: bold;
+		font-size: 2.0em;
+		text-align: center;
+		color: #000000;
+		line-height: 1em;
+	}
+
+	#mc-main-content
+	{
+		margin-right: 280px;
+		padding-right: 20px;
+	}
+
+	#page-toc
+	{
+		display: block;
+	}
+
+	.no-toc #mc-main-content
+	{
+		margin-right: 0 !important;
+		width: 100% !important;
+		max-width: 100% !important;
+	}
+}
+
+/* Expand content when TOC is not shown */
+
+.no-toc #mc-main-content
+{
+	margin-right: 0 !important;
+	width: 100% !important;
+	max-width: 100% !important;
+}
+
+</style>
+        <link href="../resources/new-central/new-central-tables.css" rel="stylesheet" data-mc-stylesheet-type="table" />
+        <link href="../resources/new-central/new-central-styler.css" rel="stylesheet" type="text/css" />
+        <link rel="icon" sizes="16x16" href="../../Skins/Favicons/favicon-16x16.png" />
+        <script src="../../Resources/Scripts/jquery.min.js" type="text/javascript">
+        </script>
+        <script src="../../Resources/Scripts/purify.min.js" type="text/javascript" defer="defer">
+        </script>
+        <script src="../../Resources/Scripts/require.min.js" type="text/javascript" defer="defer">
+        </script>
+        <script src="../../Resources/Scripts/require.config.js" type="text/javascript" defer="defer">
+        </script>
+        <script src="../../Resources/Scripts/foundation.6.2.3_custom.js" type="text/javascript" defer="defer">
+        </script>
+        <script src="../../Resources/Scripts/plugins.min.js" type="text/javascript" defer="defer">
+        </script>
+        <script src="../../Resources/Scripts/MadCapAll.js" type="text/javascript" defer="defer">
+        </script>
+        <script src="https://www.googletagmanager.com/gtag/js?id= G-Z3E318XD5R">
+        </script>
+        <script>/* <![CDATA[ */
+
+			window.dataLayer = window.dataLayer || [];
+
+			function gtag(){dataLayer.push(arguments);}
+
+			gtag('js', new Date());
+
+
+			gtag('config', ' G-Z3E318XD5R');
+
+		/* ]]> */</script>
+        <script type="text/javascript">/*<![CDATA[*/$(document).ready(function(){
+			$("#olh-title").appendTo("div.logo-wrapper");
+		});/*]]>*/</script>
+        <script type="text/javascript">/*<![CDATA[*/$(document).ready(function(){
+			$("#videoicon").appendTo("div.nav-search-wrapper");
+		});/*]]>*/</script>
+        <script type="text/javascript">/*<![CDATA[*/$(document).ready(function(){
+			$("#pdficon").appendTo("div.nav-search-wrapper");
+		});/*]]>*/</script>
+    </head>
+    <body>
+        <div class="foundation-wrap off-canvas-wrapper">
+            <div class="off-canvas-wrapper-inner" data-off-canvas-wrapper="">
+                <aside class="off-canvas position-right" role="navigation" id="offCanvas" data-off-canvas="" data-position="right" data-mc-ignore="true">
+                    <ul class="off-canvas-accordion vertical menu off-canvas-list" data-accordion-menu="" data-mc-back-link="Back" data-mc-css-tree-node-expanded="is-accordion-submenu-parent" data-mc-css-tree-node-collapsed="is-accordion-submenu-parent" data-mc-css-sub-menu="vertical menu is-accordion-submenu nested" data-mc-include-indicator="False" data-mc-include-icon="False" data-mc-include-parent-link="True" data-mc-include-back="False" data-mc-defer-expand-event="True" data-mc-expand-event="click.zf.accordionMenu" data-mc-toc="True">
+                    </ul>
+                </aside>
+                <div class="off-canvas-content inner-wrap" data-off-canvas-content="">
+                    <div>
+                        <nav class="title-bar tab-bar" aria-label="title tab bar" data-mc-ignore="true"><a class="skip-to-content fluid-skip showOnFocus" href="#">Skip To Main Content</a>
+                            <div class="middle title-bar-section outer-row clearfix">
+                                <div class="menu-icon-container relative clearfix">
+                                    <div class="central-account-wrapper">
+                                        <div class="central-dropdown"><a class="central-account-drop"><span class="central-account-image"></span><span class="central-account-text">Account</span></a>
+                                            <div class="central-dropdown-content"><a class="MCCentralLink central-dropdown-content-settings">Settings</a>
+                                                <hr class="central-separator" /><a class="MCCentralLink central-dropdown-content-logout">Logout</a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <button class="menu-icon" aria-label="Show Navigation Panel" data-toggle="offCanvas"><span></span>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="title-bar-layout outer-row">
+                                <div class="logo-wrapper"><a class="logo" href="../home.htm" alt="Logo"></a>
+                                </div>
+                                <div class="navigation-wrapper nocontent">
+                                    <ul class="navigation clearfix" role="navigation" data-mc-css-tree-node-has-children="has-children" data-mc-css-sub-menu="sub-menu" data-mc-expand-event="mouseenter" data-mc-top-nav-menu="True" data-mc-max-depth="3" data-mc-include-icon="False" data-mc-include-indicator="False" data-mc-include-children="True" data-mc-include-siblings="True" data-mc-include-parent="True" data-mc-toc="True">
+                                        <li class="placeholder" style="visibility:hidden"><a>placeholder</a>
+                                        </li>
+                                    </ul>
+                                </div>
+                                <div class="central-account-wrapper">
+                                    <div class="central-dropdown"><a class="central-account-drop"><span class="central-account-image"></span><span class="central-account-text">Account</span></a>
+                                        <div class="central-dropdown-content"><a class="MCCentralLink central-dropdown-content-settings">Settings</a>
+                                            <hr class="central-separator" /><a class="MCCentralLink central-dropdown-content-logout">Logout</a>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="nav-search-wrapper">
+                                    <div class="nav-search row">
+                                        <form class="search" action="#">
+                                            <div class="search-bar search-bar-container needs-pie">
+                                                <input class="search-field needs-pie" type="search" aria-label="Search Field" placeholder="Search Documentation" />
+                                                <div class="search-filter-wrapper"><span class="invisible-label" id="search-filters-label">Filter: </span>
+                                                    <div class="search-filter" aria-haspopup="true" aria-controls="sf-content" aria-expanded="false" aria-label="Search Filter" title="All Files" role="button" tabindex="0">
+                                                    </div>
+                                                    <div class="search-filter-content" id="sf-content">
+                                                        <ul>
+                                                            <li>
+                                                                <button class="mc-dropdown-item" aria-labelledby="search-filters-label filterSelectorLabel-00001"><span id="filterSelectorLabel-00001">All Files</span>
+                                                                </button>
+                                                            </li>
+                                                        </ul>
+                                                    </div>
+                                                </div>
+                                                <div class="search-submit-wrapper" dir="ltr">
+                                                    <div class="search-submit" title="Search" role="button" tabindex="0"><span class="invisible-label">Submit Search</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </nav>
+                    </div>
+                    <div class="main-section">
+                        <div class="row outer-row sidenav-layout">
+                            <nav class="sidenav-wrapper">
+                                <div class="sidenav-container">
+                                    <ul class="off-canvas-accordion vertical menu sidenav" data-accordion-menu="" data-mc-css-tree-node-expanded="is-accordion-submenu-parent" data-mc-css-tree-node-collapsed="is-accordion-submenu-parent" data-mc-css-sub-menu="vertical menu accordion-menu is-accordion-submenu nested" data-mc-include-indicator="False" data-mc-include-icon="False" data-mc-include-parent-link="False" data-mc-include-back="False" data-mc-defer-expand-event="True" data-mc-expand-event="click.zf.accordionMenu" data-mc-toc="True" data-mc-side-nav-menu="True">
+                                    </ul>
+                                </div>
+                            </nav>
+                            <div class="body-container">
+                                <div data-mc-content-body="True">
+                                    <div id="olh-title" class="olh-title"><span class="mc-variable Variables.New_Central variable">HPE Aruba Networking Central</span>  Online Help
+		</div>
+                                    <div class="nocontent">
+                                        <div class="MCBreadcrumbsBox_0 breadcrumbs" role="navigation" aria-label="Breadcrumbs" data-mc-breadcrumbs-divider=" &gt; " data-mc-breadcrumbs-count="3" data-mc-toc="True"><span class="MCBreadcrumbsPrefix">You are here: </span>
+                                        </div>
+                                    </div>
+                                    <div role="main" id="mc-main-content">
+                                        <h1>What's New in <span class="mc-variable Variables.AOS-10 variable">AOS-10</span>.8.1.0</h1>
+                                        <p>This section provides an overview of the new features and enhancements  added to HPE Aruba Networking Wireless Operating System 10.</p>
+                                        <table class="TableStyle-new-central-tables" style="height: 1%;mc-table-style: url('../resources/new-central/new-central-tables.css');margin-left: 0;margin-right: auto;caption-side: top;mc-caption-repeat: true;width: auto;" cellspacing="0">
+                                            <caption valign="top" style="padding-bottom: 6pt;">
+                                                <p class="Table_Title" data-mc-autonum="Table 1: "><span class="autonumber"><span class="zTitleNo">Table 1: </span></span> New Features in <span class="mc-variable Variables.AOS-10 variable">AOS-10</span>.8.1.0</p>
+                                            </caption>
+                                            <col class="TableStyle-new-central-tables-Column-Column1" style="width: 30%;">
+                                            </col>
+                                            <col class="TableStyle-new-central-tables-Column-Column1" style="width: 70%;">
+                                            </col>
+                                            <thead>
+                                                <tr class="TableStyle-new-central-tables-Head-Header1">
+                                                    <th class="TableStyle-new-central-tables-HeadE-Column1-Header1">
+                                                        <p>Features</p>
+                                                    </th>
+                                                    <th class="TableStyle-new-central-tables-HeadD-Column1-Header1">
+                                                        <p>Description</p>
+                                                    </th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr class="TableStyle-new-central-tables-Body-Body1">
+                                                    <td class="TableStyle-new-central-tables-BodyE-Column1-Body1">
+                                                        <p>Rogue AP Aware (Radio Profile Enhancement)s</p>
+                                                    </td>
+                                                    <td class="TableStyle-new-central-tables-BodyD-Column1-Body1">
+                                                        <p>Rogue AP Aware is a configurable setting under the Radio Profile. When this feature is enabled on a radio, the Adaptive Management (AM) module evaluates rogue AP conditions during periodic radio environment checks.</p>
+                                                    </td>
+                                                </tr>
+                                                <tr class="TableStyle-new-central-tables-Body-Body1">
+                                                    <td class="TableStyle-new-central-tables-BodyE-Column1-Body1">
+                                                        <p class="Table_Body">App Enforcement for IPv6 traffic flows</p>
+                                                    </td>
+                                                    <td class="TableStyle-new-central-tables-BodyD-Column1-Body1">
+                                                        <p class="Table_Body">This release introduces IPv6 support for app or web-based Access Control List (ACL) enforcement. Administrators can now configure and apply firewall policies to IPv6 applications, ensuring consistent security and traffic management across both IPv4 and IPv6 protocols ensuring the same level of visibility and control for IPv6 traffic as previously available for IPv4.</p>
+                                                    </td>
+                                                </tr>
+                                                <tr class="TableStyle-new-central-tables-Body-Body1">
+                                                    <td class="TableStyle-new-central-tables-BodyE-Column1-Body1">
+                                                        <p class="Table_Body">BLE Central with Persistent Bonding on 7xx Series APs</p>
+                                                    </td>
+                                                    <td class="TableStyle-new-central-tables-BodyD-Column1-Body1">
+                                                        <p class="Table_Body">
+
+7xx Series APs now support a BLE Central implementation with persistent bonding, enabling secure, encrypted connections to BLE peripherals. The feature supports up to 10 concurrent central connections and 64 stored bonds, allowing devices to reconnect seamlessly across reboots without re-pairing. Built on the Zephyr BLE stack, it includes robust connection management, automatic reconnection, and comprehensive logging for improved scalability and reliability.</p>
+                                                    </td>
+                                                </tr>
+                                                <tr class="TableStyle-new-central-tables-Body-Body1">
+                                                    <td class="TableStyle-new-central-tables-BodyE-Column1-Body1">
+                                                        <p class="Table_Body">Support for Multiple RadSec Profiles on APs</p>
+                                                    </td>
+                                                    <td class="TableStyle-new-central-tables-BodyD-Column1-Body1">
+                                                        <p class="Table_Body">Added support for multiple RadSec profiles on access points, allowing APs to connect securely to multiple RadSec-enabled AAA servers. Each RadSec destination can now be mapped to a distinct client certificate and CA trust chain, including TPM-based, EST-delivered, or manually uploaded certificates. This enhancement enables multi-PKI deployments, improves AAA redundancy, and supports advanced use cases such as M&amp;A scenarios, segmented security domains, and hybrid RadSec backends.</p>
+                                                    </td>
+                                                </tr>
+                                                <tr class="TableStyle-new-central-tables-Body-Body1">
+                                                    <td class="TableStyle-new-central-tables-BodyE-Column1-Body1">
+                                                        <p class="Table_Body">Support for SAE-based authentication on MPSK</p>
+                                                    </td>
+                                                    <td class="TableStyle-new-central-tables-BodyD-Column1-Body1">
+                                                        <p class="Table_Body">MPSK now supports SAE-based authentication, enabling per&#8209;MAC password retrieval during the SAE handshake before association. This enhancement aligns password handling with SAE requirements by computing the Commit Element using client MAC, BSSID, and password token early in the connection process.</p>
+                                                    </td>
+                                                </tr>
+                                                <tr class="TableStyle-new-central-tables-Body-Body1">
+                                                    <td class="TableStyle-new-central-tables-BodyE-Column1-Body1">
+                                                        <p class="Table_Body">BLE GATT Support for Container-Based Apps on AP-Based IoT Connector</p>
+                                                    </td>
+                                                    <td class="TableStyle-new-central-tables-BodyD-Column1-Body1">
+                                                        <p class="Table_Body">AP-based IoT Connectors now support BLE GATT operations for container-based applications, enabling IoT apps to run directly on Access Points to connect to, read from, and write to BLE devices and sensors.
+
+This enhancement brings feature parity with VM-based IoT Connectors, allowing customers to deploy fully AP-native IoT solutions without relying on external virtual infrastructure.</p>
+                                                    </td>
+                                                </tr>
+                                                <tr class="TableStyle-new-central-tables-Body-Body1">
+                                                    <td class="TableStyle-new-central-tables-BodyE-Column1-Body1">
+                                                        <p class="Table_Body">MTU Discovery Enhancement for AOS&#8209;10 Campus APs</p>
+                                                    </td>
+                                                    <td class="TableStyle-new-central-tables-BodyD-Column1-Body1">
+                                                        <p class="Table_Body">This enhancement improves the MTU discovery mechanism for AOS&#8209;10 Access Points operating in Campus mode by enabling full end&#8209;to&#8209;end path MTU discovery to the Gateway. The updated behavior now supports both:</p>
+                                                        <ul>
+                                                            <li>
+                                                                <p class="Table_Body">Increasing MTU above 1500 bytes (current behavior)</p>
+                                                            </li>
+                                                            <li>
+                                                                <p class="Table_Body">Decreasing MTU below 1500 bytes (new behavior).
+</p>
+                                                            </li>
+                                                        </ul>
+                                                        <li>
+                                                            <li>
+                                                                <p class="Table_Body">Supporting MTU discovery below 1500 bytes enables Campus deployments that better align with, and potentially exceed, the capabilities available in AOS&#8209;8.
+</p>
+                                                                <p class="Table_Body"><![CDATA[
+]]><b>Packet Size Considerations</b>:</p>
+                                                                <ul>
+                                                                    <li>
+                                                                        <p class="Table_Body">
+
+The minimum TCP payload size is relatively small.
+</p>
+                                                                    </li>
+                                                                    <li>
+                                                                        <p class="Table_Body">For UDP traffic, the commonly accepted client payload size is 576 bytes.
+</p>
+                                                                    </li>
+                                                                    <li>
+                                                                        <p class="Table_Body">This value represents the client data payload, not the full packet size transmitted between the AP and Gateway.
+</p>
+                                                                    </li>
+                                                                </ul>
+                                                                <p class="Table_Body"><b>Adaptive Discovery Approach</b>
+                                                                </p>
+                                                                <p class="Table_Body">The recommended approach is to:
+
+</p>
+                                                                <ul>
+                                                                    <li>
+                                                                        <p class="Table_Body">Initiate path MTU discovery at 1500 bytes.</p>
+                                                                    </li>
+                                                                    <li>
+                                                                        <p class="Table_Body">Dynamically adjust the MTU upward or downward based on probe success or failure.
+</p>
+                                                                    </li>
+                                                                    <li>
+                                                                        <p class="Table_Body">Allow probing down to a minimum aligned with the 576&#8209;byte UDP client payload, ensuring compatibility with common client behavior.</p>
+                                                                    </li>
+                                                                </ul>
+                                                            </li>
+                                                        </li>
+                                                    </td>
+                                                </tr>
+                                                <tr class="TableStyle-new-central-tables-Body-Body1" data-mc-conditions="">
+                                                    <td class="TableStyle-new-central-tables-BodyE-Column1-Body1">
+                                                        <p class="Table_Body">Manual onboarding of gateways</p>
+                                                    </td>
+                                                    <td class="TableStyle-new-central-tables-BodyD-Column1-Body1">
+                                                        <p class="Table_Body">Starting from <span class="mc-variable Variables.AOS-10 variable">AOS-10</span>.8.1.0, HPE Aruba Networking <span class="mc-variable Variables.AOS-10 variable">AOS-10</span> hardware Gateways now support onboarding to <span class="mc-variable Variables.Classic_Central variable">Classic Central</span> On&#8209;Premises over IPv6 manually and monitoring through <span class="mc-variable Variables.Classic_Central variable">Classic Central</span> On&#8209;Premises starting from <span class="mc-variable Variables.AOS-10 variable">AOS-10</span>.8.1.0. To enable these capabilities, gateways running <span class="mc-variable Variables.AOS-10 variable">AOS-10</span>.8.1.0 must be configured as dual-stack.</p>
+                                                    </td>
+                                                </tr>
+                                                <tr class="TableStyle-new-central-tables-Body-Body1">
+                                                    <td class="TableStyle-new-central-tables-BodyE-Column1-Body1">
+                                                        <p class="Table_Body">DPI App Inspection and WebCC support for IPv6 traffic flows </p>
+                                                    </td>
+                                                    <td class="TableStyle-new-central-tables-BodyD-Column1-Body1">
+                                                        <p class="Table_Body">Introduces DPI App Inspection and Web Content Classification (WebCC) support for IPv6 traffic in <span class="mc-variable Variables.AOS-10 variable">AOS-10</span>.x gateways.</p>
+                                                    </td>
+                                                </tr>
+                                                <tr class="TableStyle-new-central-tables-Body-Body1">
+                                                    <td class="TableStyle-new-central-tables-BodyE-Column1-Body1">
+                                                    </td>
+                                                    <td class="TableStyle-new-central-tables-BodyD-Column1-Body1">
+                                                        <p class="Table_Body">Starting with <span class="mc-variable Variables.AOS-10 variable">AOS-10</span>.8.1, AP7xx platforms support the Dual Image Core Function , enabling simultaneous support for <span class="mc-variable Variables.AOS-10 variable">AOS-10</span>.x and <span class="mc-variable Variables.AOS variable">AOS</span>-8.x. New AP7xx access points ship from the factory with both images preloaded, while existing AP7xx devices must be upgraded to <span class="mc-variable Variables.AOS-10 variable">AOS-10</span>.8.1 to automatically download the <span class="mc-variable Variables.AOS variable">AOS</span>-8.x image from the Activate server. By default, the AP boots into <span class="mc-variable Variables.AOS-10 variable">AOS-10</span>.x, and during factory reset it automatically detects <span class="mc-variable Variables.AOS variable">AOS</span>-8.x-based deployment environments. When an Instant AP, controller-based, or Classic Central (CoP) scenario is identified, the AP seamlessly switches to the <span class="mc-variable Variables.AOS variable">AOS</span>-8.x image without requiring manual intervention,
+other manual switch to <span class="mc-variable Variables.AOS variable">AOS</span>-8.x in CLI or OTP UI.</p>
+                                                    </td>
+                                                </tr>
+                                                <tr class="TableStyle-new-central-tables-Body-Body1">
+                                                    <td class="TableStyle-new-central-tables-BodyE-Column1-Body1">
+                                                        <p class="Table_Body">Enhancement to IP Management System</p>
+                                                    </td>
+                                                    <td class="TableStyle-new-central-tables-BodyD-Column1-Body1">
+                                                        <p class="Table_Body">The maximum DHCP pool limit is increased to 64 from 20. The count includes both system IP pools and DHCP shared pools.</p>
+                                                    </td>
+                                                </tr>
+                                                <tr class="TableStyle-new-central-tables-Body-Body1">
+                                                    <td class="TableStyle-new-central-tables-BodyE-Column1-Body1">
+                                                        <p class="Table_Body">Enhancement to the following show crypto commands:</p>
+                                                        <ul>
+                                                            <li>
+                                                                <p class="Table_Body">show crypto ipsec sa peer</p>
+                                                            </li>
+                                                            <li>
+                                                                <p class="Table_Body">show crypto-local ipsec-map</p>
+                                                            </li>
+                                                        </ul>
+                                                    </td>
+                                                    <td class="TableStyle-new-central-tables-BodyD-Column1-Body1">
+                                                        <p class="Table_Body">Perfect Forward Secrecy (PFS) is enabled by default for SD-Branch Hub and Spoke tunnels. PFS ensures that past session keys remain secure even if server’s long-term private key is compromised.</p>
+                                                    </td>
+                                                </tr>
+                                                <tr class="TableStyle-new-central-tables-Body-Body1">
+                                                    <td class="TableStyle-new-central-tables-BodyE-Column1-Body1">
+                                                        <p class="Table_Body">Enhancement to Key Management</p>
+                                                    </td>
+                                                    <td class="TableStyle-new-central-tables-BodyD-Column1-Body1">
+                                                        <p class="Table_Body">You can select <b>MPSK SAE</b> to establish a shared secret per client without sending the pre-shared key, improving protection against offline attacks and password leak vulnerabilities in WPA3 Personal mode.</p>
+                                                    </td>
+                                                </tr>
+                                                <tr class="TableStyle-new-central-tables-Body-Body1">
+                                                    <td class="TableStyle-new-central-tables-BodyE-Column1-Body1">
+                                                        <p class="Table_Body">Enhancement to the show console-settings command</p>
+                                                    </td>
+                                                    <td class="TableStyle-new-central-tables-BodyD-Column1-Body1">
+                                                        <p class="Table_Body">Introduced the Login Timeout parameter in the console. Administrators can set the timeout to 0 to disable the feature, or configure a duration ranging from 5 to 1440 minutes (24 hours). When a timeout is configured, users are required to log in again once the specified time has elapsed.</p>
+                                                    </td>
+                                                </tr>
+                                                <tr class="TableStyle-new-central-tables-Body-Body1">
+                                                    <td class="TableStyle-new-central-tables-BodyE-Column1-Body1">
+                                                        <p class="Table_Body">Extended PLMN Support for Passpoint Deployments</p>
+                                                    </td>
+                                                    <td class="TableStyle-new-central-tables-BodyD-Column1-Body1">
+                                                        <p class="Table_Body">The maximum number of Public Land Mobile Networks (PLMNs) that can be configured and advertised for a single SSID has been increased from 36 to 42 to support large-scale Passpoint deployments.</p>
+                                                    </td>
+                                                </tr>
+                                                <tr class="TableStyle-new-central-tables-Body-Body1">
+                                                    <td class="TableStyle-new-central-tables-BodyE-Column1-Body1">
+                                                        <p class="Table_Body">Firmware Upgrade Warning Banner for 9xxx Gateways</p>
+                                                    </td>
+                                                    <td class="TableStyle-new-central-tables-BodyD-Column1-Body1">
+                                                        <p class="Table_Body">A new warning banner now appears during 9xxx gateway firmware upgrades, notifying users that upgrades may take 15 to 40 minutes and emphasizing not to power off the device during the process to prevent damage.</p>
+                                                    </td>
+                                                </tr>
+                                                <tr class="TableStyle-new-central-tables-Body-Body1">
+                                                    <td class="TableStyle-new-central-tables-BodyE-Column1-Body1">
+                                                        <p class="Table_Body">On-Premises Datacenter Redundancy for <span class="mc-variable Variables.AOS-10 variable">AOS-10</span> Gateways</p>
+                                                    </td>
+                                                    <td class="TableStyle-new-central-tables-BodyD-Column1-Body1">
+                                                        <p class="Table_Body">Datacenter redundancy ensures high availability for AOS-10 gateways by enabling support for dual HPE Aruba Networking Central On-Premises cluster setups. This capability allows gateways to be configured with primary and secondary clusters, ensuring a seamless transition in the event of a primary cluster failure.</p>
+                                                    </td>
+                                                </tr>
+                                                <tr class="TableStyle-new-central-tables-Body-Body1">
+                                                    <td class="TableStyle-new-central-tables-BodyE-Column1-Body1">
+                                                        <p class="Table_Body">Enhancement to 9xxx Gateways</p>
+                                                    </td>
+                                                    <td class="TableStyle-new-central-tables-BodyD-Column1-Body1">
+                                                        <p class="Table_Body">Enhanced 9xxx gateways now include drop count and drop reason fields in the session table, providing per-session visibility into packet drops for improved troubleshooting. These fields are displayed across all datapath session CLI outputs and are supported for IPv4 sessions only.</p>
+                                                    </td>
+                                                </tr>
+                                                <tr class="TableStyle-new-central-tables-Body-Body1">
+                                                    <td class="TableStyle-new-central-tables-BodyE-Column1-Body1">
+                                                        <p class="Table_Body">New Hardware Platforms</p>
+                                                    </td>
+                                                    <td class="TableStyle-new-central-tables-BodyD-Column1-Body1">
+                                                        <p class="Table_Body">The following are the newly supported HPE Aruba Networking APs in the <span class="mc-variable Variables.AOS-10 variable">AOS-10</span>.8.1.0 release:</p>
+                                                        <ul>
+                                                            <li>
+                                                                <p class="Table_Body">AP-721H (dual-radio, tri-band)</p>
+                                                            </li>
+                                                            <li>
+                                                                <p class="Table_Body">AP-723H</p>
+                                                            </li>
+                                                            <li>
+                                                                <p class="Table_Body">AP-725H</p>
+                                                            </li>
+                                                        </ul>
+                                                        <p class="Table_Body">The AP-721H, AP-723H, and AP-725H are Wi-Fi 7 (IEEE 802.11be) capable hospitality access points.</p>
+                                                    </td>
+                                                </tr>
+                                                <tr class="TableStyle-new-central-tables-Body-Body1">
+                                                    <td class="TableStyle-new-central-tables-BodyE-Column1-Body1">
+                                                        <p class="Table_Body">LDAP AAA Load Balancing Support</p>
+                                                    </td>
+                                                    <td class="TableStyle-new-central-tables-BodyD-Column1-Body1">
+                                                        <p class="Table_Body">LDAP AAA load balancing is introduced as part of AAA server groups, and the existing server-group framework is extended to LDAP. With this capability, you can define an LDAP server group and distribute authentication requests across multiple LDAP servers.</p>
+                                                    </td>
+                                                </tr>
+                                                <tr class="TableStyle-new-central-tables-Body-Body1">
+                                                    <td class="TableStyle-new-central-tables-BodyB-Column1-Body1">
+                                                        <p class="Table_Body">Dynamic Deny-List Enhancements</p>
+                                                    </td>
+                                                    <td class="TableStyle-new-central-tables-BodyA-Column1-Body1">
+                                                        <p class="Table_Body">Deny-listing has been enhanced by increasing the total deny-list capacity per AP from 512 entries (128 static + 384 dynamic) to 4096 entries (128 static + 3968 dynamic), significantly improving the system’s ability to handle a large number of authentication failures. In addition, a new configurable option has been introduced under the IDS profile (disabled by default) that allows clients identified by IDS for DoS style activity to be added to the dynamic deny-list when enabled.</p>
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    <!-- Fixed Mini TOC Sidebar -->
+                                    <div id="page-toc">
+                                        <p class="toc-title">ON THIS PAGE</p>
+                                        <ul id="toc-list">
+                                        </ul>
+                                    </div>
+                                    <script type="text/javascript">/*<![CDATA[*/
+			(function () {
+			// ===== Config you can tune =====
+			var HEADER_OFFSET = 225; // match your TOC top offset / sticky header height
+			var INDENT_PX     = 12;  // indent for H3 under H2
+
+			// ===== Utility: minimal CSS.escape polyfill =====
+			function cssEscape(sel) {
+			return String(sel).replace(/([#.;?+*^$[\]\\(){}|])/g, "\\$1");
+			}
+
+			// ===== Small helpers to show/hide TOC box safely =====
+			function showToc(show) {
+			var tocBox  = document.getElementById("page-toc");
+			var tocList = document.getElementById("toc-list");
+			var mainContent = document.getElementById("mc-main-content");
+
+			if (!tocBox) return;
+
+			tocBox.style.display = show ? "block" : "none";
+
+			if (tocList && !show) {
+			tocList.innerHTML = "";
+			}
+
+			if (show) {
+			document.body.classList.remove("no-toc");
+			} else {
+			document.body.classList.add("no-toc");
+			}
+			}
+
+			// ===== Find content root used by Flare HTML5 output =====
+			function getContentRoot() {
+			return (
+			document.querySelector('#mc-main-content') ||
+			document.querySelector('.TopicContent')    ||
+			document.querySelector('.body-container')  ||
+			document.querySelector('main')             ||
+			document.body
+			);
+			}
+
+			// ===== Build headings list (H2 + H3) when present =====
+			function collectHeadings() {
+			var root = getContentRoot();
+			// Only collect visible headings
+			return Array.prototype.slice.call(root.querySelectorAll('h2, h3')).filter(function (h) {
+			var style = window.getComputedStyle(h);
+			return style.display !== 'none' && style.visibility !== 'hidden';
+			});
+			}
+
+			function ensureIds(headings) {
+			var h2Index = 0;
+			headings.forEach(function (el, idx) {
+			if (!el.id || el.id.trim() === "") {
+			el.id = (el.tagName.toLowerCase() === "h2")
+			? ("section-" + (++h2Index))
+			: ("sub-" + (idx + 1));
+			}
+			});
+			}
+
+			function buildToc(headings) {
+			var tocList = document.getElementById("toc-list");
+			var tocBox  = document.getElementById("page-toc");
+			if (!tocList || !tocBox) return false;
+
+			// If there are no headings, hide and bail
+			if (!headings || headings.length === 0) {
+			showToc(false);
+			return false;
+			}
+
+			tocList.innerHTML = ""; // clear any previous build
+
+			var currentH2Li = null;
+			var currentSubUl = null;
+
+			headings.forEach(function (el) {
+			var isH2 = el.tagName.toLowerCase() === "h2";
+			var li = document.createElement("li");
+			var a  = document.createElement("a");
+			a.setAttribute("href", "#" + el.id);
+			a.textContent = el.textContent.trim();
+			li.appendChild(a);
+
+			if (isH2) {
+			tocList.appendChild(li);
+			currentH2Li = li;
+			currentSubUl = document.createElement("ul");
+			currentSubUl.style.marginLeft = INDENT_PX + "px";
+			currentSubUl.style.marginTop  = "4px";
+			currentSubUl.style.listStyle  = "none";
+			currentH2Li.appendChild(currentSubUl);
+			} else {
+			(currentSubUl || tocList).appendChild(li);
+			}
+			});
+
+			// Show only if we actually added items
+			var hasItems = tocList.querySelector("li") != null;
+			showToc(hasItems);
+			return hasItems;
+			}
+
+			// ===== Active state helpers =====
+			function clearActive() {
+			var tocList = document.getElementById("toc-list");
+			if (!tocList) return;
+			Array.prototype.slice.call(tocList.querySelectorAll("a.active")).forEach(function (a) {
+			a.classList.remove("active");
+			});
+			}
+
+			function activateById(id) {
+			var tocList = document.getElementById("toc-list");
+			if (!tocList || !id) return;
+			clearActive();
+			var link = tocList.querySelector('a[href="#' + cssEscape(id) + '"]');
+			if (link) link.classList.add("active");
+			}
+
+			// ===== IntersectionObserver (fallback to scroll if unsupported) =====
+			function setupActiveHighlight(headings) {
+			if (!headings || headings.length === 0) return;
+
+			var supportIO = "IntersectionObserver" in window;
+
+			if (supportIO) {
+			var observer = new IntersectionObserver(function (entries) {
+			var best = null;
+			entries.forEach(function (entry) {
+			if (entry.isIntersecting) {
+			if (!best || entry.intersectionRatio > best.intersectionRatio) {
+			best = entry;
+			}
+			}
+			});
+			if (best) activateById(best.target.id);
+			}, {
+			root: null,
+			rootMargin: "-" + HEADER_OFFSET + "px 0px -10% 0px",
+			threshold: [0.1, 0.25, 0.5, 0.75, 1.0]
+			});
+
+			headings.forEach(function (h) { observer.observe(h); });
+			} else {
+			// Fallback: scroll position comparison
+			window.addEventListener("scroll", function () {
+			var scrollPos = document.documentElement.scrollTop || document.body.scrollTop;
+			var targetPos = scrollPos + HEADER_OFFSET + 5;
+			var activeId = null;
+
+			for (var i = 0; i < headings.length; i++) {
+			var h = headings[i];
+			var top = h.offsetTop;
+			var bottom = h.offsetTop + h.offsetHeight;
+			if (top <= targetPos && bottom > targetPos) {
+			activeId = h.id;
+			break;
+			}
+			}
+			// If user scrolled to (or very near) the bottom, activate the last heading
+			if ((window.innerHeight + window.scrollY) >= (document.body.offsetHeight - 10)) {
+			var last = headings[headings.length - 1];
+			if (last) {
+			activateById(last.id);
+			return;
+			}
+			}
+			if (activeId) activateById(activeId);
+			});
+			}
+
+			// Immediate activation on hash navigation
+			if (location.hash) {
+			var id = decodeURIComponent(location.hash.slice(1));
+			activateById(id);
+			}
+			window.addEventListener("hashchange", function () {
+			var id = decodeURIComponent(location.hash.slice(1));
+			activateById(id);
+			});
+
+			// Click activation for snappy feedback
+			var tocList = document.getElementById("toc-list");
+			if (tocList) {
+			tocList.addEventListener("click", function (evt) {
+			var a = evt.target.closest('a[href^="#"]');
+			if (a) {
+			clearActive();
+			a.classList.add("active");
+			}
+			});
+			}
+			}
+
+			// ===== Robust loader: wait until Flare injects content =====
+			function initTocWhenReady() {
+			var headings = collectHeadings();
+
+			// If no headings initially, hide immediately
+			if (headings.length === 0) {
+			showToc(false);
+
+			// Observe DOM changes until headings appear (Flare may inject after DOMContentLoaded)
+			var root = getContentRoot();
+			var mo = new MutationObserver(function () {
+			headings = collectHeadings();
+			if (headings.length > 0) {
+			mo.disconnect();
+			ensureIds(headings);
+			buildToc(headings);
+			setupActiveHighlight(headings);
+			}
+			});
+			mo.observe(root, { childList: true, subtree: true });
+
+			// Safety net after full load
+			window.addEventListener('load', function () {
+			headings = collectHeadings();
+			if (headings.length > 0) {
+			ensureIds(headings);
+			buildToc(headings);
+			setupActiveHighlight(headings);
+			} else {
+			// Still no headings: keep TOC hidden
+			showToc(false);
+			}
+			});
+			} else {
+			// Headings already present
+			ensureIds(headings);
+			buildToc(headings);          // will show/hide appropriately
+			setupActiveHighlight(headings);
+			}
+			}
+
+			document.addEventListener("DOMContentLoaded", initTocWhenReady);
+			})();
+		/*]]>*/</script>
+                                    <!-- Feedback button --><a id="feedback-btn" role="button" aria-label="Send feedback">Feedback</a>
+                                    <script type="text/javascript">
+			///*<![CDATA[*/
+			(function () {
+			function sendFeedback(evt){
+			if (evt && evt.preventDefault) evt.preventDefault();
+
+			var subject = "Feedback on New Central Documentation";
+			var url     = window.location.href || "";
+			var body    = "Topic URL: " + url + "\n\nFeedback:\n";
+
+			// encode with %20 instead of +
+			function fixedEncode(str) {
+			return encodeURIComponent(str).replace(/%20/g, ' ');
+			}
+
+			var mailto = "mailto:hpearubanetworkingdocfeedback@hpe.com"
+			+ "?subject=" + fixedEncode(subject)
+			+ "&body=" + fixedEncode(body);
+
+			window.location.href = mailto;
+			return false;
+			}
+
+			var btn = document.getElementById('feedback-btn');
+			if (btn) {
+			if (btn.addEventListener) btn.addEventListener('click', sendFeedback, false);
+			else btn.attachEvent('onclick', sendFeedback); // IE fallback
+			}
+			})();
+			///*]]>*/</script>
+                                    <script>/* <![CDATA[ */
+			document.addEventListener("DOMContentLoaded", function () {
+			const tables = document.querySelectorAll("table.TableStyle-new-central-tables");
+			tables.forEach(function (table) {
+			if (!table.parentElement.classList.contains("table-scroll-container")) {
+			const wrapper = document.createElement("div");
+			wrapper.className = "table-scroll-container";
+			table.parentNode.insertBefore(wrapper, table);
+			wrapper.appendChild(table);
+			}
+			});
+			});
+		/* ]]> */</script>
+                                    <script type="text/javascript">/* <![CDATA[ */
+			window.location.replace("https://arubanetworking.hpe.com/techdocs/hpe-central/content/index.html");
+		/* ]]> */</script>
+                                </div>
+                            </div>
+                        </div>
+                    </div><a data-close="true"></a>
+                </div>
+            </div>
+        </div>
+    </body>
+</html>
