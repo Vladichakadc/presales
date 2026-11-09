@@ -397,8 +397,8 @@ traspaso (el #37, de otra sesión, se fusionó mientras se cerraba esta).
   le sirven un cascarón: lo cierra una persona que las abra en el navegador.
 - **Fortinet**: el resto de F4, F5 (derates), 17 renovaciones sin precio en la lista firmada y
   co-term. F3 cerrado (PR #56); el heartbeat, dicho para las series con licencia única.
-  Del PR #140: la PQC de las once variantes Wi-Fi y celulares (la cierra «Supported models» de las
-  Release Notes de FortiOS 7.6.7), el caudal del módem integrado (ninguna ficha lo publica) y las
+  Del PR #140: la PQC del FortiWiFi 50G-5G-II (las otras diez la llevan desde el PR #146, por
+  «Supported models» de FortiOS 7.6.7, que dice FWF-50G-5G y no FWF-50G-5G-II), el caudal del módem integrado (ninguna ficha lo publica) y las
   figuras de las variantes (están en sus fichas por serie).
 
 ### Bloqueado por acceso (se reporta, no se rodea)

@@ -606,7 +606,8 @@ Módulos compartidos:
   **Wi-Fi y WAN celular** (2026-11-04, PR #140, encargo del dueño): los FortiWiFi y los FortiGate con módem
   son **variantes** (`fortinetVariantes.js`, `m.variante`) que copian de su base solo la celda común de su
   ficha por serie y ponen lo de su columna (SKU, consumo, radio `wifi`, módem `celular`); PQC, BGP y fin de
-  venta no se heredan. **Una variante solo compite si se pide su función o se elige a mano** (`variantePedida`),
+  venta no se heredan. La PQC la llevan las diez que nombra «Supported models» de FortiOS 7.6.7, por su
+  código (`RN767_SOPORTADOS`, con la misma regla que el 3800G; PR #146); el FortiWiFi 50G-5G-II, no. **Una variante solo compite si se pide su función o se elige a mano** (`variantePedida`),
   así que nada cambia sin pedirla. `fisico.wifi`, `fisico.celular` (`4g`/`5g`) y `fisico.celularVia`
   (`integrado`/`extender`, obligatorio con celular) solo existen si se piden: la huella de lo guardado no
   cambia. Con `extender`, el FortiGate se elige como siempre y el FortiExtender (`FORTIEXTENDER`, de su ficha)
