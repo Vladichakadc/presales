@@ -132,7 +132,7 @@ npm run juniper     # cifras de la línea SRX
 npm run mikrotik    # matriz de pruebas de las fichas de MikroTik (carpeta de HTML traída; --check, --dry)
 npm run huawei      # cifras y fin de venta de Huawei (--check, --plantilla, --eol, --force)
 npm run figuras-huawei # figuras de Huawei bajadas con la sesión del dueño (procedencia.json; dry-run salvo --aplicar)
-npm run figuras-fortinet # las figuras de Fortinet contra su lock (documento, página, caja, huella); --rehacer <pdf> las vuelve a sacar
+npm run figuras-fortinet # las figuras de Fortinet contra su lock (documento, página, caja, huella); --rehacer <pdf> las vuelve a sacar; --traer <carpeta> las baja de su URL y rehace las de otra edición (job del vigía)
 npm run skus        # referencias de pedido de Fortinet desde la price list
 npm run lista-aruba # lista del distribuidor de Aruba: dry-run salvo --aplicar
 npm run propuesta   # aplica una propuesta de la sincronización sobre legacyData/, con anclaje
@@ -596,7 +596,7 @@ Módulos compartidos:
   Excel, copiar y enviar con un P0, un SKU sin casar o la lista vencida, y el override exige motivo.
   Si el override solo choca con `CICLO_VIDA` (cumple el escenario), su caja ofrece declarar ampliación o
   renovación en un clic (`motivo-ciclo`), que lleva a la justificación sin escribirla.
-  Un SKU nunca se busca con el marcador `-DD`. Figuras desde la página «Hardware» de cada ficha; los ocho FortiWiFi, con su propio dibujo de las fichas FGFWF (`fwf-*.webp`, 2026-11-09, PR #148), nunca el de su FortiGate. **Cada figura está en `scripts/figuras-fortinet.lock.json`** (2026-11-09, PR #149): documento y rama `fuente/*`, página, caja en puntos PDF —medida por correlación con la figura servida, no escrita—, tamaño y huella; `npm run figuras-fortinet` frena una figura sin lock, tocada a mano o de otra página que su pie (`test/figuras-fortinet.test.js`), y `--rehacer` la saca de nuevo de su PDF (Poppler y `cwebp` o Pillow) y dice si la ficha es de otra edición.
+  Un SKU nunca se busca con el marcador `-DD`. Figuras desde la página «Hardware» de cada ficha; los ocho FortiWiFi, con su propio dibujo de las fichas FGFWF (`fwf-*.webp`, 2026-11-09, PR #148), nunca el de su FortiGate. **Cada figura está en `scripts/figuras-fortinet.lock.json`** (2026-11-09, PR #149): documento y rama `fuente/*`, página, caja en puntos PDF —medida por correlación con la figura servida, no escrita—, tamaño y huella; `npm run figuras-fortinet` frena una figura sin lock, tocada a mano o de otra página que su pie (`test/figuras-fortinet.test.js`), y `--rehacer` la saca de nuevo de su PDF (Poppler y `cwebp` o Pillow) y dice si la ficha es de otra edición. **El vigía las vigila** (PR #152): cada documento lleva su `url` y `urlDe` (de qué informe de `fuente/*` sale; `fuentes.js` declara esas fichas sin URL y el vigía no las mide), y el job `contrastar_figuras` las baja cada lunes con `--traer`: misma edición, nada; otra, rehace sus figuras y el issue dice IGUAL o DISTINTA; lo que no baja es ERROR.
   **HA y FortiGuard** (F3, 2026-10-28): una suscripción por nodo, salvo en activo-pasivo de las
   series que la guía de FortiOS 7.6.6 nombra (`haLicenciaUnica`: 40F, 60F, 70F, 80F, 100F y
   variantes, con su SKU de HA y su heartbeat), que admiten una sola. Con la casilla «Licencia FortiGuard
@@ -811,7 +811,7 @@ Módulos compartidos:
   que cita el catálogo (solo las que `fuentes.js` declara) y corre `npm run cisco -- --traer`, sin
   escritura ni instalación; `publicar` valida su artefacto y el issue dice qué cifra cambió, qué
   ficha no se pudo leer o qué modelo nombra una ficha y el catálogo no trae. Nada de eso escribe en `legacyData/`: el `--revisado` sigue siendo
-  humano. **Un documento inalcanzable no es uno sin
+  humano. Las figuras de Fortinet tienen su propio job, **`contrastar_figuras`** (ver *Fortinet*), que `publicar` valida contra `scripts/figuras-fortinet.lock.json`. **Un documento inalcanzable no es uno sin
   cambios**, y un 403 no prueba quién bloquea (`npm run candidatas`). Pasadas 4 semanas sin
   contrastar, `verificar` frena (`SEMANAS_TOLERADAS`).
 - **Contraste** (`npm run contraste`, dentro del job de `pantallas`): cada caso de
