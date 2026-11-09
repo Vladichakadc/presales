@@ -659,9 +659,10 @@ const PQC_FORTIOS={tipo:'mlkem',
 // 7000F, son los tuneles por politica y las rutas por politica: no tocan el intercambio de
 // claves); las de 7.6.6, el 400G/401G, el 3000G/3001G y el 3500G/3501G en «Special branch
 // supported models» (rama especial de 7.6.6, punto de rama 3652). Todos, posteriores a 7.6.1.
+const RN767_SOPORTADOS_TXT='Release Notes de FortiOS 7.6.7, «Supported models»';
 const PQC_POR_RN = {
-  'FortiGate 3800G':'Release Notes de FortiOS 7.6.7, «Supported models»',
-  'FortiGate 3801G':'Release Notes de FortiOS 7.6.7, «Supported models»',
+  'FortiGate 3800G':RN767_SOPORTADOS_TXT,
+  'FortiGate 3801G':RN767_SOPORTADOS_TXT,
   'FortiGate 7081F':'Release Notes de FortiOS 7.6.7, «FortiGate 6000 and 7000 support»; guía del 7000F, «IPsec VPN load balancing»',
   'FortiGate 7121F':'Release Notes de FortiOS 7.6.7, «FortiGate 6000 and 7000 support»; guía del 7000F, «IPsec VPN load balancing»',
   'FortiGate 400G':'Release Notes de FortiOS 7.6.6, «Special branch supported models» (build 6689)',
@@ -671,10 +672,10 @@ const PQC_POR_RN = {
   'FortiGate 3500G':'Release Notes de FortiOS 7.6.6, «Special branch supported models» (build 6632)',
   'FortiGate 3501G':'Release Notes de FortiOS 7.6.6, «Special branch supported models» (build 6632)',
 };
+const pqcPorRn = (texto) => ({...PQC_FORTIOS, alcance:`Corre una versión posterior a la 7.6.1: ${texto}.`,
+  urls:[texto.includes('7.6.7') ? 'https://docs.fortinet.com/document/fortigate/7.6.7/fortios-release-notes/' : 'https://docs.fortinet.com/document/fortigate/7.6.6/fortios-release-notes']});
 for (const m of MODELS) {
-  m.pqc = m.bgpDe ? PQC_FORTIOS
-    : PQC_POR_RN[m.id] ? {...PQC_FORTIOS, alcance:`Corre una versión posterior a la 7.6.1: ${PQC_POR_RN[m.id]}.`,
-      urls:[PQC_POR_RN[m.id].includes('7.6.7') ? 'https://docs.fortinet.com/document/fortigate/7.6.7/fortios-release-notes/' : 'https://docs.fortinet.com/document/fortigate/7.6.6/fortios-release-notes']} : null;
+  m.pqc = m.bgpDe ? PQC_FORTIOS : PQC_POR_RN[m.id] ? pqcPorRn(PQC_POR_RN[m.id]) : null;
 }
 
 // ── PLATAFORMA POR MODELO: LO QUE EL MATRIX PUBLICA ADEMAS DEL RENDIMIENTO (2026-09-23) ──
@@ -1314,7 +1315,7 @@ for (const m of MODELS) {
    de la variante; si la lista extraida no trae su bloque (los FortiWiFi), no hay licencias y la
    variante lo declara (`listaSinExtraer`). Una variante no compite en el dimensionador salvo que
    el escenario pida su funcion o se elija a mano (fortinet-motor.js). */
-const { VARIANTES, FICHAS: FICHAS_VARIANTES, FORTIEXTENDER, casaSku: casaSkuFicha } = require('./fortinetVariantes.js');
+const { VARIANTES, FICHAS: FICHAS_VARIANTES, FORTIEXTENDER, casaSku: casaSkuFicha, RN767_SOPORTADOS, codigoRn } = require('./fortinetVariantes.js');
 const tierDeLista=(sku)=>{
   const t={sku, y1:null, y3:null, y5:null};
   let alguno=false;
@@ -1358,7 +1359,9 @@ for (const v of VARIANTES) {
     puertos:v.puertos, puertosFuente:`ficha por serie ${ficha} (Hardware Specifications)`,
     almacenamientoGB:v.almacenamientoGB,
     poe:!!v.poe, poeVariante:false, poeDetalle:v.poe||null,
-    bgpPeers:null, bgpDe:null, pqc:null,
+    // La PQC no se hereda de la base: solo la lleva la variante que nombra «Supported models» de
+    // FortiOS 7.6.7 (fortinetVariantes.js, RN767_SOPORTADOS), con la misma regla que el 3800G.
+    bgpPeers:null, bgpDe:null, pqc:RN767_SOPORTADOS.includes(codigoRn(v)) ? pqcPorRn(RN767_SOPORTADOS_TXT) : null,
     wifi:v.wifi||null, celular:v.celular||null,
     variante:{de:v.de, ficha, rc:!!v.rc, fuente:`ficha por serie ${ficha}`},
     // El precio del equipo lo pone el cotizador (cotizadorCatalog.js), y la prueba de la regla

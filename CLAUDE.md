@@ -132,6 +132,7 @@ npm run juniper     # cifras de la línea SRX
 npm run mikrotik    # matriz de pruebas de las fichas de MikroTik (carpeta de HTML traída; --check, --dry)
 npm run huawei      # cifras y fin de venta de Huawei (--check, --plantilla, --eol, --force)
 npm run figuras-huawei # figuras de Huawei bajadas con la sesión del dueño (procedencia.json; dry-run salvo --aplicar)
+npm run figuras-fortinet # las figuras de Fortinet contra su lock (documento, página, caja, huella); --rehacer <pdf> las vuelve a sacar
 npm run skus        # referencias de pedido de Fortinet desde la price list
 npm run lista-aruba # lista del distribuidor de Aruba: dry-run salvo --aplicar
 npm run propuesta   # aplica una propuesta de la sincronización sobre legacyData/, con anclaje
@@ -595,7 +596,7 @@ Módulos compartidos:
   Excel, copiar y enviar con un P0, un SKU sin casar o la lista vencida, y el override exige motivo.
   Si el override solo choca con `CICLO_VIDA` (cumple el escenario), su caja ofrece declarar ampliación o
   renovación en un clic (`motivo-ciclo`), que lleva a la justificación sin escribirla.
-  Un SKU nunca se busca con el marcador `-DD`. Figuras desde la página «Hardware» de cada ficha.
+  Un SKU nunca se busca con el marcador `-DD`. Figuras desde la página «Hardware» de cada ficha; los ocho FortiWiFi, con su propio dibujo de las fichas FGFWF (`fwf-*.webp`, 2026-11-09, PR #148), nunca el de su FortiGate. **Cada figura está en `scripts/figuras-fortinet.lock.json`** (2026-11-09, PR #149): documento y rama `fuente/*`, página, caja en puntos PDF —medida por correlación con la figura servida, no escrita—, tamaño y huella; `npm run figuras-fortinet` frena una figura sin lock, tocada a mano o de otra página que su pie (`test/figuras-fortinet.test.js`), y `--rehacer` la saca de nuevo de su PDF (Poppler y `cwebp` o Pillow) y dice si la ficha es de otra edición.
   **HA y FortiGuard** (F3, 2026-10-28): una suscripción por nodo, salvo en activo-pasivo de las
   series que la guía de FortiOS 7.6.6 nombra (`haLicenciaUnica`: 40F, 60F, 70F, 80F, 100F y
   variantes, con su SKU de HA y su heartbeat), que admiten una sola. Con la casilla «Licencia FortiGuard
@@ -606,7 +607,8 @@ Módulos compartidos:
   **Wi-Fi y WAN celular** (2026-11-04, PR #140, encargo del dueño): los FortiWiFi y los FortiGate con módem
   son **variantes** (`fortinetVariantes.js`, `m.variante`) que copian de su base solo la celda común de su
   ficha por serie y ponen lo de su columna (SKU, consumo, radio `wifi`, módem `celular`); PQC, BGP y fin de
-  venta no se heredan. **Una variante solo compite si se pide su función o se elige a mano** (`variantePedida`),
+  venta no se heredan. La PQC la llevan las diez que nombra «Supported models» de FortiOS 7.6.7, por su
+  código (`RN767_SOPORTADOS`, con la misma regla que el 3800G; PR #146); el FortiWiFi 50G-5G-II, no. **Una variante solo compite si se pide su función o se elige a mano** (`variantePedida`),
   así que nada cambia sin pedirla. `fisico.wifi`, `fisico.celular` (`4g`/`5g`) y `fisico.celularVia`
   (`integrado`/`extender`, obligatorio con celular) solo existen si se piden: la huella de lo guardado no
   cambia. Con `extender`, el FortiGate se elige como siempre y el FortiExtender (`FORTIEXTENDER`, de su ficha)

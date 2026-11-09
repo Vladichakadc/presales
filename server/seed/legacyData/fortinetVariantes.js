@@ -201,4 +201,20 @@ function casaSku(skuFicha, sku) {
   return CODIGOS_REGIONALES.includes(sku.slice(antes.length, sku.length - despues.length));
 }
 
-module.exports = { FICHAS, VARIANTES, FORTIEXTENDER, CODIGOS_REGIONALES, casaSku };
+/* ── LO QUE «SUPPORTED MODELS» DE FORTIOS 7.6.7 NOMBRA (2026-11-09) ─────────────────────────
+   Release Notes de FortiOS 7.6.7, «Supported models» (copia traida el 2026-10-27 a la rama
+   fuente/relevo-2026-10-27, fortinet-rn-7.6.7.html). Sus lineas, tal como las imprime:
+     FortiGate  «FG-30G, FG-31G, FG-40F, FG-40F-3G4G, FG-50G, FG-50G-5G, … FG-51G, FG-51G-5G, …»
+     FortiWiFi  «FWF-30G, FWF-31G, FWF-40F, FWF-40F-3G4G, FWF-50G, FWF-50G-5G, FWF-50G-SFP,
+                 FWF-50G-DSL, FWF-51G, FWF-60F, FWF-61F, FWF-70G, FWF-70G-POE, FWF-71G, FWF-80F-2R, …»
+   Aqui van los codigos de esas lineas que casan con una variante del catalogo, por su SKU sin el
+   codigo regional. Una variante nombrada corre una 7.6 posterior a la 7.6.1, que trae ML-KEM en
+   IPsec: lleva la misma PQC que el 3800G (fortinet.js, PQC_POR_RN). El FortiWiFi 50G-5G-II no esta:
+   la linea dice FWF-50G-5G y su SKU es FWF-50G-5G-II, y ningun documento traido dice que sean el
+   mismo equipo; sigue en «no consta». Las limitaciones de los modelos de 2 GB de RAM que dan esas
+   notas (funciones de proxy, Security Rating, cp-accel-mode) no tocan IPsec. */
+const RN767_SOPORTADOS = ['FG-40F-3G4G', 'FG-50G-5G', 'FG-51G-5G',
+  'FWF-30G', 'FWF-31G', 'FWF-50G', 'FWF-51G', 'FWF-70G', 'FWF-70G-POE', 'FWF-71G'];
+const codigoRn = (v) => v.sku.replace(/-\[RC\]$/, '');
+
+module.exports = { FICHAS, VARIANTES, FORTIEXTENDER, CODIGOS_REGIONALES, casaSku, RN767_SOPORTADOS, codigoRn };

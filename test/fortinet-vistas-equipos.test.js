@@ -56,7 +56,8 @@ test('cada figura declara su procedencia: de qué documento y de qué figura sal
     // que no lo tienen (2026-09-24) salen de la guía oficial de hardware, y entonces el pie
     // tiene que nombrar esa guía, la página y el rótulo literal de la figura.
     if (/^Datasheet/.test(v.fuente)) {
-      assert.match(v.fuente, /p\. 7 «Hardware»/, `${modelo}: no dice de qué página del datasheet sale`);
+      // La página 7 en los FortiGate; los FortiWiFi 50G-5G-II y 70G-POE se dibujan en la 10 y la 8.
+      assert.match(v.fuente, /p\. \d+ «Hardware»/, `${modelo}: no dice de qué página del datasheet sale`);
     } else {
       assert.match(v.fuente, /(QuickStart Guide|System Guide) .*docs\.fortinet\.com/,
         `${modelo}: la procedencia no nombra ni un datasheet ni una guía oficial de hardware`);
@@ -143,9 +144,9 @@ test('el 70F declara que la figura es de un 71F — la trampa que el catálogo y
     'el 70F muestra la figura de un 71F y tiene que decirlo');
 });
 
-test('no hay figuras huérfanas: todo fichero fg-*.webp lo usa algún modelo', () => {
+test('no hay figuras huérfanas: todo fichero fg-*.webp o fwf-*.webp lo usa algún modelo', () => {
   const dir = path.join(RAIZ, 'public/img/equipos');
-  const enDisco = fs.readdirSync(dir).filter((f) => f.startsWith('fg-') && f.endsWith('.webp'));
+  const enDisco = fs.readdirSync(dir).filter((f) => /^(fg|fwf)-/.test(f) && f.endsWith('.webp'));
   const usadas = new Set(entradas.flatMap(([, v]) => [v.front, v.rear].filter(Boolean))
     .map((r) => path.basename(r)));
   for (const f of enDisco) {
@@ -164,4 +165,28 @@ test('los cuatro sin datasheet (100F, 200F, 7081F y 7121F) tienen las dos caras 
   }
   assert.match(VISTAS['FortiGate 100F'].fuente, /Unidad dibujada: FortiGate 101F/);
   assert.match(VISTAS['FortiGate 7121F'].fuente, /generacion 1/);
+});
+
+test('los ocho FortiWiFi traen las dos caras de su propio dibujo, no la del FortiGate', () => {
+  // 2026-11-09, petición del dueño: «incluir el gráfico de los equipos FortiWiFi». La ficha FGFWF
+  // dibuja el FortiWiFi aparte del FortiGate de la serie: lleva las antenas, y servirle la figura
+  // del FortiGate sería enseñar otro equipo. El 31G, el 51G y el 71G comparten la de su pareja,
+  // que es la que dibuja la ficha, y el pie lo dice.
+  const pares = [['FortiWiFi 30G', 'FortiWiFi 31G'], ['FortiWiFi 50G', 'FortiWiFi 51G'], ['FortiWiFi 70G', 'FortiWiFi 71G']];
+  const solos = ['FortiWiFi 50G-5G-II', 'FortiWiFi 70G-POE'];
+  for (const m of [...pares.flat(), ...solos]) {
+    const v = VISTAS[m];
+    assert.ok(v && v.front && v.rear, `${m}: le falta una cara`);
+    for (const cara of ['front', 'rear']) {
+      assert.match(v[cara], /\/fwf-/, `${m}: la cara ${cara} no es la del FortiWiFi`);
+    }
+    assert.match(v.fuente, /FGFWF-\d+G-DAT-R\d+/, `${m}: el pie no cita la edición de la ficha`);
+    assert.match(v.fuente, /Unidad dibujada/, `${m}: el pie no dice qué unidad dibuja la figura`);
+  }
+  for (const [base, otro] of pares) {
+    assert.strictEqual(VISTAS[base].front, VISTAS[otro].front, `${otro} comparte la figura frontal de ${base}`);
+    assert.strictEqual(VISTAS[base].rear, VISTAS[otro].rear, `${otro} comparte la figura trasera de ${base}`);
+  }
+  assert.match(VISTAS['FortiWiFi 50G-5G-II'].fuente, /p\. 10 «Hardware»/);
+  assert.match(VISTAS['FortiWiFi 70G-POE'].fuente, /p\. 8 «Hardware»/);
 });

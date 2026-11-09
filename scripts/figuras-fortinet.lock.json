@@ -1,0 +1,1408 @@
+{
+ "_que": "Por figura de Fortinet: el documento y la página de donde sale, la caja en puntos PDF (x, y, ancho, alto desde la esquina superior izquierda), el tamaño en píxeles y la huella del .webp que se sirve; por documento, la rama fuente/* que lo trajo y su huella. Lo escribe y lo comprueba scripts/figuras-fortinet.js; no se edita a mano.",
+ "documentos": {
+  "fg-100f-qsg.pdf": {
+   "rama": "fuente/fortinet-pendientes",
+   "ruta": "fuente-fortinet/fg-100f-qsg.pdf",
+   "sha256": "1e28fd9d8a949830554e58a32b9563841a26ba1fbf2468cb002d612fe63ea1ff"
+  },
+  "fg-200f-qsg.pdf": {
+   "rama": "fuente/fortinet-pendientes",
+   "ruta": "fuente-fortinet/fg-200f-qsg.pdf",
+   "sha256": "aceef4256ebf5e8a60c6f77aba17f2e2a2ca9beaa951d948e5dc29e9cf5da876"
+  },
+  "fg-7081f-system-guide.pdf": {
+   "rama": "fuente/fortinet-pendientes",
+   "ruta": "fuente-fortinet/fg-7081f-system-guide.pdf",
+   "sha256": "308267ce811c3f848e1e87bf0f2d6cd0063110c45d8641259ca04bcdc6f03a5e"
+  },
+  "fg-7121f-system-guide.pdf": {
+   "rama": "fuente/fortinet-pendientes",
+   "ruta": "fuente-fortinet/fg-7121f-system-guide.pdf",
+   "sha256": "6ffc7a1a1c13e224f9d5f8137cbd8536b29950cdbfbef7cb68ac3dfd1d1939af"
+  },
+  "fortigate-1000f-series.pdf": {
+   "rama": "fuente/fortinet-serie",
+   "ruta": "fortigate-1000f-series.pdf",
+   "sha256": "c9d2b33ffcf254922a0435648bf0ffa2be409e4d6e400d9d36cabe313de71a7b"
+  },
+  "fortigate-120g-series.pdf": {
+   "rama": "fuente/fortinet-serie",
+   "ruta": "fortigate-120g-series.pdf",
+   "sha256": "20bf9330c7469578d0c6f845508659a23e6c5a694e8bc3aa1acb1d13ebdd5e63"
+  },
+  "fortigate-1800f-series.pdf": {
+   "rama": "fuente/fortinet-serie-f",
+   "ruta": "fortigate-1800f-series.pdf",
+   "sha256": "aee4c890879668555f0d7694f9794da6cbf06ac1e76f8f42d81a8294a34819d2"
+  },
+  "fortigate-200g-series.pdf": {
+   "rama": "fuente/fortinet-serie",
+   "ruta": "fortigate-200g-series.pdf",
+   "sha256": "74314edf12cb60bb892cf28ebb76995d6f6dc989f83eaa6b468a60499563e85e"
+  },
+  "fortigate-2600f-series.pdf": {
+   "rama": "fuente/fortinet-serie-f",
+   "ruta": "fortigate-2600f-series.pdf",
+   "sha256": "142906e68ee718392cb4872450f52c157e0ce4c3826aca068c7bf2ae2555ceb5"
+  },
+  "fortigate-3000f-series.pdf": {
+   "rama": "fuente/fortinet-serie-f",
+   "ruta": "fortigate-3000f-series.pdf",
+   "sha256": "ad993588673334a1f2b2b5999d5fb943f56f4c08058565c0043e812c9017a0ca"
+  },
+  "fortigate-3000g-series.pdf": {
+   "rama": "fuente/fortinet-serie",
+   "ruta": "fortigate-3000g-series.pdf",
+   "sha256": "4c33dcb042bd9a1e173309adf6c3d1f87f67345ae468ed23e984162b42ec7946"
+  },
+  "fortigate-3200f-series.pdf": {
+   "rama": "fuente/fortinet-serie-f",
+   "ruta": "fortigate-3200f-series.pdf",
+   "sha256": "d1a1d19be6a6b632a9a42aa7a4d4a290fa218a032d52999ee340d86d45907d1e"
+  },
+  "fortigate-3500f-series.pdf": {
+   "rama": "fuente/fortinet-serie-f",
+   "ruta": "fortigate-3500f-series.pdf",
+   "sha256": "010727e7a65a16ffc285feecb5b0845d7275e1a877bc13fcfdfa92ee0cebb3a3"
+  },
+  "fortigate-3500g-series.pdf": {
+   "rama": "fuente/fortinet-serie",
+   "ruta": "fortigate-3500g-series.pdf",
+   "sha256": "246f89564a1859c8f4be8906e90044f320784c9ffaeac753b28c61a599adf00b"
+  },
+  "fortigate-3700f-series.pdf": {
+   "rama": "fuente/fortinet-serie-f",
+   "ruta": "fortigate-3700f-series.pdf",
+   "sha256": "5095505a201d93ecad065b998f7edba3a65d8f59b42fc841274749d702b37e7f"
+  },
+  "fortigate-3800g-series.pdf": {
+   "rama": "fuente/fortinet-serie",
+   "ruta": "fortigate-3800g-series.pdf",
+   "sha256": "0c1aeaf4804fae552cd6b337de6d5a85e6c4ae49a2efe8b12ee0cbe7913925d6"
+  },
+  "fortigate-400f-series.pdf": {
+   "rama": "fuente/fortinet-datasheets",
+   "ruta": "fortigate-400f-series.pdf",
+   "sha256": "d88b49d8296acb0095f9888ac8e18be6bd7093484d03cd2ba511dc32dc269a27"
+  },
+  "fortigate-400g-series.pdf": {
+   "rama": "fuente/fortinet-serie",
+   "ruta": "fortigate-400g-series.pdf",
+   "sha256": "214b8209eaaec711844dc2b7d178483689937dce1538d7e9fd147700c0a1a0fb"
+  },
+  "fortigate-4200f-series.pdf": {
+   "rama": "fuente/fortinet-serie-f",
+   "ruta": "fortigate-4200f-series.pdf",
+   "sha256": "1c772de53a317db731fc021d45c8fd64d733a5854c80b95a2e109c35329e3c65"
+  },
+  "fortigate-4400f-series.pdf": {
+   "rama": "fuente/fortinet-serie-f",
+   "ruta": "fortigate-4400f-series.pdf",
+   "sha256": "96cfdff7387d01a086f7137607c22676334cb8135e687ee46e85dadb2c95dafc"
+  },
+  "fortigate-4800f-series.pdf": {
+   "rama": "fuente/fortinet-serie-f",
+   "ruta": "fortigate-4800f-series.pdf",
+   "sha256": "a3a7f69a11c4a3743d8835587e0d5abbb1ded92cfa9f5a65d34128743db93856"
+  },
+  "fortigate-600f-series.pdf": {
+   "rama": "fuente/fortinet-datasheets",
+   "ruta": "fortigate-600f-series.pdf",
+   "sha256": "9d3ca73a5b6945165d9039ed7ac0e01d84a06f103296a38f5f85a7d729e0758c"
+  },
+  "fortigate-700g-series.pdf": {
+   "rama": "fuente/fortinet-serie",
+   "ruta": "fortigate-700g-series.pdf",
+   "sha256": "9d657ea5c1b1b98e04bd073a3c53f70d69122b95e53caf6ba147270e51dad41d"
+  },
+  "fortigate-70f-series.pdf": {
+   "rama": "fuente/fortinet-serie-f",
+   "ruta": "fortigate-70f-series.pdf",
+   "sha256": "6e14d1ce7b42c53cce160a1b60e67ee5c1565b463d7ff8c81767c13f2b3974ec"
+  },
+  "fortigate-900g-series.pdf": {
+   "rama": "fuente/fortinet-serie",
+   "ruta": "fortigate-900g-series.pdf",
+   "sha256": "df71a7b1f69a646b1a9d4f298cf7e0d7eaba482667fb2cde011f224f7576f10b"
+  },
+  "fortigate-90g-series.pdf": {
+   "rama": "fuente/fortinet-serie",
+   "ruta": "fortigate-90g-series.pdf",
+   "sha256": "9e82fc8ea81f2714f5f1793c6b3dc626890d0d1024594c44cea9fa08efe7dce9"
+  },
+  "fortigate-fortiwifi-30g-series.pdf": {
+   "rama": "fuente/fortinet-serie",
+   "ruta": "fortigate-fortiwifi-30g-series.pdf",
+   "sha256": "707273114eaf53327818ed0189d58d5d516098ae73c88cdc03c7ad80769c0626"
+  },
+  "fortigate-fortiwifi-40f-series.pdf": {
+   "rama": "fuente/fortinet-serie",
+   "ruta": "fortigate-fortiwifi-40f-series.pdf",
+   "sha256": "0da9a20aca54a98232d703948db63db516baa905073949ee0a4b6d49f175e5c9"
+  },
+  "fortigate-fortiwifi-50g-series.pdf": {
+   "rama": "fuente/fortinet-serie",
+   "ruta": "fortigate-fortiwifi-50g-series.pdf",
+   "sha256": "2cdffe6d2780960381adf5a643a87fdecdb027ef438593489dcdd5e7b99ea2da"
+  },
+  "fortigate-fortiwifi-60f-series.pdf": {
+   "rama": "fuente/fortinet-serie",
+   "ruta": "fortigate-fortiwifi-60f-series.pdf",
+   "sha256": "4adc6ff51b15e5371c1cd914f1e954ad6447203da36e1a0a330d543c679198dc"
+  },
+  "fortigate-fortiwifi-70g-series.pdf": {
+   "rama": "fuente/fortinet-serie",
+   "ruta": "fortigate-fortiwifi-70g-series.pdf",
+   "sha256": "e5a37d299c6b16dc91a9384f1010079801a3e0072e84c15148201efd3e1b7649"
+  },
+  "fortigate-fortiwifi-80f-series.pdf": {
+   "rama": "fuente/fortinet-serie",
+   "ruta": "fortigate-fortiwifi-80f-series.pdf",
+   "sha256": "a1e710f208eb7efb6c119e2093b5438080c4ef581f664df83f825d5313bc202e"
+  }
+ },
+ "figuras": {
+  "/img/equipos/fg-1000f-front.webp": {
+   "documento": "fortigate-1000f-series.pdf",
+   "pagina": 7,
+   "caja": [
+    31.1,
+    143.73,
+    400.08,
+    81.02
+   ],
+   "tamano": [
+    1595,
+    323
+   ],
+   "sha256": "639808fb77866639e4854c4b558989f26d07c6d5776226ddc3f304557048cb84",
+   "medido": "correlación 0.9779 con la figura servida, a su escala, 2026-11-09",
+   "diferencia": 7.18
+  },
+  "/img/equipos/fg-1000f-rear.webp": {
+   "documento": "fortigate-1000f-series.pdf",
+   "pagina": 7,
+   "caja": [
+    34.58,
+    256.85,
+    393.67,
+    82.24
+   ],
+   "tamano": [
+    1594,
+    333
+   ],
+   "sha256": "147af2ba10e0a5cfcd4c09238ad6b4c25ab7af8da45b41720aee9bdfcd81a833",
+   "medido": "correlación 0.9543 con la figura servida, a su escala, 2026-11-09",
+   "diferencia": 9.17
+  },
+  "/img/equipos/fg-100f-front.webp": {
+   "documento": "fg-100f-qsg.pdf",
+   "pagina": 5,
+   "caja": [
+    32.3,
+    74.82,
+    329.52,
+    35.98
+   ],
+   "tamano": [
+    1612,
+    176
+   ],
+   "sha256": "ebf2c7a899e33130659d99299e09328da5e72d45f5061875597bdf427fb0ec8a",
+   "medido": "correlación 0.8896 con la figura servida, a su escala, 2026-11-09",
+   "diferencia": 13.54
+  },
+  "/img/equipos/fg-100f-rear.webp": {
+   "documento": "fg-100f-qsg.pdf",
+   "pagina": 5,
+   "caja": [
+    34.36,
+    467.98,
+    328.08,
+    37.64
+   ],
+   "tamano": [
+    1604,
+    184
+   ],
+   "sha256": "8d23254ccefc8bd29c293e4a79469fa7fcebc56ee12ef4e1e0dd7cf475f53658",
+   "medido": "correlación 0.9998 con la figura servida, a su escala, 2026-11-09",
+   "diferencia": 1.01
+  },
+  "/img/equipos/fg-120g-front.webp": {
+   "documento": "fortigate-120g-series.pdf",
+   "pagina": 7,
+   "caja": [
+    35.89,
+    190.86,
+    330.48,
+    36.1
+   ],
+   "tamano": [
+    1593,
+    174
+   ],
+   "sha256": "f60d23736ab20feb58fd8e32ba50e04a4bf317ed36d95b26d3e79900003c2436",
+   "medido": "correlación 0.9543 con la figura servida, a su escala, 2026-11-09",
+   "diferencia": 6.86
+  },
+  "/img/equipos/fg-120g-rear.webp": {
+   "documento": "fortigate-120g-series.pdf",
+   "pagina": 7,
+   "caja": [
+    34.46,
+    139.93,
+    330.72,
+    36.54
+   ],
+   "tamano": [
+    1593,
+    176
+   ],
+   "sha256": "6b0ab0500e4f4ef7dd034d8035a53606c8845c7fde7743694250f408a8eccaf5",
+   "medido": "correlación 0.941 con la figura servida, a su escala, 2026-11-09",
+   "diferencia": 8.96
+  },
+  "/img/equipos/fg-1800f-front.webp": {
+   "documento": "fortigate-1800f-series.pdf",
+   "pagina": 7,
+   "caja": [
+    34.61,
+    143.51,
+    402.24,
+    79.59
+   ],
+   "tamano": [
+    1592,
+    315
+   ],
+   "sha256": "2d3eed4531c7f18e148626c369e6ecc8909573df7c1819a5a5ddab0289ed649d",
+   "medido": "correlación 0.9828 con la figura servida, a su escala, 2026-11-09",
+   "diferencia": 6.73
+  },
+  "/img/equipos/fg-1800f-rear.webp": {
+   "documento": "fortigate-1800f-series.pdf",
+   "pagina": 7,
+   "caja": [
+    34.36,
+    263.27,
+    402.48,
+    79.33
+   ],
+   "tamano": [
+    1593,
+    314
+   ],
+   "sha256": "861b194e7e99546af9318b524bd643665f6ca58012399137f3f7e4699febd3dd",
+   "medido": "correlación 0.9857 con la figura servida, a su escala, 2026-11-09",
+   "diferencia": 5.72
+  },
+  "/img/equipos/fg-200f-front.webp": {
+   "documento": "fg-200f-qsg.pdf",
+   "pagina": 6,
+   "caja": [
+    36.46,
+    70.21,
+    722.4,
+    75.62
+   ],
+   "tamano": [
+    1605,
+    168
+   ],
+   "sha256": "0f1eeb6164930494e47e78ab46e0291707c4d85b149b70174c3fbf00b0dbf4a8",
+   "medido": "correlación 0.9997 con la figura servida, a su escala, 2026-11-09",
+   "diferencia": 1.05
+  },
+  "/img/equipos/fg-200f-rear.webp": {
+   "documento": "fg-200f-qsg.pdf",
+   "pagina": 6,
+   "caja": [
+    447.23,
+    515.16,
+    310.8,
+    35.61
+   ],
+   "tamano": [
+    1606,
+    184
+   ],
+   "sha256": "f459d8d28bde344afbb8bb2f9a47de1095f97c2fdd4f2a68b71a2c7b0646bfc8",
+   "medido": "correlación 0.9829 con la figura servida, a su escala, 2026-11-09",
+   "diferencia": 3.13
+  },
+  "/img/equipos/fg-200g-front.webp": {
+   "documento": "fortigate-200g-series.pdf",
+   "pagina": 7,
+   "caja": [
+    35.32,
+    143.03,
+    401.6,
+    44.15
+   ],
+   "tamano": [
+    1592,
+    175
+   ],
+   "sha256": "4373dee7bae5d529a3e439945bddd37167c4e437e9e7c5d75069f4e0bc713a20",
+   "medido": "correlación 0.9496 con la figura servida, a su escala, 2026-11-09",
+   "diferencia": 9.68
+  },
+  "/img/equipos/fg-200g-rear.webp": {
+   "documento": "fortigate-200g-series.pdf",
+   "pagina": 7,
+   "caja": [
+    34.84,
+    244.35,
+    400.48,
+    45.86
+   ],
+   "tamano": [
+    1598,
+    183
+   ],
+   "sha256": "ebe67b604f30614a6e85bbc98a9494bab29e95d4ed888de3b52cdd9a157d098e",
+   "medido": "correlación 0.9686 con la figura servida, a su escala, 2026-11-09",
+   "diferencia": 7.66
+  },
+  "/img/equipos/fg-2600f-front.webp": {
+   "documento": "fortigate-2600f-series.pdf",
+   "pagina": 7,
+   "caja": [
+    35.35,
+    143.43,
+    402.0,
+    79.54
+   ],
+   "tamano": [
+    1592,
+    315
+   ],
+   "sha256": "304f97ace0239a61778e0445bb4fe25fcac606fc989c62dac96c1c3e4844e358",
+   "medido": "correlación 0.9551 con la figura servida, a su escala, 2026-11-09",
+   "diferencia": 12.8
+  },
+  "/img/equipos/fg-2600f-rear.webp": {
+   "documento": "fortigate-2600f-series.pdf",
+   "pagina": 7,
+   "caja": [
+    34.87,
+    265.54,
+    402.48,
+    79.33
+   ],
+   "tamano": [
+    1593,
+    314
+   ],
+   "sha256": "6d9c9185b4f83d67b57f20fe7ad3fecd276f79781cf3856ed0a93985dee08b53",
+   "medido": "correlación 0.9857 con la figura servida, a su escala, 2026-11-09",
+   "diferencia": 5.75
+  },
+  "/img/equipos/fg-3000f-front.webp": {
+   "documento": "fortigate-3000f-series.pdf",
+   "pagina": 7,
+   "caja": [
+    34.64,
+    143.77,
+    397.68,
+    79.24
+   ],
+   "tamano": [
+    1596,
+    318
+   ],
+   "sha256": "73fa415fed1cacd2c78e83af0b34dc807d6e282e20f95ee779f113bd0f102be2",
+   "medido": "correlación 0.9786 con la figura servida, a su escala, 2026-11-09",
+   "diferencia": 8.58
+  },
+  "/img/equipos/fg-3000f-rear.webp": {
+   "documento": "fortigate-3000f-series.pdf",
+   "pagina": 7,
+   "caja": [
+    34.74,
+    265.32,
+    401.76,
+    84.08
+   ],
+   "tamano": [
+    1596,
+    334
+   ],
+   "sha256": "d0af2bc6dd0ffcda0b8f44fb1d99078c1582ff3bd233e5d70747f32d255610e5",
+   "medido": "correlación 0.983 con la figura servida, a su escala, 2026-11-09",
+   "diferencia": 5.22
+  },
+  "/img/equipos/fg-3000g-front.webp": {
+   "documento": "fortigate-3000g-series.pdf",
+   "pagina": 7,
+   "caja": [
+    34.95,
+    146.7,
+    333.36,
+    66.76
+   ],
+   "tamano": [
+    1593,
+    319
+   ],
+   "sha256": "f974a385c326b70ec43fbb8662bae93deda71355192e179e90f80697b1bb6f51",
+   "medido": "correlación 0.9574 con la figura servida, a su escala, 2026-11-09",
+   "diferencia": 9.21
+  },
+  "/img/equipos/fg-3000g-rear.webp": {
+   "documento": "fortigate-3000g-series.pdf",
+   "pagina": 7,
+   "caja": [
+    34.74,
+    283.37,
+    333.6,
+    69.9
+   ],
+   "tamano": [
+    1594,
+    334
+   ],
+   "sha256": "c269a1a8e1a209f87151b97f577ceef0a372ff6281b0efc5aede6ae39be9dc01",
+   "medido": "correlación 0.9868 con la figura servida, a su escala, 2026-11-09",
+   "diferencia": 4.85
+  },
+  "/img/equipos/fg-30g-front.webp": {
+   "documento": "fortigate-fortiwifi-30g-series.pdf",
+   "pagina": 7,
+   "caja": [
+    34.88,
+    179.72,
+    290.4,
+    76.89
+   ],
+   "tamano": [
+    1590,
+    421
+   ],
+   "sha256": "3bc37c54169945670195820c803db49fcf53a0f431fc269b15c72b0852698eb9",
+   "medido": "correlación 0.9653 con la figura servida, a su escala, 2026-11-09",
+   "diferencia": 6.4
+  },
+  "/img/equipos/fg-30g-rear.webp": {
+   "documento": "fortigate-fortiwifi-30g-series.pdf",
+   "pagina": 7,
+   "caja": [
+    34.64,
+    289.73,
+    290.64,
+    71.11
+   ],
+   "tamano": [
+    1594,
+    390
+   ],
+   "sha256": "008418ca3011ea009c4a90645de50afce25321baa754de277f8a84b0c9344667",
+   "medido": "correlación 0.9791 con la figura servida, a su escala, 2026-11-09",
+   "diferencia": 5.05
+  },
+  "/img/equipos/fg-3200f-front.webp": {
+   "documento": "fortigate-3200f-series.pdf",
+   "pagina": 7,
+   "caja": [
+    34.88,
+    145.02,
+    397.68,
+    79.49
+   ],
+   "tamano": [
+    1596,
+    319
+   ],
+   "sha256": "2786ef26fffda4989311734c0cd5dfb43e2362e72e0b1970c9cd65a4e7c8ada4",
+   "medido": "correlación 0.9849 con la figura servida, a su escala, 2026-11-09",
+   "diferencia": 6.69
+  },
+  "/img/equipos/fg-3200f-rear.webp": {
+   "documento": "fortigate-3200f-series.pdf",
+   "pagina": 7,
+   "caja": [
+    34.76,
+    269.36,
+    396.96,
+    83.17
+   ],
+   "tamano": [
+    1599,
+    335
+   ],
+   "sha256": "f59212b58aef336f19528dc5883660021477b8c69e77a5548d04cbe888a3bae6",
+   "medido": "correlación 0.9884 con la figura servida, a su escala, 2026-11-09",
+   "diferencia": 7.57
+  },
+  "/img/equipos/fg-3500f-front.webp": {
+   "documento": "fortigate-3500f-series.pdf",
+   "pagina": 7,
+   "caja": [
+    35.24,
+    141.97,
+    402.24,
+    79.79
+   ],
+   "tamano": [
+    1598,
+    317
+   ],
+   "sha256": "d6a99991a046a5b471280828e4ce53b5cd80989f3fda6829090d684eb643ebb7",
+   "medido": "correlación 0.9872 con la figura servida, a su escala, 2026-11-09",
+   "diferencia": 8.89
+  },
+  "/img/equipos/fg-3500f-rear.webp": {
+   "documento": "fortigate-3500f-series.pdf",
+   "pagina": 7,
+   "caja": [
+    34.61,
+    263.76,
+    402.72,
+    85.14
+   ],
+   "tamano": [
+    1594,
+    337
+   ],
+   "sha256": "ac63362f810433fd05221a5e11e6422de0190dedc690119a14d192b175b9e4a5",
+   "medido": "correlación 0.9728 con la figura servida, a su escala, 2026-11-09",
+   "diferencia": 7.35
+  },
+  "/img/equipos/fg-3500g-front.webp": {
+   "documento": "fortigate-3500g-series.pdf",
+   "pagina": 7,
+   "caja": [
+    34.95,
+    146.7,
+    333.36,
+    66.76
+   ],
+   "tamano": [
+    1593,
+    319
+   ],
+   "sha256": "ab19c0f8e32fa0ff765c1b3327c1b3c14b30e7af6b5c424f613e3d05c873c511",
+   "medido": "correlación 0.95 con la figura servida, a su escala, 2026-11-09",
+   "diferencia": 10.94
+  },
+  "/img/equipos/fg-3500g-rear.webp": {
+   "documento": "fortigate-3500g-series.pdf",
+   "pagina": 7,
+   "caja": [
+    34.74,
+    283.37,
+    333.6,
+    69.9
+   ],
+   "tamano": [
+    1594,
+    334
+   ],
+   "sha256": "d46dca3d0f07e48b9f9c4c178d86b6a2ad7634cc577f4d33609d87767beb5f3a",
+   "medido": "correlación 0.9875 con la figura servida, a su escala, 2026-11-09",
+   "diferencia": 4.73
+  },
+  "/img/equipos/fg-3700f-front.webp": {
+   "documento": "fortigate-3700f-series.pdf",
+   "pagina": 7,
+   "caja": [
+    34.88,
+    146.51,
+    397.68,
+    79.49
+   ],
+   "tamano": [
+    1596,
+    319
+   ],
+   "sha256": "1f095ad40b8c31981235b5754ba0bbee82e90f22065d60795ebb34b1609d25fa",
+   "medido": "correlación 0.9853 con la figura servida, a su escala, 2026-11-09",
+   "diferencia": 7.55
+  },
+  "/img/equipos/fg-3700f-rear.webp": {
+   "documento": "fortigate-3700f-series.pdf",
+   "pagina": 7,
+   "caja": [
+    35.0,
+    268.61,
+    396.96,
+    83.17
+   ],
+   "tamano": [
+    1599,
+    335
+   ],
+   "sha256": "25606db82f150f92e7553d0e2dc071a1367fb6cd297540717a64371a79841b1d",
+   "medido": "correlación 0.9896 con la figura servida, a su escala, 2026-11-09",
+   "diferencia": 7.32
+  },
+  "/img/equipos/fg-3800g-front.webp": {
+   "documento": "fortigate-3800g-series.pdf",
+   "pagina": 7,
+   "caja": [
+    34.84,
+    146.11,
+    333.6,
+    96.07
+   ],
+   "tamano": [
+    1580,
+    455
+   ],
+   "sha256": "821d692b458de915763e0eb000e771e69053a2ebaa908c7f74213972054288ad",
+   "medido": "correlación 0.9961 con la figura servida, a su escala, 2026-11-09",
+   "diferencia": 5.9
+  },
+  "/img/equipos/fg-3800g-rear.webp": {
+   "documento": "fortigate-3800g-series.pdf",
+   "pagina": 7,
+   "caja": [
+    34.42,
+    269.67,
+    334.08,
+    97.56
+   ],
+   "tamano": [
+    1582,
+    462
+   ],
+   "sha256": "f1bf30609d16ae111d4425c7224a730d25659f0750d4eaf07f2667d03dd172b5",
+   "medido": "correlación 0.9952 con la figura servida, a su escala, 2026-11-09",
+   "diferencia": 11.83
+  },
+  "/img/equipos/fg-400f-front.webp": {
+   "documento": "fortigate-400f-series.pdf",
+   "pagina": 7,
+   "caja": [
+    34.11,
+    136.93,
+    402.72,
+    44.21
+   ],
+   "tamano": [
+    1594,
+    175
+   ],
+   "sha256": "036242472488c73e3286ccb4debddf0f8aca26ae4afbe3e3cf98d0aab8510759",
+   "medido": "correlación 0.9758 con la figura servida, a su escala, 2026-11-09",
+   "diferencia": 7.23
+  },
+  "/img/equipos/fg-400f-rear.webp": {
+   "documento": "fortigate-400f-series.pdf",
+   "pagina": 7,
+   "caja": [
+    34.01,
+    245.6,
+    401.52,
+    44.33
+   ],
+   "tamano": [
+    1594,
+    176
+   ],
+   "sha256": "dae5081bac6f784f958aa60fc48b79bc4913bea833a39a62936caa62d3570c10",
+   "medido": "correlación 0.9581 con la figura servida, a su escala, 2026-11-09",
+   "diferencia": 10.3
+  },
+  "/img/equipos/fg-400g-front.webp": {
+   "documento": "fortigate-400g-series.pdf",
+   "pagina": 7,
+   "caja": [
+    34.11,
+    138.71,
+    402.48,
+    44.21
+   ],
+   "tamano": [
+    1593,
+    175
+   ],
+   "sha256": "fd9b7d3d92d7bb315e2c3242ca2bb1651cd43737a85198f70e8dd43cd69c70ca",
+   "medido": "correlación 0.9614 con la figura servida, a su escala, 2026-11-09",
+   "diferencia": 9.0
+  },
+  "/img/equipos/fg-400g-rear.webp": {
+   "documento": "fortigate-400g-series.pdf",
+   "pagina": 7,
+   "caja": [
+    33.96,
+    239.0,
+    401.52,
+    44.03
+   ],
+   "tamano": [
+    1596,
+    175
+   ],
+   "sha256": "eb8d1f8b440a483671b0d88d2072328acb81309cb6750746e0067ca2cc5c35a0",
+   "medido": "correlación 0.9502 con la figura servida, a su escala, 2026-11-09",
+   "diferencia": 9.8
+  },
+  "/img/equipos/fg-40f-front.webp": {
+   "documento": "fortigate-fortiwifi-40f-series.pdf",
+   "pagina": 7,
+   "caja": [
+    34.22,
+    169.27,
+    266.4,
+    47.14
+   ],
+   "tamano": [
+    1588,
+    281
+   ],
+   "sha256": "947aaa37404404b1b00c1453e5d999d3c9f0b0f59e63da51390aedc08fea8d6a",
+   "medido": "correlación 0.9031 con la figura servida, a su escala, 2026-11-09",
+   "diferencia": 5.86
+  },
+  "/img/equipos/fg-40f-rear.webp": {
+   "documento": "fortigate-fortiwifi-40f-series.pdf",
+   "pagina": 7,
+   "caja": [
+    34.58,
+    226.09,
+    266.88,
+    47.84
+   ],
+   "tamano": [
+    1590,
+    285
+   ],
+   "sha256": "54d82d0e07a6e92fd5354abd2b12f552f8b1ab364208dee2ec93189e7ed508e4",
+   "medido": "correlación 0.9913 con la figura servida, a su escala, 2026-11-09",
+   "diferencia": 5.28
+  },
+  "/img/equipos/fg-4200f-front.webp": {
+   "documento": "fortigate-4200f-series.pdf",
+   "pagina": 7,
+   "caja": [
+    35.78,
+    147.18,
+    360.48,
+    108.01
+   ],
+   "tamano": [
+    1592,
+    477
+   ],
+   "sha256": "aee6b668f46b611e70c14d27b8d15bb280f7874515a0bef315eb50d59aa6a822",
+   "medido": "correlación 0.9957 con la figura servida, a su escala, 2026-11-09",
+   "diferencia": 4.82
+  },
+  "/img/equipos/fg-4200f-rear.webp": {
+   "documento": "fortigate-4200f-series.pdf",
+   "pagina": 7,
+   "caja": [
+    34.99,
+    299.42,
+    361.44,
+    111.77
+   ],
+   "tamano": [
+    1591,
+    492
+   ],
+   "sha256": "51d6853eb7ceaac7012cd1ef37320f69f64fcbeceebf052ecda2e17566f1e2fa",
+   "medido": "correlación 0.9595 con la figura servida, a su escala, 2026-11-09",
+   "diferencia": 8.01
+  },
+  "/img/equipos/fg-4400f-front.webp": {
+   "documento": "fortigate-4400f-series.pdf",
+   "pagina": 7,
+   "caja": [
+    54.0,
+    141.95,
+    364.32,
+    152.2
+   ],
+   "tamano": [
+    1599,
+    668
+   ],
+   "sha256": "c8e4e4285080aad1bd8c34c32491da6f55314f49fac092e06cc568f961fb2aca",
+   "medido": "correlación 0.9959 con la figura servida, a su escala, 2026-11-09",
+   "diferencia": 4.8
+  },
+  "/img/equipos/fg-4400f-rear.webp": {
+   "documento": "fortigate-4400f-series.pdf",
+   "pagina": 7,
+   "caja": [
+    54.13,
+    335.62,
+    361.44,
+    146.3
+   ],
+   "tamano": [
+    1596,
+    646
+   ],
+   "sha256": "9ac932a466aa15e9da2bcd9b84d47a34dd156370c005438ac04cdee6bf4793b8",
+   "medido": "correlación 0.9464 con la figura servida, a su escala, 2026-11-09",
+   "diferencia": 8.4
+  },
+  "/img/equipos/fg-4800f-front.webp": {
+   "documento": "fortigate-4800f-series.pdf",
+   "pagina": 7,
+   "caja": [
+    48.42,
+    144.33,
+    292.32,
+    121.68
+   ],
+   "tamano": [
+    1600,
+    666
+   ],
+   "sha256": "86b25afffd5dad95871a8f5cad10a611b67c1424e97d05604b67f183dd69b2f3",
+   "medido": "correlación 0.9687 con la figura servida, a su escala, 2026-11-09",
+   "diferencia": 11.27
+  },
+  "/img/equipos/fg-4800f-rear.webp": {
+   "documento": "fortigate-4800f-series.pdf",
+   "pagina": 7,
+   "caja": [
+    50.2,
+    318.48,
+    289.2,
+    117.14
+   ],
+   "tamano": [
+    1590,
+    644
+   ],
+   "sha256": "43a65b18cbc6d70dba6fdb6e9b7b309f1f0019fc27c43a047217258496a93683",
+   "medido": "correlación 0.9676 con la figura servida, a su escala, 2026-11-09",
+   "diferencia": 6.84
+  },
+  "/img/equipos/fg-50g-front.webp": {
+   "documento": "fortigate-fortiwifi-50g-series.pdf",
+   "pagina": 7,
+   "caja": [
+    35.16,
+    174.65,
+    373.92,
+    68.22
+   ],
+   "tamano": [
+    1595,
+    291
+   ],
+   "sha256": "58d2c0fb20dbc5ec8f5b13b41b6976d999d9ddf72fce0c5837076d61adef775c",
+   "medido": "correlación 0.9449 con la figura servida, a su escala, 2026-11-09",
+   "diferencia": 4.69
+  },
+  "/img/equipos/fg-50g-rear.webp": {
+   "documento": "fortigate-fortiwifi-50g-series.pdf",
+   "pagina": 7,
+   "caja": [
+    34.04,
+    265.73,
+    375.36,
+    68.31
+   ],
+   "tamano": [
+    1599,
+    291
+   ],
+   "sha256": "2eb301fa2dce7a4506deb555c648b6598b73a73788e670707895febfbc6bc8d0",
+   "medido": "correlación 0.9762 con la figura servida, a su escala, 2026-11-09",
+   "diferencia": 6.0
+  },
+  "/img/equipos/fg-600f-front.webp": {
+   "documento": "fortigate-600f-series.pdf",
+   "pagina": 7,
+   "caja": [
+    34.36,
+    162.2,
+    402.72,
+    44.21
+   ],
+   "tamano": [
+    1594,
+    175
+   ],
+   "sha256": "4553b5b2fa778ba854c56157d712f99f8451dc3c815469f908f82e02b85b3c1a",
+   "medido": "correlación 0.9694 con la figura servida, a su escala, 2026-11-09",
+   "diferencia": 8.68
+  },
+  "/img/equipos/fg-600f-rear.webp": {
+   "documento": "fortigate-600f-series.pdf",
+   "pagina": 7,
+   "caja": [
+    34.97,
+    255.86,
+    401.52,
+    43.77
+   ],
+   "tamano": [
+    1596,
+    174
+   ],
+   "sha256": "2badf71666914a079bfcb81b1cfff1b57a08b4cbb03e3c20e69bd60e8c4361d4",
+   "medido": "correlación 0.9649 con la figura servida, a su escala, 2026-11-09",
+   "diferencia": 8.9
+  },
+  "/img/equipos/fg-60f-front.webp": {
+   "documento": "fortigate-fortiwifi-60f-series.pdf",
+   "pagina": 7,
+   "caja": [
+    34.49,
+    149.71,
+    398.64,
+    70.23
+   ],
+   "tamano": [
+    1595,
+    281
+   ],
+   "sha256": "65540618c6d5d4468865b3978ca1970bb62f0d72821cee4726719a92da1cd82c",
+   "medido": "correlación 0.9142 con la figura servida, a su escala, 2026-11-09",
+   "diferencia": 5.26
+  },
+  "/img/equipos/fg-60f-rear.webp": {
+   "documento": "fortigate-fortiwifi-60f-series.pdf",
+   "pagina": 7,
+   "caja": [
+    34.82,
+    233.96,
+    399.28,
+    70.89
+   ],
+   "tamano": [
+    1594,
+    283
+   ],
+   "sha256": "9d72d336f483add5db123fbf7ad088100325bb9003c8e6912412486ffdae2dca",
+   "medido": "correlación 0.9589 con la figura servida, a su escala, 2026-11-09",
+   "diferencia": 7.86
+  },
+  "/img/equipos/fg-700g-front.webp": {
+   "documento": "fortigate-700g-series.pdf",
+   "pagina": 7,
+   "caja": [
+    34.11,
+    138.71,
+    402.48,
+    44.21
+   ],
+   "tamano": [
+    1593,
+    175
+   ],
+   "sha256": "ba7dd2fa2cca13eaccfc804f053e9c92da37bb8a865c13401f4fd055684e4962",
+   "medido": "correlación 0.9614 con la figura servida, a su escala, 2026-11-09",
+   "diferencia": 9.01
+  },
+  "/img/equipos/fg-700g-rear.webp": {
+   "documento": "fortigate-700g-series.pdf",
+   "pagina": 7,
+   "caja": [
+    33.96,
+    239.0,
+    401.52,
+    44.03
+   ],
+   "tamano": [
+    1596,
+    175
+   ],
+   "sha256": "eb8d1f8b440a483671b0d88d2072328acb81309cb6750746e0067ca2cc5c35a0",
+   "medido": "correlación 0.9502 con la figura servida, a su escala, 2026-11-09",
+   "diferencia": 9.8
+  },
+  "/img/equipos/fg-7081f-front.webp": {
+   "documento": "fg-7081f-system-guide.pdf",
+   "pagina": 8,
+   "caja": [
+    152.64,
+    121.68,
+    362.16,
+    451.44
+   ],
+   "tamano": [
+    1006,
+    1254
+   ],
+   "sha256": "d31f546688c43ac36359c707b01d8a770a087442cd3e3efac78007f391b28eb7",
+   "medido": "correlación 0.9996 con la figura servida, a su escala, 2026-11-09",
+   "diferencia": 1.68
+  },
+  "/img/equipos/fg-7081f-rear.webp": {
+   "documento": "fg-7081f-system-guide.pdf",
+   "pagina": 12,
+   "caja": [
+    67.68,
+    126.0,
+    390.96,
+    469.44
+   ],
+   "tamano": [
+    1086,
+    1304
+   ],
+   "sha256": "cfaae3db15dd2d92715acf1f0ea10e23cd471f171f4db01333ae2294fe9b7145",
+   "medido": "correlación 0.9998 con la figura servida, a su escala, 2026-11-09",
+   "diferencia": 1.09
+  },
+  "/img/equipos/fg-70f-front.webp": {
+   "documento": "fortigate-70f-series.pdf",
+   "pagina": 7,
+   "caja": [
+    34.43,
+    165.33,
+    330.24,
+    58.29
+   ],
+   "tamano": [
+    1592,
+    281
+   ],
+   "sha256": "82dd46d5f55e3eec47d5f669c9a27e7ffcc17412ccf3d99e3828209af3f08212",
+   "medido": "correlación 0.9635 con la figura servida, a su escala, 2026-11-09",
+   "diferencia": 4.01
+  },
+  "/img/equipos/fg-70f-rear.webp": {
+   "documento": "fortigate-70f-series.pdf",
+   "pagina": 7,
+   "caja": [
+    34.44,
+    239.2,
+    330.48,
+    59.13
+   ],
+   "tamano": [
+    1593,
+    285
+   ],
+   "sha256": "aca3df89dd249134e9301980c01af463d84c4979bdb33e8f9fe8b8a3b46a51e1",
+   "medido": "correlación 0.9751 con la figura servida, a su escala, 2026-11-09",
+   "diferencia": 5.77
+  },
+  "/img/equipos/fg-70g-front.webp": {
+   "documento": "fortigate-fortiwifi-70g-series.pdf",
+   "pagina": 7,
+   "caja": [
+    36.64,
+    160.43,
+    329.76,
+    60.24
+   ],
+   "tamano": [
+    1593,
+    291
+   ],
+   "sha256": "78024768972a5eb7f17b80a1af4a744ea9801665acd92564aea6e0f428e79a31",
+   "medido": "correlación 0.9051 con la figura servida, a su escala, 2026-11-09",
+   "diferencia": 6.0
+  },
+  "/img/equipos/fg-70g-rear.webp": {
+   "documento": "fortigate-fortiwifi-70g-series.pdf",
+   "pagina": 7,
+   "caja": [
+    36.93,
+    258.33,
+    329.52,
+    60.04
+   ],
+   "tamano": [
+    1597,
+    291
+   ],
+   "sha256": "899299f29fdef4b9dc4e602a7155fba1daa7c99f35ed6b91f2af6965ffa0b334",
+   "medido": "correlación 0.975 con la figura servida, a su escala, 2026-11-09",
+   "diferencia": 4.83
+  },
+  "/img/equipos/fg-7121f-front.webp": {
+   "documento": "fg-7121f-system-guide.pdf",
+   "pagina": 9,
+   "caja": [
+    174.15,
+    108.48,
+    327.12,
+    545.76
+   ],
+   "tamano": [
+    772,
+    1288
+   ],
+   "sha256": "bc96ab2b597eaa98a8225c92ab1e9042d9f443f60538947a4e7d316409ffef90",
+   "medido": "correlación 0.8506 con la figura servida, a su escala y con escala vertical propia (-0.0 %), 2026-11-09",
+   "diferencia": 20.48
+  },
+  "/img/equipos/fg-7121f-rear.webp": {
+   "documento": "fg-7121f-system-guide.pdf",
+   "pagina": 13,
+   "caja": [
+    63.38,
+    116.83,
+    269.52,
+    417.72
+   ],
+   "tamano": [
+    842,
+    1305
+   ],
+   "sha256": "ab84a5dc397e4878337f7840105db83059170b6b569a034ae1fb3672164e00d1",
+   "medido": "correlación 0.9637 con la figura servida, a su escala, 2026-11-09",
+   "diferencia": 8.24
+  },
+  "/img/equipos/fg-80f-rear.webp": {
+   "documento": "fortigate-fortiwifi-80f-series.pdf",
+   "pagina": 7,
+   "caja": [
+    34.44,
+    239.2,
+    330.48,
+    59.13
+   ],
+   "tamano": [
+    1593,
+    285
+   ],
+   "sha256": "5e0f82540b321d6a1a7732ee12728745fd54619d024c68d452f99efc4aec0047",
+   "medido": "correlación 0.9701 con la figura servida, a su escala, 2026-11-09",
+   "diferencia": 4.22
+  },
+  "/img/equipos/fg-900g-front.webp": {
+   "documento": "fortigate-900g-series.pdf",
+   "pagina": 7,
+   "caja": [
+    34.11,
+    138.71,
+    402.48,
+    44.21
+   ],
+   "tamano": [
+    1593,
+    175
+   ],
+   "sha256": "64327ef9ac51a0abd78065ebdf91519e709438a91d4cb10692d333972b1e1021",
+   "medido": "correlación 0.9724 con la figura servida, a su escala, 2026-11-09",
+   "diferencia": 7.7
+  },
+  "/img/equipos/fg-900g-rear.webp": {
+   "documento": "fortigate-900g-series.pdf",
+   "pagina": 7,
+   "caja": [
+    33.53,
+    239.98,
+    402.32,
+    44.11
+   ],
+   "tamano": [
+    1596,
+    175
+   ],
+   "sha256": "a9ffdcd9296efd5280938bdc4c82da78f0e27fcdc11ce9c9efee6695831bad9d",
+   "medido": "correlación 0.9557 con la figura servida, a su escala, 2026-11-09",
+   "diferencia": 10.57
+  },
+  "/img/equipos/fg-90g-front.webp": {
+   "documento": "fortigate-90g-series.pdf",
+   "pagina": 7,
+   "caja": [
+    34.65,
+    241.75,
+    326.64,
+    59.26
+   ],
+   "tamano": [
+    1593,
+    289
+   ],
+   "sha256": "3f25e49e19e383ed076a1de5d8721785d99ccdbf4e69b34145504f75d03f18f3",
+   "medido": "correlación 0.956 con la figura servida, a su escala, 2026-11-09",
+   "diferencia": 9.9
+  },
+  "/img/equipos/fg-90g-rear.webp": {
+   "documento": "fortigate-90g-series.pdf",
+   "pagina": 7,
+   "caja": [
+    34.31,
+    168.06,
+    327.29,
+    58.76
+   ],
+   "tamano": [
+    1593,
+    286
+   ],
+   "sha256": "2b5c9eee0db3ff75f59b5b072b46729316584d8c483f38f3fc432cb3e3e2352e",
+   "medido": "correlación 0.9519 con la figura servida, a su escala, 2026-11-09",
+   "diferencia": 4.71
+  },
+  "/img/equipos/fwf-30g-front.webp": {
+   "documento": "fortigate-fortiwifi-30g-series.pdf",
+   "pagina": 7,
+   "caja": [
+    37.02,
+    474.23,
+    287.52,
+    75.29
+   ],
+   "tamano": [
+    1600,
+    419
+   ],
+   "sha256": "9e99bba00043d142c4b3e4af3d948c5942bb33a66a6f924c5ce29b69cf50de3d",
+   "medido": "correlación 0.9761 con la figura servida, a su escala, 2026-11-09",
+   "diferencia": 8.28
+  },
+  "/img/equipos/fwf-30g-rear.webp": {
+   "documento": "fortigate-fortiwifi-30g-series.pdf",
+   "pagina": 7,
+   "caja": [
+    37.58,
+    595.71,
+    290.5,
+    70.99
+   ],
+   "tamano": [
+    1600,
+    391
+   ],
+   "sha256": "4f651716ac016c9cc52b52307e5b35e41e8ca87db7d946fda7652ddca88d8032",
+   "medido": "correlación 0.993 con la figura servida, a su escala, 2026-11-09",
+   "diferencia": 2.53
+  },
+  "/img/equipos/fwf-50g-5g-ii-front.webp": {
+   "documento": "fortigate-fortiwifi-50g-series.pdf",
+   "pagina": 10,
+   "caja": [
+    35.16,
+    459.83,
+    367.68,
+    63.88
+   ],
+   "tamano": [
+    1600,
+    278
+   ],
+   "sha256": "7a9fa6ea8ea6e31f73afe14ff06ca14bb6b306b4b4726c45592c87a0c468cd56",
+   "medido": "correlación 0.9486 con la figura servida, a su escala, 2026-11-09",
+   "diferencia": 9.34
+  },
+  "/img/equipos/fwf-50g-5g-ii-rear.webp": {
+   "documento": "fortigate-fortiwifi-50g-series.pdf",
+   "pagina": 10,
+   "caja": [
+    34.91,
+    263.35,
+    374.88,
+    69.35
+   ],
+   "tamano": [
+    1600,
+    296
+   ],
+   "sha256": "bbcff028d07991cad6843c514c3f7f51dd8b8dc38860e18f688f470e8859cf9b",
+   "medido": "correlación 0.9783 con la figura servida, a su escala, 2026-11-09",
+   "diferencia": 4.9
+  },
+  "/img/equipos/fwf-50g-front.webp": {
+   "documento": "fortigate-fortiwifi-50g-series.pdf",
+   "pagina": 7,
+   "caja": [
+    35.29,
+    174.81,
+    373.92,
+    68.01
+   ],
+   "tamano": [
+    1600,
+    291
+   ],
+   "sha256": "9d1fb0698740fc513c6ec1574ee874d2f32ca0c1524d305a1cf452e3df4b1d20",
+   "medido": "correlación 0.9066 con la figura servida, a su escala, 2026-11-09",
+   "diferencia": 5.11
+  },
+  "/img/equipos/fwf-50g-rear.webp": {
+   "documento": "fortigate-fortiwifi-50g-series.pdf",
+   "pagina": 7,
+   "caja": [
+    35.36,
+    557.98,
+    374.64,
+    69.31
+   ],
+   "tamano": [
+    1600,
+    296
+   ],
+   "sha256": "eba37e2929f62f73140dad71cdaecfd3a5a43da19a835d90138b3576a91728b7",
+   "medido": "correlación 0.9709 con la figura servida, a su escala, 2026-11-09",
+   "diferencia": 5.81
+  },
+  "/img/equipos/fwf-70g-front.webp": {
+   "documento": "fortigate-fortiwifi-70g-series.pdf",
+   "pagina": 7,
+   "caja": [
+    34.37,
+    484.86,
+    329.28,
+    60.09
+   ],
+   "tamano": [
+    1600,
+    292
+   ],
+   "sha256": "53d7b675c36e3e4f2d0ebd6017bcaf72a8574baeb2c66db7310fa18987223f98",
+   "medido": "correlación 0.9481 con la figura servida, a su escala, 2026-11-09",
+   "diferencia": 8.11
+  },
+  "/img/equipos/fwf-70g-poe-front.webp": {
+   "documento": "fortigate-fortiwifi-70g-series.pdf",
+   "pagina": 8,
+   "caja": [
+    34.37,
+    484.86,
+    329.28,
+    60.09
+   ],
+   "tamano": [
+    1600,
+    292
+   ],
+   "sha256": "fbd5a5c5f02752b8a02167a4b4cf037822e4ca61f37b45937434739248caba4a",
+   "medido": "correlación 0.9511 con la figura servida, a su escala, 2026-11-09",
+   "diferencia": 8.15
+  },
+  "/img/equipos/fwf-70g-poe-rear.webp": {
+   "documento": "fortigate-fortiwifi-70g-series.pdf",
+   "pagina": 8,
+   "caja": [
+    34.37,
+    582.83,
+    329.28,
+    59.48
+   ],
+   "tamano": [
+    1600,
+    289
+   ],
+   "sha256": "eb2817fc88b9441f4eb6b847fc8066e2f851bfb8290f19aa985372dd5f4785ef",
+   "medido": "correlación 0.9575 con la figura servida, a su escala, 2026-11-09",
+   "diferencia": 6.68
+  },
+  "/img/equipos/fwf-70g-rear.webp": {
+   "documento": "fortigate-fortiwifi-70g-series.pdf",
+   "pagina": 7,
+   "caja": [
+    34.37,
+    582.83,
+    329.28,
+    59.89
+   ],
+   "tamano": [
+    1600,
+    291
+   ],
+   "sha256": "98ef34dfb045fccc4686724347b7431ef1f4b71afaa55d4f39611f19ebeaf636",
+   "medido": "correlación 0.9756 con la figura servida, a su escala, 2026-11-09",
+   "diferencia": 6.04
+  }
+ }
+}

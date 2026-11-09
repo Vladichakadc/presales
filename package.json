@@ -19,6 +19,7 @@
     "cisco": "node scripts/contrastar-cisco.js",
     "huawei": "node scripts/importar-huawei.js",
     "figuras-huawei": "node scripts/importar-figuras-huawei.js",
+    "figuras-fortinet": "node scripts/figuras-fortinet.js",
     "juniper": "node scripts/importar-juniper.js",
     "mikrotik": "node scripts/importar-mikrotik.js",
     "lista-aruba": "node scripts/importar-lista-aruba.js",
