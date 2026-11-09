@@ -95,6 +95,13 @@ function elegirAnterior(candidatas, rama, fechaRama) {
     .sort((a, b) => b.fecha - a.fecha || a.rama.localeCompare(b.rama))[0] || null;
 }
 
+/* Puro. ¿Es un documento traído? Lo que añadió o cambió el commit del transporte; si no se pudo
+   leer ese commit, lo que main no tiene. El informe de la corrida nunca. */
+function esDocumento(ruta, { enMain, delTransporte }) {
+  if (NO_SON_DOCUMENTOS.has(path.basename(ruta))) return false;
+  return delTransporte && delTransporte.size ? delTransporte.has(ruta) : !enMain.has(ruta);
+}
+
 const cuenta = (texto, re) => (re ? (String(texto).match(re) || []).length : null);
 
 /* El texto de un PDF: pdf-parse (la dependencia del repositorio) y, si no está instalada o no lo
@@ -239,7 +246,14 @@ async function comparar(argv, env) {
   }
   const enMain = arbol('origin/main');
   const propia = arbol(ref);
-  const documentos = [...propia].filter(([ruta]) => !enMain.has(ruta) && !NO_SON_DOCUMENTOS.has(path.basename(ruta)))
+  // Los documentos son lo que puso el commit del transporte (la punta de la rama), no «todo lo que
+  // main no tiene»: una rama lanzada desde otra, o desde un main anterior, trae además archivos del
+  // repositorio que main ya no tiene (un traspaso, por ejemplo), y no son documentos.
+  let delTransporte = null;
+  try {
+    delTransporte = new Set(gitTexto(['diff-tree', '--no-commit-id', '-r', '--name-only', '--diff-filter=AM', ref]).split('\n').filter(Boolean));
+  } catch { /* sin padre a la vista (clon superficial): se cae a la regla de main */ }
+  const documentos = [...propia].filter(([ruta]) => esDocumento(ruta, { enMain, delTransporte }))
     .filter(([ruta]) => !o.solo || o.solo.has(path.basename(ruta)));
   if (!documentos.length) {
     console.log(`La rama ${o.rama} no trae ningún documento que main no tenga${o.solo ? ' con esos nombres' : ''}.`);
@@ -296,4 +310,4 @@ async function comparar(argv, env) {
 
 if (require.main === module) main().then((rc) => { process.exitCode = rc; });
 
-module.exports = { lineasDeHtml, lineasDeTexto, compararLineas, clasificar, elegirAnterior, argumentos, pintar, colapsar, anotaciones, main, TOPE_AVISOS };
+module.exports = { lineasDeHtml, lineasDeTexto, compararLineas, clasificar, elegirAnterior, argumentos, pintar, colapsar, anotaciones, main, TOPE_AVISOS, esDocumento };

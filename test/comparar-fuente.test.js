@@ -138,3 +138,17 @@ test('el job comparar: aparte del que empuja, sin escritura, sin token guardado 
   assert.match(comparar, /node scripts\/comparar-fuente\.js "\$RAMA" --sin-traer --anotaciones\n/);
   assert.ok(!/continue-on-error/.test(comparar), 'no hace falta: el script sale siempre con 0');
 });
+
+// Lo destapó la primera corrida real (42693323597, lanzada desde una rama): el traspaso de esa rama,
+// que main no tiene, salió contado como documento NUEVO.
+test('un documento es lo que puso el commit del transporte, no todo lo que main no tiene', () => {
+  const { esDocumento } = require('../scripts/comparar-fuente');
+  const enMain = new Map([['README.md', 'x']]);
+  const delTransporte = new Set(['fuente-cisco-huawei/a.pdf', 'fuente-cisco-huawei/informe.json']);
+  assert.strictEqual(esDocumento('fuente-cisco-huawei/a.pdf', { enMain, delTransporte }), true);
+  assert.strictEqual(esDocumento('docs/traspaso/transporte-compara.md', { enMain, delTransporte }), false);
+  assert.strictEqual(esDocumento('fuente-cisco-huawei/informe.json', { enMain, delTransporte }), false);
+  // Sin el commit a la vista, la regla de main.
+  assert.strictEqual(esDocumento('fuente-cisco-huawei/a.pdf', { enMain, delTransporte: null }), true);
+  assert.strictEqual(esDocumento('README.md', { enMain, delTransporte: null }), false);
+});
