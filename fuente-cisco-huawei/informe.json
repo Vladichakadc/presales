@@ -1,0 +1,47 @@
+[
+  {
+    "archivo": "fortinet-rn-7.6.8.pdf",
+    "para": "FORTINET",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://fortinetweb.s3.amazonaws.com/docs.fortinet.com/v2/attachments/3f60f9a2-cbdf-11f1-8c5a-8e4c95ff11ac/fortios-v7.6.8-release-notes.pdf",
+        "status": 200,
+        "bytes": 1086319,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "fortinet-rn-7.6.8-modelos.html",
+    "para": "FORTINET",
+    "guardado": true,
+    "exploracion": true,
+    "intentos": [
+      {
+        "url": "https://docs.fortinet.com/document/fortigate/7.6.8/fortios-release-notes/760203/introduction-and-supported-models",
+        "status": 200,
+        "bytes": 265508,
+        "guardado": true,
+        "verificado": false
+      }
+    ]
+  },
+  {
+    "archivo": "fortinet-rn-8.0.2.pdf",
+    "para": "FORTINET",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://fortinetweb.s3.amazonaws.com/docs.fortinet.com/v2/attachments/8f18b7aa-cbdf-11f1-8c5a-8e4c95ff11ac/fortios-v8.0.2-release-notes.pdf",
+        "status": 200,
+        "bytes": 303688,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  }
+]
