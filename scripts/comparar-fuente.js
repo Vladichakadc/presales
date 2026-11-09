@@ -25,12 +25,13 @@
 //
 // SOLO LEE: ni escribe en legacyData/ ni decide nada. Un cambio de texto lo mira una persona.
 //
-//   node scripts/comparar-fuente.js <rama> [--buscar=<regex>] [--lineas=N] [--solo=a,b] [--sin-traer]
+//   node scripts/comparar-fuente.js <rama> [--buscar=<regex>] [--lineas=N] [--solo=a,b] [--sin-traer] [--anotaciones]
 //     <rama>       fuente/pendientes-2-2026-11-09 (con o sin el prefijo origin/)
 //     --buscar     cuenta las apariciones de la expresión antes y ahora (p. ej. --buscar=FWF-50G-5G-II)
 //     --lineas     cuántas líneas enseñar por lado en un TEXTO (12; 0 = todas)
 //     --solo       solo estos archivos, por nombre
 //     --sin-traer  no hace git fetch de las ramas fuente/* (usa las que ya hay en local)
+//     --anotaciones  además, lo dice en anotaciones de Actions (job `comparar` del transporte) y no falla nunca
 const { execFileSync } = require('child_process');
 const path = require('path');
 const { textoNormalizado } = require('./vigia-fuentes');
@@ -128,9 +129,10 @@ async function leer(ref, ruta, blob) {
 }
 
 function argumentos(argv) {
-  const o = { rama: null, lineas: 12, buscar: null, solo: null, traer: true };
+  const o = { rama: null, lineas: 12, buscar: null, solo: null, traer: true, anotaciones: false };
   for (const a of argv) {
     if (a === '--sin-traer') o.traer = false;
+    else if (a === '--anotaciones') o.anotaciones = true;
     else if (a.startsWith('--lineas=')) o.lineas = Math.max(0, parseInt(a.slice(9), 10) || 0);
     else if (a.startsWith('--buscar=')) o.buscar = new RegExp(a.slice(9), 'g');
     else if (a.startsWith('--solo=')) o.solo = new Set(a.slice(7).split(',').map((s) => s.trim()).filter(Boolean));
@@ -170,7 +172,58 @@ function pintar(fila, o) {
   return lineas;
 }
 
-async function main(argv = process.argv.slice(2)) {
+/* Puro. Lo que una corrida de Actions deja a la vista de una sesión, que de Actions solo lee las
+   anotaciones (el proxy corta logs y resúmenes): UNA línea `::notice` con el recuento y un
+   `::warning` por documento con TEXTO o SIN-TEXTO. GitHub enseña diez avisos por paso, así que del
+   noveno en adelante van juntos en uno. Un SIN-TEXTO nunca va en el recuento como si nada: avisa. */
+const TOPE_AVISOS = 9;
+const escaparAnotacion = (t) => String(t).replace(/%/g, '%25').replace(/\r/g, '%0D').replace(/\n/g, '%0A');
+function anotaciones(filas, rama) {
+  const recuento = {};
+  for (const f of filas) recuento[f.veredicto.estado] = (recuento[f.veredicto.estado] || 0) + 1;
+  const orden = ['IGUAL', 'BYTES', 'TEXTO', 'NUEVO', 'SIN-TEXTO'].filter((k) => recuento[k]);
+  const salida = [`::notice title=comparar-fuente::${escaparAnotacion(`Rama ${rama}: ${filas.length} documento(s) frente a su copia anterior. ${orden.map((k) => `${k}: ${recuento[k]}`).join(' · ') || 'ninguno'}.`)}`];
+  // Lo buscado (--buscar): en la misma línea, solo los documentos donde la cuenta cambia.
+  const buscados = filas.filter((f) => f.buscar);
+  if (buscados.length) {
+    const cambian = buscados.filter((f) => f.buscar.antes !== f.buscar.ahora && f.buscar.antes !== 'sin copia').map((f) => `${f.nombre} (${f.buscar.antes} → ${f.buscar.ahora})`);
+    const nuevos = buscados.filter((f) => f.buscar.antes === 'sin copia' && f.buscar.ahora !== 0).map((f) => `${f.nombre} (nuevo: ${f.buscar.ahora})`);
+    const todo = [...cambian, ...nuevos];
+    salida[0] += escaparAnotacion(` Lo buscado ${todo.length ? `cambia en: ${todo.join(', ')}.` : 'aparece las mismas veces que antes en todos.'}`);
+  }
+  const corta = (l) => (l.length > 140 ? `${l.slice(0, 140)}…` : l);
+  const avisos = filas.filter((f) => f.veredicto.estado === 'TEXTO' || f.veredicto.estado === 'SIN-TEXTO').map((f) => {
+    const v = f.veredicto;
+    const ant = f.anterior ? ` (anterior: ${f.anterior.rama})` : '';
+    if (v.estado === 'SIN-TEXTO') return `${f.nombre}: bytes distintos y sin texto que comparar${ant}: ${v.motivo}. No es «sin cambios».`;
+    if (v.soloOrden) return `${f.nombre}: el mismo texto en otro orden o con otro corte${ant}.`;
+    const muestra = [...v.mas.slice(0, 3).map((l) => `+ ${corta(l)}`), ...v.menos.slice(0, 3).map((l) => `− ${corta(l)}`)].join(' | ');
+    return `${f.nombre}: cambia el texto, +${v.mas.length} −${v.menos.length}${ant}. ${muestra}`;
+  });
+  for (const a of avisos.slice(0, TOPE_AVISOS)) salida.push(`::warning title=comparar-fuente::${escaparAnotacion(a)}`);
+  if (avisos.length > TOPE_AVISOS) {
+    const resto = filas.filter((f) => f.veredicto.estado === 'TEXTO' || f.veredicto.estado === 'SIN-TEXTO').slice(TOPE_AVISOS).map((f) => `${f.nombre} (${f.veredicto.estado})`);
+    salida.push(`::warning title=comparar-fuente::${escaparAnotacion(`Y ${resto.length} más con cambios o sin leer: ${resto.join(', ')}. Verlos con node scripts/comparar-fuente.js ${rama}`)}`);
+  }
+  return salida;
+}
+
+/* En Actions (--anotaciones) nunca sale distinto de 0: la corrida va sobre la cabeza de main y Railway
+   espera a sus checks. Lo que falla se dice en un aviso. */
+async function main(argv = process.argv.slice(2), env = process.env) {
+  const enActions = argv.includes('--anotaciones');
+  try {
+    const rc = await comparar(argv, env);
+    if (enActions && rc !== 0) console.log('::warning title=comparar-fuente::La comparación no se pudo hacer (ver el paso); no dice nada de lo traído.');
+    return enActions ? 0 : rc;
+  } catch (e) {
+    if (!enActions) throw e;
+    console.log(`::warning title=comparar-fuente::${escaparAnotacion(`La comparación falló: ${String(e.message).split('\n')[0]}. No dice nada de lo traído.`)}`);
+    return 0;
+  }
+}
+
+async function comparar(argv, env) {
   let o;
   try { o = argumentos(argv); } catch (e) { console.error(e.message); return 2; }
   if (o.traer) {
@@ -188,7 +241,11 @@ async function main(argv = process.argv.slice(2)) {
   const propia = arbol(ref);
   const documentos = [...propia].filter(([ruta]) => !enMain.has(ruta) && !NO_SON_DOCUMENTOS.has(path.basename(ruta)))
     .filter(([ruta]) => !o.solo || o.solo.has(path.basename(ruta)));
-  if (!documentos.length) { console.log(`La rama ${o.rama} no trae ningún documento que main no tenga${o.solo ? ' con esos nombres' : ''}.`); return 0; }
+  if (!documentos.length) {
+    console.log(`La rama ${o.rama} no trae ningún documento que main no tenga${o.solo ? ' con esos nombres' : ''}.`);
+    if (o.anotaciones) for (const l of anotaciones([], o.rama)) console.log(l);
+    return 0;
+  }
 
   // Las demás ramas fuente/*, con lo que cada una trae y main no.
   const nombres = new Set(documentos.map(([ruta]) => path.basename(ruta)));
@@ -207,6 +264,8 @@ async function main(argv = process.argv.slice(2)) {
 
   console.log(`Rama ${o.rama} (${new Date(fechaRama * 1000).toISOString().slice(0, 10)}): ${documentos.length} documento(s) frente a su copia anterior.\n`);
   const recuento = {};
+  const filas = [];
+  const impreso = [];
   for (const [ruta, blob] of documentos.sort((a, b) => a[0].localeCompare(b[0]))) {
     const nombre = path.basename(ruta);
     const anterior = elegirAnterior(candidatas.get(nombre) || [], o.rama, fechaRama);
@@ -221,13 +280,20 @@ async function main(argv = process.argv.slice(2)) {
     recuento[veredicto.estado] = (recuento[veredicto.estado] || 0) + 1;
     const contar = (d) => (!d ? 'sin copia' : d.crudo == null ? 'sin texto' : cuenta(d.crudo, o.buscar));
     const buscar = o.buscar ? { antes: contar(previo), ahora: contar(actual) } : null;
-    for (const l of pintar({ nombre, anterior, veredicto, buscar }, o)) console.log(l);
+    filas.push({ nombre, anterior, veredicto, buscar });
+    for (const l of pintar({ nombre, anterior, veredicto, buscar }, o)) { console.log(l); impreso.push(l); }
   }
   console.log(`\n${Object.entries(recuento).map(([k, n]) => `${k}: ${n}`).join(' · ')}`);
+  if (o.anotaciones) {
+    for (const l of anotaciones(filas, o.rama)) console.log(l);
+    if (env.GITHUB_STEP_SUMMARY) {
+      try { require('fs').appendFileSync(env.GITHUB_STEP_SUMMARY, `## Lo traído frente a su copia anterior (${o.rama})\n\n\`\`\`\n${impreso.join('\n')}\n\`\`\`\n`); } catch { /* el resumen es comodidad */ }
+    }
+  }
   console.log('Solo compara: un TEXTO lo lee una persona antes de tocar el catálogo, y un SIN-TEXTO no es «sin cambios».');
   return 0;
 }
 
 if (require.main === module) main().then((rc) => { process.exitCode = rc; });
 
-module.exports = { lineasDeHtml, lineasDeTexto, compararLineas, clasificar, elegirAnterior, argumentos, pintar, colapsar };
+module.exports = { lineasDeHtml, lineasDeTexto, compararLineas, clasificar, elegirAnterior, argumentos, pintar, colapsar, anotaciones, main, TOPE_AVISOS };

@@ -3,10 +3,10 @@
 - **Tema:** el transporte compara lo que trae con su copia anterior y lo deja en anotaciones (mejora aprobada al cerrar el PR #157)
 - **Rama:** claude/transporte-compara
 - **Cuenta:** servicioiptv2025@gmail.com (sesión de Claude Code en la nube)
-- **Estado:** reservado
+- **Estado:** en curso
 - **Actualizado:** 2026-11-09 15:27
 - **Archivos que toca:** scripts/comparar-fuente.js, test/comparar-fuente.test.js, .github/workflows/traer-cisco-huawei.yml
-- **Siguiente paso:** empezar: el tema está reservado y todavía no tiene código
+- **Siguiente paso:** lanzar el transporte desde esta rama y leer las anotaciones del job `comparar`; con eso y el CI en verde, commit de cierre y fusionar
 
 ## Encargo del dueño
 
