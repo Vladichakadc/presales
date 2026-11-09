@@ -299,7 +299,10 @@ carga con `test/transporte-documentos.test.js`—,
 `traer-fortinet-pendientes.yml`, `candidatas-fuentes.yml`…) a ramas `fuente/*` que se leen y se
 descartan, **una por corrida y nunca con `--force` a un nombre fijo** (pisaba la edición anterior); el workflow no da por guardada una pantalla de inicio de sesión (`test/traer-pantalla-login.test.js`),
 y cada entrada HTML declara `debeContener` o `exploracion: true`: lo explorado sale EXPL, no OK
-(`test/traer-exploracion.test.js`).
+(`test/traer-exploracion.test.js`). **Lo traído se compara con `node scripts/comparar-fuente.js <fuente/…>`**
+(2026-11-09, PR #157): cada documento contra su copia anterior en las demás ramas `fuente/*`, IGUAL, BYTES,
+TEXTO —siempre con las líneas que cambian—, NUEVO o SIN-TEXTO (que es «no se sabe»); `--buscar=<regex>`
+cuenta una expresión antes y ahora. Solo lee (`test/comparar-fuente.test.js`).
 Huawei (`support.huawei.com`) y HPE (`buy.hpe.com`) niegan además el navegador
 automatizado con Akamai, y eso tampoco se rodea; desde el 2026-10-07 Info-Finder pide iniciar
 sesión, también bajo `support.huawei.com/enterprise/en/info-finder/`, y las páginas estáticas de
