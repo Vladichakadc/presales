@@ -64,7 +64,7 @@
       "medido": "2026-11-03T02:53:37.205Z"
     },
     "fortinet::https://www.fortinet.com/content/dam/fortinet/assets/data-sheets/ko_kr/ds-fortigate-100f-series_ko.pdf": {
-      "documento": "Fichas por serie de FortiGate 100F y 200F, edicion coreana oficial (FG-100F-DAT-R30-20230227, FG-200F-DAT-R17-20230125)",
+      "documento": "Ficha por serie FortiGate 100F, edicion coreana oficial (FG-100F-DAT-R30-20230227)",
       "hashVerificado": "5f833b82422b1cfa1eb910b2916fe4231f4ed5c1479d990161a0da4d1e5c039e",
       "clase": "bytes",
       "bytes": 28635034,
@@ -113,7 +113,7 @@
       "clase": "bytes"
     },
     "fortinet::https://fortinetweb.s3.amazonaws.com/docs.fortinet.com/v2/attachments/c7e69026-9283-11eb-b70b-00505692583a/fortigate-7121F-system-guide.pdf": {
-      "documento": "FortiGate 7081F System Guide (7.0.5) y FortiGate-7121F System Guide (7.4.4)",
+      "documento": "FortiGate-7121F System Guide (7.4.4)",
       "hashVerificado": "6ffc7a1a1c13e224f9d5f8137cbd8536b29950cdbfbef7cb68ac3dfd1d1939af",
       "clase": "bytes",
       "bytes": 10142578,
@@ -1245,6 +1245,69 @@
       "clase": "bytes",
       "bytes": 201200,
       "medido": "2026-11-04T14:20:00.000Z"
+    },
+    "fortinet::https://www.fortinet.com/content/dam/fortinet/assets/data-sheets/pdf/fortigate-fortiwifi-30g-series.pdf": {
+      "documento": "Ficha por serie FortiGate/FortiWiFi 30G (FGFWF-30G-DAT-R07-20260414)",
+      "hashVerificado": "707273114eaf53327818ed0189d58d5d516098ae73c88cdc03c7ad80769c0626",
+      "clase": "bytes",
+      "bytes": 5939170,
+      "medido": "2026-09-03T11:42:42Z"
+    },
+    "fortinet::https://www.fortinet.com/content/dam/fortinet/assets/data-sheets/pdf/fortigate-fortiwifi-50g-series.pdf": {
+      "documento": "Ficha por serie FortiGate/FortiWiFi 50G (FGFWF-50G-DAT-R17-20260901)",
+      "hashVerificado": "2cdffe6d2780960381adf5a643a87fdecdb027ef438593489dcdd5e7b99ea2da",
+      "clase": "bytes",
+      "bytes": 7223036,
+      "medido": "2026-09-03T11:42:42Z"
+    },
+    "fortinet::https://www.fortinet.com/content/dam/fortinet/assets/data-sheets/pdf/fortigate-fortiwifi-70g-series.pdf": {
+      "documento": "Ficha por serie FortiGate/FortiWiFi 70G (FGFWF-70G-DAT-R09-20260527)",
+      "hashVerificado": "e5a37d299c6b16dc91a9384f1010079801a3e0072e84c15148201efd3e1b7649",
+      "clase": "bytes",
+      "bytes": 5934950,
+      "medido": "2026-09-03T11:42:42Z"
+    },
+    "fortinet::https://www.fortinet.com/content/dam/fortinet/assets/data-sheets/pdf/fortigate-fortiwifi-40f-series.pdf": {
+      "documento": "Ficha por serie FortiGate/FortiWiFi 40F (FG-40F-DAT-R49-20261001)",
+      "hashVerificado": "91fc18cf3bf10ce6cfde0ae8ae7df4634052790648e0275cfcc441e1f3519148",
+      "clase": "bytes",
+      "bytes": 5184909,
+      "medido": "2026-11-04T16:45:42Z"
+    },
+    "fortinet::https://www.fortinet.com/content/dam/fortinet/assets/data-sheets/pdf/fortigate-400f-series.pdf": {
+      "documento": "Ficha por serie FortiGate 400F (FG-400F-DAT-R22-20260414)",
+      "hashVerificado": "d88b49d8296acb0095f9888ac8e18be6bd7093484d03cd2ba511dc32dc269a27",
+      "clase": "bytes",
+      "bytes": 5620226,
+      "medido": "2026-09-03T10:56:00Z"
+    },
+    "fortinet::https://www.fortinet.com/content/dam/fortinet/assets/data-sheets/pdf/fortigate-600f-series.pdf": {
+      "documento": "Ficha por serie FortiGate 600F (FG-600F-DAT-R23-20260414)",
+      "hashVerificado": "9d3ca73a5b6945165d9039ed7ac0e01d84a06f103296a38f5f85a7d729e0758c",
+      "clase": "bytes",
+      "bytes": 5900657,
+      "medido": "2026-09-03T10:56:00Z"
+    },
+    "fortinet::https://www.fortinet.com/content/dam/fortinet/assets/data-sheets/pdf/fortigate-1000f-series.pdf": {
+      "documento": "Ficha por serie FortiGate 1000F (FG-1000F-DAT-R17-20260414)",
+      "hashVerificado": "c9d2b33ffcf254922a0435648bf0ffa2be409e4d6e400d9d36cabe313de71a7b",
+      "clase": "bytes",
+      "bytes": 6901208,
+      "medido": "2026-09-03T11:42:42Z"
+    },
+    "fortinet::https://www.fortinet.com/content/dam/fortinet/assets/data-sheets/ko_kr/ds-fortigate-200f-series_ko.pdf": {
+      "documento": "Ficha por serie FortiGate 200F, edicion coreana oficial (FG-200F-DAT-R17-20230125)",
+      "hashVerificado": "a47e3e2bf0974325b3419b78c7ea38c6af0ecf619ed5227173663778699b9bed",
+      "clase": "bytes",
+      "bytes": 29953505,
+      "medido": "2026-09-24T17:17:01Z"
+    },
+    "fortinet::https://fortinetweb.s3.amazonaws.com/docs.fortinet.com/v2/attachments/17ef7271-b6d2-11ed-8e6d-fa163e15d75b/fortigate-7081F-system-guide.pdf": {
+      "documento": "FortiGate 7081F System Guide (7.0.5)",
+      "hashVerificado": "308267ce811c3f848e1e87bf0f2d6cd0063110c45d8641259ca04bcdc6f03a5e",
+      "clase": "bytes",
+      "bytes": 8339369,
+      "medido": "2026-09-24T17:17:01Z"
     }
   },
   "revisado": "2026-11-03T02:53:37.205Z"
