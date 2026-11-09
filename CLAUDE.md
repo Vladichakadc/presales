@@ -132,6 +132,7 @@ npm run juniper     # cifras de la línea SRX
 npm run mikrotik    # matriz de pruebas de las fichas de MikroTik (carpeta de HTML traída; --check, --dry)
 npm run huawei      # cifras y fin de venta de Huawei (--check, --plantilla, --eol, --force)
 npm run figuras-huawei # figuras de Huawei bajadas con la sesión del dueño (procedencia.json; dry-run salvo --aplicar)
+npm run figuras-fortinet # las figuras de Fortinet contra su lock (documento, página, caja, huella); --rehacer <pdf> las vuelve a sacar
 npm run skus        # referencias de pedido de Fortinet desde la price list
 npm run lista-aruba # lista del distribuidor de Aruba: dry-run salvo --aplicar
 npm run propuesta   # aplica una propuesta de la sincronización sobre legacyData/, con anclaje
@@ -595,7 +596,7 @@ Módulos compartidos:
   Excel, copiar y enviar con un P0, un SKU sin casar o la lista vencida, y el override exige motivo.
   Si el override solo choca con `CICLO_VIDA` (cumple el escenario), su caja ofrece declarar ampliación o
   renovación en un clic (`motivo-ciclo`), que lleva a la justificación sin escribirla.
-  Un SKU nunca se busca con el marcador `-DD`. Figuras desde la página «Hardware» de cada ficha.
+  Un SKU nunca se busca con el marcador `-DD`. Figuras desde la página «Hardware» de cada ficha; los ocho FortiWiFi, con su propio dibujo de las fichas FGFWF (`fwf-*.webp`, 2026-11-09, PR #148), nunca el de su FortiGate. **Cada figura está en `scripts/figuras-fortinet.lock.json`** (2026-11-09, PR #149): documento y rama `fuente/*`, página, caja en puntos PDF —medida por correlación con la figura servida, no escrita—, tamaño y huella; `npm run figuras-fortinet` frena una figura sin lock, tocada a mano o de otra página que su pie (`test/figuras-fortinet.test.js`), y `--rehacer` la saca de nuevo de su PDF (Poppler y `cwebp` o Pillow) y dice si la ficha es de otra edición.
   **HA y FortiGuard** (F3, 2026-10-28): una suscripción por nodo, salvo en activo-pasivo de las
   series que la guía de FortiOS 7.6.6 nombra (`haLicenciaUnica`: 40F, 60F, 70F, 80F, 100F y
   variantes, con su SKU de HA y su heartbeat), que admiten una sola. Con la casilla «Licencia FortiGuard
