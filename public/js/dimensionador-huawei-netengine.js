@@ -90,7 +90,7 @@ $('dirSeg').addEventListener('click', e => {
 ['pickModel','qty','plazoMrr','margenFin','feeMsp'].forEach(id => $(id).addEventListener('input', renderBom));
 
 const fmt = HuaweiMotor.fmt;
-const esc = s => String(s).replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
 // Catálogo Huawei, con las mismas dos tablas que antes vivían en la vista de Huawei del
 // portal (ver CLAUDE.md, 2026-09-10): se pintan desde MODELS, ya cargado para el propio
@@ -891,6 +891,7 @@ BOM.montarPerfiles({
 (async function initApp(){
   const res = await fetch('/api/dimensionador/huawei');
   const data = await res.json();
+  if (typeof BOM !== 'undefined' && BOM.fijarCatalogo) BOM.fijarCatalogo(data.datasetVersion);
   // Pendiente 34: el respaldo de ciclo de vida de ESTE fabricante, tal como lo declara
   // `legacyData/fuentes.js` con sus `campos`. Sin el, la ficha dice «el catalogo no trae el
   // ciclo de vida» en vez de afirmar vigencia por omision.

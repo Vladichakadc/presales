@@ -169,6 +169,12 @@
   }
 
   function fijarVendor(v) { vendorPagina = String(v || '').toLowerCase(); }
+  // La version del catalogo con el que la pagina calculo (`datasetVersion` de /api/dimensionador/<v>)
+  // y, si el motor la declara, la del motor: van a la hoja «Supuestos» para que una propuesta diga
+  // con que cifras se hizo. La pagina lo llama una vez al cargar su catalogo.
+  let versionCatalogo = '';
+  let versionMotor = '';
+  function fijarCatalogo(version, motor) { versionCatalogo = String(version || ''); versionMotor = String(motor || ''); }
 
   // Anade una referencia. Si ya estaba, SUMA cantidad en vez de duplicar la linea: pedir dos
   // veces el mismo bundle es pedir dos unidades, no dos renglones iguales.
@@ -888,6 +894,8 @@
     aoa.push(['Fabricante', s.fabricante || (vendorPagina ? vendorPagina : 'no lo declara la página')]);
     aoa.push(['Plataforma evaluada', s.plataforma || 'la página no distingue plataformas']);
     aoa.push(['Equipo del BOM', s.modelo || (m.fotos && m.fotos.modelo) || m.titulo || '—']);
+    aoa.push(['Versión del catálogo', e.catalogo || 'la página no la declara']);
+    aoa.push(['Versión del motor', e.motor || 'la página no la declara']);
     // `resumen` es una lista de pares [clave, valor]. Hasta el 2026-10-27 Cisco pasaba un texto, y
     // `.filter` sobre un texto lanzaba: el Excel de Cisco no se descargaba (lo destapó la batería
     // e2e-cisco-excel-figuras). Un texto se escribe como una fila; nada que no sea par se cuela.
@@ -1013,6 +1021,8 @@
     const nivel = sel && sel.value ? sel.value : '';
     return {
       fecha: new Date().toLocaleString('es'),
+      catalogo: versionCatalogo,
+      motor: versionMotor,
       url: global.location ? global.location.href : '',
       parametros: global.ESTADO && global.ESTADO.escenario ? global.ESTADO.escenario() : [],
       fuentes,
@@ -1748,7 +1758,7 @@
   global.BOM = { renderTabla, exportarExcel, comoTexto, matrizExcel, matrizSupuestos, lineasPorFuncion, cicloDe, cicloDelEquipo, cicloDePerfiles, avisoCicloConsolidado, refrescarCiclo, refrescarCicloTodos, fuentesDelEquipo, money, esc, claveFila,
     enviarACotizador, recogerEntrada, montarBotonCotizador, montarPerfiles, pintarPerfiles: pintarPerfilesMontado, normalizar,
     sincronizar, soltarManual, avisoDesvio, fijarRepintado,
-    agregarRef, quitarRef, cantidadRef, refsExtra, fijarVendor,
+    agregarRef, quitarRef, cantidadRef, refsExtra, fijarVendor, fijarCatalogo,
     perfiles, perfilesDe, guardarPerfil, quitarPerfil, consolidar,
     simuladorDescuento, tco, mrr };
 })(window);

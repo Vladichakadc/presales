@@ -894,7 +894,9 @@
       if (esMeraki(m) && d.total > 0) avisos.push('Meraki no publica el tamaño de paquete de sus cifras.');
       return { m, ok: !motivos.length, motivos, avisos, co, cd, u, capEq, piezas: [...rq.piezas, ...piezasEnlaces(en)], enlaces: en };
     });
-    const candidatos = filas.filter((f) => f.ok).sort((a, b) => a.capEq - b.capEq);
+    const candidatos = filas.filter((f) => f.ok).sort((a, b) => a.capEq - b.capEq
+      // Desempate por id natural: el resultado no debe depender del orden en que llega el catalogo.
+      || String(a.m.id).localeCompare(String(b.m.id), 'en', { numeric: true }));
     const apartados = filas.filter((f) => !f.ok);
     return { demanda: d, plataforma: plat, seguridad: seg, tlsEnRouter, filas, candidatos, apartados, topo, tunelesManual: num((p.escala || {}).tuneles) > 0,
       enlaces: enlacesValidos(p.enlaces), enlacesCaudal: enlacesFrenteCaudal(p),

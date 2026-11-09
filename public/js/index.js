@@ -62,7 +62,7 @@ function fmtMbps(m){
   if(m>=1000) return (m/1000).toFixed(m%1000?1:0)+' Gbps';
   return Math.round(m)+' Mbps';
 }
-const esc=s=>String(s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
 function buildAll(){
   PR.hw_ar.forEach(p=>ALL.push({grupo:'hw_ar',raw:p,vendor:'Huawei',model:p.model,series:p.ser,seg:p.seg,

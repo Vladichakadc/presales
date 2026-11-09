@@ -47,7 +47,7 @@ async function catalogo() {
 }
 
 function dirAuditoria() {
-  const base = process.env.AUTH_STATE_DIR || path.join(__dirname, '..', '..', '.auth-state');
+  const base = process.env.AUTH_STATE_DIR || path.join(__dirname, '..', '..', '.auth');
   return path.join(base, 'auditoria');
 }
 

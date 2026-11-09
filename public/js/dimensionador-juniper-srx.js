@@ -110,6 +110,7 @@ function capaEfectiva() {
   try {
     const r = await fetch('/api/dimensionador/juniper');
     const d = await r.json();
+    if (typeof BOM !== 'undefined' && BOM.fijarCatalogo) BOM.fijarCatalogo(d.datasetVersion);
     // Pendiente 34: el respaldo de ciclo de vida de ESTE fabricante, tal como lo declara
     // `legacyData/fuentes.js` con sus `campos`. Sin el, la ficha dice «el catalogo no trae el
     // ciclo de vida» en vez de afirmar vigencia por omision.

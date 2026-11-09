@@ -1943,6 +1943,7 @@ function pintarAfecta() {
   const res = await fetch('/api/dimensionador/fortinet');
   const data = await res.json();
   FICHA.fijarCicloVida(data.cicloVida);
+  if (typeof BOM !== 'undefined' && BOM.fijarCatalogo) BOM.fijarCatalogo(data.datasetVersion, window.FortinetMotor && `fortinet-motor ${window.FortinetMotor.VERSION_MOTOR}`);
   MODELS = data.models;
   BUNDLES = data.bundles;
   CARE = data.care;

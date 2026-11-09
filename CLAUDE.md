@@ -264,7 +264,9 @@ rojo o sin terminar, en cola, sin despliegue) y lo cierra al desplegarse; un fal
 - **Los solapes con otros temas, en cada PR** (`verificar.yml`, job `solapes`, 2026-11-06, PR #145):
   `scripts/solapes-pr.js` cruza lo que el PR cambia con lo que tienen tomado los traspasos y los PR abiertos
   sin traspaso (la lectura de `npm run reservar`) y lo dice en una anotación. Solo avisa, nunca frena; no
-  cuentan los archivos de cierre (`test/solapes-pr.test.js`).
+  cuentan los archivos de cierre (`test/solapes-pr.test.js`). Cada corrida deja además **una** línea
+  `::notice` con lo que leyó (traspasos en curso, PR sin traspaso, archivos del PR y solapes; PR #151):
+  desde una sesión solo se leen las anotaciones, y sin ella un «ninguno» no se veía.
 - **Las equivalencias corren en cada PR** (`verificar.yml`, 2026-11-01): `npm run equivalencia -- --todos`
   vuelve a medir cada caso de `scripts/equivalencias/` cuyo `mide` toca el PR, módulo de la base contra el
   del PR; un cambio de comportamiento a propósito se declara en la descripción del PR con
