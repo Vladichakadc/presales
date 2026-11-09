@@ -1,164 +1,228 @@
 {
- "_que": "Por figura de Fortinet: el documento y la página de donde sale, la caja en puntos PDF (x, y, ancho, alto desde la esquina superior izquierda), el tamaño en píxeles y la huella del .webp que se sirve; por documento, la rama fuente/* que lo trajo y su huella. Lo escribe y lo comprueba scripts/figuras-fortinet.js; no se edita a mano.",
+ "_que": "Por figura de Fortinet: el documento y la página de donde sale, la caja en puntos PDF (x, y, ancho, alto desde la esquina superior izquierda), el tamaño en píxeles y la huella del .webp que se sirve; por documento, la rama fuente/* que lo trajo, la URL de la que se baja (url, con su evidencia en urlDe) y su huella. Lo escribe y lo comprueba scripts/figuras-fortinet.js; no se edita a mano.",
  "documentos": {
   "fg-100f-qsg.pdf": {
    "rama": "fuente/fortinet-pendientes",
    "ruta": "fuente-fortinet/fg-100f-qsg.pdf",
+   "url": "https://fortinetweb.s3.amazonaws.com/docs.fortinet.com/v2/attachments/42d64717-83f1-11e9-81a4-00505692583a/FG-100F-QSG.pdf",
+   "urlDe": "rama fuente/fortinet-pendientes, fuente-fortinet/informe.json (intento guardado)",
    "sha256": "1e28fd9d8a949830554e58a32b9563841a26ba1fbf2468cb002d612fe63ea1ff"
   },
   "fg-200f-qsg.pdf": {
    "rama": "fuente/fortinet-pendientes",
    "ruta": "fuente-fortinet/fg-200f-qsg.pdf",
+   "url": "https://fortinetweb.s3.amazonaws.com/docs.fortinet.com/v2/attachments/89694abf-1ef2-11eb-96b9-00505692583a/FG-200F-Series-QSG.pdf",
+   "urlDe": "rama fuente/fortinet-pendientes, fuente-fortinet/informe.json (intento guardado)",
    "sha256": "aceef4256ebf5e8a60c6f77aba17f2e2a2ca9beaa951d948e5dc29e9cf5da876"
   },
   "fg-7081f-system-guide.pdf": {
    "rama": "fuente/fortinet-pendientes",
    "ruta": "fuente-fortinet/fg-7081f-system-guide.pdf",
+   "url": "https://fortinetweb.s3.amazonaws.com/docs.fortinet.com/v2/attachments/17ef7271-b6d2-11ed-8e6d-fa163e15d75b/fortigate-7081F-system-guide.pdf",
+   "urlDe": "rama fuente/fortinet-pendientes, fuente-fortinet/informe.json (intento guardado)",
    "sha256": "308267ce811c3f848e1e87bf0f2d6cd0063110c45d8641259ca04bcdc6f03a5e"
   },
   "fg-7121f-system-guide.pdf": {
    "rama": "fuente/fortinet-pendientes",
    "ruta": "fuente-fortinet/fg-7121f-system-guide.pdf",
+   "url": "https://fortinetweb.s3.amazonaws.com/docs.fortinet.com/v2/attachments/c7e69026-9283-11eb-b70b-00505692583a/fortigate-7121F-system-guide.pdf",
+   "urlDe": "rama fuente/fortinet-pendientes, fuente-fortinet/informe.json (intento guardado)",
    "sha256": "6ffc7a1a1c13e224f9d5f8137cbd8536b29950cdbfbef7cb68ac3dfd1d1939af"
   },
   "fortigate-1000f-series.pdf": {
    "rama": "fuente/fortinet-serie",
    "ruta": "fortigate-1000f-series.pdf",
+   "url": "https://www.fortinet.com/content/dam/fortinet/assets/data-sheets/pdf/fortigate-1000f-series.pdf",
+   "urlDe": "rama fuente/fortinet-serie, serie-informe.json; base de la URL en el workflow del commit 9eef2d8",
    "sha256": "c9d2b33ffcf254922a0435648bf0ffa2be409e4d6e400d9d36cabe313de71a7b"
   },
   "fortigate-120g-series.pdf": {
    "rama": "fuente/fortinet-serie",
    "ruta": "fortigate-120g-series.pdf",
+   "url": "https://www.fortinet.com/content/dam/fortinet/assets/data-sheets/pdf/fortigate-120g-series.pdf",
+   "urlDe": "rama fuente/fortinet-serie, serie-informe.json; base de la URL en el workflow del commit 9eef2d8",
    "sha256": "20bf9330c7469578d0c6f845508659a23e6c5a694e8bc3aa1acb1d13ebdd5e63"
   },
   "fortigate-1800f-series.pdf": {
    "rama": "fuente/fortinet-serie-f",
    "ruta": "fortigate-1800f-series.pdf",
+   "url": "https://www.fortinet.com/content/dam/fortinet/assets/data-sheets/fortigate-1800f-series.pdf",
+   "urlDe": "rama fuente/fortinet-serie-f, serie-f-informe.json; base de la URL en el workflow del commit 26a58b8",
    "sha256": "aee4c890879668555f0d7694f9794da6cbf06ac1e76f8f42d81a8294a34819d2"
   },
   "fortigate-200g-series.pdf": {
    "rama": "fuente/fortinet-serie",
    "ruta": "fortigate-200g-series.pdf",
+   "url": "https://www.fortinet.com/content/dam/fortinet/assets/data-sheets/pdf/fortigate-200g-series.pdf",
+   "urlDe": "rama fuente/fortinet-serie, serie-informe.json; base de la URL en el workflow del commit 9eef2d8",
    "sha256": "74314edf12cb60bb892cf28ebb76995d6f6dc989f83eaa6b468a60499563e85e"
   },
   "fortigate-2600f-series.pdf": {
    "rama": "fuente/fortinet-serie-f",
    "ruta": "fortigate-2600f-series.pdf",
+   "url": "https://www.fortinet.com/content/dam/fortinet/assets/data-sheets/fortigate-2600f-series.pdf",
+   "urlDe": "rama fuente/fortinet-serie-f, serie-f-informe.json; base de la URL en el workflow del commit 26a58b8",
    "sha256": "142906e68ee718392cb4872450f52c157e0ce4c3826aca068c7bf2ae2555ceb5"
   },
   "fortigate-3000f-series.pdf": {
    "rama": "fuente/fortinet-serie-f",
    "ruta": "fortigate-3000f-series.pdf",
+   "url": "https://www.fortinet.com/content/dam/fortinet/assets/data-sheets/fortigate-3000f-series.pdf",
+   "urlDe": "rama fuente/fortinet-serie-f, serie-f-informe.json; base de la URL en el workflow del commit 26a58b8",
    "sha256": "ad993588673334a1f2b2b5999d5fb943f56f4c08058565c0043e812c9017a0ca"
   },
   "fortigate-3000g-series.pdf": {
    "rama": "fuente/fortinet-serie",
    "ruta": "fortigate-3000g-series.pdf",
+   "url": "https://www.fortinet.com/content/dam/fortinet/assets/data-sheets/pdf/fortigate-3000g-series.pdf",
+   "urlDe": "rama fuente/fortinet-serie, serie-informe.json; base de la URL en el workflow del commit 9eef2d8",
    "sha256": "4c33dcb042bd9a1e173309adf6c3d1f87f67345ae468ed23e984162b42ec7946"
   },
   "fortigate-3200f-series.pdf": {
    "rama": "fuente/fortinet-serie-f",
    "ruta": "fortigate-3200f-series.pdf",
+   "url": "https://www.fortinet.com/content/dam/fortinet/assets/data-sheets/fortigate-3200f-series.pdf",
+   "urlDe": "rama fuente/fortinet-serie-f, serie-f-informe.json; base de la URL en el workflow del commit 26a58b8",
    "sha256": "d1a1d19be6a6b632a9a42aa7a4d4a290fa218a032d52999ee340d86d45907d1e"
   },
   "fortigate-3500f-series.pdf": {
    "rama": "fuente/fortinet-serie-f",
    "ruta": "fortigate-3500f-series.pdf",
+   "url": "https://www.fortinet.com/content/dam/fortinet/assets/data-sheets/fortigate-3500f-series.pdf",
+   "urlDe": "rama fuente/fortinet-serie-f, serie-f-informe.json; base de la URL en el workflow del commit 26a58b8",
    "sha256": "010727e7a65a16ffc285feecb5b0845d7275e1a877bc13fcfdfa92ee0cebb3a3"
   },
   "fortigate-3500g-series.pdf": {
    "rama": "fuente/fortinet-serie",
    "ruta": "fortigate-3500g-series.pdf",
+   "url": "https://www.fortinet.com/content/dam/fortinet/assets/data-sheets/pdf/fortigate-3500g-series.pdf",
+   "urlDe": "rama fuente/fortinet-serie, serie-informe.json; base de la URL en el workflow del commit 9eef2d8",
    "sha256": "246f89564a1859c8f4be8906e90044f320784c9ffaeac753b28c61a599adf00b"
   },
   "fortigate-3700f-series.pdf": {
    "rama": "fuente/fortinet-serie-f",
    "ruta": "fortigate-3700f-series.pdf",
+   "url": "https://www.fortinet.com/content/dam/fortinet/assets/data-sheets/fortigate-3700f-series.pdf",
+   "urlDe": "rama fuente/fortinet-serie-f, serie-f-informe.json; base de la URL en el workflow del commit 26a58b8",
    "sha256": "5095505a201d93ecad065b998f7edba3a65d8f59b42fc841274749d702b37e7f"
   },
   "fortigate-3800g-series.pdf": {
    "rama": "fuente/fortinet-serie",
    "ruta": "fortigate-3800g-series.pdf",
+   "url": "https://www.fortinet.com/content/dam/fortinet/assets/data-sheets/pdf/fortigate-3800g-series.pdf",
+   "urlDe": "rama fuente/fortinet-serie, serie-informe.json; base de la URL en el workflow del commit 9eef2d8",
    "sha256": "0c1aeaf4804fae552cd6b337de6d5a85e6c4ae49a2efe8b12ee0cbe7913925d6"
   },
   "fortigate-400f-series.pdf": {
    "rama": "fuente/fortinet-datasheets",
    "ruta": "fortigate-400f-series.pdf",
+   "url": "https://www.fortinet.com/content/dam/fortinet/assets/data-sheets/pdf/fortigate-400f-series.pdf",
+   "urlDe": "rama fuente/fortinet-datasheets, datasheets-informe.json; base de la URL en el workflow del commit f9a2172",
    "sha256": "d88b49d8296acb0095f9888ac8e18be6bd7093484d03cd2ba511dc32dc269a27"
   },
   "fortigate-400g-series.pdf": {
    "rama": "fuente/fortinet-serie",
    "ruta": "fortigate-400g-series.pdf",
+   "url": "https://www.fortinet.com/content/dam/fortinet/assets/data-sheets/pdf/fortigate-400g-series.pdf",
+   "urlDe": "rama fuente/fortinet-serie, serie-informe.json; base de la URL en el workflow del commit 9eef2d8",
    "sha256": "214b8209eaaec711844dc2b7d178483689937dce1538d7e9fd147700c0a1a0fb"
   },
   "fortigate-4200f-series.pdf": {
    "rama": "fuente/fortinet-serie-f",
    "ruta": "fortigate-4200f-series.pdf",
+   "url": "https://www.fortinet.com/content/dam/fortinet/assets/data-sheets/fortigate-4200f-series.pdf",
+   "urlDe": "rama fuente/fortinet-serie-f, serie-f-informe.json; base de la URL en el workflow del commit 26a58b8",
    "sha256": "1c772de53a317db731fc021d45c8fd64d733a5854c80b95a2e109c35329e3c65"
   },
   "fortigate-4400f-series.pdf": {
    "rama": "fuente/fortinet-serie-f",
    "ruta": "fortigate-4400f-series.pdf",
+   "url": "https://www.fortinet.com/content/dam/fortinet/assets/data-sheets/fortigate-4400f-series.pdf",
+   "urlDe": "rama fuente/fortinet-serie-f, serie-f-informe.json; base de la URL en el workflow del commit 26a58b8",
    "sha256": "96cfdff7387d01a086f7137607c22676334cb8135e687ee46e85dadb2c95dafc"
   },
   "fortigate-4800f-series.pdf": {
    "rama": "fuente/fortinet-serie-f",
    "ruta": "fortigate-4800f-series.pdf",
+   "url": "https://www.fortinet.com/content/dam/fortinet/assets/data-sheets/fortigate-4800f-series.pdf",
+   "urlDe": "rama fuente/fortinet-serie-f, serie-f-informe.json; base de la URL en el workflow del commit 26a58b8",
    "sha256": "a3a7f69a11c4a3743d8835587e0d5abbb1ded92cfa9f5a65d34128743db93856"
   },
   "fortigate-600f-series.pdf": {
    "rama": "fuente/fortinet-datasheets",
    "ruta": "fortigate-600f-series.pdf",
+   "url": "https://www.fortinet.com/content/dam/fortinet/assets/data-sheets/pdf/fortigate-600f-series.pdf",
+   "urlDe": "rama fuente/fortinet-datasheets, datasheets-informe.json; base de la URL en el workflow del commit f9a2172",
    "sha256": "9d3ca73a5b6945165d9039ed7ac0e01d84a06f103296a38f5f85a7d729e0758c"
   },
   "fortigate-700g-series.pdf": {
    "rama": "fuente/fortinet-serie",
    "ruta": "fortigate-700g-series.pdf",
+   "url": "https://www.fortinet.com/content/dam/fortinet/assets/data-sheets/pdf/fortigate-700g-series.pdf",
+   "urlDe": "rama fuente/fortinet-serie, serie-informe.json; base de la URL en el workflow del commit 9eef2d8",
    "sha256": "9d657ea5c1b1b98e04bd073a3c53f70d69122b95e53caf6ba147270e51dad41d"
   },
   "fortigate-70f-series.pdf": {
    "rama": "fuente/fortinet-serie-f",
    "ruta": "fortigate-70f-series.pdf",
+   "url": "https://www.fortinet.com/content/dam/fortinet/assets/data-sheets/fortigate-70f-series.pdf",
+   "urlDe": "rama fuente/fortinet-serie-f, serie-f-informe.json; base de la URL en el workflow del commit 26a58b8",
    "sha256": "6e14d1ce7b42c53cce160a1b60e67ee5c1565b463d7ff8c81767c13f2b3974ec"
   },
   "fortigate-900g-series.pdf": {
    "rama": "fuente/fortinet-serie",
    "ruta": "fortigate-900g-series.pdf",
+   "url": "https://www.fortinet.com/content/dam/fortinet/assets/data-sheets/pdf/fortigate-900g-series.pdf",
+   "urlDe": "rama fuente/fortinet-serie, serie-informe.json; base de la URL en el workflow del commit 9eef2d8",
    "sha256": "df71a7b1f69a646b1a9d4f298cf7e0d7eaba482667fb2cde011f224f7576f10b"
   },
   "fortigate-90g-series.pdf": {
    "rama": "fuente/fortinet-serie",
    "ruta": "fortigate-90g-series.pdf",
+   "url": "https://www.fortinet.com/content/dam/fortinet/assets/data-sheets/pdf/fortigate-90g-series.pdf",
+   "urlDe": "rama fuente/fortinet-serie, serie-informe.json; base de la URL en el workflow del commit 9eef2d8",
    "sha256": "9e82fc8ea81f2714f5f1793c6b3dc626890d0d1024594c44cea9fa08efe7dce9"
   },
   "fortigate-fortiwifi-30g-series.pdf": {
    "rama": "fuente/fortinet-serie",
    "ruta": "fortigate-fortiwifi-30g-series.pdf",
+   "url": "https://www.fortinet.com/content/dam/fortinet/assets/data-sheets/pdf/fortigate-fortiwifi-30g-series.pdf",
+   "urlDe": "rama fuente/fortinet-serie, serie-informe.json; base de la URL en el workflow del commit 9eef2d8",
    "sha256": "707273114eaf53327818ed0189d58d5d516098ae73c88cdc03c7ad80769c0626"
   },
   "fortigate-fortiwifi-40f-series.pdf": {
    "rama": "fuente/fortinet-serie",
    "ruta": "fortigate-fortiwifi-40f-series.pdf",
+   "url": "https://www.fortinet.com/content/dam/fortinet/assets/data-sheets/pdf/fortigate-fortiwifi-40f-series.pdf",
+   "urlDe": "rama fuente/fortinet-serie, serie-informe.json; base de la URL en el workflow del commit 9eef2d8",
    "sha256": "0da9a20aca54a98232d703948db63db516baa905073949ee0a4b6d49f175e5c9"
   },
   "fortigate-fortiwifi-50g-series.pdf": {
    "rama": "fuente/fortinet-serie",
    "ruta": "fortigate-fortiwifi-50g-series.pdf",
+   "url": "https://www.fortinet.com/content/dam/fortinet/assets/data-sheets/pdf/fortigate-fortiwifi-50g-series.pdf",
+   "urlDe": "rama fuente/fortinet-serie, serie-informe.json; base de la URL en el workflow del commit 9eef2d8",
    "sha256": "2cdffe6d2780960381adf5a643a87fdecdb027ef438593489dcdd5e7b99ea2da"
   },
   "fortigate-fortiwifi-60f-series.pdf": {
    "rama": "fuente/fortinet-serie",
    "ruta": "fortigate-fortiwifi-60f-series.pdf",
+   "url": "https://www.fortinet.com/content/dam/fortinet/assets/data-sheets/pdf/fortigate-fortiwifi-60f-series.pdf",
+   "urlDe": "rama fuente/fortinet-serie, serie-informe.json; base de la URL en el workflow del commit 9eef2d8",
    "sha256": "4adc6ff51b15e5371c1cd914f1e954ad6447203da36e1a0a330d543c679198dc"
   },
   "fortigate-fortiwifi-70g-series.pdf": {
    "rama": "fuente/fortinet-serie",
    "ruta": "fortigate-fortiwifi-70g-series.pdf",
+   "url": "https://www.fortinet.com/content/dam/fortinet/assets/data-sheets/pdf/fortigate-fortiwifi-70g-series.pdf",
+   "urlDe": "rama fuente/fortinet-serie, serie-informe.json; base de la URL en el workflow del commit 9eef2d8",
    "sha256": "e5a37d299c6b16dc91a9384f1010079801a3e0072e84c15148201efd3e1b7649"
   },
   "fortigate-fortiwifi-80f-series.pdf": {
    "rama": "fuente/fortinet-serie",
    "ruta": "fortigate-fortiwifi-80f-series.pdf",
+   "url": "https://www.fortinet.com/content/dam/fortinet/assets/data-sheets/pdf/fortigate-fortiwifi-80f-series.pdf",
+   "urlDe": "rama fuente/fortinet-serie, serie-informe.json; base de la URL en el workflow del commit 9eef2d8",
    "sha256": "a1e710f208eb7efb6c119e2093b5438080c4ef581f664df83f825d5313bc202e"
   }
  },
@@ -373,7 +437,7 @@
    "caja": [
     35.35,
     143.43,
-    402.0,
+    402,
     79.54
    ],
    "tamano": [
@@ -626,7 +690,7 @@
    "documento": "fortigate-3700f-series.pdf",
    "pagina": 7,
    "caja": [
-    35.0,
+    35,
     268.61,
     396.96,
     83.17
@@ -722,14 +786,14 @@
    ],
    "sha256": "fd9b7d3d92d7bb315e2c3242ca2bb1651cd43737a85198f70e8dd43cd69c70ca",
    "medido": "correlación 0.9614 con la figura servida, a su escala, 2026-11-09",
-   "diferencia": 9.0
+   "diferencia": 9
   },
   "/img/equipos/fg-400g-rear.webp": {
    "documento": "fortigate-400g-series.pdf",
    "pagina": 7,
    "caja": [
     33.96,
-    239.0,
+    239,
     401.52,
     44.03
    ],
@@ -813,7 +877,7 @@
    "documento": "fortigate-4400f-series.pdf",
    "pagina": 7,
    "caja": [
-    54.0,
+    54,
     141.95,
     364.32,
     152.2
@@ -909,7 +973,7 @@
    ],
    "sha256": "2eb301fa2dce7a4506deb555c648b6598b73a73788e670707895febfbc6bc8d0",
    "medido": "correlación 0.9762 con la figura servida, a su escala, 2026-11-09",
-   "diferencia": 6.0
+   "diferencia": 6
   },
   "/img/equipos/fg-600f-front.webp": {
    "documento": "fortigate-600f-series.pdf",
@@ -1001,7 +1065,7 @@
    "pagina": 7,
    "caja": [
     33.96,
-    239.0,
+    239,
     401.52,
     44.03
    ],
@@ -1035,7 +1099,7 @@
    "pagina": 12,
    "caja": [
     67.68,
-    126.0,
+    126,
     390.96,
     469.44
    ],
@@ -1096,7 +1160,7 @@
    ],
    "sha256": "78024768972a5eb7f17b80a1af4a744ea9801665acd92564aea6e0f428e79a31",
    "medido": "correlación 0.9051 con la figura servida, a su escala, 2026-11-09",
-   "diferencia": 6.0
+   "diferencia": 6
   },
   "/img/equipos/fg-70g-rear.webp": {
    "documento": "fortigate-fortiwifi-70g-series.pdf",

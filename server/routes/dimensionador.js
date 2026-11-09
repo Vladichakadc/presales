@@ -9,6 +9,7 @@ const {
   toDimensionadorNokia,
   toDimensionadorNokiaRouter,
   respaldoCicloVida,
+  versionDeCatalogo,
 } = require('../services/catalogProjection');
 
 const router = express.Router();
@@ -38,7 +39,10 @@ router.get('/dimensionador/:vendor', async (req, res, next) => {
     // es una. Repetirla ocho veces es como `llevarABom` acabo divergiendo en seis copias.
     const datos = await projection();
     const vendor = FABRICANTE[req.params.vendor] || req.params.vendor;
-    res.json({ ...datos, cicloVida: respaldoCicloVida(vendor) });
+    // `datasetVersion` se anade aqui por la misma razon: una regla, no ocho copias. Se calcula
+    // sobre los datos y el ciclo de vida, que es todo lo que la pagina pinta del catalogo.
+    const cicloVida = respaldoCicloVida(vendor);
+    res.json({ ...datos, cicloVida, datasetVersion: versionDeCatalogo(req.params.vendor, { ...datos, cicloVida }) });
   } catch (err) {
     next(err);
   }

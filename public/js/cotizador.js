@@ -20,7 +20,7 @@ let bom = []; // {id, vendor, color, model, seg, spec, elp, elpN, qty, note}
 let nextId = 1;
 
 const $=id=>document.getElementById(id);
-const esc=s=>String(s||'').replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+const esc=s=>String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
 /* ══ INIT ══ */
 (async function init(){
