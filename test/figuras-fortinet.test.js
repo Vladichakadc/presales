@@ -9,7 +9,8 @@ const test = require('node:test');
 const assert = require('node:assert');
 const fs = require('fs');
 const path = require('path');
-const { comprobar, paginasDelPie, sha256 } = require('../scripts/figuras-fortinet.js');
+const os = require('os');
+const { comprobar, paginasDelPie, sha256, traer, codigoDe } = require('../scripts/figuras-fortinet.js');
 
 const RAIZ = path.join(__dirname, '..');
 const VISTAS = JSON.parse(fs.readFileSync(path.join(RAIZ, 'public/data/fortinet-vistas-equipos.json'), 'utf8'));
@@ -48,7 +49,8 @@ function caso() {
   const vistas = { 'FortiGate X': { front: '/img/equipos/fg-x-front.webp', rear: '/img/equipos/fg-x-rear.webp',
     fuente: 'Datasheet FortiGate X Series, p. 7 «Hardware» — «FortiGate X»' } };
   const fig = (pagina) => ({ documento: 'x.pdf', pagina, caja: [1, 2, 3, 4], tamano: [10, 5], sha256: sha256(datos) });
-  const lock = { documentos: { 'x.pdf': { rama: 'fuente/x', ruta: 'x.pdf', sha256: 'a'.repeat(64) } },
+  const lock = { documentos: { 'x.pdf': { rama: 'fuente/x', ruta: 'x.pdf', url: 'https://www.fortinet.com/x.pdf',
+    urlDe: 'rama fuente/x, informe.json', sha256: 'a'.repeat(64) } },
     figuras: { '/img/equipos/fg-x-front.webp': fig(7), '/img/equipos/fg-x-rear.webp': fig(7) } };
   return { vistas, lock, leer: () => datos };
 }
@@ -87,4 +89,61 @@ test('una figura compartida por dos modelos se comprueba una sola vez', () => {
   const { vistas, lock } = caso();
   vistas['FortiGate X1'] = { ...vistas['FortiGate X'] };
   assert.strictEqual(comprobar(vistas, lock, () => Buffer.from('otra')).length, 2);
+});
+
+test('frena un documento sin URL de Fortinet o sin la rama de la que salió', () => {
+  const { vistas, lock, leer: l } = caso();
+  lock.documentos['x.pdf'].url = 'http://otro.example/x.pdf';
+  delete lock.documentos['x.pdf'].urlDe;
+  const p = comprobar(vistas, lock, l).join('\n');
+  assert.match(p, /x\.pdf: sin URL https de Fortinet/);
+  assert.match(p, /x\.pdf: la URL no dice de qué rama/);
+});
+
+test('cada documento del lock real trae su URL y de dónde salió', () => {
+  const real = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'scripts', 'figuras-fortinet.lock.json'), 'utf8'));
+  for (const [nombre, d] of Object.entries(real.documentos)) {
+    assert.match(d.url, /^https:\/\//, nombre);
+    assert.ok(d.urlDe.includes(d.rama), `${nombre}: urlDe cita su rama ${d.rama}`);
+  }
+});
+
+// EL VIGÍA (2026-11-09): sin red. `fetch` y `comparar` simulados; lo que se prueba es la regla.
+const PDF = Buffer.from('%PDF-1.7 ficha');
+const respuesta = (buf, status = 200) => ({ ok: status < 400, status, arrayBuffer: async () => buf });
+const correr = (lock, fetch, extra = {}) => traer({ lock, carpeta: fs.mkdtempSync(path.join(os.tmpdir(), 'figtraer-')),
+  fetch, herramientas: () => null, comparar: () => ({ diferencia: 2, tope: 5, igual: true }), ...extra });
+
+test('traer: la misma edición no rehace nada; otra edición rehace sus figuras', async () => {
+  const { lock } = caso();
+  lock.documentos['x.pdf'].sha256 = sha256(PDF);
+  let rehechas = 0;
+  const comparar = () => { rehechas++; return { diferencia: 2, tope: 5, igual: true }; };
+  const misma = await correr(lock, async () => respuesta(PDF), { comparar });
+  assert.strictEqual(misma.documentos[0].estado, 'igual');
+  assert.strictEqual(rehechas, 0);
+  assert.strictEqual(codigoDe(misma), 0);
+  const otra = await correr(lock, async () => respuesta(Buffer.from('%PDF-1.7 otra')), { comparar });
+  assert.strictEqual(otra.documentos[0].estado, 'otraEdicion');
+  assert.deepStrictEqual(otra.documentos[0].figuras.map((f) => f.resultado), ['igual', 'igual']);
+  assert.strictEqual(codigoDe(otra), 1);
+});
+
+test('traer: una figura que ya no casa sale DISTINTA', async () => {
+  const { lock } = caso();
+  const inf = await correr(lock, async () => respuesta(PDF), { comparar: () => ({ diferencia: 60, tope: 5, igual: false }) });
+  assert.ok(inf.documentos[0].figuras.every((f) => f.resultado === 'distinta' && f.diferencia === 60));
+  assert.strictEqual(codigoDe(inf), 1);
+});
+
+test('traer: lo que no se pudo bajar o no es un PDF es un error, nunca «sin cambios»', async () => {
+  const { lock } = caso();
+  for (const fetch of [async () => respuesta(PDF, 403), async () => respuesta(Buffer.from('<html>')), async () => { throw new Error('ECONNRESET'); }]) {
+    const inf = await correr(lock, fetch);
+    assert.strictEqual(inf.documentos[0].estado, 'error');
+    assert.strictEqual(codigoDe(inf), 2);
+  }
+  const sinHerramientas = await correr(lock, async () => respuesta(PDF), { herramientas: () => 'pdftoppm' });
+  assert.match(sinHerramientas.documentos[0].figuras[0].error, /falta pdftoppm/);
+  assert.strictEqual(codigoDe(sinHerramientas), 2);
 });

@@ -24,6 +24,21 @@
 //       es la misma edición que la del lock; con --aplicar escribe las figuras y pone al día su
 //       huella y su diferencia. Un PDF de OTRA edición no se usa sin
 //       revisar la caja: el dibujo puede haber cambiado de sitio.
+//   npm run figuras-fortinet -- --traer <carpeta> [--json] [--todas]
+//       Lo que corre el job `contrastar_figuras` del vigía cada lunes (2026-11-09, mejora propuesta
+//       al cerrar el PR #149). Baja cada documento del lock de su `url` y lo compara con su huella:
+//       si es la misma edición no hay nada que rehacer; si es otra, rehace cada figura de ese
+//       documento con su caja y dice si el dibujo sigue siendo el mismo (IGUAL) o no (DISTINTA).
+//       Un documento que no se pudo bajar, o que no es un PDF, es un ERROR, nunca «sin cambios».
+//       --todas rehace también las de la misma edición (para calibrar el Poppler del ejecutor).
+//       No escribe nada en el repositorio. Sale con 0 sin cambios, 1 con otra edición y 2 con error.
+//   npm run figuras-fortinet -- --resumen <json>    el texto legible del JSON de --traer
+//
+// POR QUÉ LAS URL VIVEN AQUÍ Y NO EN fuentes.js. Las fichas por serie entraron en fuentes.js sin
+// URL («el repositorio no conserva la URL exacta de cada ficha»), así que el vigía no las mide y
+// nunca quedan pendientes. Las URL sí estaban en el historial: cada rama `fuente/*` trae el
+// informe de su corrida (archivo guardado y estado 200) y el workflow que la hizo tenía la base.
+// Cada documento lleva en `urlDe` de dónde se sacó la suya.
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
@@ -87,6 +102,11 @@ function comprobar(vistas, lock, leer) {
     if (!usadas.has(ruta)) problemas.push(`${ruta}: está en el lock y ningún modelo la usa`);
     if (!documentos[f.documento]) problemas.push(`${ruta}: el documento «${f.documento}» no está declarado en el lock`);
   }
+  // Sin URL el vigía no puede bajar el documento cada lunes; sin `urlDe`, nadie sabe de dónde salió.
+  for (const [nombre, d] of Object.entries(documentos)) {
+    if (!/^https:\/\/[a-z0-9.-]+\.(?:fortinet\.com|amazonaws\.com)\//.test(d.url || '')) problemas.push(`${nombre}: sin URL https de Fortinet en el lock`);
+    if (!d.urlDe || !/fuente\//.test(d.urlDe)) problemas.push(`${nombre}: la URL no dice de qué rama fuente/* sale (urlDe)`);
+  }
   return problemas;
 }
 
@@ -143,10 +163,27 @@ function rehacerUna(f, pdf, destino) {
   fs.unlinkSync(`${pref}.png`);
 }
 
-function rehacer(carpeta, { solo, aplicar }) {
-  for (const cmd of ['pdftoppm', 'pdfinfo', 'python3']) {
-    if (!tiene(cmd)) { console.error(`Falta ${cmd} (Poppler y Python con Pillow).`); return 2; }
+// El tope de una figura: la diferencia que dio al medirla más el margen.
+const topeDe = (f) => (typeof f.diferencia === 'number' ? f.diferencia : MISMO_ENCUADRE) + MARGEN;
+
+// Rehace una figura desde un PDF y la compara con la servida: {diferencia, tope, igual}.
+function compararFigura(ruta, f, pdf) {
+  const nueva = path.join(os.tmpdir(), `figfort-${process.pid}-${path.basename(ruta)}`);
+  try {
+    rehacerUna(f, pdf, nueva);
+    const d = diferencia(nueva, path.join(RAIZ, 'public', ruta));
+    return { diferencia: d, tope: topeDe(f), igual: d <= topeDe(f), nueva };
+  } catch (e) {
+    try { fs.unlinkSync(nueva); } catch { /* no llegó a escribirse */ }
+    throw e;
   }
+}
+
+const faltaHerramienta = () => ['pdftoppm', 'pdfinfo', 'python3'].find((cmd) => !tiene(cmd)) || null;
+
+function rehacer(carpeta, { solo, aplicar }) {
+  const falta = faltaHerramienta();
+  if (falta) { console.error(`Falta ${falta} (Poppler y Python con Pillow).`); return 2; }
   const lock = leerJson(LOCK);
   let fallos = 0;
   const huellas = {};
@@ -157,10 +194,7 @@ function rehacer(carpeta, { solo, aplicar }) {
     if (!fs.existsSync(pdf)) { console.log(`FALTA   ${ruta}: no está ${f.documento} en ${carpeta} (rama ${doc.rama})`); fallos++; continue; }
     const huella = huellas[pdf] || (huellas[pdf] = sha256(fs.readFileSync(pdf)));
     const otraEdicion = huella !== doc.sha256;
-    const nueva = path.join(os.tmpdir(), `figfort-${path.basename(ruta)}`);
-    rehacerUna(f, pdf, nueva);
-    const d = diferencia(nueva, path.join(RAIZ, 'public', ruta));
-    const tope = (typeof f.diferencia === 'number' ? f.diferencia : MISMO_ENCUADRE) + MARGEN;
+    const { diferencia: d, tope, nueva } = compararFigura(ruta, f, pdf);
     const estado = otraEdicion ? 'EDICION' : d <= tope ? 'IGUAL  ' : 'DISTINTA';
     console.log(`${estado} ${ruta}: diferencia media ${d}${otraEdicion ? ' — el PDF no es la edición del lock: revisa la caja antes de aplicar' : ''}`);
     if (aplicar && !otraEdicion) {
@@ -174,8 +208,97 @@ function rehacer(carpeta, { solo, aplicar }) {
   return fallos ? 1 : 0;
 }
 
-function main(argv) {
+// LO QUE CORRE EL VIGÍA (2026-11-09). Pura salvo por `fetch` y `comparar`, que la prueba sustituye.
+const TIEMPO_LIMITE = 120000; // las guías del 7081F y del 7121F pasan de 8 MB
+const A_LA_VEZ = 4;
+const CABECERAS = { 'User-Agent': 'presales-vigia-fuentes/1.0 (+catalogo interno)', Accept: 'application/pdf,*/*' };
+const esPdf = (buf) => buf.length > 4 && buf.subarray(0, 5).toString('latin1') === '%PDF-';
+const breve = (e) => String((e && e.message) || e).replace(/\s+/g, ' ').slice(0, 200);
+
+async function traer({ lock, carpeta, todas = false, fetch = globalThis.fetch, comparar = compararFigura, herramientas = faltaHerramienta }) {
+  const porDoc = {};
+  for (const [ruta, f] of Object.entries(lock.figuras)) (porDoc[f.documento] = porDoc[f.documento] || []).push([ruta, f]);
+  const docs = Object.entries(lock.documentos);
+  const out = new Array(docs.length);
+  let falta;
+  const uno = async ([documento, doc]) => {
+    const r = { documento, url: doc.url || null, estado: 'error', figuras: [] };
+    if (!/^https:\/\//.test(doc.url || '')) return { ...r, error: 'el lock no trae una URL https para este documento' };
+    const control = new AbortController();
+    const reloj = setTimeout(() => control.abort(), TIEMPO_LIMITE);
+    let buf;
+    try {
+      const res = await fetch(doc.url, { redirect: 'follow', signal: control.signal, headers: CABECERAS });
+      if (!res.ok) return { ...r, error: `HTTP ${res.status}` };
+      buf = Buffer.from(await res.arrayBuffer());
+    } catch (e) {
+      return { ...r, error: control.signal.aborted ? `sin respuesta en ${TIEMPO_LIMITE / 1000} s` : breve(e) };
+    } finally { clearTimeout(reloj); }
+    if (!esPdf(buf)) return { ...r, error: `no es un PDF (${buf.length} bytes)` };
+    r.bytes = buf.length;
+    r.sha256 = sha256(buf);
+    r.estado = r.sha256 === doc.sha256 ? 'igual' : 'otraEdicion';
+    if (r.estado === 'igual' && !todas) return r;
+    if (falta === undefined) falta = herramientas();
+    const pdf = path.join(carpeta, documento);
+    fs.writeFileSync(pdf, buf);
+    for (const [ruta, f] of porDoc[documento] || []) {
+      if (falta) { r.figuras.push({ ruta, resultado: 'error', error: `falta ${falta} en el ejecutor` }); continue; }
+      try {
+        const c = comparar(ruta, f, pdf);
+        if (c.nueva) { try { fs.unlinkSync(c.nueva); } catch { /* ya no está */ } }
+        r.figuras.push({ ruta, resultado: c.igual ? 'igual' : 'distinta', diferencia: c.diferencia, tope: c.tope });
+      } catch (e) {
+        r.figuras.push({ ruta, resultado: 'error', error: breve(e) });
+      }
+    }
+    return r;
+  };
+  let siguiente = 0;
+  const trabajador = async () => {
+    while (siguiente < docs.length) { const i = siguiente++; out[i] = await uno(docs[i]); }
+  };
+  fs.mkdirSync(carpeta, { recursive: true });
+  await Promise.all(Array.from({ length: Math.min(A_LA_VEZ, docs.length) }, trabajador));
+  return { todas, documentos: out };
+}
+
+// 0 todo igual, 1 alguna otra edición o una figura distinta, 2 algo que no se pudo comprobar.
+function codigoDe(inf) {
+  const docs = inf.documentos;
+  if (docs.some((d) => d.estado === 'error' || d.figuras.some((f) => f.resultado === 'error'))) return 2;
+  if (docs.some((d) => d.estado === 'otraEdicion' || d.figuras.some((f) => f.resultado === 'distinta'))) return 1;
+  return 0;
+}
+
+function resumen(inf) {
+  const l = [];
+  for (const d of inf.documentos) {
+    const cab = d.estado === 'error' ? `ERROR    ${d.documento}: ${d.error}`
+      : d.estado === 'igual' ? `MISMA    ${d.documento}` : `EDICION  ${d.documento}: la ficha publicada ya no es la del lock`;
+    l.push(cab);
+    for (const f of d.figuras) {
+      l.push(f.resultado === 'error' ? `  ERROR    ${f.ruta}: ${f.error}`
+        : `  ${f.resultado === 'igual' ? 'IGUAL   ' : 'DISTINTA'} ${f.ruta}: diferencia ${f.diferencia} (tope ${f.tope})`);
+    }
+  }
+  const n = (e) => inf.documentos.filter((d) => d.estado === e).length;
+  l.push(`${inf.documentos.length} documentos · misma edición ${n('igual')} · otra edición ${n('otraEdicion')} · sin comprobar ${n('error')}`);
+  return l.join('\n');
+}
+
+async function main(argv) {
   const args = argv.slice(2);
+  const t = args.indexOf('--traer');
+  if (t >= 0) {
+    const carpeta = args[t + 1];
+    if (!carpeta || carpeta.startsWith('--')) { console.error('Uso: --traer <carpeta> [--json] [--todas]'); return 2; }
+    const inf = await traer({ lock: leerJson(LOCK), carpeta, todas: args.includes('--todas') });
+    console.log(args.includes('--json') ? JSON.stringify(inf, null, 1) : resumen(inf));
+    return codigoDe(inf);
+  }
+  const r = args.indexOf('--resumen');
+  if (r >= 0) { console.log(resumen(leerJson(args[r + 1]))); return 0; }
   const i = args.indexOf('--rehacer');
   if (i >= 0) {
     const carpeta = args[i + 1];
@@ -190,6 +313,6 @@ function main(argv) {
   return problemas.length ? 1 : 0;
 }
 
-if (require.main === module) process.exit(main(process.argv));
+if (require.main === module) main(process.argv).then((c) => process.exit(c), (e) => { console.error(e); process.exit(2); });
 
-module.exports = { comprobar, paginasDelPie, rehacerUna, sha256, MARGEN, MISMO_ENCUADRE };
+module.exports = { comprobar, paginasDelPie, rehacerUna, sha256, traer, codigoDe, resumen, MARGEN, MISMO_ENCUADRE };
