@@ -57,3 +57,60 @@ test('ningún equipo pierde su ficha al partir las entradas', () => {
     'FortiGate 100F', 'FortiGate 200F', 'FortiGate 7081F', 'FortiGate 7121F'];
   for (const m of antes) assert.strictEqual(de(m), 1, `${m}: lo respaldan ${de(m)} fichas, debería ser una`);
 });
+
+// 4. LA MISMA URL EN LOS DOS LOCKS (2026-11-09, mejora propuesta al cerrar el PR #155). El vigía
+// mide una ficha por la URL de fuentes.js y el job de figuras la baja por la URL de
+// scripts/figuras-fortinet.lock.json: si una cambia sin la otra, uno de los dos mide un documento
+// que el otro ya no mira, y nada lo avisa. Se compara la URL, no la edición: la 40F lleva R49 en
+// fuentes.js y R48 en el lock de figuras a propósito (la figura es de la edición que se leyó).
+const LOCK_FIGURAS = require('../scripts/figuras-fortinet.lock.json');
+
+// Fichas que fuentes.js cita y cuyas figuras no salen de ellas: el lock de figuras sigue la guía
+// rápida (QSG) de esos modelos, no la ficha coreana. Sin contraparte en el lock, y debe seguir así.
+const SIN_FIGURAS = {
+  'FG-100F-DAT-R30': 'las figuras de la 100F salen de su QSG (fg-100f-qsg.pdf), no de la ficha coreana',
+  'FG-200F-DAT-R17': 'las figuras de la 200F salen de su QSG (fg-200f-qsg.pdf), no de la ficha coreana',
+};
+
+const nombreDe = (url) => String(url).split('/').pop().toLowerCase();
+
+// Discrepancias entre las URL de las entradas de Fortinet y las de los documentos del lock de
+// figuras, emparejados por nombre de archivo. Función pura: la mutación de control la reutiliza.
+function discrepancias(entradas, documentos) {
+  const fallos = [];
+  const lock = Object.values(documentos);
+  for (const e of entradas) {
+    if (!e.url) continue;
+    const pareja = lock.filter((d) => nombreDe(d.url) === nombreDe(e.url));
+    for (const d of pareja) {
+      if (d.url !== e.url) fallos.push(`${e.documento}: fuentes.js dice ${e.url} y el lock de figuras ${d.url}`);
+    }
+  }
+  return fallos;
+}
+
+test('la URL de cada ficha es la misma en fuentes.js y en el lock de figuras', () => {
+  const fallos = discrepancias(FUENTES.fortinet, LOCK_FIGURAS.documentos);
+  assert.deepStrictEqual(fallos, []);
+  // Cada ficha tiene su contraparte en el lock, salvo las declaradas sin figuras.
+  const nombres = new Set(Object.values(LOCK_FIGURAS.documentos).map((d) => nombreDe(d.url)));
+  for (const f of FICHAS) {
+    const codigo = (f.documento.match(CODIGO) || [])[0];
+    const exenta = SIN_FIGURAS[codigo];
+    const tiene = nombres.has(nombreDe(f.url));
+    if (exenta) assert.ok(!tiene, `${f.documento}: ya tiene contraparte en el lock; quita su excepción (${exenta})`);
+    else assert.ok(tiene, `${f.documento}: ninguna figura del lock sale de esta URL; si es a propósito, decláralo en SIN_FIGURAS con su motivo`);
+  }
+  for (const [codigo, motivo] of Object.entries(SIN_FIGURAS)) {
+    assert.ok(FICHAS.some((f) => f.documento.includes(codigo)), `SIN_FIGURAS cita ${codigo}, que ya no es una ficha (${motivo})`);
+  }
+});
+
+test('mutación de control: la regla ve una URL que cambia en un solo lado', () => {
+  const ficha = FICHAS.find((f) => /40F/.test(f.documento));
+  const doc = Object.entries(LOCK_FIGURAS.documentos).find(([, d]) => nombreDe(d.url) === nombreDe(ficha.url));
+  assert.ok(doc, 'la 40F debe tener su documento en el lock');
+  const roto = { ...LOCK_FIGURAS.documentos, [doc[0]]: { ...doc[1], url: doc[1].url.replace('www.fortinet.com', 'fortinet.com') } };
+  assert.strictEqual(discrepancias(FUENTES.fortinet, roto).length, 1);
+  assert.strictEqual(discrepancias(FUENTES.fortinet, LOCK_FIGURAS.documentos).length, 0);
+});
