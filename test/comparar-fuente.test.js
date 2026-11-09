@@ -77,3 +77,78 @@ test('los argumentos y lo que se pinta: un TEXTO siempre con sus líneas, y dice
   assert.deepStrictEqual(salida.slice(1), ['    + • MACsec LAN mode', '    + … y 1 más (--lineas=0 las enseña todas)', '    buscar /MACsec/g: antes 0, ahora 2']);
   assert.match(pintar({ nombre: 'x.pdf', anterior: null, veredicto: { estado: 'SIN-TEXTO', motivo: 'no hay pdftotext' } }, o)[0], /sin texto que comparar: no hay pdftotext/);
 });
+
+// ── En Actions: el job `comparar` del transporte (2026-11-09) ──────────────────────────────────
+const fs = require('fs');
+const path = require('path');
+const { anotaciones, main, TOPE_AVISOS } = require('../scripts/comparar-fuente');
+
+test('las anotaciones: una línea con el recuento, un aviso por TEXTO o SIN-TEXTO, y lo buscado', () => {
+  const ant = { rama: 'fuente/pqc-2-2026-10-27', fecha: 1 };
+  const filas = [
+    { nombre: 'a.html', anterior: ant, veredicto: { estado: 'IGUAL' }, buscar: { antes: 0, ahora: 0 } },
+    { nombre: 'ixr-r.pdf', anterior: ant, veredicto: { estado: 'TEXTO', mas: ['• MACsec LAN mode', '• MACsec WAN mode'], menos: ['x 100%'], soloOrden: false }, buscar: { antes: 0, ahora: 2 } },
+    { nombre: 'b.pdf', anterior: ant, veredicto: { estado: 'SIN-TEXTO', motivo: 'no hay pdftotext' }, buscar: { antes: 'sin texto', ahora: 'sin texto' } },
+    { nombre: 'c.pdf', anterior: null, veredicto: { estado: 'NUEVO' }, buscar: { antes: 'sin copia', ahora: 3 } },
+  ];
+  const a = anotaciones(filas, 'fuente/hoy');
+  assert.strictEqual(a.length, 3);
+  assert.strictEqual(a[0], '::notice title=comparar-fuente::Rama fuente/hoy: 4 documento(s) frente a su copia anterior. '
+    + 'IGUAL: 1 · TEXTO: 1 · NUEVO: 1 · SIN-TEXTO: 1. Lo buscado cambia en: ixr-r.pdf (0 → 2), c.pdf (nuevo: 3).');
+  assert.strictEqual(a[1], '::warning title=comparar-fuente::ixr-r.pdf: cambia el texto, +2 −1 (anterior: fuente/pqc-2-2026-10-27). '
+    + '+ • MACsec LAN mode | + • MACsec WAN mode | − x 100%25');
+  assert.match(a[2], /^::warning title=comparar-fuente::b\.pdf: bytes distintos y sin texto que comparar .*no hay pdftotext\. No es «sin cambios»\.$/);
+  // Sin --buscar no se dice nada de lo buscado; y todo igual es una sola línea.
+  assert.deepStrictEqual(anotaciones([{ nombre: 'a', anterior: ant, veredicto: { estado: 'IGUAL' }, buscar: null }], 'fuente/x'),
+    ['::notice title=comparar-fuente::Rama fuente/x: 1 documento(s) frente a su copia anterior. IGUAL: 1.']);
+  // Más avisos que el tope: el resto, juntos en uno.
+  const muchos = Array.from({ length: TOPE_AVISOS + 3 }, (_, i) => ({ nombre: `d${i}.pdf`, anterior: ant, veredicto: { estado: 'TEXTO', mas: ['x'], menos: [], soloOrden: false } }));
+  const m = anotaciones(muchos, 'fuente/x');
+  assert.strictEqual(m.length, 1 + TOPE_AVISOS + 1);
+  assert.match(m[m.length - 1], /Y 3 más con cambios o sin leer: d9\.pdf \(TEXTO\), d10\.pdf \(TEXTO\), d11\.pdf \(TEXTO\)/);
+});
+
+test('con --anotaciones nunca sale distinto de 0, y lo que falla se dice en un aviso', async () => {
+  const lineas = [];
+  const log = console.log; const err = console.error;
+  console.log = (t) => lineas.push(String(t)); console.error = () => {};
+  try {
+    assert.strictEqual(await main(['fuente/rama-que-no-existe-jamas', '--sin-traer', '--anotaciones'], {}), 0);
+    assert.strictEqual(await main(['fuente/x', '--sin-traer', '--anotaciones', '--buscar=('], {}), 0, 'una expresión mal escrita tampoco');
+    assert.strictEqual(await main(['fuente/rama-que-no-existe-jamas', '--sin-traer'], {}), 2, 'a mano sí dice que falló');
+  } finally { console.log = log; console.error = err; }
+  assert.strictEqual(lineas.filter((l) => /^::warning title=comparar-fuente::La comparación no se pudo hacer/.test(l)).length, 2);
+});
+
+test('el job comparar: aparte del que empuja, sin escritura, sin token guardado y sin scripts de instalación', () => {
+  const yml = fs.readFileSync(path.join(__dirname, '..', '.github', 'workflows', 'traer-cisco-huawei.yml'), 'utf8').replace(/^\s*#.*\n/gm, '');
+  const [traer, comparar] = [yml.slice(yml.indexOf('\n  traer:\n'), yml.indexOf('\n  comparar:\n')), yml.slice(yml.indexOf('\n  comparar:\n'))];
+  assert.ok(comparar.length > 20, 'existe el job comparar');
+  // El que empuja no instala nada ni corre la comparación (lee documentos de fuera).
+  assert.ok(!/npm (?:ci|install)|npx |comparar-fuente/.test(traer));
+  assert.match(comparar, /needs: traer\n/);
+  assert.match(comparar, /permissions:\n {6}contents: read\n/);
+  assert.ok(!/: write/.test(comparar), 'sin escritura');
+  assert.match(comparar, /persist-credentials: false/);
+  assert.match(comparar, /fetch-depth: 0/, 'todas las ramas: la copia anterior vive en otra');
+  assert.deepStrictEqual(comparar.match(/npm (?:ci|install)[^\n]*/g), ['npm ci --ignore-scripts']);
+  // La rama y lo buscado llegan por el entorno, nunca interpolados en el script.
+  assert.ok(!/run:[^\n]*\$\{\{|^\s+(?:node|\[\[|if)[^\n]*\$\{\{/m.test(comparar), 'ninguna entrada interpolada en bash');
+  assert.match(comparar, /node scripts\/comparar-fuente\.js "\$RAMA" --sin-traer --anotaciones "--buscar=\$BUSCAR"/);
+  assert.match(comparar, /node scripts\/comparar-fuente\.js "\$RAMA" --sin-traer --anotaciones\n/);
+  assert.ok(!/continue-on-error/.test(comparar), 'no hace falta: el script sale siempre con 0');
+});
+
+// Lo destapó la primera corrida real (42693323597, lanzada desde una rama): el traspaso de esa rama,
+// que main no tiene, salió contado como documento NUEVO.
+test('un documento es lo que puso el commit del transporte, no todo lo que main no tiene', () => {
+  const { esDocumento } = require('../scripts/comparar-fuente');
+  const enMain = new Map([['README.md', 'x']]);
+  const delTransporte = new Set(['fuente-cisco-huawei/a.pdf', 'fuente-cisco-huawei/informe.json']);
+  assert.strictEqual(esDocumento('fuente-cisco-huawei/a.pdf', { enMain, delTransporte }), true);
+  assert.strictEqual(esDocumento('docs/traspaso/transporte-compara.md', { enMain, delTransporte }), false);
+  assert.strictEqual(esDocumento('fuente-cisco-huawei/informe.json', { enMain, delTransporte }), false);
+  // Sin el commit a la vista, la regla de main.
+  assert.strictEqual(esDocumento('fuente-cisco-huawei/a.pdf', { enMain, delTransporte: null }), true);
+  assert.strictEqual(esDocumento('README.md', { enMain, delTransporte: null }), false);
+});
