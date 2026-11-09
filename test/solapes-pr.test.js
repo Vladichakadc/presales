@@ -7,7 +7,7 @@ const test = require('node:test');
 const assert = require('node:assert');
 const fs = require('fs');
 const path = require('path');
-const { avisos, escaparAnotacion, main } = require('../scripts/solapes-pr');
+const { avisos, notaLectura, escaparAnotacion, main } = require('../scripts/solapes-pr');
 
 const RESERVA_143 = { origen: 'claude/fortinet-skus-wifi-extender', tema: 'el importador de la lista de Fortinet extrae también FortiWiFi y FortiExtender',
   estado: 'en curso', archivos: ['scripts/importar-skus-fortinet.js', 'test/importar-skus-fortinet.test.js', 'server/seed/legacyData/fortinetVariantes.js'] };
@@ -47,6 +47,60 @@ test('sin diff legible avisa y sale con 0: nunca pone un PR en rojo', () => {
     assert.strictEqual(main(['--base=origin/rama-que-no-existe-jamas', '--rama=x'], {}), 0);
   } finally { console.log = log; }
   assert.ok(lineas.some((l) => /^::warning title=solapes::No se pudo leer el diff/.test(l)), lineas.join(' | '));
+});
+
+// Lo leído, en UNA línea `::notice` (2026-11-09): sin ella, un «ninguno» no se ve desde una sesión,
+// que solo lee las anotaciones. Se cuenta con los filtros de `choques`, o un «Solapes: 0» saldría
+// junto a cifras que incluyen lo que nunca se comparó.
+const CERRADO = { origen: 'claude/perfiles-un-modulo', tema: 'perfiles', estado: 'cerrado sin fusionar: duplicado', archivos: ['public/js/bom.js'] };
+const PR_ABIERTO = { origen: 'claude/figuras-fortinet', tema: 'PR #149 «Figuras»', estado: 'PR abierto', archivos: ['RELEVO.md', 'scripts/figuras-fortinet.js'] };
+const ESTE_PR = { origen: 'claude/esta', tema: 'PR #150 «Este»', estado: 'PR abierto', archivos: ['scripts/solapes-pr.js'] };
+
+test('la nota cuenta lo que se compara: sin la propia rama ni los cerrados, y los archivos sin los de cierre', () => {
+  const nota = notaLectura({ propios: ['scripts/solapes-pr.js', 'RELEVO.md', 'docs/entregas/x.md'], ocupados: [RESERVA_143, CERRADO, PR_ABIERTO, ESTE_PR],
+    rama: 'claude/esta', base: 'origin/main', avisoPrs: null, solapes: 0 });
+  assert.strictEqual(nota, 'Leído: 1 traspaso(s) en curso de otras ramas (y 1 cerrado(s), que no cuentan); 1 PR abierto(s) sin traspaso; '
+    + '3 archivo(s) de este PR contra origin/main, 1 sin los de cierre. Solapes: 0.');
+});
+
+test('sin poder leer los PR, la nota lo dice en vez de contar cero', () => {
+  const nota = notaLectura({ propios: [], ocupados: [RESERVA_143], rama: 'x', base: 'origin/main', avisoPrs: 'sin token', solapes: 0 });
+  assert.match(nota, /los PR abiertos no se pudieron leer/);
+  assert.ok(!/PR abierto\(s\) sin traspaso/.test(nota), nota);
+});
+
+function conducir(lectores, rama = 'claude/esta') {
+  const lineas = [];
+  const log = console.log;
+  console.log = (s) => lineas.push(String(s));
+  try {
+    assert.strictEqual(main(['--base=origin/main', `--rama=${rama}`], {}, lectores), 0);
+  } finally { console.log = log; }
+  return {
+    avisos: lineas.filter((l) => l.startsWith('::warning title=solapes::')),
+    notas: lineas.filter((l) => l.startsWith('::notice')),
+  };
+}
+
+test('sin solapes deja una sola anotación ::notice con lo leído, y ningún ::warning', () => {
+  const r = conducir({ diff: () => ['scripts/solapes-pr.js', 'RELEVO.md'], ocupados: () => ({ ocupados: [CERRADO, PR_ABIERTO, ESTE_PR], avisoPrs: null }) });
+  assert.deepStrictEqual(r.avisos, []);
+  assert.strictEqual(r.notas.length, 1, r.notas.join(' | '));
+  assert.match(r.notas[0], /^::notice title=solapes::Leído: 0 traspaso\(s\) en curso .*1 PR abierto\(s\) sin traspaso; 2 archivo\(s\) .*1 sin los de cierre\. Solapes: 0\.$/);
+});
+
+test('con solapes, una sola ::notice junto a un ::warning por tema, nunca una por archivo', () => {
+  const r = conducir({ diff: () => PR_142, ocupados: () => ({ ocupados: [RESERVA_143, PR_ABIERTO], avisoPrs: null }) }, 'claude/skus-fortinet-variantes');
+  assert.strictEqual(r.avisos.length, 1);
+  assert.strictEqual(r.notas.length, 1, r.notas.join(' | '));
+  assert.match(r.notas[0], /Solapes: 1\.$/);
+});
+
+test('sin poder leer los PR, la ::notice sale igual y lo dice', () => {
+  const r = conducir({ diff: () => ['a.js'], ocupados: () => ({ ocupados: [], avisoPrs: 'sin token' }) });
+  assert.ok(r.avisos.some((l) => /Solo se miraron los traspasos/.test(l)));
+  assert.strictEqual(r.notas.length, 1);
+  assert.match(r.notas[0], /los PR abiertos no se pudieron leer/);
 });
 
 test('el job: solo en PR, lectura de PR sin escritura, sin instalar nada y sin guardar el token', () => {

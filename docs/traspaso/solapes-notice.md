@@ -1,30 +1,32 @@
 # Traspaso: solapes-notice
 
-- **Tema:** solapes-notice
+- **Tema:** el job `solapes` deja una línea `::notice` con lo que leyó (mejora propuesta al cerrar el PR #145)
 - **Rama:** claude/elegant-pascal-7ymts7
-- **Cuenta:** (no consta)
-- **Estado:** reservado
-- **Actualizado:** 2026-11-09 12:44
+- **Cuenta:** vladichakadc@gmail.com (sesión 01TxCQ3W2sHYVmimAdMKht3j)
+- **Estado:** en curso
+- **Actualizado:** 2026-11-09 13:40
 - **Archivos que toca:** scripts/solapes-pr.js, test/solapes-pr.test.js
-- **Siguiente paso:** empezar: el tema está reservado y todavía no tiene código
+- **Siguiente paso:** abrir el PR, leer la anotación `::notice` del job `solapes` de su propio check y escribir el cierre
 
 ## Encargo del dueño
 
-<Las palabras del dueño, literales, y lo que se entendió de ellas.>
+«Ejecuta los pendientes como un arquitecto senior con las Skills instaladas y las propuestas de mejora; no pares hasta no tener resuelto», y «Continuar». Preguntado por la mejora «el job `solapes` deja una línea `::notice` con lo que leyó» (propuesta al cerrar el PR #145), el dueño eligió **«Hacerla»**.
 
 ## Hecho
 
-- <Lo terminado, con el commit que lo contiene.>
+- La reserva.
+- `notaLectura` y una sola `::notice` por corrida en `scripts/solapes-pr.js`; lectores inyectables en `main`; cinco pruebas nuevas en `test/solapes-pr.test.js`.
 
 ## Falta
 
-- <Lo pendiente de este tema, en orden.>
+- PR, comprobar la anotación en el check del propio PR, cierre, CI, fusión y sonda.
 
 ## Decisiones y hallazgos
 
-
-- <Lo decidido y su porqué; lo medido; lo que no funcionó, para no repetirlo.>
+- Se cuenta con los filtros de `choques`: un «0 solapes» junto a cifras que incluyen lo que nunca se comparó confundiría (asesor).
 
 ## Verificación
 
-- <Qué se corrió (`npm run verificar`, `auditar`, `pantallas`…) y con qué resultado.>
+- `npm run verificar`: 1.469/1.469, lint sin errores.
+- Sabotajes que caen: sin la línea (3 pruebas), una línea por archivo (2), contar la propia rama (2).
+- En local contra `origin/main`: «Leído: 0 traspaso(s) en curso de otras ramas (y 1 cerrado(s), que no cuentan); 0 PR abierto(s) sin traspaso; … Solapes: 0.»
