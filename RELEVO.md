@@ -409,6 +409,8 @@ existen los workflows de transporte. Huawei y HPE niegan además el navegador au
 
 ## Mejoras propuestas sin decidir
 
+- **Auditoría de los dimensionadores (2026-11-09): fases 1 a 3** (propuesta al cerrar el PR #150, que hizo la fase 0). Fase 1: trazabilidad (versión de catálogo y de motor en la hoja «Supuestos» del BOM y `datasetVersion` en los nueve fabricantes), Express 5 (la rama 4 está en mantenimiento y su fin de vida no es anterior al 2026-10-01) y archivar el código muerto. Fase 2: un contrato común de motor y un corte del BOM por PR (`render()` y `renderBom()` de Aruba pasan de 500 líneas). Fase 3: catálogo en memoria y mayores de dependencias. Evita que la recomendación cambie sin dejar rastro de qué catálogo la produjo. Cuesta un PR por paso; si se hace mal, el contrato común sin las equivalencias de `npm run equivalencia` cambiaría resultados sin que nada lo frene.
+
 - **Que el job `solapes` deje también una anotación cuando no encuentra nada** (propuesta al cerrar el PR #145).
   Hoy un «ninguno» solo va al resumen del job, y las sesiones no leen los logs ni los resúmenes de Actions (el
   proxy los corta): solo las anotaciones. Una línea `::notice` con lo que leyó (N traspasos, M PR abiertos, K
