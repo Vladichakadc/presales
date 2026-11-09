@@ -90,7 +90,7 @@ $('dirSeg').addEventListener('click', e => {
 ['pickModel','qty','plazoMrr','margenFin','feeMsp'].forEach(id => $(id).addEventListener('input', renderBom));
 
 const fmt = HuaweiMotor.fmt;
-const esc = s => String(s).replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
 // Catálogo Huawei, con las mismas dos tablas que antes vivían en la vista de Huawei del
 // portal (ver CLAUDE.md, 2026-09-10): se pintan desde MODELS, ya cargado para el propio

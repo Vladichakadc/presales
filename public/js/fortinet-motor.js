@@ -785,7 +785,10 @@
     // cumple -la misma regla de FICHA.ordenar, reproducida aqui porque el servidor no tiene
     // FICHA y el orden decide la recomendacion-.
     const rango = (c) => (c.eol ? 2 : 0);
-    const orden = (a, b) => rango(a) - rango(b) || a.soporta - b.soporta;
+    // Empate de cifra (soporta): desempata por id en orden natural, para que la recomendacion
+    // no dependa del orden en que el catalogo llega de la base de datos.
+    const orden = (a, b) => rango(a) - rango(b) || a.soporta - b.soporta
+      || String(a.id).localeCompare(String(b.id), 'en', { numeric: true });
     res.elegibles = res.candidatos.filter((c) => c.elegible).sort(orden);
     res.descartados = res.candidatos.filter((c) => !c.elegible);
     const rx = SEG_MATCH[s.sitio.segmento];

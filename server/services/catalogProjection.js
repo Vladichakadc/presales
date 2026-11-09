@@ -3,6 +3,10 @@ const {
   SupportTier, LicenseBundle, RoleRecommendation,
 } = require('../models');
 const cotizadorCatalog = require('../seed/legacyData/cotizadorCatalog');
+
+// Orden explicito y estable de los productos: antes lo decidia el indice unico de SQLite
+// (vendorId, model) y los motores desempataban por casualidad segun ese orden.
+const ORDEN_PRODUCTO = [['vendorId', 'ASC'], ['model', 'ASC']];
 const mikrotikData = require('../seed/legacyData/mikrotik');
 const arubaData = require('../seed/legacyData/aruba');
 const nokiaData = require('../seed/legacyData/nokia');
@@ -266,7 +270,7 @@ async function toFuentes(vendor) {
 const VENDOR_DE_GRUPO = { hw_ar: 'huawei', hw_wan: 'huawei' };
 
 async function toIndexPR() {
-  const products = await Product.findAll();
+  const products = await Product.findAll({ order: ORDEN_PRODUCTO });
   const result = { hw_ar: [], hw_wan: [], cisco: [], nokia: [], fortinet: [], juniper: [], mikrotik: [], aruba: [] };
   const fuera = clavesFueraDeVenta(products);
   for (const p of products) {
@@ -298,7 +302,7 @@ async function toCotizadorCatalog() {
   const vendorByCode = {};
   for (const v of vendors) vendorByCode[v.code] = v;
 
-  const products = await Product.findAll();
+  const products = await Product.findAll({ order: ORDEN_PRODUCTO });
   const byKey = {};
   for (const p of products) byKey[`${p.vendorId}::${normalizeName(p.model)}`] = p;
   const fuera = clavesFueraDeVenta(products);
@@ -368,6 +372,7 @@ async function toDimensionadorHuawei() {
   for (const t of tiers) hicare[t.code] = { n: t.name, sla: t.sla, d: t.description };
 
   const products = await Product.findAll({
+    order: ORDEN_PRODUCTO,
     where: { vendorId },
     include: [{ model: OpticCategory }, { model: Part }],
   });
@@ -401,6 +406,7 @@ async function toDimensionadorCisco() {
   for (const b of bundles) dnaDesc[b.code] = b.description;
 
   const products = await Product.findAll({
+    order: ORDEN_PRODUCTO,
     where: { vendorId },
     include: [{ model: OpticCategory }, { model: Part }],
   });
@@ -444,7 +450,7 @@ async function toDimensionadorFortinet() {
   const care = {};
   for (const t of tiers) care[t.code] = { n: t.name, sla: t.sla };
 
-  const products = await Product.findAll({ where: { vendorId } });
+  const products = await Product.findAll({ order: ORDEN_PRODUCTO, where: { vendorId } });
   const models = products
     .filter((p) => p.specs && p.specs.seg && p.category === 'firewall')
     // elpN habilita el total del BOM: sin el precio numerico la pagina solo puede
@@ -502,6 +508,7 @@ async function toDimensionadorMikrotik() {
   for (const t of tiers) support[t.code] = { n: t.name, sla: t.sla, d: t.description };
 
   const products = await Product.findAll({
+    order: ORDEN_PRODUCTO,
     where: { vendorId },
     include: [{ model: OpticCategory }],
   });
@@ -560,7 +567,7 @@ async function toDimensionadorJuniper() {
   const care = {};
   for (const t of tiers) care[t.code] = { n: t.name, sla: t.sla };
 
-  const products = await Product.findAll({ where: { vendorId } });
+  const products = await Product.findAll({ order: ORDEN_PRODUCTO, where: { vendorId } });
   const deSpecs = (p) => ({
     id: p.model, ...p.specs, eol: p.eol, elp: p.priceDisplay, elpN: p.priceNumeric,
   });
@@ -596,7 +603,7 @@ async function toDimensionadorAruba() {
   const locales = datasheetsLocales();
   const rutaLocal = (file) => (file && locales.has(file) ? `/datasheets/${file}` : null);
 
-  const products = await Product.findAll({ where: { vendorId }, include: [{ model: OpticCategory }] });
+  const products = await Product.findAll({ order: ORDEN_PRODUCTO, where: { vendorId }, include: [{ model: OpticCategory }] });
   const models = products
     .filter((p) => p.specs && p.specs.fam && ['sdwan', 'gateway'].includes(p.category))
     .map((p) => ({
@@ -655,7 +662,7 @@ async function toDimensionadorNokia() {
   const vendorIds = await vendorIdMap();
   const vendorId = vendorIds.nokia;
 
-  const products = await Product.findAll({ where: { vendorId, category: 'switch_fabric' } });
+  const products = await Product.findAll({ order: ORDEN_PRODUCTO, where: { vendorId, category: 'switch_fabric' } });
   const models = products
     .filter((p) => p.specs && Array.isArray(p.specs.puertos))
     .map((p) => ({
@@ -671,6 +678,7 @@ async function toDimensionadorNokia() {
 async function toDimensionadorNokiaRouter() {
   const vendorIds = await vendorIdMap();
   const products = await Product.findAll({
+    order: ORDEN_PRODUCTO,
     where: { vendorId: vendorIds.nokia, category: 'router_core' },
   });
   const models = products
@@ -693,7 +701,7 @@ async function toGuiaRoles() {
     include: [{ model: Product, include: [{ model: Vendor }] }],
     order: [['id', 'ASC']],
   });
-  const fuera = clavesFueraDeVenta(await Product.findAll());
+  const fuera = clavesFueraDeVenta(await Product.findAll({ order: ORDEN_PRODUCTO }));
   const indice = cifras.indiceDimensionador();
   const result = {};
   for (const r of recs) {
