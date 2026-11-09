@@ -113,7 +113,11 @@
     const raw = Math.max(0, (Number(esc.bw) || 0) * (Number(esc.unit) || 1));
     // Menos de una sede no es un hub: con -5 el requerimiento salía negativo y el aviso pedía «-5 túneles».
     const sites = Math.max(1, parseInt(esc.sites, 10) || 1);
-    const conc = Number(esc.conc); const head = Number(esc.head);
+    // Un margen o una concurrencia ausentes o no numericos daban NaN: la necesidad quedaba en NaN, ningun
+    // equipo se descartaba y se recomendaba un AR611 para 5 Gbps (auditoria 2026-11-09). Se leen con el
+    // valor por defecto de la pagina (margen 30 %, concurrencia 40 %).
+    const numODef = (v, def) => (v != null && Number.isFinite(Number(v)) ? Number(v) : def);
+    const conc = numODef(esc.conc, 40); const head = numODef(esc.head, 30);
     const dirMult = Number(esc.dirMult) || 2;
     const frame = Number(esc.frame) || 340;
     const base = mode === 'agg' ? raw * sites * conc / 100 : raw;

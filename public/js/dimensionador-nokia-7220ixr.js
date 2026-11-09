@@ -263,6 +263,7 @@
     montarTabs();
     const res = await fetch('/api/dimensionador/nokia');
     CATALOGO = await res.json();
+    if (typeof BOM !== 'undefined' && BOM.fijarCatalogo) BOM.fijarCatalogo(CATALOGO.datasetVersion);
 
     ['servers', 'accesoVel', 'oversub'].forEach((id) => $(id).addEventListener('input', render));
     $('chkDual').addEventListener('change', render);

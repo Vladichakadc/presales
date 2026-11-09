@@ -988,6 +988,7 @@ BOM.montarPerfiles({
 (async function initApp(){
   const res = await fetch('/api/dimensionador/cisco');
   const data = await res.json();
+  if (typeof BOM !== 'undefined' && BOM.fijarCatalogo) BOM.fijarCatalogo(data.datasetVersion);
   // Pendiente 34: el respaldo de ciclo de vida de ESTE fabricante, tal como lo declara
   // `legacyData/fuentes.js` con sus `campos`.
   FICHA.fijarCicloVida(data.cicloVida);
