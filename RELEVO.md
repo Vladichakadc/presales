@@ -409,6 +409,7 @@ existen los workflows de transporte. Huawei y HPE niegan además el navegador au
 
 ## Mejoras propuestas sin decidir
 
+- **Un extractor de las figuras de Fortinet, como el de Huawei** (propuesta al cerrar el PR #148). Las 73 figuras `fg-*` y `fwf-*` se recortaron a mano de la página «Hardware» y no queda forma de rehacerlas: cuando Fortinet publique otra edición de una ficha, nadie sabrá qué caja se recortó ni si el dibujo cambió. `scripts/figuras-fortinet.js` guardaría, por modelo, ficha, página y caja en un lock (como `scripts/figuras-huawei.lock.json`), rasterizaría y recortaría igual que el PR #148, y su prueba frenaría una figura que no sale del lock. Evita figuras viejas tras una revisión de la ficha. Cuesta unas 150 líneas, más volver a medir las cajas de las 63 `fg-*` contra las fichas de `fuente/fortinet-serie`; si se hace mal, regenera una figura con otro encuadre y la prueba de huérfanas no lo ve.
 - **Que el job `solapes` deje también una anotación cuando no encuentra nada** (propuesta al cerrar el PR #145).
   Hoy un «ninguno» solo va al resumen del job, y las sesiones no leen los logs ni los resúmenes de Actions (el
   proxy los corta): solo las anotaciones. Una línea `::notice` con lo que leyó (N traspasos, M PR abiertos, K

@@ -595,7 +595,7 @@ Módulos compartidos:
   Excel, copiar y enviar con un P0, un SKU sin casar o la lista vencida, y el override exige motivo.
   Si el override solo choca con `CICLO_VIDA` (cumple el escenario), su caja ofrece declarar ampliación o
   renovación en un clic (`motivo-ciclo`), que lleva a la justificación sin escribirla.
-  Un SKU nunca se busca con el marcador `-DD`. Figuras desde la página «Hardware» de cada ficha.
+  Un SKU nunca se busca con el marcador `-DD`. Figuras desde la página «Hardware» de cada ficha; los ocho FortiWiFi, con su propio dibujo de las fichas FGFWF (`fwf-*.webp`, 2026-11-09, PR #148), nunca el de su FortiGate.
   **HA y FortiGuard** (F3, 2026-10-28): una suscripción por nodo, salvo en activo-pasivo de las
   series que la guía de FortiOS 7.6.6 nombra (`haLicenciaUnica`: 40F, 60F, 70F, 80F, 100F y
   variantes, con su SKU de HA y su heartbeat), que admiten una sola. Con la casilla «Licencia FortiGuard
