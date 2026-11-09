@@ -1336,6 +1336,20 @@ module.exports = [
     descubrirEnlace: { de: 'fortinet-rn-7.6.6.html', contiene: 'release-notes',
       base: 'https://docs.fortinet.com/document/fortigate/7.6.6/fortios-release-notes',
       dominios: ['fortinet.com', 'fortinetweb.s3.amazonaws.com'] } },
+  // 2026-11-09 (encargo «ejecuta pendientes y trae los documentos oficiales»): la PQC del
+  // FortiWiFi 50G-5G-II espera unas Release Notes que nombren FWF-50G-5G-II. Las de 7.6.8
+  // (build 3744) y las de 8.0.2 (build 0251) son las últimas de cada rama. Sus PDF están en
+  // el almacén de documentos de Fortinet, el mismo de la 7.6.0 de más arriba (URL buscadas,
+  // no compuestas). La página va como exploración: dice si docs.fortinet.com sirve la 7.6.8.
+  { archivo: 'fortinet-rn-7.6.8.pdf', tipo: 'pdf', para: 'FORTINET', urls: [
+    'https://fortinetweb.s3.amazonaws.com/docs.fortinet.com/v2/attachments/3f60f9a2-cbdf-11f1-8c5a-8e4c95ff11ac/fortios-v7.6.8-release-notes.pdf',
+  ] },
+  { archivo: 'fortinet-rn-7.6.8-modelos.html', tipo: 'html', para: 'FORTINET', exploracion: true, urls: [
+    'https://docs.fortinet.com/document/fortigate/7.6.8/fortios-release-notes/760203/introduction-and-supported-models',
+  ] },
+  { archivo: 'fortinet-rn-8.0.2.pdf', tipo: 'pdf', para: 'FORTINET', urls: [
+    'https://fortinetweb.s3.amazonaws.com/docs.fortinet.com/v2/attachments/8f18b7aa-cbdf-11f1-8c5a-8e4c95ff11ac/fortios-v8.0.2-release-notes.pdf',
+  ] },
   // · Combinaciones del C8570-G2: su guia de hardware no trae la nota de la bahia 1 en
   //   100G; el capitulo «Bay configuration» de su guia de configuracion, si (leida en la
   //   edicion japonesa: la bahia 0 se deshabilita).
