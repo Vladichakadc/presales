@@ -742,7 +742,18 @@ async function toGuiaRoles() {
   return result;
 }
 
+/* VERSION DEL CATALOGO de cualquier dimensionador (auditoria 2026-11-09, fase 1): un hash del
+   CONTENIDO que sirve la ruta, con la misma forma que el de Fortinet (`<fabricante>@<16 hex>`).
+   Sin ella, dos propuestas calculadas con catalogos distintos eran indistinguibles en el BOM.
+   Usa el mismo canon y el mismo SHA-256 que el motor de Fortinet, que no dependen del orden de
+   las claves. Si la proyeccion ya trae su version (Fortinet), se respeta. */
+function versionDeCatalogo(vendor, datos) {
+  if (datos && datos.datasetVersion) return datos.datasetVersion;
+  return `${vendor}@${MOTOR_FORTINET.sha256(MOTOR_FORTINET.canon(datos)).slice(0, 16)}`;
+}
+
 module.exports = {
+  versionDeCatalogo,
   toDimensionadorNokiaRouter,
   getVendorsList,
   toIndexPR,
