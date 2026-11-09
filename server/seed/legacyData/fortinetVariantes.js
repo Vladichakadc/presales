@@ -187,4 +187,18 @@ const FORTIEXTENDER = {
   ],
 };
 
-module.exports = { FICHAS, VARIANTES, FORTIEXTENDER };
+/* [RC] en el SKU de la ficha: «[RC] = regional code: A, B, D, E, F, I, J, N, P, S, V, and Y». Un
+   SKU de la lista casa con el de la ficha si es el mismo, o si pone en [RC] uno de esos codigos.
+   Lo usan fortinet.js (la fila de hardware del bloque) y scripts/importar-skus-fortinet.js (el
+   ancla del bloque). */
+const CODIGOS_REGIONALES = ['A', 'B', 'D', 'E', 'F', 'I', 'J', 'N', 'P', 'S', 'V', 'Y'];
+const partesRc = (skuFicha) => (/\[RC\]/.test(skuFicha) ? skuFicha.split('[RC]') : null);
+function casaSku(skuFicha, sku) {
+  const p = partesRc(skuFicha);
+  if (!p) return sku === skuFicha;
+  const [antes, despues] = p;
+  if (sku.length <= antes.length + despues.length || !sku.startsWith(antes) || !sku.endsWith(despues)) return false;
+  return CODIGOS_REGIONALES.includes(sku.slice(antes.length, sku.length - despues.length));
+}
+
+module.exports = { FICHAS, VARIANTES, FORTIEXTENDER, CODIGOS_REGIONALES, casaSku };

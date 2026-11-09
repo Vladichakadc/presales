@@ -489,9 +489,50 @@ function contrastePantallas(servidas) {
   };
 }
 
+/* ── FORTIWIFI Y FORTIEXTENDER: LA EXTRACCION DE LA LISTA, A MEDIAS O NO ────────
+   QUE MIRA (2026-11-06, mejora propuesta al cerrar el PR #143). `npm run skus` extrae el bloque
+   de cada FortiWiFi y FortiExtender de la lista firmada, pero un FortiWiFi sigue «consultar»
+   hasta que una persona declare su `lic` en fortinetVariantes.js: el importador lo SUGIERE y no
+   lo escribe, porque no hay un precio verificado contra el que anclarlo. Sin esta seccion, la
+   extraccion se queda a medias sin que nadie lo vea.
+
+   TRES ESTADOS POR EQUIPO: `sin-extraer` (no hay bloque en fortinetSkus.js), `sin-licencias`
+   (FortiWiFi con bloque y sin `lic`: se repite la sugerencia del importador) e `incompleto`
+   (FortiExtender con bloque al que le falta un SKU de su ficha). Lo terminado no se lista.
+   Solo avisa: nunca escribe ni propone un codigo que no salga, uno y solo uno, de su bloque.
+   La regla de la sugerencia es la del importador; test/catalogo-fortinet-lista.test.js frena
+   que las dos se separen. */
+const RE_LIC = /^FC-10-([A-Z0-9]+)-(?:809|950|928)-02-(?:12|36|60)$/;
+const RE_BDL = /^(.+-BDL)-(?:809|950)-(?:12|36|60)$/;
+function sugerirLicencias(refs) {
+  const unicos = (re) => [...new Set(refs.map((r) => re.exec(r.sku)).filter(Boolean).map((x) => x[1]))];
+  const lic = unicos(RE_LIC);
+  const bdl = unicos(RE_BDL);
+  return { lic: lic.length === 1 ? lic[0] : null, bdl: lic.length === 1 && bdl.length === 1 ? bdl[0] : null, codigos: lic };
+}
+function listaFortinet({
+  skus = require('../server/seed/legacyData/fortinetSkus'),
+  variantes = require('../server/seed/legacyData/fortinetVariantes').VARIANTES,
+  extenders = require('../server/seed/legacyData/fortinetVariantes').FORTIEXTENDER.modelos,
+} = {}) {
+  const filas = [];
+  for (const v of variantes.filter((x) => !x.lic && /^FortiWiFi /.test(x.id))) {
+    const refs = skus[v.id];
+    if (!refs) { filas.push({ modelo: v.id, estado: 'sin-extraer' }); continue; }
+    filas.push({ modelo: v.id, estado: 'sin-licencias', sugerido: sugerirLicencias(refs) });
+  }
+  for (const x of extenders) {
+    const refs = skus[x.id];
+    if (!refs) { filas.push({ modelo: x.id, estado: 'sin-extraer' }); continue; }
+    const faltan = x.skus.filter((s) => !refs.some((r) => r.sku === s));
+    if (faltan.length) filas.push({ modelo: x.id, estado: 'incompleto', faltan });
+  }
+  return filas;
+}
+
 function informe() {
   return {
-    cobertura: cobertura(), cicloDeVida: cicloDeVida(), precios: precios(), sinPrecio: sinPrecioDeclarado(),
+    cobertura: cobertura(), cicloDeVida: cicloDeVida(), precios: precios(), sinPrecio: sinPrecioDeclarado(), listaFortinet: listaFortinet(),
     contrasteCotizador: contrasteCotizador(),
     coberturaContraste: coberturaContraste(),
     pantallas: pantallas(), procedencia: procedencia(), fuentesPendientes: fuentesPendientes(),
@@ -566,6 +607,23 @@ function imprimir(d) {
       } else if (f.modulo === 'aruba') {
         console.log('           la lista versionada no trae su fila: npm run lista-aruba -- <lista.txt> la busca (sin --aplicar no escribe)');
       }
+    }
+    console.log('\n== FORTIWIFI Y FORTIEXTENDER: lo que falta de la lista firmada ==');
+    console.log('   El bloque lo extrae npm run skus; el codigo de licencias de un FortiWiFi lo declara una persona.\n');
+    if (!d.listaFortinet.length) console.log('   Nada: todos extraidos y con licencias declaradas.');
+    const sinExtraer = d.listaFortinet.filter((f) => f.estado === 'sin-extraer');
+    if (sinExtraer.length) {
+      console.log(`   sin extraer (${sinExtraer.length}): ${sinExtraer.map((f) => f.modelo).join(', ')}`);
+      console.log('           npm run skus -- <lista firmada.xlsx> extrae su bloque; hasta entonces van «consultar»');
+    }
+    for (const f of d.listaFortinet.filter((x) => x.estado === 'sin-licencias')) {
+      const s = f.sugerido;
+      console.log(`   ${f.modelo}: bloque extraido, licencias sin declarar · ${s.lic
+        ? `sugerido lic: '${s.lic}'${s.bdl ? `, bdl: '${s.bdl}'` : ''} (declararlo en fortinetVariantes.js tras mirarlo)`
+        : (s.codigos.length ? `varios codigos (${s.codigos.join(', ')}): elegir mirando la lista` : 'su bloque no trae codigo de licencias')}`);
+    }
+    for (const f of d.listaFortinet.filter((x) => x.estado === 'incompleto')) {
+      console.log(`   ${f.modelo}: la lista no trae ${f.faltan.join(', ')} (va «consultar»)`);
     }
     console.log('\n== COTIZADOR FRENTE A DIMENSIONADOR: una sola copia de cada cifra ==');
     console.log('   Una linea con pareja deja un hueco y la siembra pone la cifra del dimensionador; se contrasta lo que');
@@ -663,7 +721,7 @@ if (require.main === module) {
 }
 
 module.exports = {
-  informe, cobertura, cicloDeVida, precios, sinPrecioDeclarado, pantallas, procedencia,
+  informe, cobertura, cicloDeVida, precios, sinPrecioDeclarado, listaFortinet, sugerirLicencias, pantallas, procedencia,
   contrasteCotizador, leerSpec, normalizarModelo, CONTRASTE_COTIZADOR,
   pantallasServidas, contrastePantallas,
   fuentesPendientes, SEMANAS_TOLERADAS, impactoDeFuentes, clavesDe,
