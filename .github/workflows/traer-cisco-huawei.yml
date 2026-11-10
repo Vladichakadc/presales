@@ -120,40 +120,13 @@ jobs:
             echo '```'
           } >> "$GITHUB_STEP_SUMMARY"
 
-  # Lo traido, frente a su copia anterior (2026-11-09, scripts/comparar-fuente.js): cada documento de la
-  # rama recien empujada contra el mismo documento en las demas ramas fuente/*. IGUAL, BYTES, TEXTO, NUEVO
-  # o SIN-TEXTO, en anotaciones, que es lo unico de Actions que una sesion lee. Job APARTE y sin
-  # escritura: lee PDF y HTML de fuera, asi que no comparte job con el que empuja; instala del lock sin
-  # dejar que ninguna dependencia ejecute codigo (pdf-parse, para el texto de los PDF) y no guarda el
-  # token. Nunca falla: la corrida va sobre la cabeza de main y Railway espera a sus checks.
+  # Lo traido, frente a su copia anterior: comparar-fuente.yml, el mismo para los cuatro transportes.
+  # Corre aparte de `traer`, que es el que empuja, y solo con lectura.
   comparar:
     needs: traer
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
     permissions:
       contents: read
-
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          # Todas las ramas: la copia anterior de cada documento vive en otra rama fuente/*.
-          fetch-depth: 0
-          persist-credentials: false
-
-      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
-        with:
-          node-version-file: package.json
-
-      - run: npm ci --ignore-scripts
-
-      - name: Comparar con la copia anterior
-        env:
-          RAMA: ${{ inputs.rama }}
-          BUSCAR: ${{ inputs.buscar }}
-        run: |
-          [[ "$RAMA" =~ ^fuente/[a-z0-9-]+$ ]] || { echo "rama no valida: $RAMA"; exit 0; }
-          if [ -n "$BUSCAR" ]; then
-            node scripts/comparar-fuente.js "$RAMA" --sin-traer --anotaciones "--buscar=$BUSCAR"
-          else
-            node scripts/comparar-fuente.js "$RAMA" --sin-traer --anotaciones
-          fi
+    uses: ./.github/workflows/comparar-fuente.yml
+    with:
+      rama: ${{ inputs.rama }}
+      buscar: ${{ inputs.buscar }}
