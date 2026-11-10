@@ -6,25 +6,25 @@
 - **Estado:** reservado
 - **Actualizado:** 2026-11-10 13:08
 - **Archivos que toca:** public/js/dimensionador-fortinet-fortigate.js, public/js/ficha.js, test/e2e/e2e-fortinet-wifi-celular.js
-- **Siguiente paso:** empezar: el tema está reservado y todavía no tiene código
+- **Siguiente paso:** fusionar el #172 (datos y figuras), traer main a esta rama y abrir el PR
 
 ## Encargo del dueño
 
-<Las palabras del dueño, literales, y lo que se entendió de ellas.>
+«Enfócate a mejorar FortiWiFi y FortiExtender […] gráficos actualizados de los equipos» (2026-11-10): enseñar en la página las figuras que trae el PR #172.
 
 ## Hecho
 
-- <Lo terminado, con el commit que lo contiene.>
+- `figuraExtender` en la página, `FICHA.tablaLeyenda` expuesta y la e2e de Wi-Fi y celular ampliada.
 
 ## Falta
 
-- <Lo pendiente de este tema, en orden.>
+- Traer main con el #172 y abrir el PR.
 
 ## Decisiones y hallazgos
 
 
-- <Lo decidido y su porqué; lo medido; lo que no funcionó, para no repetirlo.>
+- El Excel no la lleva: «Fotos del equipo» es de un solo modelo (el FortiGate); llevar dos pide tocar `bom.js`.
 
 ## Verificación
 
-- <Qué se corrió (`npm run verificar`, `auditar`, `pantallas`…) y con qué resultado.>
+- eslint limpio. La e2e corre en CI (aquí no hay Playwright instalado).

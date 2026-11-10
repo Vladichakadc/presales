@@ -701,8 +701,26 @@ function pintarCelular(r) {
   if (fex.alternativas.length) partes.push(`Alternativas: ${fex.alternativas.map((a) => `${esc(a.id)} (${esc(cifra(a))}${a.region === 'EA' || a.region === 'AM' ? `, solo ${esc(a.regionN)}` : ''})`).join('; ')}.`);
   if (fex.descartados.length) partes.push(`Apartados: ${fex.descartados.map((d) => `${esc(d.x.id)}, ${esc(d.motivo)}`).join('; ')}.`);
   if (fex.fuente) partes.push(`Fuente: ${fex.url ? `<a href="${esc(fex.url)}" target="_blank" rel="noopener">${esc(fex.fuente)}</a>` : esc(fex.fuente)}.`);
-  caja.innerHTML = partes.join(' ');
+  caja.innerHTML = partes.join(' ') + (x ? figuraExtender(x) : '');
   caja.hidden = false;
+}
+
+/* La figura del FortiExtender elegido (2026-11-10, encargo del dueño: «gráficos actualizados de los
+   equipos»). Sale de `fortinet-vistas-equipos.json`, con el mismo lock que las de los FortiGate (PR
+   #172), y lleva su leyenda numerada con la tabla de la ficha. Un FortiExtender que su ficha no dibuja
+   lo dice: nunca se enseña la figura de otro modelo. */
+function figuraExtender(x) {
+  if (!VISTAS) return ''; // el mapa aún no llegó (o no cargó): no se sabe, y no se dice nada
+  const v = VISTAS[x.id];
+  if (!v || !v.front) {
+    return `<p class="fex-sin-figura" style="margin:8px 0 0">La ficha de FortiExtender no dibuja el ${esc(x.id)}: sin figura oficial.</p>`;
+  }
+  const ley = v.frontLeyenda && v.frontLeyenda.filas && v.frontLeyenda.filas.length && window.FICHA && FICHA.tablaLeyenda
+    ? `<details class="ficha-vista-leyenda" style="padding:6px 0 0"><summary>Qué es cada número (${v.frontLeyenda.filas.length})</summary>${FICHA.tablaLeyenda(v.frontLeyenda, 'front')}</details>`
+    : '';
+  return `<figure class="fex-figura" style="margin:10px 0 0">`
+    + `<img src="${esc(v.front)}" alt="Cara de puertos del ${esc(x.id)}, de su ficha oficial" loading="lazy" decoding="async" style="display:block;max-width:100%;height:auto;border:1px solid var(--rule);border-radius:4px;background:#fff">`
+    + `<figcaption style="font-size:11px;line-height:1.45;margin-top:4px">${esc(v.fuente)}${v.rearNota ? ` ${esc(v.rearNota)}` : ''}</figcaption>${ley}</figure>`;
 }
 
 /* ══ PINTADO ══════════════════════════════════════════════════════════════════════════════ */

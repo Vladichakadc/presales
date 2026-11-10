@@ -68,12 +68,22 @@ const SUCURSAL = new URLSearchParams({
   const bomFg = await texto('#bomBody .model');
   t.ok(/^FortiGate \d+[FG]$/.test(bomFg.trim()), `el FortiGate es un modelo base (${bomFg})`);
   t.ok(/FortiExtender WAN 50G/.test(await texto('#bomTabla')), 'la línea del FortiExtender está en el BOM');
+  // Su figura de la ficha, cargada de verdad, con su leyenda numerada (2026-11-10).
+  const fig = await page.$eval('#celularResultado', (c) => {
+    const img = c.querySelector('figure.fex-figura img');
+    return img ? { src: img.getAttribute('src'), ancho: img.naturalWidth, filas: c.querySelectorAll('.ficha-leyenda tbody tr').length } : null;
+  });
+  t.ok(fig && fig.src === '/img/equipos/fex-50g-front.webp' && fig.ancho > 0,
+    `el FortiExtender WAN 50G enseña su figura de la ficha (${fig ? `${fig.src}, ${fig.ancho} px` : 'ninguna'})`);
+  t.ok(fig && fig.filas === 8, `con su leyenda de 8 números (${fig ? fig.filas : 0})`);
 
   // 4G por FortiExtender: 400 Mbps no caben en el 101G (300 Mbps de bajada).
   await page.selectOption('#celularGen', '4g');
   await asentar(page);
   const res4 = await texto('#celularResultado');
   t.ok(/FortiExtender 211G/.test(res4) && /101G, su módem publica 300 Mbps/.test(res4), 'con 4G a 400 Mbps va el 211G y el 101G se aparta por su bajada');
+  t.ok(/no dibuja el FortiExtender 211G: sin figura oficial/.test(res4) && !(await page.$('#celularResultado figure.fex-figura')),
+    'el 211G, que la ficha no dibuja, lo dice y no enseña la figura de otro');
 
   // El enlace compartido reabre lo mismo.
   const url = page.url();
