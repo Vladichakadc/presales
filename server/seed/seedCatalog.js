@@ -1,7 +1,7 @@
-const {
-  Vendor, Product, OpticCategory, Optic, Part,
-  ProductOptic, ProductPart, SupportTier, LicenseBundle, RoleRecommendation,
-} = require('../models');
+// Los modelos con los que se siembra: los de Sequelize (SQLite) si no se pasan otros, o los de
+// `services/catalogoEnMemoria.js` (ADR-3). `seedCatalog(modelos)` los fija al empezar cada siembra.
+let Vendor; let Product; let OpticCategory; let Optic; let Part;
+let ProductOptic; let ProductPart; let SupportTier; let LicenseBundle; let RoleRecommendation;
 
 const vendorsData = require('./legacyData/vendors');
 const indexPR = require('./legacyData/indexPR');
@@ -326,7 +326,11 @@ async function seedRoleRecommendations(vendorIds) {
 
 // Devuelve si sembró: `false` es que la base ya traía catálogo y no se tocó (ver `start()` en
 // server.js, que lo dice en el arranque).
-async function seedCatalog() {
+async function seedCatalog(modelos = require('../models')) {
+  ({
+    Vendor, Product, OpticCategory, Optic, Part,
+    ProductOptic, ProductPart, SupportTier, LicenseBundle, RoleRecommendation,
+  } = modelos);
   const existingVendors = await Vendor.count();
   if (existingVendors > 0) return false;
 

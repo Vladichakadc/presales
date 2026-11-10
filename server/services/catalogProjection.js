@@ -1,12 +1,21 @@
-const {
+// Los modelos que leen las proyecciones: los de Sequelize (SQLite) por defecto; `usarModelos()`
+// los cambia por los de `catalogoEnMemoria.js` (ADR-3). Las consultas no cambian.
+let {
   Vendor, Product, OpticCategory, Optic, Part,
   SupportTier, LicenseBundle, RoleRecommendation,
 } = require('../models');
+function usarModelos(modelos) {
+  ({ Vendor, Product, OpticCategory, Optic, Part, SupportTier, LicenseBundle, RoleRecommendation } = modelos);
+}
 const cotizadorCatalog = require('../seed/legacyData/cotizadorCatalog');
 
 // Orden explicito y estable de los productos: antes lo decidia el indice unico de SQLite
 // (vendorId, model) y los motores desempataban por casualidad segun ese orden.
 const ORDEN_PRODUCTO = [['vendorId', 'ASC'], ['model', 'ASC']];
+// Lo mismo para las tablas de un fabricante (piezas, opticas, soporte, licencias): el orden que daba
+// su indice unico (vendorId, code), y el de lo incluido por `id` (2026-11-10, ADR-3: medido contra
+// SQLite, que ya los devolvia asi; escrito para que no dependa del plan de consulta).
+const ORDEN_CODIGO = [['code', 'ASC']];
 const mikrotikData = require('../seed/legacyData/mikrotik');
 const arubaData = require('../seed/legacyData/aruba');
 const nokiaData = require('../seed/legacyData/nokia');
@@ -342,7 +351,9 @@ async function toCotizadorCatalog() {
 // bomAsString: Cisco's OPTICS.bom is a bare string (esc(o.bom) in the page's markup);
 // Huawei's is always an array, even when empty (bomTag(arr) calls arr.map on it).
 async function dimensionadorOptics(vendorId, { bomAsString = false } = {}) {
-  const categories = await OpticCategory.findAll({ where: { vendorId }, include: [{ model: Optic }] });
+  const categories = await OpticCategory.findAll({
+    where: { vendorId }, include: [{ model: Optic }], order: [...ORDEN_CODIGO, [Optic, 'id', 'ASC']],
+  });
   const optics = {};
   const opticLabel = {};
   for (const cat of categories) {
@@ -363,16 +374,16 @@ async function toDimensionadorHuawei() {
   const vendorId = vendorIds.huawei;
   const { optics, opticLabel } = await dimensionadorOptics(vendorId);
 
-  const parts = await Part.findAll({ where: { vendorId } });
+  const parts = await Part.findAll({ where: { vendorId }, order: ORDEN_CODIGO });
   const partsOut = {};
   for (const part of parts) partsOut[part.code] = { sku: part.sku, bom: null, d: part.description };
 
-  const tiers = await SupportTier.findAll({ where: { vendorId } });
+  const tiers = await SupportTier.findAll({ where: { vendorId }, order: ORDEN_CODIGO });
   const hicare = {};
   for (const t of tiers) hicare[t.code] = { n: t.name, sla: t.sla, d: t.description };
 
   const products = await Product.findAll({
-    order: ORDEN_PRODUCTO,
+    order: [...ORDEN_PRODUCTO, [OpticCategory, 'id', 'ASC'], [Part, 'id', 'ASC']],
     where: { vendorId },
     include: [{ model: OpticCategory }, { model: Part }],
   });
@@ -393,20 +404,20 @@ async function toDimensionadorCisco() {
   const vendorId = vendorIds.cisco;
   const { optics, opticLabel } = await dimensionadorOptics(vendorId, { bomAsString: true });
 
-  const parts = await Part.findAll({ where: { vendorId } });
+  const parts = await Part.findAll({ where: { vendorId }, order: ORDEN_CODIGO });
   const partsDesc = {};
   for (const part of parts) partsDesc[part.code] = part.description;
 
-  const tiers = await SupportTier.findAll({ where: { vendorId } });
+  const tiers = await SupportTier.findAll({ where: { vendorId }, order: ORDEN_CODIGO });
   const smartnet = {};
   for (const t of tiers) smartnet[t.code] = { n: t.name, sla: t.sla, d: t.description };
 
-  const bundles = await LicenseBundle.findAll({ where: { vendorId } });
+  const bundles = await LicenseBundle.findAll({ where: { vendorId }, order: ORDEN_CODIGO });
   const dnaDesc = {};
   for (const b of bundles) dnaDesc[b.code] = b.description;
 
   const products = await Product.findAll({
-    order: ORDEN_PRODUCTO,
+    order: [...ORDEN_PRODUCTO, [OpticCategory, 'id', 'ASC'], [Part, 'id', 'ASC']],
     where: { vendorId },
     include: [{ model: OpticCategory }, { model: Part }],
   });
@@ -438,7 +449,7 @@ async function toDimensionadorFortinet() {
   // se consulta ni se filtra: solo lo leen las reglas comerciales, y ahi tiene que llegar
   // COMO ESTA ESCRITO, porque de `incluye` cuelgan el bundle minimo (AT-03), el soporte que
   // no se duplica (AT-04) y el FortiConverter que no se cotiza dos veces (AT-05).
-  const bundles = await LicenseBundle.findAll({ where: { vendorId } });
+  const bundles = await LicenseBundle.findAll({ where: { vendorId }, order: ORDEN_CODIGO });
   const bundlesOut = {};
   for (const b of bundles) {
     const extra = fortinetData.BUNDLES[b.code] || {};
@@ -446,7 +457,7 @@ async function toDimensionadorFortinet() {
       incluye: extra.incluye || [], nivel: extra.nivel || 0 };
   }
 
-  const tiers = await SupportTier.findAll({ where: { vendorId } });
+  const tiers = await SupportTier.findAll({ where: { vendorId }, order: ORDEN_CODIGO });
   const care = {};
   for (const t of tiers) care[t.code] = { n: t.name, sla: t.sla };
 
@@ -503,12 +514,12 @@ async function toDimensionadorMikrotik() {
   const vendorId = vendorIds.mikrotik;
   const { optics, opticLabel } = await dimensionadorOptics(vendorId);
 
-  const tiers = await SupportTier.findAll({ where: { vendorId } });
+  const tiers = await SupportTier.findAll({ where: { vendorId }, order: ORDEN_CODIGO });
   const support = {};
   for (const t of tiers) support[t.code] = { n: t.name, sla: t.sla, d: t.description };
 
   const products = await Product.findAll({
-    order: ORDEN_PRODUCTO,
+    order: [...ORDEN_PRODUCTO, [OpticCategory, 'id', 'ASC']],
     where: { vendorId },
     include: [{ model: OpticCategory }],
   });
@@ -559,11 +570,11 @@ async function toDimensionadorJuniper() {
   const vendorIds = await vendorIdMap();
   const vendorId = vendorIds.juniper;
 
-  const bundles = await LicenseBundle.findAll({ where: { vendorId } });
+  const bundles = await LicenseBundle.findAll({ where: { vendorId }, order: ORDEN_CODIGO });
   const bundlesOut = {};
   for (const b of bundles) bundlesOut[b.code] = { n: b.name, svcs: b.description };
 
-  const tiers = await SupportTier.findAll({ where: { vendorId } });
+  const tiers = await SupportTier.findAll({ where: { vendorId }, order: ORDEN_CODIGO });
   const care = {};
   for (const t of tiers) care[t.code] = { n: t.name, sla: t.sla };
 
@@ -592,18 +603,20 @@ async function toDimensionadorAruba() {
   const vendorId = vendorIds.aruba;
   const { optics, opticLabel } = await dimensionadorOptics(vendorId);
 
-  const bundles = await LicenseBundle.findAll({ where: { vendorId } });
+  const bundles = await LicenseBundle.findAll({ where: { vendorId }, order: ORDEN_CODIGO });
   const bundlesOut = {};
   for (const b of bundles) bundlesOut[b.code] = { n: b.name, svcs: b.description };
 
-  const tiers = await SupportTier.findAll({ where: { vendorId } });
+  const tiers = await SupportTier.findAll({ where: { vendorId }, order: ORDEN_CODIGO });
   const care = {};
   for (const t of tiers) care[t.code] = { n: t.name, sla: t.sla, d: t.description };
 
   const locales = datasheetsLocales();
   const rutaLocal = (file) => (file && locales.has(file) ? `/datasheets/${file}` : null);
 
-  const products = await Product.findAll({ order: ORDEN_PRODUCTO, where: { vendorId }, include: [{ model: OpticCategory }] });
+  const products = await Product.findAll({
+    order: [...ORDEN_PRODUCTO, [OpticCategory, 'id', 'ASC']], where: { vendorId }, include: [{ model: OpticCategory }],
+  });
   const models = products
     .filter((p) => p.specs && p.specs.fam && ['sdwan', 'gateway'].includes(p.category))
     .map((p) => ({
@@ -753,6 +766,7 @@ function versionDeCatalogo(vendor, datos) {
 }
 
 module.exports = {
+  usarModelos,
   versionDeCatalogo,
   toDimensionadorNokiaRouter,
   getVendorsList,
