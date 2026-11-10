@@ -101,6 +101,10 @@ test('las anotaciones: una línea con el recuento, un aviso por TEXTO o SIN-TEXT
   // Sin --buscar no se dice nada de lo buscado; y todo igual es una sola línea.
   assert.deepStrictEqual(anotaciones([{ nombre: 'a', anterior: ant, veredicto: { estado: 'IGUAL' }, buscar: null }], 'fuente/x'),
     ['::notice title=comparar-fuente::Rama fuente/x: 1 documento(s) frente a su copia anterior. IGUAL: 1.']);
+  // Sin documentos: un aviso, no un recuento que pase por «todo igual».
+  const vacia = anotaciones([], 'fuente/x');
+  assert.strictEqual(vacia.length, 1);
+  assert.match(vacia[0], /^::warning title=comparar-fuente::Rama fuente\/x: no trae ningún documento que comparar\. No es «sin cambios»/);
   // Más avisos que el tope: el resto, juntos en uno.
   const muchos = Array.from({ length: TOPE_AVISOS + 3 }, (_, i) => ({ nombre: `d${i}.pdf`, anterior: ant, veredicto: { estado: 'TEXTO', mas: ['x'], menos: [], soloOrden: false } }));
   const m = anotaciones(muchos, 'fuente/x');
