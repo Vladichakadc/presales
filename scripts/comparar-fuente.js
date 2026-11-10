@@ -105,12 +105,20 @@ function esDocumento(ruta, { enMain, delTransporte }) {
 const cuenta = (texto, re) => (re ? (String(texto).match(re) || []).length : null);
 
 /* El texto de un PDF: pdf-parse (la dependencia del repositorio) y, si no está instalada o no lo
-   lee, `pdftotext` de Poppler si la máquina lo trae. Sin ninguno, «no se sabe» con su motivo. */
+   lee, `pdftotext` de Poppler si la máquina lo trae. Sin ninguno, «no se sabe» con su motivo.
+   Sin marca de página (`pageJoiner: ''`): pdf-parse 2 añade «-- N of M --» al final de cada una,
+   y en dos ediciones con distinto número de páginas esas líneas saldrían como texto que cambia. */
 async function textoDePdf(buf) {
   const motivos = [];
   try {
-    const { text } = await require('pdf-parse')(buf);
-    return { texto: text };
+    const { PDFParse } = require('pdf-parse');
+    const lector = new PDFParse({ data: new Uint8Array(buf), verbosity: 0 });
+    try {
+      const { text } = await lector.getText({ pageJoiner: '' });
+      return { texto: text };
+    } finally {
+      await lector.destroy();
+    }
   } catch (e) { motivos.push(e.code === 'MODULE_NOT_FOUND' ? 'falta pdf-parse (npm install)' : `pdf-parse no lo leyó (${String(e.message).split('\n')[0]})`); }
   try {
     return { texto: execFileSync('pdftotext', ['-q', '-', '-'], { input: buf, maxBuffer: 256 * 1024 * 1024, stdio: ['pipe', 'pipe', 'ignore'] }).toString('utf8') };

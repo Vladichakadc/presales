@@ -12,22 +12,23 @@ const test = require('node:test');
 const assert = require('node:assert');
 const C = require('../scripts/contrastar-matrix.js');
 
-// Un trozo de texto como lo da pdf-parse: h 36 es la letra de las celdas, 49 la de la cabecera
-// y 12 la de las llamadas de nota.
-const T = (s, x, y, h = 36, w = s.length * 5) => ({ s, x, y, h, w });
+// Un trozo de texto como lo da pdf.js: h es el tamano de letra en puntos, 6 en las celdas, 7 en
+// la cabecera y 3,5 en las llamadas de nota (pdf-parse 1, con pdf.js 1.10, daba sus cuadrados:
+// 36, 49 y 12).
+const T = (s, x, y, h = 6, w = s.length * 5) => ({ s, x, y, h, w });
 const pagina = [
-  T('FG-10A', 200, 700, 49), T('FG-20A', 300, 700, 49), T('12', 250, 702, 12),
+  T('FG-10A', 200, 700, 7), T('FG-20A', 300, 700, 7), T('12', 250, 702, 3.5),
   T('Firewall Throughput', 39, 680), T('4/ 4/ 3.9', 200, 680), T('10 / 10 / 6', 300, 680),
   T('(1518/512/64 byte UDP)', 39, 672), T('Gbps', 205, 672), T('Gbps', 305, 672),
   T('Max G/W to G/W IPSEC Tunnels', 39, 660), T('200', 205, 660), T('2 000', 300, 660),
-  T('SSL VPN Throughput', 39, 648), T('405 Mbps', 200, 648), T('1.4 Gbps', 300, 648), T('11', 345, 650, 12),
-  T('Concurrent SSL VPN Users', 39, 636), T('—', 205, 632), T('200', 305, 632), T('11', 330, 634, 12),
+  T('SSL VPN Throughput', 39, 648), T('405 Mbps', 200, 648), T('1.4 Gbps', 300, 648), T('11', 345, 650, 3.5),
+  T('Concurrent SSL VPN Users', 39, 636), T('—', 205, 632), T('200', 305, 632), T('11', 330, 634, 3.5),
   T('(Recommended Maximum, Tunnel Mode)', 39, 628),
   T('Concurrent Sessions', 39, 616), T('140 Million / 348 Million', 190, 616), T('1 Billion', 300, 616),
   T('Max FortiAPs (Total / Tunnel)', 39, 604), T('16 / 8', 205, 604), T('2 048 / 1 024', 300, 604),
   T('Local Storage', 39, 592), T('128 GB (11A)', 200, 592), T('4x 4 TB SSD', 300, 592),
   T('Variants', 39, 580), T('WiFi, POE', 200, 580), T('—', 305, 580),
-  T('PROMTX-2026-R177-OCT (Web)', 39, 20, 30),
+  T('PROMTX-2026-R177-OCT (Web)', 39, 20, 5.5),
 ];
 
 test('la celda se arma por posicion: unidad debajo, continuacion de etiqueta y notas fuera', () => {
