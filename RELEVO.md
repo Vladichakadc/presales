@@ -410,13 +410,13 @@ existen los workflows de transporte. Huawei y HPE niegan además el navegador au
 ## Mejoras propuestas sin decidir
 
 - **Auditoría de los dimensionadores (2026-11-09): fases 1 a 3** (propuesta al cerrar el PR #150, que hizo la fase 0). Fase 1: trazabilidad (hecha en el PR #153: `datasetVersion` en los ocho dimensionadores con catálogo y las dos filas en «Supuestos»; falta la versión de motor de los demás, que llega con el contrato común), Express 5 (hecho en el PR #156) y archivar el código muerto (hecho en el PR #162, por la opción recomendada, con «Ejecuta pendientes» del dueño del 2026-11-09: `sizing_engine.js`, `presales_api_controller.js`, `plan18` y `SyncLog`, en `docs/archivo/README.md` con el commit para recuperarlos). Fase 2: un contrato común de motor y un corte del BOM por PR (`render()` y `renderBom()` de Aruba pasan de 500 líneas). Fase 3: catálogo en memoria y mayores de dependencias. Evita que la recomendación cambie sin dejar rastro de qué catálogo la produjo. Cuesta un PR por paso; si se hace mal, el contrato común sin las equivalencias de `npm run equivalencia` cambiaría resultados sin que nada lo frene.
-- **Que `npm run traspasos` cuente las ramas cedidas aparte** (propuesta al cerrar el PR #164). Desde ese PR
-  la reserva que pierde una carrera deja su rama con el traspaso «cerrado (cedido…)» en vez de borrarla, porque el
-  proxy de git corta a veces el borrado. `traspasos` la sigue listando entre los temas en curso; se diría en una
-  línea aparte («CEDIDA a <rama>, se puede borrar») como ya hace con las CERRADO EN MAIN, con el comando para
-  borrarla. Evita que una sesión lea una rama cedida como trabajo de otra. Cuesta un estado más en `traspasos.js`
-  y su prueba. Si se hace mal, una rama con un traspaso cerrado por otra razón saldría como cedida: se reconoce
-  por el texto «cedido:», que solo escribe `reservar`.
+- **Borrar desde Actions las ramas que ya no bloquean** (propuesta al cerrar el PR #165). Desde una sesión el
+  proxy de git corta el borrado de ramas remotas («the remote end hung up»: el 2026-11-09 y el 2026-11-10 fallaron
+  las seis veces), así que las ramas CEDIDA y CERRADO EN MAIN se acumulan. Un `workflow_dispatch` con
+  `contents: write` que borre solo las que `npm run traspasos` marca así —recalculado en el ejecutor, nunca una
+  lista que se le pase— y diga en una anotación cuáles borró. Evita que el listado crezca con ramas muertas. Cuesta
+  un workflow, exportar la lectura de `traspasos.js` y su prueba. Si se hace mal, borraría una rama viva: por eso
+  solo las dos marcas que ya se calculan con fechas y nunca una PARADA (que decide una persona).
 - **`traer-juniper-matrix.yml` falla al descargar** desde el 2026-09-02 (visto otra vez el 2026-11-10, corrida
   42749825425). Los logs de Actions no se leen desde una sesión: hay que mirarlos desde GitHub para saber si
   Juniper cambió la URL o corta al ejecutor.
