@@ -409,7 +409,7 @@ existen los workflows de transporte. Huawei y HPE niegan además el navegador au
 
 ## Mejoras propuestas sin decidir
 
-- **Auditoría de los dimensionadores (2026-11-09): fases 1 a 3** (propuesta al cerrar el PR #150, que hizo la fase 0). Fase 1: trazabilidad (hecha en el PR #153: `datasetVersion` en los ocho dimensionadores con catálogo y las dos filas en «Supuestos»; falta la versión de motor de los demás, que llega con el contrato común), Express 5 (hecho en el PR #156) y archivar el código muerto (espera al dueño: ver *Decisiones del dueño abiertas*). Fase 2: un contrato común de motor y un corte del BOM por PR (`render()` y `renderBom()` de Aruba pasan de 500 líneas). Fase 3: catálogo en memoria y mayores de dependencias. Evita que la recomendación cambie sin dejar rastro de qué catálogo la produjo. Cuesta un PR por paso; si se hace mal, el contrato común sin las equivalencias de `npm run equivalencia` cambiaría resultados sin que nada lo frene.
+- **Auditoría de los dimensionadores (2026-11-09): fases 1 a 3** (propuesta al cerrar el PR #150, que hizo la fase 0). Fase 1: trazabilidad (hecha en el PR #153: `datasetVersion` en los ocho dimensionadores con catálogo y las dos filas en «Supuestos»; falta la versión de motor de los demás, que llega con el contrato común), Express 5 (hecho en el PR #156) y archivar el código muerto (hecho en el PR #162, por la opción recomendada, con «Ejecuta pendientes» del dueño del 2026-11-09: `sizing_engine.js`, `presales_api_controller.js`, `plan18` y `SyncLog`, en `docs/archivo/README.md` con el commit para recuperarlos). Fase 2: un contrato común de motor y un corte del BOM por PR (`render()` y `renderBom()` de Aruba pasan de 500 líneas). Fase 3: catálogo en memoria y mayores de dependencias. Evita que la recomendación cambie sin dejar rastro de qué catálogo la produjo. Cuesta un PR por paso; si se hace mal, el contrato común sin las equivalencias de `npm run equivalencia` cambiaría resultados sin que nada lo frene.
 - **Que `npm run traspasos` cuente las ramas cedidas aparte** (propuesta al cerrar el PR #164). Desde ese PR
   la reserva que pierde una carrera deja su rama con el traspaso «cerrado (cedido…)» en vez de borrarla, porque el
   proxy de git corta a veces el borrado. `traspasos` la sigue listando entre los temas en curso; se diría en una
@@ -427,11 +427,11 @@ existen los workflows de transporte. Huawei y HPE niegan además el navegador au
 
 ## Decisiones del dueño abiertas
 
-- **Archivar el código que nadie carga** (auditoría del 2026-11-09, preguntado al cerrar el PR #156): `public/js/sizing_engine.js` y `server/presales_api_controller.js` con su prueba, `plan18-fase1-auditoria-aruba.patch` y el modelo `SyncLog`. Los dos primeros se conservan por decisión del dueño del 2026-10-20; retirarlos la revierte, y obliga a quitar su sección de `CLAUDE.md` y su entrada de `scripts/contrastes/cobertura.lock.json`. Opción recomendada: retirarlos (siguen en el historial de git).
 - **Enrutar micro-forks con Jev** (punto 4 del encargo del PR #94: «Enruta forks determinísticos rápidos —elección de herramienta, selección de ruta, reintentos— a través de JEV»). Falta saber cómo se accede a Jev (clave de TypeSafe u OpenRouter) y el alcance: los routers de Jev que existen eligen el modelo por turno y romperían Sonnet fijo con asesor; lo compatible es un hook que decida reintentar o parar tras un fallo y valide la llamada que propone la sesión. La parte que no necesita a Jev (recordar el asesor tras el segundo fallo seguido) se hizo en el PR #137.
 - La protección de `main` (aprobada, falta configurarla) y el aviso de Railway (ver arriba).
 - Borrar la rama `claude/visibles-contra-main`: sobra, la creó `npm run reservar` en una sesión con rama
   fija, y desde esa sesión borrarla da 403 (`git push origin --delete claude/visibles-contra-main`; PR #129).
   Desde el PR #135 ya no bloquea: `npm run traspasos` la marca CERRADO EN MAIN y `reservar` no la cuenta.
-- Tomadas: las dos de la IA y la de las variantes fuera del catálogo se tomaron el 2026-10-27 por
+- Tomadas: archivar el código que nadie carga, el 2026-11-09 por la opción recomendada («Ejecuta pendientes»; PR #162,
+  que revierte la conservación del 2026-10-20). Las dos de la IA y la de las variantes fuera del catálogo se tomaron el 2026-10-27 por
   la opción recomendada (ver *Decisiones* en `PENDIENTES.md`).

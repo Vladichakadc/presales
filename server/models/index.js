@@ -9,7 +9,6 @@ const ProductPart = require('./ProductPart');
 const SupportTier = require('./SupportTier');
 const LicenseBundle = require('./LicenseBundle');
 const RoleRecommendation = require('./RoleRecommendation');
-const SyncLog = require('./SyncLog');
 
 Vendor.hasMany(Product, { foreignKey: 'vendorId' });
 Product.belongsTo(Vendor, { foreignKey: 'vendorId' });
@@ -49,5 +48,4 @@ module.exports = {
   SupportTier,
   LicenseBundle,
   RoleRecommendation,
-  SyncLog,
 };

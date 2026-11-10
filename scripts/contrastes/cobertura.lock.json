@@ -48,13 +48,6 @@
    "pct": null
   },
   {
-   "modulo": "sizing_engine.js",
-   "estado": "sin conducir",
-   "total": null,
-   "usadas": null,
-   "pct": null
-  },
-  {
    "modulo": "usuarios.js",
    "estado": "sin conducir",
    "total": null,
