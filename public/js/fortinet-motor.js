@@ -46,6 +46,9 @@
 
   // 7.1.0 (2026-10-27): el requisito de criptografía post-cuántica (`seguridad.pqc`).
   // 7.2.0 (2026-11-04): Wi-Fi integrado y WAN celular 4G/5G (`fisico.wifi`, `fisico.celular`, `fisico.celularVia`).
+  // CONTRATO COMÚN DE MOTOR (2026-11-10, auditoría fase 2): la versión viaja a la hoja «Supuestos» del BOM.
+  // Todo cambio de este archivo o de fortinet-reglas.js sube esta versión: `scripts/motores.lock.json` guarda su huella y
+  // test/motores-version.test.js frena un cambio sin subirla (`node scripts/motores-lock.js` la renueva).
   const VERSION_MOTOR = '7.2.0';
   const ESQUEMA = 1;
   // Encapsulacion ESP sobre la fraccion que viaja por el overlay. Supuesto de la herramienta,

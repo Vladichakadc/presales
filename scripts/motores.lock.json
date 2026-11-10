@@ -1,0 +1,48 @@
+{
+  "motores": {
+    "cisco": {
+      "version": "1.0.0",
+      "archivos": [
+        "public/js/cisco-motor.js"
+      ],
+      "huella": "sha256:118113e1c8cc27e2c224e49e6976bd83b39cf01b9c52703cfd9980e4903c2cf8"
+    },
+    "huawei": {
+      "version": "1.0.0",
+      "archivos": [
+        "public/js/huawei-motor.js"
+      ],
+      "huella": "sha256:ef3c7d9c1942375306bc653ffa730ae3fc09fc9dad85802c268aa030e8061644"
+    },
+    "juniper": {
+      "version": "1.0.0",
+      "archivos": [
+        "public/js/juniper-motor.js"
+      ],
+      "huella": "sha256:a6a3630cb4a9183678a6583857625ed5402127ba694809ca2fc87b2cb937a907"
+    },
+    "mikrotik": {
+      "version": "1.0.0",
+      "archivos": [
+        "public/js/mikrotik-motor.js"
+      ],
+      "huella": "sha256:7dc9bedf612c72a840202081f5d63c3445341a4e3cbf6f65ba5efd805c8d35b7"
+    },
+    "aruba": {
+      "version": "1.0.0",
+      "archivos": [
+        "public/js/aruba-reglas.js",
+        "public/js/motor-ingenieria.js"
+      ],
+      "huella": "sha256:9ad36a2cfab8d2d72bf1cc726369cda9560fe73421877de5d3181445619c4597"
+    },
+    "fortinet": {
+      "version": "7.2.0",
+      "archivos": [
+        "public/js/fortinet-motor.js",
+        "public/js/fortinet-reglas.js"
+      ],
+      "huella": "sha256:14d9ba7565f57872079a90a0ec6f9fd7b422ad2949f1fc0d78e3df8582174bd9"
+    }
+  }
+}

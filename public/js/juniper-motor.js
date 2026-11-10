@@ -54,6 +54,10 @@
   let PQC = root && root.PQC;
   if (!PQC && typeof require === 'function') PQC = require('./pqc.js');
   const api = factory(PQC);
+  // CONTRATO COMÚN DE MOTOR (2026-11-10, auditoría fase 2): la versión viaja a la hoja «Supuestos» del BOM.
+  // Todo cambio de este archivo sube esta versión: `scripts/motores.lock.json` guarda su huella y
+  // test/motores-version.test.js frena un cambio sin subirla (`node scripts/motores-lock.js` la renueva).
+  api.VERSION_MOTOR = '1.0.0';
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   if (root) root.JuniperMotor = api;
 })(typeof window !== 'undefined' ? window : globalThis, function (PQC) {
