@@ -637,6 +637,13 @@ cambiar una regla. Donde el motor ordena candidatos, el empate termina en el id 
   llevan el SKU con `[RC]` (código regional, no se elige) y, como los FortiExtender, van «consultar»
   (`listaSinExtraer`: la lista no se extrajo para ellos, que no es «no la trae»); las variantes celulares
   se cotizan por SKU exacto de la lista (`test/fortinet-wifi-celular.test.js`, `e2e-fortinet-wifi-celular.js`).
+  **Versión de FortiOS** (`software.fortiOS`, `FORTIOS.versiones`; por defecto 7.6.3+): decide qué funciones
+  existen, no qué cifra aplica. **8.0 (8.0.2)** (2026-11-10, PR #166, encargo del dueño) aplica lo que dicen sus
+  Release Notes, leídas: solo compiten los modelos de «Supported models» (`RN802_SOPORTADOS`; el que no está se
+  aparta con `FORTIOS_MODELO`, hoy el FortiWiFi 50G-5G-II), el modo túnel SSL-VPN está retirado y los modelos
+  de 2 GB no admiten inspección proxy. Las cifras y los topes siguen siendo los de 7.6.7 y se dice en los
+  supuestos; las funciones nuevas de la rama no entran sin su documento (`test/fortinet-fortios-8.test.js`,
+  `e2e-fortinet-fortios-8.js`). Una rama nueva es una entrada del catálogo, no código en el motor.
 - **Aruba** (`dimensionador-aruba-edgeconnect.js`, `aruba-reglas.js`, `motor-ingenieria.js`). El
   caudal es el **Multi-Underlay Builder** (filas `{tipo, medio, down, up, rol}`; un respaldo ocupa
   puerto pero no suma); `migrarEstadoV1()` traduce los enlaces viejos. **Cada enlace va a un puerto

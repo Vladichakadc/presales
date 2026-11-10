@@ -21,6 +21,7 @@
   // Las restricciones del motor, dichas para quien lee la lista de descartados.
   const RESTRICCION_N = {
     CICLO_VIDA: 'fuera de venta en compra nueva', FORTIOS_INCOMPATIBLE: 'FortiOS no admite la función pedida',
+    FORTIOS_MODELO: 'no figura entre los modelos soportados por la versión de FortiOS elegida',
     PROXY_LIMITADO: 'soporte proxy limitado', PUERTOS_INSUFICIENTES: 'puertos insuficientes',
     ALMACENAMIENTO_SIN_DATO: 'disco sin dato', ALMACENAMIENTO_INSUFICIENTE: 'disco insuficiente',
     POE_SIN_DATO: 'PoE sin dato', POE_NO_DISPONIBLE: 'sin PoE en el SKU base',
