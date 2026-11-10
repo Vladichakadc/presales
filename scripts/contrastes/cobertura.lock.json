@@ -1,19 +1,12 @@
 {
  "medidoEn": {
-  "commit": "6e052c7",
-  "fecha": "2026-11-03"
+  "commit": "724fc87",
+  "fecha": "2026-11-10"
  },
  "umbralRozado": 25,
  "modulos": [
   {
    "modulo": "cuenta.js",
-   "estado": "sin conducir",
-   "total": null,
-   "usadas": null,
-   "pct": null
-  },
-  {
-   "modulo": "dimensionador-juniper-srx.js",
    "estado": "sin conducir",
    "total": null,
    "usadas": null,
@@ -35,13 +28,6 @@
   },
   {
    "modulo": "guia-diseno-interactiva.js",
-   "estado": "sin conducir",
-   "total": null,
-   "usadas": null,
-   "pct": null
-  },
-  {
-   "modulo": "juniper-motor.js",
    "estado": "sin conducir",
    "total": null,
    "usadas": null,
@@ -118,17 +104,10 @@
    "pct": 64
   },
   {
-   "modulo": "cotizador.js",
-   "estado": "ejercitado",
-   "total": 55,
-   "usadas": 36,
-   "pct": 65
-  },
-  {
    "modulo": "bom.js",
    "estado": "ejercitado",
-   "total": 121,
-   "usadas": 80,
+   "total": 122,
+   "usadas": 81,
    "pct": 66
   },
   {
@@ -137,6 +116,13 @@
    "total": 371,
    "usadas": 246,
    "pct": 66
+  },
+  {
+   "modulo": "cotizador.js",
+   "estado": "ejercitado",
+   "total": 55,
+   "usadas": 37,
+   "pct": 67
   },
   {
    "modulo": "estado.js",
@@ -160,18 +146,18 @@
    "pct": 72
   },
   {
+   "modulo": "index.js",
+   "estado": "ejercitado",
+   "total": 58,
+   "usadas": 42,
+   "pct": 72
+  },
+  {
    "modulo": "dimensionador-nokia-7750sr.js",
    "estado": "ejercitado",
    "total": 60,
    "usadas": 44,
    "pct": 73
-  },
-  {
-   "modulo": "index.js",
-   "estado": "ejercitado",
-   "total": 58,
-   "usadas": 43,
-   "pct": 74
   },
   {
    "modulo": "dimensionador-cisco-catalyst8k.js",
@@ -183,9 +169,9 @@
   {
    "modulo": "dimensionador-fortinet-fortigate.js",
    "estado": "ejercitado",
-   "total": 279,
-   "usadas": 220,
-   "pct": 79
+   "total": 283,
+   "usadas": 221,
+   "pct": 78
   },
   {
    "modulo": "mikrotik-motor.js",
@@ -195,17 +181,17 @@
    "pct": 79
   },
   {
-   "modulo": "fuentes.js",
+   "modulo": "dimensionador-juniper-srx.js",
    "estado": "ejercitado",
-   "total": 5,
-   "usadas": 4,
+   "total": 100,
+   "usadas": 80,
    "pct": 80
   },
   {
-   "modulo": "huawei-motor.js",
+   "modulo": "fortinet-motor.js",
    "estado": "ejercitado",
-   "total": 61,
-   "usadas": 49,
+   "total": 120,
+   "usadas": 96,
    "pct": 80
   },
   {
@@ -223,17 +209,17 @@
    "pct": 81
   },
   {
+   "modulo": "huawei-motor.js",
+   "estado": "ejercitado",
+   "total": 62,
+   "usadas": 50,
+   "pct": 81
+  },
+  {
    "modulo": "dimensionador-mikrotik-routeros.js",
    "estado": "ejercitado",
    "total": 164,
    "usadas": 135,
-   "pct": 82
-  },
-  {
-   "modulo": "fortinet-motor.js",
-   "estado": "ejercitado",
-   "total": 110,
-   "usadas": 90,
    "pct": 82
   },
   {
@@ -251,6 +237,13 @@
    "pct": 84
   },
   {
+   "modulo": "juniper-motor.js",
+   "estado": "ejercitado",
+   "total": 22,
+   "usadas": 19,
+   "pct": 86
+  },
+  {
    "modulo": "dimensionador-huawei-netengine.js",
    "estado": "ejercitado",
    "total": 156,
@@ -263,6 +256,13 @@
    "total": 53,
    "usadas": 48,
    "pct": 91
+  },
+  {
+   "modulo": "fuentes.js",
+   "estado": "ejercitado",
+   "total": 5,
+   "usadas": 5,
+   "pct": 100
   },
   {
    "modulo": "motor-ingenieria.js",
