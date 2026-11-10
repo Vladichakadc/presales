@@ -355,7 +355,7 @@ traspaso (el #37, de otra sesión, se fusionó mientras se cerraba esta).
 2. **Fases 2 y 3 de la auditoría de los dimensionadores** (decididas por el dueño el 2026-11-10: «Ejecuta fase 2 y fase 3»;
    las fases 0 y 1 se hicieron en los PR #150, #153, #156 y #162). Fase 2, un corte por PR medido con `npm run
    equivalencia`: 1, la lista de materiales de Aruba fuera de `renderBom()` (hecho, PR #167); 2, Juniper con motor,
-   orden de candidatos y caso de contraste (hecho, PR #168); 3, la lista de Cisco al motor (hecho, PR #169); 4, Nokia 7750 y 7220 con motor propio; 5,
+   orden de candidatos y caso de contraste (hecho, PR #168); 3, la lista de Cisco al motor (hecho, PR #169); 4, Nokia 7750 y 7220 con motor propio (hecho, PR #170); 5,
    las listas de Huawei y MikroTik al motor, con la versión de motor de cada uno en «Supuestos». Fase 3: el catálogo
    en memoria sin SQLite (ADR-3) y las dependencias mayores de una en una (SDK de Anthropic, ESLint, dotenv,
    pdf-parse). Los precios de Cisco, Huawei, Juniper y Nokia los cierra el dueño con las listas de un distribuidor.
@@ -416,6 +416,11 @@ existen los workflows de transporte. Huawei y HPE niegan además el navegador au
 
 ## Mejoras propuestas sin decidir
 
+- **Un caso de contraste para el fabric 7220 IXR** (propuesta al cerrar el PR #170). Es el único dimensionador que
+  ningún caso conduce: `nokia-fabric-motor.js` y su página salen «sin conducir» en el lock, y un cambio del leaf, el
+  spine o sus cantidades solo lo vería la equivalencia de su corte. Coste: un archivo en `scripts/contrastes/` con
+  escenarios medidos en la pantalla de `main` y el lock regenerado. Si se hace mal, una línea base escrita a ojo daría
+  por buena una respuesta que la pantalla no da.
 - **Dejar pedir un módulo MPIM en Juniper, para que el SRX320 tenga cuándo salir** (propuesta al cerrar el PR #168).
   Empata con el SRX300 en todas las cifras, y su única diferencia en el catálogo son dos ranuras MPIM (LTE, VDSL…);
   sin forma de pedir un módulo, el desempate nunca lo recomienda y una sucursal que lo necesita sale con un SRX300
