@@ -327,5 +327,150 @@
   "front": "/img/equipos/fwf-70g-poe-front.webp",
   "rear": "/img/equipos/fwf-70g-poe-rear.webp",
   "fuente": "Datasheet FortiGate/FortiWiFi 70G Series (FGFWF-70G-DAT-R09-20260527), p. 8 «Hardware» — «FortiWiFi 70G-POE». Unidad dibujada: FortiWiFi 70G POE"
+ },
+ "FortiExtender WAN 50G": {
+  "front": "/img/equipos/fex-50g-front.webp",
+  "fuente": "Datasheet FortiExtender 5G/LTE Gateways Series (FEXT-DAT-R57-20260831), p. 2 «Hardware and Interfaces» — «FortiExtender WAN 50G (FEW-50G)». La ficha no rotula la cara: es la de puertos. Vale para FEW-50G-AM y FEW-50G-EA",
+  "rearNota": "La ficha solo dibuja la cara de puertos de este FortiExtender; no hay otra figura oficial.",
+  "frontLeyenda": {
+   "tabla": "lista «Interfaces» junto a la figura, p. 2",
+   "filas": [
+    [
+     1,
+     "SIM Card1 and SIM Card2",
+     "Ranuras SIM 1 y SIM 2"
+    ],
+    [
+     2,
+     "Bluetooth Button and LED",
+     "Botón y LED de Bluetooth"
+    ],
+    [
+     3,
+     "1x USB 2.0 Port",
+     "Puerto USB 2.0"
+    ],
+    [
+     4,
+     "1x Console Port (RJ45)",
+     "Puerto de consola (RJ45)"
+    ],
+    [
+     5,
+     "2x GE RJ45 LAN Ports",
+     "Dos puertos LAN GE (RJ45)"
+    ],
+    [
+     6,
+     "Device Locking Screw Hole",
+     "Orificio del tornillo de bloqueo"
+    ],
+    [
+     7,
+     "Reset/Default",
+     "Reinicio a valores de fábrica"
+    ],
+    [
+     8,
+     "12VDC/2A Input Socket",
+     "Entrada de alimentación 12 V CC / 2 A"
+    ]
+   ]
+  }
+ },
+ "FortiExtender 511G": {
+  "front": "/img/equipos/fex-511g-front.webp",
+  "fuente": "Datasheet FortiExtender 5G/LTE Gateways Series (FEXT-DAT-R57-20260831), p. 3 «Hardware and Interfaces» — «FortiExtender 511G». Panel frontal",
+  "rearNota": "La ficha solo dibuja la cara de puertos de este FortiExtender; no hay otra figura oficial.",
+  "frontLeyenda": {
+   "tabla": "lista «Interfaces» junto a la figura, p. 3",
+   "filas": [
+    [
+     1,
+     "BLE",
+     "Bluetooth de baja energía (BLE)"
+    ],
+    [
+     2,
+     "RESET",
+     "Botón de reinicio"
+    ],
+    [
+     3,
+     "LED Status",
+     "LED de estado"
+    ],
+    [
+     4,
+     "1x Console Port (RJ45) CLI Management · 1x USB 2.0 Port (USB-A)",
+     "Puerto de consola RJ45 (gestión por CLI) y puerto USB 2.0 tipo A"
+    ],
+    [
+     5,
+     "1× 2.5 G WAN Port (RJ45)",
+     "Puerto WAN de 2,5 GbE (RJ45)"
+    ],
+    [
+     6,
+     "1x SFP Port",
+     "Puerto SFP"
+    ],
+    [
+     7,
+     "4x RJ45 Ports",
+     "Cuatro puertos RJ45"
+    ]
+   ]
+  }
+ },
+ "FortiExtender 511G-WiFi": {
+  "front": "/img/equipos/fex-511g-wifi-front.webp",
+  "fuente": "Datasheet FortiExtender 5G/LTE Gateways Series (FEXT-DAT-R57-20260831), p. 3 «Hardware and Interfaces» — «FortiExtender 511G-WiFi». Panel frontal",
+  "rearNota": "La ficha solo dibuja la cara de puertos de este FortiExtender; no hay otra figura oficial.",
+  "frontLeyenda": {
+   "tabla": "lista «Interfaces» junto a la figura, p. 3",
+   "filas": [
+    [
+     1,
+     "BLE",
+     "Bluetooth de baja energía (BLE)"
+    ],
+    [
+     2,
+     "RESET",
+     "Botón de reinicio"
+    ],
+    [
+     3,
+     "LED Status",
+     "LED de estado"
+    ],
+    [
+     4,
+     "1x Console Port (RJ45) CLI Management · 1x USB 2.0 Port (USB-A)",
+     "Puerto de consola RJ45 (gestión por CLI) y puerto USB 2.0 tipo A"
+    ],
+    [
+     5,
+     "1× 2.5 G WAN Port (RJ45)",
+     "Puerto WAN de 2,5 GbE (RJ45)"
+    ],
+    [
+     6,
+     "1x SFP Port",
+     "Puerto SFP"
+    ],
+    [
+     7,
+     "4x RJ45 Ports",
+     "Cuatro puertos RJ45"
+    ],
+    [
+     8,
+     "2x Wi-Fi Antenna Connectors (RP‑SMA)",
+     "Dos conectores de antena Wi-Fi (RP-SMA)"
+    ]
+   ]
+  }
  }
 }

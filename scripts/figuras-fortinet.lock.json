@@ -224,6 +224,13 @@
    "url": "https://www.fortinet.com/content/dam/fortinet/assets/data-sheets/pdf/fortigate-fortiwifi-80f-series.pdf",
    "urlDe": "rama fuente/fortinet-serie, serie-informe.json; base de la URL en el workflow del commit 9eef2d8",
    "sha256": "a1e710f208eb7efb6c119e2093b5438080c4ef581f664df83f825d5313bc202e"
+  },
+  "FortiExtender.pdf": {
+   "rama": "fuente/fortinet-wifi-extender-2026-11-10",
+   "ruta": "fuente-cisco-huawei/fortinet-fortiextender-ds.pdf",
+   "url": "https://www.fortinet.com/content/dam/fortinet/assets/data-sheets/FortiExtender.pdf",
+   "urlDe": "rama fuente/fortinet-wifi-extender-2026-11-10, fuente-cisco-huawei/informe.json (traer-cisco-huawei, corrida 42799828926): 200 en esa URL",
+   "sha256": "2f41c6aee18bfebffe309c3f7e67dd5a118e6e04410737ec0e2a1282b2458925"
   }
  },
  "figuras": {
@@ -1467,6 +1474,57 @@
    "sha256": "98ef34dfb045fccc4686724347b7431ef1f4b71afaa55d4f39611f19ebeaf636",
    "medido": "correlación 0.9756 con la figura servida, a su escala, 2026-11-09",
    "diferencia": 6.04
+  },
+  "/img/equipos/fex-50g-front.webp": {
+   "documento": "FortiExtender.pdf",
+   "pagina": 2,
+   "caja": [
+    30.0,
+    294.0,
+    296.0,
+    127.0
+   ],
+   "tamano": [
+    1000,
+    429
+   ],
+   "sha256": "d2c47530d863edc898f49a04acb5614fc017732ca7f475bbb7f9e25fcb130f5c",
+   "medido": "figura nueva (2026-11-10): caja de la imagen incrustada (pdfplumber) más la fila de números de su leyenda; correlación 0.9708 entre la imagen incrustada y su recorte",
+   "diferencia": 0
+  },
+  "/img/equipos/fex-511g-front.webp": {
+   "documento": "FortiExtender.pdf",
+   "pagina": 3,
+   "caja": [
+    18.0,
+    176.0,
+    561.0,
+    131.0
+   ],
+   "tamano": [
+    1600,
+    374
+   ],
+   "sha256": "34770c9598e9b2a14af797f4037c081d838d965da32f58d1551a5214ca62f3b5",
+   "medido": "figura nueva (2026-11-10): caja de la imagen incrustada (pdfplumber) más la fila de números de su leyenda; correlación 0.9426 entre la imagen incrustada y su recorte",
+   "diferencia": 0
+  },
+  "/img/equipos/fex-511g-wifi-front.webp": {
+   "documento": "FortiExtender.pdf",
+   "pagina": 3,
+   "caja": [
+    20.0,
+    506.0,
+    570.0,
+    127.0
+   ],
+   "tamano": [
+    1600,
+    356
+   ],
+   "sha256": "e79ad55567f7eb9371846ea7898fc0a2daaec981601be2893c638d06e1607b1b",
+   "medido": "figura nueva (2026-11-10): caja de la imagen incrustada (pdfplumber) más la fila de números de su leyenda; correlación 0.948 entre la imagen incrustada y su recorte",
+   "diferencia": 0
   }
  }
 }

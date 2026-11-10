@@ -178,6 +178,17 @@ const FORTIEXTENDER = {
       modems: 1, bajada: null, subida: null, nat: 900, ipsec: 400, region: null, regionN: 'operadores globales',
       puertos: '1 WAN 2,5 GE + 1 combo SFP/RJ45 1 GE + 3 GE LAN', poePd: '802.3at (25,5 W) en el puerto 4', maxW: 18,
       care: 'FC-10-FX51G-247-02-DD' },
+    // El 511G con Wi-Fi 6 integrado (2026-11-10): lo trae la misma ficha FEXT-DAT-R57 (columna
+    // FEX-511G-WIFI, p. 3 y tablas de especificaciones) y su guía de pedido FEX-OG-R18 («511G-WiFi»,
+    // «FEX-511G-WiFi-x», «FC-10-XW51G-247-02-DD»). Mismo módem y cifras que el 511G; lo que cambia es
+    // la radio y el consumo. Su SKU lleva un código regional que ninguno de los dos documentos enumera:
+    // `skuRegional` lo dice y el importador no lo ancla (sigue «consultar»). A igualdad de cifras el
+    // motor deja primero al 511G, que va antes en esta tabla: el Wi-Fi no se recomienda sin pedirlo.
+    { id: 'FortiExtender 511G-WiFi', skus: ['FEX-511G-WiFi-[RC]'], skuRegional: true, gen: '5G', categoria: '5G sub-6 GHz y LTE, con Wi-Fi 6',
+      modem: 'Sierra Wireless EM9291', modems: 1, bajada: null, subida: null, nat: 900, ipsec: 400, region: null,
+      regionN: 'operadores globales (código regional en el SKU)', wifi: 'Wi-Fi 6 (802.11ax) 2x2, 2,4 y 5 GHz simultáneos',
+      puertos: '1 WAN 2,5 GE + 1 combo SFP/RJ45 1 GE + 3 GE LAN', poePd: '802.3at (25,5 W) en el puerto 4', maxW: 22.5,
+      care: 'FC-10-XW51G-247-02-DD' },
     // Dos SKU por region, el mismo equipo: la linea del BOM pide elegir.
     { id: 'FortiExtender WAN 50G', skus: ['FEW-50G-AM', 'FEW-50G-EA'], gen: '5G', categoria: '5G sub-6 GHz y LTE', modem: 'MediaTek T830',
       modems: 1, bajada: 7000, subida: 2500, nat: 2810, ipsec: 430, region: 'AM/EA',

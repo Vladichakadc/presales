@@ -206,3 +206,22 @@ test('FortiExtender: cada fila de la tabla cita su ficha y no inventa el caudal 
   const fex511 = F.FORTIEXTENDER.modelos.find((x) => x.id === 'FortiExtender 511G');
   assert.strictEqual(fex511.bajada, null);
 });
+
+// EL FORTIEXTENDER 511G-WIFI (2026-11-10): lo trae la ficha FEXT-DAT-R57 y su guía de pedido FEX-OG-R18,
+// y el catálogo no lo tenía. Mismo módem y cifras que el 511G: a igualdad, el motor deja primero al
+// 511G (va antes en la tabla), así que meterlo no cambia ninguna recomendación ni cuela el Wi-Fi.
+test('el 511G-WiFi está con las cifras de su ficha y no adelanta al 511G', () => {
+  const w = F.FORTIEXTENDER.modelos.find((x) => x.id === 'FortiExtender 511G-WiFi');
+  const g = F.FORTIEXTENDER.modelos.find((x) => x.id === 'FortiExtender 511G');
+  assert.ok(w, 'el 511G-WiFi de la ficha FEXT-DAT-R57');
+  for (const k of ['gen', 'modem', 'nat', 'ipsec', 'bajada', 'subida', 'puertos', 'poePd']) assert.deepStrictEqual(w[k], g[k], k);
+  assert.strictEqual(w.maxW, 22.5, '«Power Consumption (Maximum)» de su columna');
+  assert.strictEqual(w.care, 'FC-10-XW51G-247-02-DD', 'FortiCare de la guía de pedido');
+  assert.match(w.wifi, /802\.11ax/);
+  assert.ok(w.skuRegional && /\[RC\]$/.test(w.skus[0]), 'el código regional no se inventa');
+  const enl = [{ id: 1, tipo: 'DIA', down: 300 }, { id: 2, tipo: '4G/5G', down: 500, rol: 'respaldo' }];
+  const r = ev(esc({ celular: '5g', celularVia: 'extender' }, enl));
+  assert.strictEqual(r.celular.extender.recomendado.id, 'FortiExtender WAN 50G');
+  const alt = r.celular.extender.alternativas.map((x) => x.id);
+  assert.ok(alt.indexOf('FortiExtender 511G') < alt.indexOf('FortiExtender 511G-WiFi'), alt.join(', '));
+});
