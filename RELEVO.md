@@ -352,6 +352,13 @@ traspaso (el #37, de otra sesión, se fusionó mientras se cerraba esta).
 ### Se pueden hacer desde una sesión, sin acceso especial
 
 1. **Mejoras propuestas**: las de abajo, cuando el dueño las apruebe (no se hacen solas).
+2. **Fases 2 y 3 de la auditoría de los dimensionadores** (decididas por el dueño el 2026-11-10: «Ejecuta fase 2 y fase 3»;
+   las fases 0 y 1 se hicieron en los PR #150, #153, #156 y #162). Fase 2, un corte por PR medido con `npm run
+   equivalencia`: 1, la lista de materiales de Aruba fuera de `renderBom()` (hecho, PR #167); 2, Juniper con motor,
+   orden de candidatos y caso de contraste; 3, la lista de Cisco al motor; 4, Nokia 7750 y 7220 con motor propio; 5,
+   las listas de Huawei y MikroTik al motor, con la versión de motor de cada uno en «Supuestos». Fase 3: el catálogo
+   en memoria sin SQLite (ADR-3) y las dependencias mayores de una en una (SDK de Anthropic, ESLint, dotenv,
+   pdf-parse). Los precios de Cisco, Huawei, Juniper y Nokia los cierra el dueño con las listas de un distribuidor.
 
 ### Esperan un documento oficial (se cierran trayéndolo por Actions)
 
@@ -409,7 +416,12 @@ existen los workflows de transporte. Huawei y HPE niegan además el navegador au
 
 ## Mejoras propuestas sin decidir
 
-- **Auditoría de los dimensionadores (2026-11-09): fases 1 a 3** (propuesta al cerrar el PR #150, que hizo la fase 0). Fase 1: trazabilidad (hecha en el PR #153: `datasetVersion` en los ocho dimensionadores con catálogo y las dos filas en «Supuestos»; falta la versión de motor de los demás, que llega con el contrato común), Express 5 (hecho en el PR #156) y archivar el código muerto (hecho en el PR #162, por la opción recomendada, con «Ejecuta pendientes» del dueño del 2026-11-09: `sizing_engine.js`, `presales_api_controller.js`, `plan18` y `SyncLog`, en `docs/archivo/README.md` con el commit para recuperarlos). Fase 2: un contrato común de motor y un corte del BOM por PR (`render()` y `renderBom()` de Aruba pasan de 500 líneas). Fase 3: catálogo en memoria y mayores de dependencias. Evita que la recomendación cambie sin dejar rastro de qué catálogo la produjo. Cuesta un PR por paso; si se hace mal, el contrato común sin las equivalencias de `npm run equivalencia` cambiaría resultados sin que nada lo frene.
+- **Que el modal de accesorios de Aruba no duplique lo que el motor ya pone** (propuesta al cerrar el PR #167). Al
+  elegir en el modal un accesorio que el motor también añade (kit S2N67A del EC-10150 con Boost, una óptica que el
+  builder ya resolvió, la de la interconexión EdgeHA), esa pasada de `renderBom()` cotiza las dos filas; la manual
+  solo se suelta para la siguiente, y un Excel exportado entonces lleva el kit dos veces. Arreglo: calcular primero
+  lo que pone el motor y dejarlo fuera de las filas manuales, en `ArubaReglas.lineasBom`, con
+  `equivalencia-acepta: aruba-bom`. Si se hace mal, una óptica elegida en el modal que el motor no pone desaparecería.
 - **Que `npm run traspasos` cuente las ramas cedidas aparte** (propuesta al cerrar el PR #164). Desde ese PR
   la reserva que pierde una carrera deja su rama con el traspaso «cerrado (cedido…)» en vez de borrarla, porque el
   proxy de git corta a veces el borrado. `traspasos` la sigue listando entre los temas en curso; se diría en una

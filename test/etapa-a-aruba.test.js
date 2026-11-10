@@ -20,6 +20,9 @@ const { cargar } = require('./ayuda/navegador.js');
 const raiz = (...p) => path.join(__dirname, '..', ...p);
 const html = fs.readFileSync(raiz('public/dimensionador-aruba-edgeconnect.html'), 'utf8');
 const js = fs.readFileSync(raiz('public/js/dimensionador-aruba-edgeconnect.js'), 'utf8');
+// Las filas de la lista de materiales viven en ArubaReglas.lineasBom desde la fase 2 de la auditoria
+// del 2026-11-09 (ADR-1): la pagina solo las pinta.
+const reglas = fs.readFileSync(raiz('public/js/aruba-reglas.js'), 'utf8');
 
 // ── Contrato intocable del builder WAN (lo usan tests y E2E) ─────────────────
 test('el builder WAN conserva sus ids de contrato tras el rediseño', () => {
@@ -129,13 +132,14 @@ test('matrizExcel marca la cabecera y el total para que el escritor las destaque
 
 // ── Pendiente #31: la línea DTD del BOM lleva precio real de la lista ─────────
 test('el BOM declara la línea DTD con su SKU de la escalera cuando hay suscripción', () => {
-  // La regla vive en renderBom: secMode==='dtd' + suscripción activa → línea «Seguridad»
-  // con SKU y List Price; sin suscripción no se cotiza (add-on de la suscripción).
-  assert.ok(js.includes("secMode==='dtd'") && js.includes("DTD[dtdMod]"),
-    'renderBom ya no saca la línea DTD de la escalera del catálogo');
-  assert.ok(js.includes('Dynamic Threat Defense HA'), 'falta la segunda línea DTD del par HA 1+1');
+  // La regla vive en ArubaReglas.lineasBom (antes en renderBom): secMode==='dtd' + suscripción
+  // activa → línea «Seguridad» con SKU y List Price; sin suscripción no se cotiza (add-on de la
+  // suscripción). Su comportamiento lo prueba test/aruba-lineas-bom.test.js.
+  assert.ok(reglas.includes("secMode==='dtd'") && reglas.includes("DTD[dtdMod]"),
+    'lineasBom ya no saca la línea DTD de la escalera del catálogo');
+  assert.ok(reglas.includes('Dynamic Threat Defense HA'), 'falta la segunda línea DTD del par HA 1+1');
   // Término de 7 años: la lista lo publica, el dimensionador lo modela a 5 (#28).
-  assert.ok(js.includes('termYrs>=7?5:termYrs'), 'el término de 7 años ya no cae al de 5 con nota');
+  assert.ok(reglas.includes('termYrs>=7?5:termYrs'), 'el término de 7 años ya no cae al de 5 con nota');
 });
 
 test('la proyección del catálogo expone la escalera DTD al dimensionador', () => {
