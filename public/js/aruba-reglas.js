@@ -621,9 +621,280 @@
     return { candidates, outByBoost, outByClients, outByAps, outBySinDato, outByFlujos, outByPersona, outBySo, outByDtd, outByBoostRec, outBySinSec, outByIds, outByIdsEc, outByPuertos, outByPqc };
   }
 
+  /* LA LISTA DE MATERIALES (fase 2 de la auditoria del 2026-11-09, ADR-1, primer corte). Las filas
+     que renderBom() armaba entre el pintado salen aqui, sin DOM ni estado: la pagina lee lo que hay
+     en pantalla (casillas, opticas elegidas, accesorios del modal) y lo pasa en `ctx`. Las reglas de
+     cada fila no cambian y sus comentarios viajan con ellas; la equivalencia con el bloque de la
+     pagina la mide scripts/equivalencias/aruba-bom.js.
+       ctx.m, ctx.D      el modelo de la lista y el estado derivado del escenario (estadoDerivado)
+       ctx.capTier       la licencia de capacidad deducida (gateways 9200), o null
+       ctx.haMarcado     la casilla del par HA; ctx.secMode, la seguridad del sitio
+       ctx.elegidos      los accesorios elegidos a mano en el modal ({ sku: cantidad }): no se toca
+       ctx.inyectados    los accesorios que el diseno exige (accesoriosInyectados de la pagina)
+       ctx.pickSfp       las opticas elegidas por medio en el builder de enlaces
+       ctx.datos         LICENSES, LICENSES_HA, BUNDLES, CARE, CARE_SKU, CENTRAL, CENTRAL_SERIE,
+                         SKU_CAT, SIZING, ACCESSORY_CATALOG, ACCESSORY_COMPAT, DTD y SSE
+       ctx.opticaResuelta, ctx.necesidadesOptica   las de la pagina
+     Devuelve { filas, soltar, licHa }. `soltar` son los accesorios del modal que la pagina quita de
+     la seleccion: los que el modelo no admite y los que el motor ya pone (duplicarlos seria un
+     error de pedido). `licHa` es la suscripcion del segundo nodo, que las notas citan. */
+  function lineasBom(ctx) {
+    const { m, D, capTier, secMode } = ctx;
+    const { LICENSES, LICENSES_HA, BUNDLES, CARE, CARE_SKU, CENTRAL, CENTRAL_SERIE, SKU_CAT, SIZING,
+      ACCESSORY_CATALOG, ACCESSORY_COMPAT, DTD, SSE } = ctx.datos;
+    const qty=D.qty, termYrs=D.termYrs;
+    const bundle=D.bundle, care=D.care, central=D.central;
+    const bwTier=D.tier, bwCode=bwTier?bwTier.code:null;
+    const bloques=D.bloques;
+    const esEC=m.fam==='ec', esVirtual=m.id==='EC-V';
+    const termino=`término ${termYrs} año${termYrs>1?'s':''}`;
+    const famLabel=x=>x.serie+(x.fam==='ec'?' SD-WAN':' · gateway');
+    const miles=n=>n==null?'—':n.toLocaleString('en-US');
+    const catAcc={catalogo:ACCESSORY_CATALOG, compat:ACCESSORY_COMPAT};
+    // La seleccion del modal, en copia: lo que hay que soltar se devuelve, no se borra aqui.
+    const acc=Object.assign({}, ctx.elegidos);
+    const soltar=[];
+    const quita=(sku)=>{ delete acc[sku]; soltar.push(sku); };
+    const suelta=(sku)=>{ if(acc[sku]) quita(sku); };
+    const lic=LICENSES[bwCode]||null;
+    const licTier=lic&&bundle?(lic[bundle]||null):null;
+    // Par HA 1+1: HPE publica un juego de SKU propio para el SEGUNDO nodo (LICENSES_HA),
+    // con el mismo precio que el estándar — lo que cambia es el SKU de pedido. Aplica a
+    // las TRES modalidades desde el 2026-09-16 (pendiente #17 cerrado): el QuickSpecs
+    // vigente (a50004289enw) publica la escalera «On-Premises High Availability E-STU» y
+    // la lista la tarifa con la misma invariante (HA == estándar, verificada 32/32).
+    const haPar=esEC&&!!ctx.haMarcado&&qty===2;
+    const licHa=haPar&&bundle?((LICENSES_HA[bwCode]||{})[bundle]||null):null;
+    // El soporte se cotiza por MODELO (CARE_SKU, servicio atado a la variante de hardware),
+    // no por tier de caudal — desde 2026-09-13 sale de la lista de precios documentada en
+    // aruba.js. Lo que la lista no cubre (fcsw, gateways, 4HR del 10150) sigue en consultar.
+    const cs=care&&CARE_SKU[m.id]?CARE_SKU[m.id][care]:null;
+    const careTier=cs?{sku:{y1:cs.y1[0],y3:cs.y3[0],y5:cs.y5[0]},y1:cs.y1[1],y3:cs.y3[1],y5:cs.y5[1]}:null;
+    const licPrice=tierPrice(licTier,termYrs);
+    const licHaPrice=tierPrice(licHa,termYrs);
+    const carePrice=tierPrice(careTier,termYrs);
+    // Boost se licencia como SaaS sobre Foundation/Advanced y como E-STU sobre On-Premises:
+    // cada modalidad tiene su propio juego de SKUs (2026-09-13, ver aruba.js).
+    const boostCfg=bloques&&SIZING.boost?(bundle==='onprem'?SIZING.boost.onprem:SIZING.boost.saas):null;
+    const boostBlk=boostCfg?boostCfg.bloque100:null;
+    const boostPrice=tierPrice(boostBlk,termYrs);
+
+    // Los paneles de detalle del equipo («Ficha del equipo», «Capacidad por nivel», «Suscripción»
+    // y «Soporte HPE») ya NO se pintan aquí: desde 2026-09-13 viven unificados en la ficha del
+    // dimensionador (seccionesDe), una sola tarjeta sin cifras repetidas. Esta función solo
+    // mantiene la visibilidad de los campos y construye las filas de la lista de materiales.
+
+    // El pool de Boost NO multiplica por unidad: es un caudal agregado del fabric.
+    const filas=[
+      {cat:'Equipo', desc:m.id, sku:m.hwSku||null, qty, unit:m.elpN!=null?m.elpN:null,
+       nota:`${m.seg} · ${famLabel(m)} · ${m.ifaces}`},
+    ];
+    // Ópticas y accesorios (fase 12): catálogo maestro del servidor, con precios de la
+    // lista oficial del distribuidor; solo los compatibles con el modelo elegido — la
+    // selección se depura al cambiar de equipo para no cotizar una óptica incompatible.
+    const cfgAcc=ACCESSORY_COMPAT[m.id]||null;
+    Object.keys(acc).forEach(sku=>{
+      if(!cfgAcc||!cfgAcc.items.includes(sku)) quita(sku);
+    });
+    Object.entries(acc).forEach(([sku,n])=>{
+      const a=ACCESSORY_CATALOG[sku];
+      if(!a||n<=0) return;
+      filas.push({cat:'Accesorios', desc:a.name, sku, qty:n, unit:a.listPrice!=null?a.listPrice:null,
+        nota:'List Price de la lista oficial del distribuidor (vigencia '+(a.vigencia||'s/f')+') — catálogo maestro de accesorios; confirmar precio firme antes de cotizar'});
+    });
+    // M4 · Inyección automática de hardware (SPEC B.5): accesorios que el DISEÑO exige y
+    // que no dependen de la selección manual del modal. El precio sale del catálogo maestro
+    // (ACCESSORY_CATALOG: S2N67A $9.096, R7J63A $747 — lista oficial del distribuidor).
+    const inyectados=ctx.inyectados||[];
+    inyectados.forEach(({sku,qty:qIny,nota,por})=>{
+      // Si además se eligió a mano en el modal, la línea inyectada manda y la manual se
+      // suelta: duplicar el kit en la cotización sería un error de pedido.
+      suelta(sku);
+      const a=ACCESSORY_CATALOG[sku]||null;
+      filas.push({por, cat:'Accesorios', desc:a?a.name:sku, sku, qty:qIny,
+        unit:a&&a.listPrice!=null?a.listPrice:null, nota});
+    });
+    // Ópticas SFP de los enlaces WAN (petición del dueño, 2026-09-15): una por enlace
+    // declarado con medio SFP. En EdgeConnect NO se multiplica por las unidades del par
+    // HA (2026-09-17, asistente de cableado EdgeHA): en el diseño oficial de sucursal del
+    // VSG SD-Branch (fig. «EC HA») cada enlace aterriza en UN chasis del par y el enlace
+    // EdgeHA lleva sus túneles a ambos — el ×2 cotizaba el patrón de HUB («each WAN
+    // transport is brought into each appliance») en una sucursal. Los gateways de campus
+    // conservan el ×unidades: su cableado HA no se ha validado contra fuente oficial.
+    const pickSfp=ctx.pickSfp||{};
+    Object.entries(ctx.necesidadesOptica(D.wanLinks)).forEach(([medio,nLinks])=>{
+      const {ops, sku}=ctx.opticaResuelta(m.id, medio, pickSfp);
+      if(!ops.length) return; // el aviso «este modelo no admite ese medio» vive en #sfpChooser
+      const qtyO=esEC?nLinks:nLinks*qty;
+      if(!sku){
+        filas.push({cat:'Accesorios', desc:`Óptica ${medio} para ${nLinks} enlace${nLinks===1?'':'s'} WAN — PENDIENTE DE SELECCIÓN en el builder`, sku:null, qty:qtyO, unit:null,
+          nota:`El escenario declara ${nLinks} enlace${nLinks===1?'':'s'} con medio ${medio} y hay ${ops.length} ópticas compatibles con ${m.id}: selecciona el tipo en la sección de enlaces WAN (pestaña Dimensionar). No entra en el total hasta elegirla.`});
+        return;
+      }
+      // Misma regla anti-duplicado que los inyectados: si esa óptica ya se metió a mano
+      // en el modal, la línea del builder manda y la manual se suelta.
+      suelta(sku);
+      const a=ACCESSORY_CATALOG[sku];
+      filas.push({cat:'Accesorios', desc:a.name, sku, qty:qtyO, unit:a.listPrice!=null?a.listPrice:null,
+        nota:`Óptica ${medio} × ${qtyO} (${nLinks} enlace${nLinks===1?'':'s'}${esEC&&qty>1?' — EdgeHA: cada enlace aterriza en UN chasis del par (VSG SD-Branch, fig. «EC HA»)':qty>1?` × ${qty} unidades`:''}) — List Price de la lista oficial (vigencia ${a.vigencia||'s/f'}); tipo seleccionado en el builder WAN`});
+    });
+    // Interconexión EdgeHA (pendiente #7 del dueño, 2026-09-17 — mejora aprobada): el
+    // enlace directo entre los dos chasis del par necesita 1 puerto por chasis. Si hay
+    // cobre libre lo resuelve un latiguillo (no cotizable desde el catálogo); si va por
+    // fibra son 2 ópticas de la velocidad recomendada (≥ agregado — regla declarada de
+    // la casa, ver velocidadEdgeHA). Sin elección del usuario la línea queda PENDIENTE
+    // DE SELECCIÓN sin precio: declarada, nunca una óptica inventada.
+    const ha=interconexionEdgeHA(catAcc, m, qty, D.wanLinks, pickSfp);
+    if(ha){
+      const agr=fmt(ha.agregado);
+      if(ha.modo==='cobre'){
+        filas.push({por:'chkHa', cat:'Accesorios', desc:`Latiguillo RJ-45 — interconexión EdgeHA del par (1 puerto ${NOMBRE_PUERTO[ha.puerto]} por chasis)`, sku:null, qty:1, unit:null,
+          nota:`La auditoría de puertos del par la lleva por ${NOMBRE_PUERTO[ha.puerto]} libre en los dos chasis («match the media type and speed for both ends», Orchestrator): un latiguillo de cobre, ninguna óptica. El catálogo no cotiza latiguillos.${ha.aviso?` Aviso: ${ha.aviso}.`:''}`});
+      }else if(ha.modo==='sinPuerto'){
+        filas.push({por:'chkHa', cat:'Accesorios', desc:'Interconexión EdgeHA — sin puerto libre del mismo tipo en los dos chasis', sku:null, qty:2, unit:null,
+          nota:'La auditoría de puertos del par no encuentra un puerto libre del mismo tipo en los dos chasis para la interconexión: el modelo no cabe con estos enlaces. Se declara para que la propuesta no salga sin el enlace del par.'});
+      }else if(ha.modo==='sinOptica'){
+        filas.push({por:'chkHa', cat:'Accesorios', desc:`Interconexión EdgeHA — 2 puertos (1 por chasis)${ha.puerto?` por ${NOMBRE_PUERTO[ha.puerto]}`:''} — óptica a confirmar con HPE`, sku:null, qty:2, unit:null,
+          nota:`${ha.aviso.charAt(0).toUpperCase()+ha.aviso.slice(1)} (agregado del sitio ${agr}). No entra en el total: se declara, sin SKU inventado.`});
+      }else if(!ha.sku){
+        filas.push({por:'chkHa', cat:'Accesorios', desc:'Interconexión EdgeHA — 2 ópticas (1 por chasis) — PENDIENTE DE SELECCIÓN en el builder', sku:null, qty:2, unit:null,
+          nota:`La interconexión del par lleva los túneles de cada underlay a ambos chasis (VSG SD-Branch, fig. «EC HA»)${ha.puerto?` y va por ${NOMBRE_PUERTO[ha.puerto]}`:''}. Velocidad ${ha.vel} (≥ agregado del sitio, ${agr} — regla declarada de la casa); hay ${ha.ops.length} ópticas compatibles: selecciona el tipo en la sección de enlaces WAN (pestaña Dimensionar). No entra en el total hasta elegirla.`});
+      }else{
+        // Misma regla anti-duplicado que el resto de ópticas: si ya se metió a mano en el
+        // modal, la línea del builder manda y la manual se suelta.
+        suelta(ha.sku);
+        const aHA=ACCESSORY_CATALOG[ha.sku];
+        filas.push({por:'chkHa', cat:'Accesorios', desc:`${aHA.name} — interconexión EdgeHA del par`, sku:ha.sku, qty:2, unit:aHA.listPrice!=null?aHA.listPrice:null,
+          nota:`Óptica ${ha.vel} × 2 (1 por chasis)${ha.puerto?`, por ${NOMBRE_PUERTO[ha.puerto]}: no queda cobre libre del mismo tipo en los dos chasis`:''} — ≥ agregado del sitio (${agr}), regla declarada de la casa. List Price de la lista oficial (vigencia ${aHA.vigencia||'s/f'}); tipo seleccionado en el builder WAN`});
+      }
+    }
+    if(esEC){
+      if(bundle){
+        if(licHa){
+          // Par HA 1+1: 1× suscripción estándar (nodo primario) + 1× suscripción de alta
+          // disponibilidad (segundo nodo, SKU «HA» del QuickSpecs). Misma forma en SaaS
+          // (Foundation/Advanced HA) y en On-Premises (E-STU HA, desde el 2026-09-16).
+          filas.push({cat:'Suscripción SD-WAN', desc:`${BUNDLES[bundle].n} — ${bwTier?bwTier.n:'tier por definir'} · nodo primario`,
+            sku:tierSku(licTier,termYrs), qty:1, unit:licPrice,
+            nota:`${termino} · suscripción por caudal del sitio, no por modelo de appliance`});
+          filas.push({por:'chkHa', cat:'Suscripción SD-WAN', desc:`${BUNDLES[bundle].n} HA — ${bwTier?bwTier.n:'tier por definir'} · segundo nodo del par 1+1`,
+            sku:tierSku(licHa,termYrs), qty:1, unit:licHaPrice,
+            nota:`${termino} · ${D.onprem
+              ?'SKU HA E-STU del QuickSpecs (sección «On-Premises High Availability», verificada 2026-09-16)'
+              :'SKU de alta disponibilidad del QuickSpecs (existencia y regla «match tier, bandwidth, term»)'}; la lista de precios documentada lo tarifa igual que el estándar`});
+        }else{
+          filas.push({cat:'Suscripción SD-WAN', desc:`${BUNDLES[bundle].n} — ${bwTier?bwTier.n:'tier por definir'}`,
+            sku:tierSku(licTier,termYrs), qty, unit:licPrice,
+            nota:`${termino} · suscripción por caudal del sitio, no por modelo de appliance`
+              +(haPar&&D.onprem?' · par HA on-prem: la escalera de SKU HA E-STU no llegó del servidor — consultar':'' )});
+        }
+        if(bloques){
+          filas.push({por:'chkBoost', cat:'Aceleración', desc:`${SIZING.boost.n} — bloque de ${SIZING.boost.bloque} Mbps`,
+            sku:tierSku(boostBlk,termYrs), qty:bloques, unit:boostPrice,
+            nota:`Pool agregado del fabric (${fmt(bloques*SIZING.boost.bloque)} = 30 % del tráfico WAN privado estimado). Orchestrator lo reparte entre sedes; no multiplica por unidad.`});
+        }
+        // Dynamic Threat Defense (pendiente #31, 2026-09-14): licencia opcional APARTE de
+        // Foundation y Advanced (QuickSpecs p.32) pero DE la suscripción — sin ella no se
+        // cotiza (igual que Boost; lo declara la revisión del diseño). SÍ está en la lista
+        // de precios vigente: escalera PLANA por appliance (sin tiers de caudal), con SKU
+        // por modalidad × término. Con HA 1+1, dos líneas como el resto de licencias:
+        // 1× estándar (nodo primario) + 1× SKU de alta disponibilidad (segundo nodo) — la
+        // lista lo tarifa igual que el estándar, invariante verificada 2026-09-14.
+        if(secMode==='dtd'){
+          // La lista también publica término de 7 años: por alcance se modela a 5 (#28).
+          const yrs=termYrs>=7?5:termYrs;
+          const nota7=termYrs>=7?' · la lista publica también 7 años: se modela a 5 por alcance (#28)':'';
+          const notaBase=`${termino} · licencia opcional aparte de Foundation/Advanced (QuickSpecs p.32) · List Price de la lista vigente (2026-06-01)${nota7}`;
+          const dtdMod=D.onprem?'onprem':'saas';
+          const dtdStd=DTD?DTD[dtdMod]:null, dtdHa=DTD?DTD[dtdMod+'Ha']:null;
+          if(!dtdStd){
+            // Fallback pre-merge de DATOS: sin la escalera en el API, «consultar».
+            filas.push({cat:'Seguridad', desc:'Dynamic Threat Defense — IDS/IPS, DDoS adaptativo, clasificación web',
+              sku:null, qty, unit:null,
+              nota:`${termino} · licencia opcional aparte de Foundation/Advanced (QuickSpecs p.32) · la escalera de precios no llegó del servidor — consultar`});
+          }else if(haPar&&dtdHa){
+            filas.push({cat:'Seguridad', desc:'Dynamic Threat Defense — IDS/IPS, DDoS adaptativo, clasificación web · nodo primario',
+              sku:tierSku(dtdStd,yrs), qty:1, unit:tierPrice(dtdStd,yrs), nota:notaBase});
+            filas.push({por:'chkHa', cat:'Seguridad', desc:'Dynamic Threat Defense HA — IDS/IPS del segundo nodo del par 1+1',
+              sku:tierSku(dtdHa,yrs), qty:1, unit:tierPrice(dtdHa,yrs),
+              nota:`${termino} · SKU de alta disponibilidad del segundo nodo; la lista lo tarifa igual que el estándar (invariante verificada 2026-09-14)${nota7}`});
+          }else{
+            filas.push({cat:'Seguridad', desc:'Dynamic Threat Defense — IDS/IPS, DDoS adaptativo, clasificación web',
+              sku:tierSku(dtdStd,yrs), qty, unit:tierPrice(dtdStd,yrs), nota:notaBase});
+          }
+        }
+        // Modalidad On-Premises (E-STU): la suscripcion INCLUYE el software de Orchestrator
+        // on-prem (data sheet oficial a50010073enw); lo que corre por cuenta del cliente es
+        // el ALOJAMIENTO — VM, disponibilidad, backup y actualizaciones. La linea lo declara
+        // para que la propuesta no olvide dimensionar esa infraestructura (2026-09-13, fase 10).
+        if(D.onprem){
+          filas.push({por:'chkOnprem', cat:'Orquestación', desc:'Orchestrator auto-alojado — software incluido en la suscripción On-Premises',
+            sku:null, qty:1, unit:null,
+            nota:'Sin coste de licencia (incluido en E-STU) · el alojamiento —VM, uptime, backup y upgrades— corre por cuenta del cliente'});
+        }
+      }
+    }else{
+      if(central){
+        // A3 (auditoría 2026-09-17, corregido 2026-09-24): los SKU de Central cargados
+        // (JZ118–JZ123AAE) son los de la lista con descripción literal «Aruba 7/90xx Gtwy», y se
+        // aplicaban a TODO gateway — también a los 9106/9114 (serie 9100), al 9240 (serie 9200)
+        // y a la serie 7200. Para esas series la lista cargada no trae su SKU (la 72xx tiene su
+        // propia familia, documentada en aruba.js sin precio cargado; la 91xx/92xx está por
+        // confirmar con HPE): la línea queda en «consultar» con el motivo, nunca con el SKU y el
+        // precio de otra serie.
+        const conSeg=secMode==='gwsec';
+        const c=centralParaModelo({centralSerie:CENTRAL_SERIE, central:CENTRAL, skuCat:SKU_CAT}, m, central, termYrs, conSeg);
+        filas.push({cat:'Suscripción de gestión', desc:c?c.n:(CENTRAL[central]||{}).n||'Central',
+          sku:c?c.sku:null, qty, unit:c?c.precio:null,
+          nota:!c
+            ?`${termino} · HPE Aruba Networking Central, suscripción por dispositivo · CONSULTAR: el documento oficial no publica el nivel ${conSeg?'«+ Security» ':''}para la ${m.serie}`
+            :c.precio!=null
+              ?`${termino} · HPE Aruba Networking Central, suscripción por dispositivo`
+              :`${termino} · HPE Aruba Networking Central, suscripción por dispositivo · SKU oficial de la ${m.serie}; precio a confirmar con el distribuidor`});
+      }
+      if(capTier&&capTier.code!=='hw'){
+        filas.push({cat:'Licencia perpetua', desc:`Capacidad ${capTier.n}`, sku:capTier.sku||null, qty, unit:capTier.elp!=null?capTier.elp:null,
+          nota:`Amplía el mismo hardware a ${fmt(capTier.fw)} · ${miles(capTier.aps)} APs · ${miles(capTier.clients)} dispositivos`});
+      }
+    }
+    // A5 (auditoría 2026-09-17, corregido 2026-09-24): los APs solo limitaban el modelo — ni su
+    // hardware ni su suscripción de Central por AP aparecían en la lista, y la propuesta salía
+    // corta sin decirlo. Este catálogo no trae modelos de AP: la línea entra DECLARADA, con la
+    // cantidad del escenario y sin SKU ni precio, que es lo que la cuenta como «sin cotizar».
+    if(D.aps>0){
+      filas.push({cat:'Acceso inalámbrico', desc:`Puntos de acceso — hardware y suscripción de Central por AP`, sku:null, qty:D.aps, unit:null,
+        nota:'Fuera del catálogo de este dimensionador: el modelo de AP y su suscripción de Central se eligen y cotizan aparte. Se declara para que la propuesta no salga corta.'});
+    }
+    // HPE Aruba Networking SSE (SPEC B.4): suscripcion POR USUARIO (ZTNA, SWG, CASB, DEM —
+    // paquetes oficiales Foundation ZTNA / Foundation SWG / Foundation Plus / Advanced /
+    // Advanced Plus, QuickSpecs SSE a50009212enw). SKU y precio del global `sse` del API
+    // (R8M36AAE, precio null → «consultar», EXCLUIDA de los totales con nota al pie);
+    // co-terminada con la suscripción del sitio (mismo término). Si el frente DATOS aún no
+    // sirve el global, la línea entra igualmente con el SKU del contrato y «consultar».
+    if(secMode==='sse'){
+      const sseSku=(SSE&&SSE.sku)||'R8M36AAE';
+      const ssePrecio=SSE&&SSE.precio!=null?SSE.precio:null;
+      // Usuarios = cantidad de licencias (petición del dueño, 2026-09-15): sin la cifra la
+      // línea NO se cotiza con un «1» inventado — queda PENDIENTE y el campo #users se
+      // marca como requerido en el formulario (ver marcarUsersReq en render).
+      const nUsers=parseInt(D.users)>0?parseInt(D.users):null;
+      filas.push({cat:'Seguridad SASE', desc:'HPE Aruba Networking SSE — suscripción por usuario (ZTNA, SWG, CASB, DEM)'
+          +(nUsers?'':' — PENDIENTE: declara los usuarios del sitio'),
+        sku:sseSku, qty:nUsers, unit:ssePrecio,
+        nota:nUsers
+          ?`${termino} · co-terminada con la suscripción del sitio · por usuario (${miles(nUsers)} usuarios) · paquetes Foundation ZTNA / Foundation SWG / Foundation Plus / Advanced / Advanced Plus (QuickSpecs SSE)${SSE&&SSE.nota?' · '+SSE.nota:''} · HPE no publica List Price — consultar`
+          :`SSE se suscribe POR USUARIO (QuickSpecs SSE) y el escenario no declara usuarios: la cantidad de licencias no se puede fijar. Rellena «Usuarios / dispositivos concurrentes» en el módulo 2.`});
+    }
+    if(care&&!esVirtual){
+      filas.push({cat:'Soporte', desc:CARE[care].n, sku:tierSku(careTier,termYrs), qty, unit:carePrice,
+        nota:`${termino} · ${CARE[care].sla}`});
+    }
+    return { filas, soltar, licHa };
+  }
+
   return { BOOST_CUOTA, tierParaCaudal, capacidadSo, boostMbpsSitio, boostRecMbps, admiteDtd, escenariosUnderlay, escenarioBoost,
     MEDIO_MBPS, medioMinimo, asignarPuertos, asignarPuertosPar, enlacesSobreMedio,
     LAN_RESERVADOS, NOMBRE_PUERTO, VELOCIDAD_OPTICA, VEL_JAULA, fmt, opticasPorVelocidad, parEdgeHA, velocidadEdgeHA, sinJaulasSfp,
     velocidadesJaula, opcionesHa, interconexionEdgeHA, inventarioTxt, cobreSfp, auditarPuertos, motivoPuertos, evaluarPuertos,
-    clientesMax, apsMax, nivelLicenciaNecesario, bloquesBoost, flujosDe, tierPrice, tierSku, baseParaModelo, centralParaModelo, filtrarCandidatos };
+    clientesMax, apsMax, nivelLicenciaNecesario, bloquesBoost, flujosDe, tierPrice, tierSku, baseParaModelo, centralParaModelo, filtrarCandidatos, lineasBom };
 });
