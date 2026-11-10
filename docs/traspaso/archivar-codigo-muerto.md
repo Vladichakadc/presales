@@ -3,28 +3,28 @@
 - **Tema:** Auditoría fase 1: archivar el código muerto (sizing_engine.js, presales_api_controller.js, plan18, SyncLog)
 - **Rama:** claude/archivar-codigo-muerto
 - **Cuenta:** (no consta)
-- **Estado:** reservado
+- **Estado:** en revisión (PR abierto)
 - **Actualizado:** 2026-11-09 22:29
 - **Archivos que toca:** public/js/sizing_engine.js, server/presales_api_controller.js, test/presales-api-controller.test.js, plan18-fase1-auditoria-aruba.patch, server/models/SyncLog.js, server/models/index.js, scripts/contrastes/cobertura.lock.json, docs/archivo/
-- **Siguiente paso:** empezar: el tema está reservado y todavía no tiene código
+- **Siguiente paso:** CI del PR y commit de cierre (CLAUDE.md sin la sección de Gemini, entrega, RELEVO)
 
 ## Encargo del dueño
 
-<Las palabras del dueño, literales, y lo que se entendió de ellas.>
+«Ejecuta pendientes como arquitecto senior» (2026-11-09): el paso de la fase 1 de la auditoría que no tiene otra sesión (Express 5 está en el #156).
 
 ## Hecho
 
-- <Lo terminado, con el commit que lo contiene.>
+- Retirados del árbol los cuatro archivos y `SyncLog`; `docs/archivo/README.md` con el commit para recuperarlos; fuera del lock de cobertura.
 
 ## Falta
 
-- <Lo pendiente de este tema, en orden.>
+- Cierre: CLAUDE.md, entrega y relevo.
 
 ## Decisiones y hallazgos
 
 
-- <Lo decidido y su porqué; lo medido; lo que no funcionó, para no repetirlo.>
+- Archivar = sacar del árbol, no borrar la historia: `git show <commit>:<ruta>`.
 
 ## Verificación
 
-- <Qué se corrió (`npm run verificar`, `auditar`, `pantallas`…) y con qué resultado.>
+- eslint sin errores; `node --test test/*.test.js`: las mismas 38 fallas que la base (dependencias ausentes en el entorno), ninguna nueva.
