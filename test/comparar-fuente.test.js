@@ -120,23 +120,57 @@ test('con --anotaciones nunca sale distinto de 0, y lo que falla se dice en un a
   assert.strictEqual(lineas.filter((l) => /^::warning title=comparar-fuente::La comparación no se pudo hacer/.test(l)).length, 2);
 });
 
-test('el job comparar: aparte del que empuja, sin escritura, sin token guardado y sin scripts de instalación', () => {
-  const yml = fs.readFileSync(path.join(__dirname, '..', '.github', 'workflows', 'traer-cisco-huawei.yml'), 'utf8').replace(/^\s*#.*\n/gm, '');
-  const [traer, comparar] = [yml.slice(yml.indexOf('\n  traer:\n'), yml.indexOf('\n  comparar:\n')), yml.slice(yml.indexOf('\n  comparar:\n'))];
-  assert.ok(comparar.length > 20, 'existe el job comparar');
-  // El que empuja no instala nada ni corre la comparación (lee documentos de fuera).
-  assert.ok(!/npm (?:ci|install)|npx |comparar-fuente/.test(traer));
-  assert.match(comparar, /needs: traer\n/);
-  assert.match(comparar, /permissions:\n {6}contents: read\n/);
-  assert.ok(!/: write/.test(comparar), 'sin escritura');
-  assert.match(comparar, /persist-credentials: false/);
-  assert.match(comparar, /fetch-depth: 0/, 'todas las ramas: la copia anterior vive en otra');
-  assert.deepStrictEqual(comparar.match(/npm (?:ci|install)[^\n]*/g), ['npm ci --ignore-scripts']);
+// El job vive en un workflow reutilizable (2026-11-09, PR de «comparar-reutilizable»): los cuatro
+// transportes lo llaman, y su aislamiento se escribe una sola vez.
+const WF = path.join(__dirname, '..', '.github', 'workflows');
+const sinComentarios = (f) => fs.readFileSync(path.join(WF, f), 'utf8').replace(/^\s*#.*\n/gm, '');
+const TRANSPORTES = {
+  'traer-cisco-huawei.yml': '${{ inputs.rama }}',
+  'traer-fortinet-pendientes.yml': '${{ needs.traer.outputs.rama }}',
+  'traer-fortinet-matrix.yml': '${{ needs.traer.outputs.rama }}',
+  'traer-juniper-matrix.yml': '${{ needs.traer.outputs.rama }}',
+};
+
+test('comparar-fuente.yml: sin escritura, sin token guardado, sin scripts de instalación y sin interpolar entradas', () => {
+  const yml = sinComentarios('comparar-fuente.yml');
+  assert.match(yml, /on:\n {2}workflow_call:\n {4}inputs:\n {6}rama:/);
+  assert.match(yml, /\n {2}workflow_dispatch:\n/, 'también a mano, sobre una rama que ya existe');
+  assert.deepStrictEqual(yml.match(/contents: \w+/g), ['contents: read', 'contents: read']);
+  assert.ok(!/: write/.test(yml), 'sin escritura');
+  assert.match(yml, /persist-credentials: false/);
+  assert.match(yml, /fetch-depth: 0/, 'todas las ramas: la copia anterior vive en otra');
+  assert.deepStrictEqual(yml.match(/npm (?:ci|install)[^\n]*/g), ['npm ci --ignore-scripts']);
   // La rama y lo buscado llegan por el entorno, nunca interpolados en el script.
-  assert.ok(!/run:[^\n]*\$\{\{|^\s+(?:node|\[\[|if)[^\n]*\$\{\{/m.test(comparar), 'ninguna entrada interpolada en bash');
-  assert.match(comparar, /node scripts\/comparar-fuente\.js "\$RAMA" --sin-traer --anotaciones "--buscar=\$BUSCAR"/);
-  assert.match(comparar, /node scripts\/comparar-fuente\.js "\$RAMA" --sin-traer --anotaciones\n/);
-  assert.ok(!/continue-on-error/.test(comparar), 'no hace falta: el script sale siempre con 0');
+  const run = yml.slice(yml.indexOf('        run: |'));
+  assert.ok(!run.includes('${{'), 'ninguna entrada interpolada en bash');
+  assert.match(run, /node scripts\/comparar-fuente\.js "\$RAMA" --sin-traer --anotaciones "--buscar=\$BUSCAR"/);
+  assert.match(run, /node scripts\/comparar-fuente\.js "\$RAMA" --sin-traer --anotaciones\n/);
+  // Nunca falla: una rama no válida avisa y sale con 0.
+  assert.match(run, /::warning title=comparar-fuente::Rama no valida[^\n]*\n\s+exit 0/);
+  assert.ok(!/exit [1-9]/.test(run) && !/continue-on-error/.test(yml));
+});
+
+test('los cuatro transportes llaman al mismo comparar, después de empujar y con su rama', () => {
+  // Ninguno queda fuera: todo workflow que empuja a una rama fuente/* propia está en la lista.
+  const empujan = fs.readdirSync(WF).filter((f) => /^traer-.*\.yml$/.test(f)).sort();
+  assert.deepStrictEqual(empujan, Object.keys(TRANSPORTES).sort(), 'un transporte nuevo llama también a comparar-fuente.yml');
+  for (const [f, rama] of Object.entries(TRANSPORTES)) {
+    const yml = sinComentarios(f);
+    const [traer, comparar] = [yml.slice(yml.indexOf('\n  traer:\n'), yml.indexOf('\n  comparar:\n')), yml.slice(yml.indexOf('\n  comparar:\n'))];
+    assert.ok(comparar.length > 20, `${f}: existe el job comparar`);
+    // El que empuja no corre la comparación (lee documentos de fuera).
+    assert.ok(!/comparar-fuente/.test(traer), `${f}: traer no compara`);
+    assert.match(comparar, /needs: traer\n {4}permissions:\n {6}contents: read\n {4}uses: \.\/\.github\/workflows\/comparar-fuente\.yml\n/, f);
+    assert.ok(comparar.includes(`rama: ${rama}\n`), `${f}: pasa su rama`);
+    assert.ok(!/steps:|run:/.test(comparar), `${f}: el job solo llama, no lleva pasos propios`);
+    // Quien genera el nombre de la rama lo saca como salida del job, del paso que la empuja.
+    if (rama.includes('needs.traer')) {
+      assert.match(traer, /outputs:\n {6}rama: \$\{\{ steps\.rama\.outputs\.rama \}\}\n/, f);
+      assert.match(traer, /id: rama\n/, f);
+      assert.match(traer, /echo "rama=\$rama" >> "\$GITHUB_OUTPUT"/, f);
+      assert.match(traer, /rama="fuente\/[a-z0-9-]+-\$\(date -u \+%Y-%m-%d\)-\$GITHUB_RUN_ID"/, `${f}: el nombre pasa la validación de comparar-fuente.yml`);
+    }
+  }
 });
 
 // Lo destapó la primera corrida real (42693323597, lanzada desde una rama): el traspaso de esa rama,

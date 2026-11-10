@@ -22,14 +22,22 @@ const path = require('path');
 const RAIZ = path.join(__dirname, '..');
 const DIR = path.join(RAIZ, '.github', 'workflows');
 const DUENOS = new Set(['actions']);
+// Workflows reutilizables LOCALES (`uses: ./.github/workflows/<x>.yml`): no son una acción de fuera,
+// son código de este mismo commit, así que no llevan sha ni dueño. Se declaran aquí, con su motivo,
+// y tienen que existir; uno que no esté en la lista no entra solo.
+const LOCALES = {
+  './.github/workflows/comparar-fuente.yml': 'el job que compara lo traído, el mismo para los cuatro transportes (2026-11-09)',
+};
 const FORMA = /^(?<accion>[a-z0-9-]+\/[a-z0-9._-]+)@(?<sha>[0-9a-f]{40}) # (?<version>v\d+\.\d+\.\d+)$/;
 
 // Cada `uses:` de cada workflow, sin los comentarios de línea completa.
 const usos = [];
+const locales = [];
 for (const yml of fs.readdirSync(DIR).filter((f) => f.endsWith('.yml'))) {
   fs.readFileSync(path.join(DIR, yml), 'utf8').split('\n').forEach((linea, i) => {
     const m = linea.match(/^\s*(?:- )?uses:\s*(.+?)\s*$/);
-    if (m && !/^\s*#/.test(linea)) usos.push({ donde: `${yml}:${i + 1}`, valor: m[1] });
+    if (!m || /^\s*#/.test(linea)) return;
+    (m[1].startsWith('./') ? locales : usos).push({ donde: `${yml}:${i + 1}`, valor: m[1] });
   });
 }
 
@@ -60,6 +68,17 @@ test('solo acciones oficiales de GitHub, y ninguna local que se cuele sin declar
   for (const { donde, valor } of usos) {
     const dueno = valor.split('/')[0];
     assert.ok(DUENOS.has(dueno), `${donde}: «${dueno}» no es un dueño de acciones declarado; decide si entra y añádelo a DUENOS con su motivo`);
+  }
+});
+
+test('un workflow local reutilizable está declarado, existe y solo se llama desde un job sin pasos', () => {
+  for (const { donde, valor } of locales) {
+    assert.ok(LOCALES[valor], `${donde}: «${valor}» no está en LOCALES; decláralo con su motivo`);
+    assert.ok(fs.existsSync(path.join(RAIZ, valor)), `${donde}: ${valor} no existe`);
+  }
+  for (const ruta of Object.keys(LOCALES)) {
+    assert.ok(locales.some((l) => l.valor === ruta), `${ruta} está declarado y nadie lo llama`);
+    assert.match(fs.readFileSync(path.join(RAIZ, ruta), 'utf8'), /\non:\n {2}workflow_call:/, `${ruta} no se deja llamar (workflow_call)`);
   }
 });
 
