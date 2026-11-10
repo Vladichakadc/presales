@@ -1,6 +1,6 @@
 {
  "medidoEn": {
-  "commit": "724fc87",
+  "commit": "c714092",
   "fecha": "2026-11-10"
  },
  "umbralRozado": 25,
@@ -104,17 +104,17 @@
    "pct": 64
   },
   {
+   "modulo": "dimensionador-aruba-edgeconnect.js",
+   "estado": "ejercitado",
+   "total": 368,
+   "usadas": 241,
+   "pct": 65
+  },
+  {
    "modulo": "bom.js",
    "estado": "ejercitado",
    "total": 122,
    "usadas": 81,
-   "pct": 66
-  },
-  {
-   "modulo": "dimensionador-aruba-edgeconnect.js",
-   "estado": "ejercitado",
-   "total": 371,
-   "usadas": 246,
    "pct": 66
   },
   {
@@ -174,6 +174,13 @@
    "pct": 78
   },
   {
+   "modulo": "aruba-reglas.js",
+   "estado": "ejercitado",
+   "total": 94,
+   "usadas": 74,
+   "pct": 79
+  },
+  {
    "modulo": "mikrotik-motor.js",
    "estado": "ejercitado",
    "total": 89,
@@ -228,13 +235,6 @@
    "total": 18,
    "usadas": 15,
    "pct": 83
-  },
-  {
-   "modulo": "aruba-reglas.js",
-   "estado": "ejercitado",
-   "total": 85,
-   "usadas": 71,
-   "pct": 84
   },
   {
    "modulo": "juniper-motor.js",
