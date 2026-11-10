@@ -359,8 +359,10 @@ traspaso (el #37, de otra sesión, se fusionó mientras se cerraba esta).
    equivalencia`: 1, la lista de materiales de Aruba fuera de `renderBom()` (hecho, PR #167); 2, Juniper con motor,
    orden de candidatos y caso de contraste (hecho, PR #168); 3, la lista de Cisco al motor (hecho, PR #169); 4, Nokia 7750 y 7220 con motor propio (hecho, PR #170); 5,
    las listas de Huawei y MikroTik al motor, con la versión de motor de cada uno en «Supuestos» (hecho, PR #171). Fase 3: el catálogo
-   en memoria sin SQLite (ADR-3), y las dependencias mayores de una en una (hecho, PR #173: dotenv 18, ESLint 10, SDK de
-   Anthropic 1.8 y pdf-parse 2). Los precios de Cisco, Huawei, Juniper y Nokia los cierra el dueño con las listas de un distribuidor.
+   en memoria sin SQLite (ADR-3, su opción recomendada A, en tres cortes: 1, los modelos en memoria medidos contra SQLite y
+   el orden escrito en las consultas, hecho, PR #174; 2, el servidor siembra en memoria y las rutas leen de él; 3, fuera
+   SQLite, Sequelize y `sqlite3`, con el «aplicar» local en `npm run propuesta`), y las dependencias mayores de una en una
+   (hecho, PR #173: dotenv 18, ESLint 10, SDK de Anthropic 1.8 y pdf-parse 2). Los precios de Cisco, Huawei, Juniper y Nokia los cierra el dueño con las listas de un distribuidor.
 
 ### Esperan un documento oficial (se cierran trayéndolo por Actions)
 
@@ -418,6 +420,12 @@ existen los workflows de transporte. Huawei y HPE niegan además el navegador au
 
 ## Mejoras propuestas sin decidir
 
+- **Una prueba que congele `legacyData/` y corra las 16 proyecciones** (propuesta al cerrar el PR #174). Las proyecciones
+  devuelven objetos de `legacyData/` por referencia (`FUNCIONES` de Fortinet, entre otros): modificar su salida modifica el
+  catálogo dentro del proceso. Con un `Object.freeze` profundo de cada módulo antes de proyectar, cualquier escritura de una
+  proyección lanzaría. Es lo que hace falta antes de cachear las proyecciones (corte 2 del ADR-3). Coste: una prueba sobre el
+  catálogo en memoria. Si se hace mal, congelar una copia y no el módulo que cargan las proyecciones daría un verde vacío:
+  lleva su control, una escritura a propósito que tiene que lanzar.
 - **La sonda del SDK de Anthropic, convertida en prueba de contrato de `aiSync.js`** (propuesta al cerrar el PR #173).
   Con el SDK real y un fetch de mentira, fijaría lo que sale por la red (modelo, `anthropic-beta`, `fallbacks`,
   `output_config`, el documento en el mensaje del usuario y ningún parámetro de muestreo) y cómo se traduce cada
