@@ -420,12 +420,11 @@ existen los workflows de transporte. Huawei y HPE niegan además el navegador au
 
 ## Mejoras propuestas sin decidir
 
-- **Una prueba que congele `legacyData/` y corra las 16 proyecciones** (propuesta al cerrar el PR #174). Las proyecciones
-  devuelven objetos de `legacyData/` por referencia (`FUNCIONES` de Fortinet, entre otros): modificar su salida modifica el
-  catálogo dentro del proceso. Con un `Object.freeze` profundo de cada módulo antes de proyectar, cualquier escritura de una
-  proyección lanzaría. Es lo que hace falta antes de cachear las proyecciones (corte 2 del ADR-3). Coste: una prueba sobre el
-  catálogo en memoria. Si se hace mal, congelar una copia y no el módulo que cargan las proyecciones daría un verde vacío:
-  lleva su control, una escritura a propósito que tiene que lanzar.
+- **`'use strict'` en `catalogProjection.js` y `cifrasCotizador.js`** (propuesta al cerrar el PR #175). Hoy no son
+  estrictos, así que una escritura en un objeto congelado se ignora en silencio en vez de lanzar: la prueba del PR #175
+  lo cubre con una huella, pero en producción, con la caché del corte 2 del ADR-3, el congelado no avisaría. Coste: dos
+  líneas, medidas con `catalogo-en-memoria.test.js` y `proyecciones-sin-escritura.test.js`. Si se hace mal, el modo
+  estricto rompe también lo que hoy pasa en silencio (una variable sin declarar, un `this` suelto).
 - **La sonda del SDK de Anthropic, convertida en prueba de contrato de `aiSync.js`** (propuesta al cerrar el PR #173).
   Con el SDK real y un fetch de mentira, fijaría lo que sale por la red (modelo, `anthropic-beta`, `fallbacks`,
   `output_config`, el documento en el mensaje del usuario y ningún parámetro de muestreo) y cómo se traduce cada
