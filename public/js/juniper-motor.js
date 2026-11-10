@@ -160,8 +160,72 @@
     return { usuarios, bloque, porIp, ips, prefijo, enPrefijo: 2 ** (32 - prefijo) };
   }
 
+  /* ══ EL CONTRATO COMUN DE MOTOR (fase 2 de la auditoria del 2026-11-09, ADR-1, corte 2) ══
+     Hasta aqui el motor filtraba y la PAGINA ordenaba, en tres sitios (SRX, SSR y el SRX
+     desacoplado) y sin desempate: con dos equipos de la misma cifra mandaba el orden en que el
+     servidor servia el catalogo, que es el binario del nombre (SRX1500 antes que SRX380, que dan
+     los dos 2.000 Mbps de IPS). Ahora el motor ordena y recomienda, y la pagina solo pinta. */
+
+  // Sube cuando una misma entrada puede dar otra recomendacion; viaja a «Supuestos».
+  const VERSION_MOTOR = '1.0.0';
+
+  const porId = (a, b) => String(a.id).localeCompare(String(b.id), 'en', { numeric: true });
+
+  // Ciclo de vida (la regla unica de FICHA.rango, que pasa quien llama), cifra de la capa y, al
+  // final, el id en orden natural: el SRX380 antes que el SRX1500, como en Fortinet y Cisco.
+  function ordenar(lista, k, rango) {
+    const r = typeof rango === 'function' ? rango : () => 0;
+    return [...(lista || [])].sort((a, b) => r(a) - r(b) || a[k] - b[k] || porId(a, b));
+  }
+
+  // Demanda de diseno de la plataforma SRX: el caudal con el margen y, como en Fortinet, las
+  // sesiones de usuarios × sesiones por usuario con el mismo margen. La misma cuenta que hacia la
+  // pagina: `head` es la fraccion del margen (0,3 = 30 %).
+  function demandaSrx(p) {
+    const head = Number(p.head) || 0;
+    const need = Math.round((Number(p.bwMbps) || 0) * (1 + head));
+    const users = Number(p.users) || 0, sesUser = Number(p.sesUser) || 0;
+    const sessNeed = users && sesUser ? Math.round(users * sesUser * (1 + head)) : 0;
+    return { need, sessNeed, head };
+  }
+
+  /* evaluar(escenario, catalogo, opciones): el sobre del contrato comun.
+       escenario.plat   'srx' (la plataforma SRX), 'ssr' (Session Smart) o 'inspeccion' (el SRX
+                        desacoplado de un SSR, con la capa `k`)
+       escenario        lo que lee cada demanda: bwMbps, head, users, sesUser y k en SRX; los campos
+                        de demandaSsr en SSR; los de inspeccionSrx y k en la inspeccion; pqc
+       catalogo         { srx, ssr }: los modelos como los sirve la ruta
+       opciones.rango   FICHA.rango (sin el, todo cuenta como vigente)
+       opciones.recomendar   FICHA.recomendar (sin el, el primero)
+     Devuelve { version, plat, k, need, candidatos (ordenados), recomendado, apartados } y, segun
+     la plataforma, sessNeed, demanda o inspeccion. */
+  function evaluar(escenario, catalogo, opciones) {
+    const e = escenario || {};
+    const cat = catalogo || {};
+    const o = opciones || {};
+    const recomendar = typeof o.recomendar === 'function' ? o.recomendar : (l) => l[0] || null;
+    const sobre = (base, k, r) => {
+      const candidatos = ordenar(r.candidatos, k, o.rango);
+      const apartados = { sinCifra: r.sinCifra, outByPqc: r.outByPqc };
+      if ('outBySess' in r) apartados.outBySess = r.outBySess;
+      return { version: VERSION_MOTOR, ...base, k, candidatos, recomendado: recomendar(candidatos), apartados };
+    };
+    if (e.plat === 'ssr') {
+      const demanda = demandaSsr(e);
+      const k = demanda.capa.k;
+      return sobre({ plat: 'ssr', need: demanda.need, demanda }, k, candidatosSsr(cat.ssr, k, demanda.need, e.pqc));
+    }
+    if (e.plat === 'inspeccion') {
+      const inspeccion = inspeccionSrx(e);
+      return sobre({ plat: 'inspeccion', need: inspeccion.need, inspeccion }, e.k, candidatosSrx(cat.srx, e.k, inspeccion.need, 0));
+    }
+    const d = demandaSrx(e);
+    return sobre({ plat: 'srx', need: d.need, sessNeed: d.sessNeed }, e.k, candidatosSrx(cat.srx, e.k, d.need, d.sessNeed, e.pqc));
+  }
+
   return {
-    CIFRADOS, PUERTOS_UTILES,
+    CIFRADOS, PUERTOS_UTILES, VERSION_MOTOR,
     cargaBase, demandaSsr, candidatosSsr, inspeccionSrx, candidatosSrx, poolCgnat,
+    ordenar, demandaSrx, evaluar,
   };
 });

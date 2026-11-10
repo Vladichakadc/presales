@@ -355,7 +355,7 @@ traspaso (el #37, de otra sesión, se fusionó mientras se cerraba esta).
 2. **Fases 2 y 3 de la auditoría de los dimensionadores** (decididas por el dueño el 2026-11-10: «Ejecuta fase 2 y fase 3»;
    las fases 0 y 1 se hicieron en los PR #150, #153, #156 y #162). Fase 2, un corte por PR medido con `npm run
    equivalencia`: 1, la lista de materiales de Aruba fuera de `renderBom()` (hecho, PR #167); 2, Juniper con motor,
-   orden de candidatos y caso de contraste; 3, la lista de Cisco al motor; 4, Nokia 7750 y 7220 con motor propio; 5,
+   orden de candidatos y caso de contraste (hecho, PR #168); 3, la lista de Cisco al motor; 4, Nokia 7750 y 7220 con motor propio; 5,
    las listas de Huawei y MikroTik al motor, con la versión de motor de cada uno en «Supuestos». Fase 3: el catálogo
    en memoria sin SQLite (ADR-3) y las dependencias mayores de una en una (SDK de Anthropic, ESLint, dotenv,
    pdf-parse). Los precios de Cisco, Huawei, Juniper y Nokia los cierra el dueño con las listas de un distribuidor.
@@ -416,6 +416,11 @@ existen los workflows de transporte. Huawei y HPE niegan además el navegador au
 
 ## Mejoras propuestas sin decidir
 
+- **Dejar pedir un módulo MPIM en Juniper, para que el SRX320 tenga cuándo salir** (propuesta al cerrar el PR #168).
+  Empata con el SRX300 en todas las cifras, y su única diferencia en el catálogo son dos ranuras MPIM (LTE, VDSL…);
+  sin forma de pedir un módulo, el desempate nunca lo recomienda y una sucursal que lo necesita sale con un SRX300
+  que no lo admite. Coste: una casilla y los módulos de la guía de hardware de la línea SRX300, con su documento en
+  `fuentes.js` (sin él no entra ninguno). Si se hace mal, se ofrecería un módulo que el modelo no admite.
 - **Que el modal de accesorios de Aruba no duplique lo que el motor ya pone** (propuesta al cerrar el PR #167). Al
   elegir en el modal un accesorio que el motor también añade (kit S2N67A del EC-10150 con Boost, una óptica que el
   builder ya resolvió, la de la interconexión EdgeHA), esa pasada de `renderBom()` cotiza las dos filas; la manual
