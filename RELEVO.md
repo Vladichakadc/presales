@@ -356,7 +356,7 @@ traspaso (el #37, de otra sesión, se fusionó mientras se cerraba esta).
    las fases 0 y 1 se hicieron en los PR #150, #153, #156 y #162). Fase 2, un corte por PR medido con `npm run
    equivalencia`: 1, la lista de materiales de Aruba fuera de `renderBom()` (hecho, PR #167); 2, Juniper con motor,
    orden de candidatos y caso de contraste (hecho, PR #168); 3, la lista de Cisco al motor (hecho, PR #169); 4, Nokia 7750 y 7220 con motor propio (hecho, PR #170); 5,
-   las listas de Huawei y MikroTik al motor, con la versión de motor de cada uno en «Supuestos». Fase 3: el catálogo
+   las listas de Huawei y MikroTik al motor, con la versión de motor de cada uno en «Supuestos» (hecho, PR #171). Fase 3: el catálogo
    en memoria sin SQLite (ADR-3) y las dependencias mayores de una en una (SDK de Anthropic, ESLint, dotenv,
    pdf-parse). Los precios de Cisco, Huawei, Juniper y Nokia los cierra el dueño con las listas de un distribuidor.
 
@@ -416,6 +416,12 @@ existen los workflows de transporte. Huawei y HPE niegan además el navegador au
 
 ## Mejoras propuestas sin decidir
 
+- **La misma firma de `evaluar` en los ocho y una prueba de contrato que la exija** (propuesta al cerrar el PR #171).
+  ADR-1 pide `evaluar(escenario, catalogo, opciones)` con el mismo sobre en todos; Juniper y Nokia ya lo tienen,
+  Cisco (`evaluar(models, p)`), Huawei y MikroTik conservan su firma y Aruba no tiene `evaluar`. Con una envoltura por
+  fabricante (sin tocar las firmas de hoy) una sola prueba recorrería los ocho y exigiría versión, candidatos
+  ordenados, recomendado y apartados: la «batería única» del ADR. Coste: ocho envolturas y una prueba, cada envoltura
+  con su caso de equivalencia. Si se hace mal, una envoltura que reordene los candidatos cambiaría el recomendado.
 - **Un caso de contraste para el fabric 7220 IXR** (propuesta al cerrar el PR #170). Es el único dimensionador que
   ningún caso conduce: `nokia-fabric-motor.js` y su página salen «sin conducir» en el lock, y un cambio del leaf, el
   spine o sus cantidades solo lo vería la equivalencia de su corte. Coste: un archivo en `scripts/contrastes/` con

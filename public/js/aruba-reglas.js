@@ -621,6 +621,10 @@
     return { candidates, outByBoost, outByClients, outByAps, outBySinDato, outByFlujos, outByPersona, outBySo, outByDtd, outByBoostRec, outBySinSec, outByIds, outByIdsEc, outByPuertos, outByPqc };
   }
 
+  // Sube cuando una misma entrada puede dar otra recomendacion o otra lista; viaja a «Supuestos»
+  // (fase 2 de la auditoria del 2026-11-09, ADR-1).
+  const VERSION_MOTOR = '1.0.0';
+
   /* LA LISTA DE MATERIALES (fase 2 de la auditoria del 2026-11-09, ADR-1, primer corte). Las filas
      que renderBom() armaba entre el pintado salen aqui, sin DOM ni estado: la pagina lee lo que hay
      en pantalla (casillas, opticas elegidas, accesorios del modal) y lo pasa en `ctx`. Las reglas de
@@ -892,7 +896,7 @@
     return { filas, soltar, licHa };
   }
 
-  return { BOOST_CUOTA, tierParaCaudal, capacidadSo, boostMbpsSitio, boostRecMbps, admiteDtd, escenariosUnderlay, escenarioBoost,
+  return { VERSION_MOTOR, BOOST_CUOTA, tierParaCaudal, capacidadSo, boostMbpsSitio, boostRecMbps, admiteDtd, escenariosUnderlay, escenarioBoost,
     MEDIO_MBPS, medioMinimo, asignarPuertos, asignarPuertosPar, enlacesSobreMedio,
     LAN_RESERVADOS, NOMBRE_PUERTO, VELOCIDAD_OPTICA, VEL_JAULA, fmt, opticasPorVelocidad, parEdgeHA, velocidadEdgeHA, sinJaulasSfp,
     velocidadesJaula, opcionesHa, interconexionEdgeHA, inventarioTxt, cobreSfp, auditarPuertos, motivoPuertos, evaluarPuertos,

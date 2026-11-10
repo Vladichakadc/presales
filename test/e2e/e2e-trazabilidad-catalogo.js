@@ -33,7 +33,8 @@ async function filas(page, t, p) {
     const hoja = await filas(page, t, p);
     const v = hoja.match(new RegExp(`Versión del catálogo \\| (${p.fab}@[0-9a-f]{16})`));
     t.ok(!!v, `${p.nombre}: la hoja trae «Versión del catálogo» con la forma ${p.fab}@<16 hex>`);
-    t.ok(/Versión del motor \| /.test(hoja), `${p.nombre}: y la fila «Versión del motor»`);
+    // Desde la fase 2 (ADR-1) los ocho motores declaran su versión: la fila no puede ir vacía.
+    t.ok(new RegExp(`Versión del motor \\| ${p.fab}-motor \\d+\\.\\d+\\.\\d+`).test(hoja), `${p.nombre}: y la fila «Versión del motor» con la del motor`);
     const api = await page.evaluate(async (f) => (await (await fetch(`/api/dimensionador/${f}`)).json()).datasetVersion, p.fab);
     t.ok(v && v[1] === api, `${p.nombre}: la version del Excel es la que sirve la API (${api})`);
   }

@@ -722,7 +722,9 @@ function renderBom(){
 
   $('bomBody').innerHTML = html;
 
-  const filas = filasBom(m, qty, opt.validas, piezas, lics, s);
+  // Las filas salen de HuaweiMotor.lineasBom (fase 2 de la auditoría del 2026-11-09, ADR-1): sin DOM.
+  const filas = HuaweiMotor.lineasBom({ m, qty, opticas:opt.validas, piezas, lics, soporte:s, anios:aniosSel(),
+    precioRef:PRECIO_REF[BOM.normalizar(m.id)], datos:{PARTS, OPTIC_LABEL, CASILLA_REQ} });
   const meta = metaBom(m);
   $('bomTabla').innerHTML = BOM.renderTabla(filas, {dto:dtoActual()});
   pintarTco(filas);
@@ -734,34 +736,6 @@ function renderBom(){
 // Filas del BOM en el formato compartido de /js/bom.js. Huawei no publica precios de lista
 // abiertos, asi que casi todas las lineas salen sin cotizar a proposito: el modulo compartido
 // lo detecta y no finge un total.
-function filasBom(m, qty, opticas, piezas, lics, s){
-  const filas=[
-    {cat:'Equipo', desc:m.id, sku:null, qty, unit:PRECIO_REF[BOM.normalizar(m.id)] ?? null,
-      nota:`Serie ${m.ser} · ${m.fam} · ${m.ports}`+(PRECIO_REF[BOM.normalizar(m.id)] != null ? ' · Precio de referencia estimado del cotizador, sin descuentos ni impuestos.' : '')},
-  ];
-  // H-06: solo lo que se PIDE; lo que es una alternativa va en una sola linea «elegir una»
-  // (sin codigo, marcada por confirmar) y lo condicional o de ampliacion no se cotiza solo.
-  // Lo que hace falta para encender el chasis abre su nota con «Base del chasis» (2026-10-19), para
-  // que el Excel y el texto distingan la configuracion minima de lo que se anade por eleccion.
-  const base = p => (p.base ? `Base del chasis: ${p.base}` : null);
-  piezas.pedir.forEach(p=>{ const c=PARTS[p.codigo];
-    filas.push({cat:'Componentes de hardware', desc:c.sku, sku:c.bom||null, qty:qty*(p.qty||1), unit:null, nota:[base(p), c.d, p.nota].filter(Boolean).join(' · ')}); });
-  piezas.elegir.forEach(g=>filas.push({cat:'Componentes de hardware', desc:`${g.nombre} — elegir una`, sku:null,
-    qty:qty*g.qty, unit:null, nota:[base(g), 'Opciones: '+g.opciones.map(k=>PARTS[k].sku).join(' · '), g.nota].filter(Boolean).join(' · ')}));
-  // H-07: una linea por optica DECLARADA (familia, modelo, cantidad por equipo), con su codigo.
-  opticas.forEach(v => filas.push({cat:'Ópticas', desc:`${OPTIC_LABEL[v.fam] || v.fam} — ${v.o.sku}`,
-    sku:(v.o.bom && v.o.bom.length) ? v.o.bom.join(' / ') : null, qty:v.qty*qty, unit:null,
-    nota:`${v.o.d || ''} · cada extremo del enlace necesita el suyo`}));
-  // SnS ya sale en Soporte: dejarlo tambien como licencia lo cotizaba dos veces.
-  // Huawei no publica lista: ninguna licencia tiene precio, y las que la ficha no codifica (RTU de
-  // capacidad, NCE, la de funcion sin ficha leida) tampoco tienen codigo. Se dice en la linea.
-  lics.filter(l=>l.on && !/^SnS/.test(l.t)).forEach(l=>filas.push({por:CASILLA_REQ[l.req], cat:'Licencias', desc:l.t, sku:l.sku||null, qty, unit:null,
-    nota:[l.d, l.sku ? 'Precio: consultar (Huawei no publica lista)' : 'Sin código en la ficha ni precio de lista: consultar con Huawei o su configurador'].filter(Boolean).join(' · ')}));
-  filas.push({cat:'Soporte', desc:s.n, sku:null, qty, unit:null, nota:`${s.sla} · ${aniosSel() * 12} meses`});
-  filas.push({cat:'Soporte', desc:'SnS — Software Subscription and Support', sku:null, qty, unit:null,
-    nota:'Actualizaciones y parches de VRP. Va separada del paquete de hardware. '+(aniosSel() * 12)+' meses.'});
-  return filas;
-}
 
 function metaBom(m){
   const d = dtoActual();
@@ -891,7 +865,7 @@ BOM.montarPerfiles({
 (async function initApp(){
   const res = await fetch('/api/dimensionador/huawei');
   const data = await res.json();
-  if (typeof BOM !== 'undefined' && BOM.fijarCatalogo) BOM.fijarCatalogo(data.datasetVersion);
+  if (typeof BOM !== 'undefined' && BOM.fijarCatalogo) BOM.fijarCatalogo(data.datasetVersion, `huawei-motor ${HuaweiMotor.VERSION_MOTOR}`);
   // Pendiente 34: el respaldo de ciclo de vida de ESTE fabricante, tal como lo declara
   // `legacyData/fuentes.js` con sus `campos`. Sin el, la ficha dice «el catalogo no trae el
   // ciclo de vida» en vez de afirmar vigencia por omision.
