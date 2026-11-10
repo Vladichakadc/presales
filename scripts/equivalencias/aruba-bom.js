@@ -16,6 +16,7 @@ const vm = require('vm');
 const RAIZ = path.join(__dirname, '..', '..');
 const PAGINA = 'public/js/dimensionador-aruba-edgeconnect.js';
 const INICIO = '  const lic=LICENSES[bwCode]||null;';
+// eslint-disable-next-line no-template-curly-in-string -- es el texto literal de la página que marca el final del bloque
 const FIN = 'nota:`${termino} · ${CARE[care].sla}`});\n  }\n';
 
 function trozo(src, desde, hasta) {
