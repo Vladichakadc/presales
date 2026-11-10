@@ -409,7 +409,7 @@ existen los workflows de transporte. Huawei y HPE niegan además el navegador au
 
 ## Mejoras propuestas sin decidir
 
-- **Auditoría de los dimensionadores (2026-11-09): fases 1 a 3** (propuesta al cerrar el PR #150, que hizo la fase 0). Fase 1: trazabilidad (hecha en el PR #153: `datasetVersion` en los ocho dimensionadores con catálogo y las dos filas en «Supuestos»; falta la versión de motor de los demás, que llega con el contrato común), Express 5 (la rama 4 está en mantenimiento y su fin de vida no es anterior al 2026-10-01; PR #156, de otra sesión) y archivar el código muerto (hecha en el PR #162: `sizing_engine.js`, `presales_api_controller.js`, `plan18` y `SyncLog`, en `docs/archivo/README.md` con el commit para recuperarlos). Fase 2: un contrato común de motor y un corte del BOM por PR (`render()` y `renderBom()` de Aruba pasan de 500 líneas). Fase 3: catálogo en memoria y mayores de dependencias. Evita que la recomendación cambie sin dejar rastro de qué catálogo la produjo. Cuesta un PR por paso; si se hace mal, el contrato común sin las equivalencias de `npm run equivalencia` cambiaría resultados sin que nada lo frene.
+- **Auditoría de los dimensionadores (2026-11-09): fases 1 a 3** (propuesta al cerrar el PR #150, que hizo la fase 0). Fase 1: trazabilidad (hecha en el PR #153: `datasetVersion` en los ocho dimensionadores con catálogo y las dos filas en «Supuestos»; falta la versión de motor de los demás, que llega con el contrato común), Express 5 (hecho en el PR #156) y archivar el código muerto (hecho en el PR #162, por la opción recomendada, con «Ejecuta pendientes» del dueño del 2026-11-09: `sizing_engine.js`, `presales_api_controller.js`, `plan18` y `SyncLog`, en `docs/archivo/README.md` con el commit para recuperarlos). Fase 2: un contrato común de motor y un corte del BOM por PR (`render()` y `renderBom()` de Aruba pasan de 500 líneas). Fase 3: catálogo en memoria y mayores de dependencias. Evita que la recomendación cambie sin dejar rastro de qué catálogo la produjo. Cuesta un PR por paso; si se hace mal, el contrato común sin las equivalencias de `npm run equivalencia` cambiaría resultados sin que nada lo frene.
 - **El mismo job `comparar` en los otros tres transportes** (propuesta al cerrar el PR #159).
   `traer-fortinet-pendientes.yml`, `traer-fortinet-matrix.yml` y `traer-juniper-matrix.yml` también empujan a
   ramas `fuente/*` y no dicen qué cambió. Se sacaría el job a un workflow reutilizable (`workflow_call`) que
@@ -432,5 +432,6 @@ existen los workflows de transporte. Huawei y HPE niegan además el navegador au
 - Borrar la rama `claude/visibles-contra-main`: sobra, la creó `npm run reservar` en una sesión con rama
   fija, y desde esa sesión borrarla da 403 (`git push origin --delete claude/visibles-contra-main`; PR #129).
   Desde el PR #135 ya no bloquea: `npm run traspasos` la marca CERRADO EN MAIN y `reservar` no la cuenta.
-- Tomadas: las dos de la IA y la de las variantes fuera del catálogo se tomaron el 2026-10-27 por
+- Tomadas: archivar el código que nadie carga, el 2026-11-09 por la opción recomendada («Ejecuta pendientes»; PR #162,
+  que revierte la conservación del 2026-10-20). Las dos de la IA y la de las variantes fuera del catálogo se tomaron el 2026-10-27 por
   la opción recomendada (ver *Decisiones* en `PENDIENTES.md`).
