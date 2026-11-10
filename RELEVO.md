@@ -355,7 +355,7 @@ traspaso (el #37, de otra sesión, se fusionó mientras se cerraba esta).
 2. **Fases 2 y 3 de la auditoría de los dimensionadores** (decididas por el dueño el 2026-11-10: «Ejecuta fase 2 y fase 3»;
    las fases 0 y 1 se hicieron en los PR #150, #153, #156 y #162). Fase 2, un corte por PR medido con `npm run
    equivalencia`: 1, la lista de materiales de Aruba fuera de `renderBom()` (hecho, PR #167); 2, Juniper con motor,
-   orden de candidatos y caso de contraste (hecho, PR #168); 3, la lista de Cisco al motor; 4, Nokia 7750 y 7220 con motor propio; 5,
+   orden de candidatos y caso de contraste (hecho, PR #168); 3, la lista de Cisco al motor (hecho, PR #169); 4, Nokia 7750 y 7220 con motor propio; 5,
    las listas de Huawei y MikroTik al motor, con la versión de motor de cada uno en «Supuestos». Fase 3: el catálogo
    en memoria sin SQLite (ADR-3) y las dependencias mayores de una en una (SDK de Anthropic, ESLint, dotenv,
    pdf-parse). Los precios de Cisco, Huawei, Juniper y Nokia los cierra el dueño con las listas de un distribuidor.
