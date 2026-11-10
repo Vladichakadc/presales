@@ -1,6 +1,6 @@
 {
  "medidoEn": {
-  "commit": "bf2e861",
+  "commit": "30a9107",
   "fecha": "2026-11-10"
  },
  "umbralRozado": 25,
@@ -181,6 +181,13 @@
    "pct": 77
   },
   {
+   "modulo": "mikrotik-motor.js",
+   "estado": "ejercitado",
+   "total": 93,
+   "usadas": 72,
+   "pct": 77
+  },
+  {
    "modulo": "dimensionador-fortinet-fortigate.js",
    "estado": "ejercitado",
    "total": 283,
@@ -199,13 +206,6 @@
    "estado": "ejercitado",
    "total": 166,
    "usadas": 131,
-   "pct": 79
-  },
-  {
-   "modulo": "mikrotik-motor.js",
-   "estado": "ejercitado",
-   "total": 89,
-   "usadas": 70,
    "pct": 79
   },
   {
@@ -230,18 +230,18 @@
    "pct": 81
   },
   {
-   "modulo": "huawei-motor.js",
-   "estado": "ejercitado",
-   "total": 62,
-   "usadas": 50,
-   "pct": 81
-  },
-  {
    "modulo": "dimensionador-mikrotik-routeros.js",
    "estado": "ejercitado",
-   "total": 164,
-   "usadas": 135,
-   "pct": 82
+   "total": 161,
+   "usadas": 134,
+   "pct": 83
+  },
+  {
+   "modulo": "huawei-motor.js",
+   "estado": "ejercitado",
+   "total": 70,
+   "usadas": 58,
+   "pct": 83
   },
   {
    "modulo": "por-funcion.js",
@@ -260,8 +260,8 @@
   {
    "modulo": "dimensionador-huawei-netengine.js",
    "estado": "ejercitado",
-   "total": 156,
-   "usadas": 139,
+   "total": 148,
+   "usadas": 131,
    "pct": 89
   },
   {
