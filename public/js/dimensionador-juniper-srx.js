@@ -110,7 +110,7 @@ function capaEfectiva() {
   try {
     const r = await fetch('/api/dimensionador/juniper');
     const d = await r.json();
-    if (typeof BOM !== 'undefined' && BOM.fijarCatalogo) BOM.fijarCatalogo(d.datasetVersion);
+    if (typeof BOM !== 'undefined' && BOM.fijarCatalogo) BOM.fijarCatalogo(d.datasetVersion, `juniper-motor ${JM.VERSION_MOTOR}`);
     // Pendiente 34: el respaldo de ciclo de vida de ESTE fabricante, tal como lo declara
     // `legacyData/fuentes.js` con sus `campos`. Sin el, la ficha dice «el catalogo no trae el
     // ciclo de vida» en vez de afirmar vigencia por omision.
@@ -254,14 +254,17 @@ function render() {
   // todo el mundo estima cuántas abre un usuario.
   const users = Math.max(0, parseInt($('users').value, 10) || 0);
   const sesUser = Math.max(0, parseInt($('sesUser').value, 10) || 0);
-  const sessNeed = users && sesUser ? Math.round(users * sesUser * (1 + head)) : 0;
 
   // Un modelo sin cifra en la capa efectiva NO se cuela con la de otra capa: se descarta y
   // se explica. Sustituir una medición por otra es exactamente lo que produce el error de
   // factor 10 que esta herramienta existe para evitar.
-  const { candidatos, sinCifra, outBySess, outByPqc } = JM.candidatosSrx(MODELS, ef.k, need, sessNeed, $('reqPqc').value);
-  const ordenados = FICHA.ordenar(candidatos, (a, b) => a[ef.k] - b[ef.k]);
-  const pick = FICHA.recomendar(ordenados);
+  // El motor filtra, ordena (ciclo de vida, cifra y, en empate, el id) y recomienda: ADR-1.
+  const ev = JM.evaluar({ plat: 'srx', bwMbps, head, users, sesUser, k: ef.k, pqc: $('reqPqc').value },
+    { srx: MODELS }, { rango: FICHA.rango, recomendar: FICHA.recomendar });
+  const { sessNeed } = ev;
+  const { sinCifra, outBySess, outByPqc } = ev.apartados;
+  const ordenados = ev.candidatos;
+  const pick = ev.recomendado;
   lastPick = pick;
   hayCandidato = !!pick;
   sincronizarConBom(pick);
@@ -460,9 +463,11 @@ function renderSsr(bwMbps, head) {
 
   // Se dimensiona con la cifra IMIX de la capa de cifrado; un modelo sin ella se aparta.
   const k = d.capa.k;
-  const { candidatos, sinCifra, outByPqc } = JM.candidatosSsr(SDWAN, k, need, $('reqPqc').value);
-  const ordenados = FICHA.ordenar(candidatos, (a, b) => a[k] - b[k]);
-  const pick = FICHA.recomendar(ordenados);
+  const ev = JM.evaluar({ ...esc0, plat: 'ssr', pqc: $('reqPqc').value }, { ssr: SDWAN },
+    { rango: FICHA.rango, recomendar: FICHA.recomendar });
+  const { sinCifra, outByPqc } = ev.apartados;
+  const ordenados = ev.candidatos;
+  const pick = ev.recomendado;
   lastPick = pick;
   hayCandidato = !!pick;
   sincronizarConBom(pick);
@@ -590,9 +595,10 @@ function renderCompanero(e) {
     caja.innerHTML = '<p style="font-size:13.5px;margin:0;color:var(--steel)">Sin tráfico que inspeccionar con los parámetros actuales.</p>';
     return;
   }
-  const { candidatos, sinCifra } = JM.candidatosSrx(MODELS, k, insp.need, 0);
-  const ordenados = FICHA.ordenar(candidatos, (a, b) => a[k] - b[k]);
-  const pick = FICHA.recomendar(ordenados);
+  const ev = JM.evaluar({ ...e, plat: 'inspeccion', k }, { srx: MODELS }, { rango: FICHA.rango, recomendar: FICHA.recomendar });
+  const { sinCifra } = ev.apartados;
+  const ordenados = ev.candidatos;
+  const pick = ev.recomendado;
   companero = { modo, pick, need: insp.need, k };
   const que = insp.soloDia ? 'la salida local a Internet' : (e.rol === 'hub' ? 'todo el overlay que llega al hub' : 'todo el tráfico del sitio');
   const apartados = sinCifra ? `<li><b>${sinCifra}</b> modelo(s) no publican cifra de <b>${esc(CAPA_INFO[k].n)}</b> y se apartan: no se rellena con la de otra capa.</li>` : '';
