@@ -1140,6 +1140,10 @@
     return L.join('\n') + '\n';
   }
 
+  // Sube cuando una misma entrada puede dar otra recomendacion o otra lista; viaja a «Supuestos»
+  // (fase 2 de la auditoria del 2026-11-09, ADR-1).
+  const VERSION_MOTOR = '1.0.0';
+
   /* LA LISTA DE MATERIALES (fase 2 de la auditoria del 2026-11-09, ADR-1, corte 3). Las filas que
      renderBom() armaba entre el pintado salen aqui, sin DOM ni estado: la pagina lee los modulos y la
      optica elegidos, la licencia, el firewall dedicado y Secure Access, y lo pasa en `ctx`. Las reglas
@@ -1242,7 +1246,7 @@
   }
 
   return {
-    PLATAFORMAS, PERFILES, SEGURIDAD, PUERTOS_UTILES, lineasBom,
+    PLATAFORMAS, PERFILES, SEGURIDAD, PUERTOS_UTILES, VERSION_MOTOR, lineasBom,
     TIPOS_ENLACE, ROLES_ENLACE, ENTREGAS, FIBRAS, MAX_ENLACES, elegirOptica, motivoOptica, fmtKm, secureAccess, firewallDedicado, piezasFirewall, pimsCelular, controladoresSdwan,
     fmt, cifra, capaOverlay, demanda, requisitos, escala, tunelesTopologia, evaluar,
     enlacesValidos, requisitosConEnlaces, modulosEquipo, asignarEnlaces, repartoHa, motivoCombinacion, piezasEnlaces, rotuloPuerto, enlacesFrenteCaudal, resumenApartados, licencias, traficoLicencia, tierDna, poolCgnat, memoria,
