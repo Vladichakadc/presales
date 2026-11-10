@@ -378,14 +378,14 @@ traspaso (el #37, de otra sesión, se fusionó mientras se cerraba esta).
   17.9, anterior a la PPK, y la ficha dice «no la trae» (`pqcNo`). Si un documento oficial dice que
   otro equipo no la trae, entra igual: `pqcNo` con su fuente en `fuentes.js` (`campos: ['pqcNo']`).
 - **Cisco**: precio del Secure Firewall (sin lista oficial), precio de Secure
-  Access por usuario (CCW), velocidad mínima de los mGig de los C8111/C8121-G2-MX, 10GBASE-T en
+  Access por usuario (CCW), velocidad mínima de los mGig de los C8111/C8121-G2-MX (su guía de instalación, traída otra vez el 2026-11-09, solo dice «2.5 MGig»), 10GBASE-T en
   SFP+ fuera de la serie 8300 y de las 8100 VAI/VAP, módulos del ASR (fuera de venta), breakout
   4x10G (pide su cable u óptica en el catálogo).
-- **Juniper**: cifra de inspección del SSR (tampoco en la ficha inglesa), foto del SSR120 base,
+- **Juniper**: cifra de inspección del SSR (tampoco en la ficha inglesa; desde el 2026-11-09 sus páginas HTML ya no traen la ficha, solo los PDF), foto del SSR120 base,
   FEC del SSR; no hay lista de precios ni SKU de chasis.
 - **Aruba**: EC-XL S3N77A (fuera de venta, sin ópticas de 25G en su matriz). Las dos fuentes que
   eran un cascarón quedaron cerradas en el PR #47.
-- **MikroTik**: si la cifra IPsec es por sentido o la suma (respuesta escrita de soporte), figuras
+- **MikroTik** (revisado el 2026-11-09 en el PR #163, sin cambios): si la cifra IPsec es por sentido o la suma (respuesta escrita de soporte), figuras
   traseras que la galería no publica, el CCR2004-16G-2S+PC en la matriz de compatibilidad (su manual
   no dice qué módulos admite: lo cierra una respuesta escrita de soporte).
 - **Huawei**: **el controlador iMaster NCE-WAN** —su código, su modelo de licencia y si el paquete N1 de
@@ -398,7 +398,7 @@ traspaso (el #37, de otra sesión, se fusionó mientras se cerraba esta).
 - **Fortinet**: el resto de F4, F5 (derates), 17 renovaciones sin precio en la lista firmada y
   co-term. F3 cerrado (PR #56); el heartbeat, dicho para las series con licencia única.
   Del PR #140: la PQC del FortiWiFi 50G-5G-II (las otras diez la llevan desde el PR #146, por
-  «Supported models» de FortiOS 7.6.7, que dice FWF-50G-5G y no FWF-50G-5G-II; revisado el 2026-11-09: sigue sin nombrarlo y no hay una 7.6.8 publicada), el caudal del módem integrado (ninguna ficha lo publica) y las
+  «Supported models» de FortiOS 7.6.7, que dice FWF-50G-5G y no FWF-50G-5G-II; revisado el 2026-11-09: tampoco lo nombran las de 7.6.8, build 3744 con edición del 2026-11-03, ni las de 8.0.2, build 0251, traídas en el PR #163; tres ediciones seguidas dicen FWF-50G-5G, así que no lo cerrarán otras Release Notes sino un documento de Fortinet que diga qué FortiOS corre el FWF-50G-5G-II, su ficha o una respuesta escrita de Fortinet), el caudal del módem integrado (ninguna ficha lo publica) y las
   figuras de las variantes (están en sus fichas por serie).
 
 ### Bloqueado por acceso (se reporta, no se rodea)
