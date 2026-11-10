@@ -1,0 +1,137 @@
+[
+  {
+    "archivo": "fortinet-fortiextender-pagina.html",
+    "para": "FORTINET",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://www.fortinet.com/products/wireless-wan-fortiextender",
+        "status": 200,
+        "bytes": 371050,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "fortinet-fortiextender-ds.pdf",
+    "para": "FORTINET",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://www.fortinet.com/content/dam/fortinet/assets/data-sheets/FortiExtender.pdf",
+        "status": 200,
+        "bytes": 4013073,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "fortinet-fortiextender-og.pdf",
+    "para": "FORTINET",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://www.fortinet.com/content/dam/fortinet/assets/data-sheets/og-fortiextender.pdf",
+        "status": 200,
+        "bytes": 201200,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "fortinet-fortiwifi-40f-pagina.html",
+    "para": "FORTINET",
+    "guardado": true,
+    "exploracion": true,
+    "intentos": [
+      {
+        "url": "https://www.fortinet.com/resources/data-sheets/fortigate-fortiwifi-40f-series",
+        "status": 200,
+        "bytes": 245921,
+        "guardado": true,
+        "verificado": false
+      }
+    ]
+  },
+  {
+    "archivo": "fortinet-fortiwifi-40f-ds.pdf",
+    "para": "FORTINET",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://www.fortinet.com/content/dam/fortinet/assets/data-sheets/pdf/fortigate-fortiwifi-40f-series.pdf",
+        "status": 200,
+        "bytes": 5184909,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "fortinet-fortiwifi-60f-pagina.html",
+    "para": "FORTINET",
+    "guardado": true,
+    "exploracion": true,
+    "intentos": [
+      {
+        "url": "https://www.fortinet.com/resources/data-sheets/fortigate-fortiwifi-60f-series",
+        "status": 200,
+        "bytes": 245889,
+        "guardado": true,
+        "verificado": false
+      }
+    ]
+  },
+  {
+    "archivo": "fortinet-fortiwifi-60f-ds.pdf",
+    "para": "FORTINET",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://www.fortinet.com/content/dam/fortinet/assets/data-sheets/pdf/fortigate-fortiwifi-60f-series.pdf",
+        "status": 200,
+        "bytes": 5039668,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "fortinet-fortiwifi-80f-pagina.html",
+    "para": "FORTINET",
+    "guardado": true,
+    "exploracion": true,
+    "intentos": [
+      {
+        "url": "https://www.fortinet.com/resources/data-sheets/fortigate-fortiwifi-80f-series",
+        "status": 200,
+        "bytes": 245849,
+        "guardado": true,
+        "verificado": false
+      }
+    ]
+  },
+  {
+    "archivo": "fortinet-fortiwifi-80f-ds.pdf",
+    "para": "FORTINET",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://www.fortinet.com/content/dam/fortinet/assets/data-sheets/pdf/fortigate-fortiwifi-80f-series.pdf",
+        "status": 200,
+        "bytes": 5387515,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  }
+]
