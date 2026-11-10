@@ -70,24 +70,38 @@ const FILAS = [
   ['fuentes', /^Power Supplies/], ['formato', /^Form Factor/], ['variantes', /^Variants/],
 ];
 const CABECERA = /^FG(?:\/FWF)?-(\d+[A-Z])\b/;
-// Tamano de letra (alto del trozo) por debajo del cual un trozo es una llamada de nota.
-const NOTA_MAX = 20;
+// Tamano de letra en puntos (alto del trozo) por debajo del cual un trozo es una llamada de nota:
+// en esta tabla las notas van a 3,5 pt, las celdas a 6 y las cabeceras de modelo a 7. Hasta el
+// 2026-11-10 los umbrales eran 20 y 45 porque pdf.js 1.10, el de pdf-parse 1, daba en `height`
+// el CUADRADO del tamano (36 para 6 pt: medido contra pdf.js 5 en la edicion R178, en los 1.566
+// trozos que casan por texto y posicion); se conservan sus raices, asi que ningun trozo cambia de
+// lado, y las 567 celdas de esa edicion salen iguales.
+const NOTA_MAX = Math.sqrt(20); // 4,47 pt
 // Un titulo de seccion o una cabecera de otro producto cierra el bloque de FortiGate.
-const TITULO_MIN = 45;
+const TITULO_MIN = Math.sqrt(45); // 6,71 pt
 
-/* Paginas como listas de trozos {s, x, y, w, h}. y crece hacia arriba (coordenadas del PDF). */
+/* Paginas como listas de trozos {s, x, y, w, h}. y crece hacia arriba (coordenadas del PDF).
+   Los trozos los da pdf.js (`getTextContent`), el mismo que trae pdf-parse 2 y a la misma version:
+   pdf-parse 1 dejaba pedirlos con su `pagerender`, y la 2 solo devuelve texto ya maquetado, sin
+   posicion. Sin `eval` (isEvalSupported) y solo con errores en la salida (verbosity 0): los avisos
+   de fuentes de pdf.js iban a STDOUT y ensuciaban el `--json`. */
 async function leerPaginas(buffer) {
-  const pdf = require('pdf-parse');
-  const paginas = [];
-  await pdf(buffer, {
-    pagerender: (pg) => pg.getTextContent().then((tc) => {
-      paginas.push(tc.items.filter((it) => it.str.trim()).map((it) => ({
+  const pdfjs = await import('pdfjs-dist/legacy/build/pdf.mjs');
+  const doc = await pdfjs.getDocument({
+    data: new Uint8Array(buffer), isEvalSupported: false, disableFontFace: true, verbosity: 0,
+  }).promise;
+  try {
+    const paginas = [];
+    for (let n = 1; n <= doc.numPages; n++) {
+      const tc = await (await doc.getPage(n)).getTextContent();
+      paginas.push(tc.items.filter((it) => it.str && it.str.trim()).map((it) => ({
         s: it.str.trim(), x: it.transform[4], y: it.transform[5], w: it.width, h: it.height,
       })));
-      return '';
-    }),
-  });
-  return paginas;
+    }
+    return paginas;
+  } finally {
+    await doc.destroy();
+  }
 }
 
 /* Celdas {id, campo, texto} de todas las paginas, y la edicion si el pie la trae. */

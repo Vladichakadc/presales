@@ -340,7 +340,9 @@ traspaso (el #37, de otra sesión, se fusionó mientras se cerraba esta).
    crea el primer administrador, así que la contraseña se cambia en «Mi cuenta». Revisar el *Security
    log* y las apps de GitHub. Detalle en *Decisiones* de `PENDIENTES.md`.
 4. **`ANTHROPIC_API_KEY` en Railway**: sin ella, la sincronización del catálogo responde 503
-   (lo dicen en pantalla). `/api/sync/estado` dice si está puesta.
+   (lo dicen en pantalla). `/api/sync/estado` dice si está puesta. Con ella, tras desplegar el PR #173
+   (SDK 1.8, API 2026-10-21), una sincronización con IA y un PDF pequeño es la prueba de la llamada
+   real, que desde una sesión no se puede hacer sin clave.
 5. **Cuenta de Huawei** (Info-Finder pide sesión): sin ella no hay ciclo de vida de Huawei, ni el
    tope de túneles y rutas por modelo AR.
 
@@ -357,8 +359,8 @@ traspaso (el #37, de otra sesión, se fusionó mientras se cerraba esta).
    equivalencia`: 1, la lista de materiales de Aruba fuera de `renderBom()` (hecho, PR #167); 2, Juniper con motor,
    orden de candidatos y caso de contraste (hecho, PR #168); 3, la lista de Cisco al motor (hecho, PR #169); 4, Nokia 7750 y 7220 con motor propio (hecho, PR #170); 5,
    las listas de Huawei y MikroTik al motor, con la versión de motor de cada uno en «Supuestos» (hecho, PR #171). Fase 3: el catálogo
-   en memoria sin SQLite (ADR-3) y las dependencias mayores de una en una (SDK de Anthropic, ESLint, dotenv,
-   pdf-parse). Los precios de Cisco, Huawei, Juniper y Nokia los cierra el dueño con las listas de un distribuidor.
+   en memoria sin SQLite (ADR-3), y las dependencias mayores de una en una (hecho, PR #173: dotenv 18, ESLint 10, SDK de
+   Anthropic 1.8 y pdf-parse 2). Los precios de Cisco, Huawei, Juniper y Nokia los cierra el dueño con las listas de un distribuidor.
 
 ### Esperan un documento oficial (se cierran trayéndolo por Actions)
 
@@ -416,6 +418,12 @@ existen los workflows de transporte. Huawei y HPE niegan además el navegador au
 
 ## Mejoras propuestas sin decidir
 
+- **La sonda del SDK de Anthropic, convertida en prueba de contrato de `aiSync.js`** (propuesta al cerrar el PR #173).
+  Con el SDK real y un fetch de mentira, fijaría lo que sale por la red (modelo, `anthropic-beta`, `fallbacks`,
+  `output_config`, el documento en el mensaje del usuario y ningún parámetro de muestreo) y cómo se traduce cada
+  respuesta y cada error. La próxima versión mayor del SDK o de la API se mediría en CI y no en la primera
+  sincronización fallida. Coste: un archivo de prueba sin red, de la sonda del PR #173. Si se hace mal, fijar las
+  cabeceras que cambian en cada parche (`user-agent`, `x-stainless-*`) la pondría en rojo en cada subida.
 - **Traer la guía «New Features» y la Maximum Values Table de FortiOS 8.0** (propuesta al cerrar el PR #166).
   El selector ya ofrece la 8.0, pero solo con lo que dicen las Release Notes de 8.0.2: modelos soportados,
   SSL-VPN retirado y proxy en 2 GB. Lo que de verdad es nuevo en la rama (funciones) y sus topes están en esos
