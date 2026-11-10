@@ -54,62 +54,15 @@
     </tr>`).join('');
   }
 
-  // ── Motor puro ──────────────────────────────────────────────────────────────
-  // Sin estado ni DOM: recibe todo por parametro y se expone abajo como `window.NOKIA_SR`
-  // para poder probarlo, igual que BOM, FICHA y ESTADO exponen el suyo.
-  function enPlataforma(m, familia) {
-    return !familia || familia === 'all' || m.plat === familia;
-  }
-
-  // ¿Alguna configuración del modelo da al menos `qty` puertos a `veloc`? Devuelve la
-  // configuración que cumple, o null. No suma entre configuraciones: son alternativas.
-  function configQueCumple(m, qty, veloc) {
-    if (!qty) return null;
-    if (!m.configs) return null;
-    for (const c of m.configs) {
-      const total = c.puertos
-        .filter((p) => p.veloc === veloc)
-        .reduce((s, p) => s + p.cantidad, 0);
-      if (total >= qty) return { config: c, total };
-    }
-    return null;
-  }
-
-  // Un modelo sin `configs` no es un modelo sin puertos: es un chasis modular o una entrada
-  // que publica velocidades sin densidad. No se puede comprobar, y decirlo es la respuesta.
-  function sinDensidad(m) {
-    return !m.configs;
-  }
-
-  // `pqc` (2026-10-27): el nivel de criptografía post-cuántica exigido. Lo que no lo documenta
-  // se aparta con su motivo (la regla única de pqc.js) y se dice, sin mezclarlo con los chasis
-  // que no se pudieron comprobar por puertos.
-  function evaluar({ models, need, portQty, portVel, familia: plataforma, pqc }) {
-    const familia = models.filter((m) => enPlataforma(m, plataforma));
-    const cumplenCaudal = familia.filter((m) => m.cap >= need);
-
-    const candidatos = [];
-    const apartados = [];
-    const outByPqc = [];
-    for (const m of cumplenCaudal) {
-      const mot = PQC.motivo(m, pqc);
-      if (mot) { outByPqc.push({ m, motivo: mot }); continue; }
-      if (!portQty) { candidatos.push(m); continue; }
-      if (sinDensidad(m)) {
-        apartados.push({ m, motivo: m.notaPuertos });
-        continue;
-      }
-      const ok = configQueCumple(m, portQty, portVel);
-      if (ok) candidatos.push(Object.assign({}, m, { __config: ok }));
-    }
-    return { familia, candidatos, apartados, outByPqc };
-  }
+  // ── Motor ────────────────────────────────────────────────────────────────
+  // El calculo vive en `public/js/nokia-sr-motor.js` (NokiaSrMotor, fase 2 de la auditoria del
+  // 2026-11-09, ADR-1, corte 4): filtra, ordena con desempate y recomienda. La pagina pinta.
+  const NSM = window.NokiaSrMotor;
 
   function requerimiento() {
     // Un caudal negativo cuenta como ninguno: si no, la ficha decía «Requerimiento -6 Gbps».
-    const bw = Math.max(0, (parseFloat($('bw').value) || 0) * (parseFloat($('unit').value) || 1));
-    const head = (parseFloat($('head').value) || 0) / 100;
-    return Math.round(bw * (1 + head));
+    return NSM.demanda({ bw: (parseFloat($('bw').value) || 0) * (parseFloat($('unit').value) || 1),
+      head: (parseFloat($('head').value) || 0) / 100 }).need;
   }
 
   // ── Render ──────────────────────────────────────────────────────────────────
@@ -122,10 +75,12 @@
       ? 'Con «Todas» se listan las cinco familias juntas: sirve para comparar, no para decidir.'
       : ((CATALOGO.plataformas[plat] || {}).d || '');
 
-    const { candidatos, apartados, outByPqc } = evaluar({ models: CATALOGO.models, need, portQty, portVel, familia: plat, pqc: $('reqPqc').value });
+    const ev = NSM.evaluar({ need, portQty, portVel, familia: plat, pqc: $('reqPqc').value }, { models: CATALOGO.models },
+      { rango: FICHA.rango, recomendar: FICHA.recomendar });
+    const { apartados, outByPqc } = ev;
     ultimoOutByPqc = outByPqc;
-    const ordenados = FICHA.ordenar(candidatos, (a, b) => a.cap - b.cap);
-    const pick = FICHA.recomendar(ordenados);
+    const ordenados = ev.candidatos;
+    const pick = ev.recomendado;
     lastPick = pick;
 
     renderApartados(apartados, portQty, portVel);
@@ -183,7 +138,7 @@
 
   function mensajeVacio(need, portQty, portVel, apartados) {
     const partes = [];
-    const techo = CATALOGO.models.filter((m) => enPlataforma(m, plat)).reduce((mx, m) => Math.max(mx, m.cap), 0);
+    const techo = CATALOGO.models.filter((m) => NSM.enPlataforma(m, plat)).reduce((mx, m) => Math.max(mx, m.cap), 0);
     if (techo && need > techo) {
       partes.push(`<p class="warn">El modelo más grande de esta selección llega a <b>${fmt(techo)}</b>. Por encima de eso hay que repartir el tráfico en varios equipos, que es una decisión de diseño y no la toma esta calculadora.</p>`);
     } else if (portQty) {
@@ -206,7 +161,7 @@
     li.push(`<li>Requerimiento <b>${fmt(need)}</b> contra una capacidad de conmutación de <b>${fmt(m.cap)}</b> — holgura ${Math.round((1 - need / m.cap) * 100)} %</li>`);
     li.push(`<li>Familia <b>${esc((CATALOGO.plataformas[m.plat] || {}).n || m.ser)}</b>: ${esc((CATALOGO.plataformas[m.plat] || {}).d || m.seg)}</li>`);
     if (portQty) {
-      const ok = configQueCumple(m, portQty, portVel);
+      const ok = NSM.configQueCumple(m, portQty, portVel);
       if (ok) {
         li.push(`<li>Puertos: la configuración <b>${esc(ok.config.n)}</b> da ${ok.total} × ${portVel}GE, y hacen falta ${portQty}.</li>`);
       }
@@ -278,7 +233,7 @@
   function renderSizing(need, portQty, portVel) {
     const m = modeloElegido();
     if (!m) return;
-    const ok = configQueCumple(m, portQty, portVel);
+    const ok = NSM.configQueCumple(m, portQty, portVel);
     $('sizingBox').innerHTML = `<table><tbody>
       <tr><td>Caudal pedido con margen</td><td class="n r"><b>${fmt(need)}</b></td></tr>
       <tr><td>Capacidad del modelo</td><td class="n r">${fmt(m.cap)}</td></tr>
@@ -394,7 +349,7 @@
     montarSeg();
     const res = await fetch('/api/dimensionador/nokia-sr');
     CATALOGO = await res.json();
-    if (typeof BOM !== 'undefined' && BOM.fijarCatalogo) BOM.fijarCatalogo(CATALOGO.datasetVersion);
+    if (typeof BOM !== 'undefined' && BOM.fijarCatalogo) BOM.fijarCatalogo(CATALOGO.datasetVersion, `nokia-sr-motor ${NSM.VERSION_MOTOR}`);
     // Pendiente 34: el respaldo de ciclo de vida de ESTE fabricante, tal como lo declara
     // `legacyData/fuentes.js` con sus `campos`. Sin el, la ficha dice «el catalogo no trae el
     // ciclo de vida» en vez de afirmar vigencia por omision.
@@ -427,7 +382,7 @@
   // Se expone el motor -no el render- para que las reglas que de verdad importan se puedan
   // probar sin navegador: que las configuraciones de puertos son alternativas y no se suman,
   // y que un chasis modular se aparta con su motivo en vez de descartarse.
-  window.NOKIA_SR = { configQueCumple, sinDensidad, evaluar, seccionPuertos };
+  window.NOKIA_SR = { configQueCumple: NSM.configQueCumple, sinDensidad: NSM.sinDensidad, evaluar: NSM.filtrar, seccionPuertos };
 
   // Solo arranca sobre su propia pagina. Sin esta guarda, cargar el fichero en cualquier otro
   // sitio -las pruebas lo hacen, para poder ejercitar el motor sin navegador- lanzaba un fetch

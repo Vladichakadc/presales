@@ -55,95 +55,10 @@
     return grupos.map((p) => `<li><span>${p.cantidad} × ${p.veloc} GbE</span><b>${esc(ROTULO_USO[p.uso] || p.uso)}</b></li>`).join('');
   }
 
-  // ── Motor puro ──────────────────────────────────────────────────────────────
-  function puertosDe(modelo, veloc, usos) {
-    return (modelo.puertos || [])
-      .filter((p) => usos.includes(p.uso) && p.veloc === veloc)
-      .reduce((s, p) => s + p.cantidad, 0);
-  }
-
-  function velocidadesFabric(modelo) {
-    return [...new Set((modelo.puertos || [])
-      .filter((p) => p.uso === 'fabric' || p.uso === 'ambos')
-      .map((p) => p.veloc))];
-  }
-
-  // Cuando acceso y fabric comparten el mismo pool de puertos a la misma velocidad (D3L usado
-  // como leaf), hay que repartir: más puertos de acceso deja menos para subir, y viceversa.
-  // Se busca el reparto que sirve a MÁS servidores por leaf sin dejar de cumplir la
-  // sobresuscripción pedida — menos leafs es siempre mejor con el mismo hardware.
-  function repartoCompartido(totalPuertos, oversub) {
-    for (let acceso = totalPuertos; acceso >= 1; acceso--) {
-      const uplinks = Math.ceil(acceso / oversub);
-      if (acceso + uplinks <= totalPuertos) return { acceso, uplinks };
-    }
-    return { acceso: 0, uplinks: 0 };
-  }
-
-  function calcularFabric({ models, servers, accesoVel, dual, oversub }) {
-    const totalAcceso = Math.max(1, Math.round(servers)) * (dual ? 2 : 1);
-
-    const leaf = models.find((m) => (m.rol || []).includes('leaf')
-      && puertosDe(m, accesoVel, ['acceso', 'ambos']) > 0);
-    if (!leaf) {
-      return { ok: false, motivo: `Ningún modelo de la línea 7220 IXR ofrece puertos de acceso a ${accesoVel} GbE.` };
-    }
-
-    const esCompartido = !(leaf.puertos || []).some((p) => p.uso === 'acceso' && p.veloc === accesoVel)
-      || (leaf.puertos || []).some((p) => p.uso === 'ambos' && p.veloc === accesoVel);
-
-    let accesoPorLeaf; let uplinksPorLeaf; let velocUplink; let uplinksDisponiblesLeaf;
-
-    if (esCompartido) {
-      // Pool único (D3L): acceso y subida salen del mismo grupo de puertos, a la misma
-      // velocidad — se resuelve el reparto en vez de sumar dos grupos separados.
-      const totalPool = puertosDe(leaf, accesoVel, ['ambos']);
-      const reparto = repartoCompartido(totalPool, oversub);
-      accesoPorLeaf = reparto.acceso;
-      uplinksPorLeaf = reparto.uplinks;
-      velocUplink = accesoVel;
-      uplinksDisponiblesLeaf = totalPool - accesoPorLeaf;
-    } else {
-      accesoPorLeaf = puertosDe(leaf, accesoVel, ['acceso']);
-      const velsFabric = velocidadesFabric(leaf);
-      velocUplink = velsFabric[0];
-      const puertosFabricLeaf = puertosDe(leaf, velocUplink, ['fabric']);
-      const capacidadAccesoGbps = accesoPorLeaf * accesoVel;
-      const capacidadUplinkNecesaria = capacidadAccesoGbps / oversub;
-      uplinksPorLeaf = Math.min(
-        Math.max(1, Math.ceil(capacidadUplinkNecesaria / velocUplink)),
-        puertosFabricLeaf,
-      );
-      uplinksDisponiblesLeaf = puertosFabricLeaf;
-    }
-
-    if (accesoPorLeaf <= 0) {
-      return { ok: false, motivo: `El ${leaf.id} no tiene margen para servir puertos de acceso a ${accesoVel} GbE con esa sobresuscripción.` };
-    }
-
-    const numLeafs = Math.ceil(totalAcceso / accesoPorLeaf);
-    const oversubReal = (accesoPorLeaf * accesoVel) / (uplinksPorLeaf * velocUplink);
-    const uplinkInsuficiente = uplinksPorLeaf > uplinksDisponiblesLeaf;
-
-    const spine = models.find((m) => (m.rol || []).includes('spine')
-      && puertosDe(m, velocUplink, ['fabric', 'ambos']) > 0);
-    if (!spine) {
-      return {
-        ok: false,
-        motivo: `Los uplinks del ${leaf.id} son de ${velocUplink} GbE y ningún modelo de la línea 7220 IXR tiene puertos de spine a esa velocidad — hace falta un modelo intermedio de agregación que este catálogo todavía no cubre.`,
-      };
-    }
-    const puertosPorSpine = puertosDe(spine, velocUplink, ['fabric', 'ambos']);
-    const numSpines = uplinksPorLeaf;
-    const spineInsuficiente = puertosPorSpine < numLeafs;
-
-    return {
-      ok: true,
-      totalAcceso, accesoVel, oversub, dual,
-      leaf, numLeafs, accesoPorLeaf, uplinksPorLeaf, velocUplink, oversubReal, uplinkInsuficiente,
-      spine, numSpines, puertosPorSpine, spineInsuficiente,
-    };
-  }
+  // ── Motor ────────────────────────────────────────────────────────────────
+  // El calculo del fabric vive en `public/js/nokia-fabric-motor.js` (NokiaFabricMotor, fase 2 de la
+  // auditoria del 2026-11-09, ADR-1, corte 4). La pagina lee la entrada y pinta.
+  const NFM = window.NokiaFabricMotor;
 
   // ── Render ───────────────────────────────────────────────────────────────────
   function leerEntrada() {
@@ -157,7 +72,7 @@
   }
 
   function render() {
-    const r = calcularFabric(leerEntrada());
+    const r = NFM.calcularFabric(leerEntrada());
     const verdict = $('verdict');
     const diseno = $('disenoBox');
     const sizing = $('sizingBox');
@@ -263,7 +178,7 @@
     montarTabs();
     const res = await fetch('/api/dimensionador/nokia');
     CATALOGO = await res.json();
-    if (typeof BOM !== 'undefined' && BOM.fijarCatalogo) BOM.fijarCatalogo(CATALOGO.datasetVersion);
+    if (typeof BOM !== 'undefined' && BOM.fijarCatalogo) BOM.fijarCatalogo(CATALOGO.datasetVersion, `nokia-fabric-motor ${NFM.VERSION_MOTOR}`);
 
     ['servers', 'accesoVel', 'oversub'].forEach((id) => $(id).addEventListener('input', render));
     $('chkDual').addEventListener('change', render);
