@@ -1140,8 +1140,109 @@
     return L.join('\n') + '\n';
   }
 
+  /* LA LISTA DE MATERIALES (fase 2 de la auditoria del 2026-11-09, ADR-1, corte 3). Las filas que
+     renderBom() armaba entre el pintado salen aqui, sin DOM ni estado: la pagina lee los modulos y la
+     optica elegidos, la licencia, el firewall dedicado y Secure Access, y lo pasa en `ctx`. Las reglas
+     de cada fila no cambian y sus comentarios viajan con ellas; la equivalencia con el bloque de la
+     pagina la mide scripts/equivalencias/cisco-bom.js.
+       ctx.m, ctx.p        el equipo de la lista y los parametros del escenario (parametros() de la pagina)
+       ctx.sedesQty        las sedes; con dos routers por sede (p.ha) lo que va por equipo se duplica
+       ctx.anios, ctx.optQty   el termino y las opticas por equipo
+       ctx.sel             lo elegido a mano: { nim, sm, pim, opt } (el valor de cada desplegable)
+       ctx.mods            los modulos de su guia de pedido (modulosEquipo)
+       ctx.pid, ctx.vencido    la referencia del equipo y si su fin de venta ya paso
+       ctx.licencia        las opciones de licencia (opcionesLicencia de la pagina)
+       ctx.firewall        el firewall dedicado (firewallDe), o null
+       ctx.secureAccess    las lineas de Secure Access ({ filas, avisos })
+       ctx.crit            el nivel de soporte elegido
+       ctx.datos           CELULAR, OPTICS, OPTIC_LABEL, PARTS_DESC, SMARTNET, LIC_G2, LIC_DNA, PIM_SKUS
+                           (los SKU de los PIM) y las casillas CASILLA_REQ, CASILLA_LIC y CASILLA_SA
+     Devuelve { filas, avisosPuertos, avisosLic }: los avisos van a la ficha del BOM y a las notas. */
+  function lineasBom(ctx) {
+    const { m, p, sedesQty, anios, optQty, mods, crit } = ctx;
+    const sel = ctx.sel || {};
+    const pid = ctx.pid, venc = !!ctx.vencido;
+    const { CELULAR, OPTICS, OPTIC_LABEL, PARTS_DESC, SMARTNET, LIC_G2, LIC_DNA, PIM_SKUS,
+      CASILLA_REQ, CASILLA_LIC, CASILLA_SA } = ctx.datos;
+    const miles = n => String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+    const qty = sedesQty * (p.ha ? 2 : 1);
+    const g2 = m.lic === 'cswan';
+    const selDe = { modNim: sel.nim, modSm: sel.sm, modPim: sel.pim };
+    const filas = [
+      {cat:'Equipo', desc:m.id, sku:pid, qty, unit:m.elpN != null ? m.elpN : null,
+       nota:`${m.fam} · Serie ${m.ser} · ${m.ports}${m.eolAnnounced ? (venc ? ' · FIN DE VENTA VENCIDO' : ' · FIN DE VENTA ANUNCIADO') : ''}`},
+    ];
+    const rq = requisitos(m, requisitosConEnlaces(p));
+    for(const pz of rq.piezas){
+      if(pz.pim){
+        if(sel.pim) continue;
+        // Por categoría (propuesta 1.2): con la bajada y la subida del enlace celular, solo los PIM de
+        // su guía cuya categoría llega; es un pico teórico, no el caudal del operador.
+        const pc = pimsCelular(mods.lista.filter(x => x.en === 'pim'), CELULAR, pz.need);
+        const rot = o => `${o.sku}${o.red ? ` (${o.red}, ${miles(o.bajada)}/${miles(o.subida)} Mbps)` : ' (categoría sin dato)'}`;
+        const need = pz.need && (pz.need.bajada || pz.need.subida) ? `${miles(pz.need.bajada || 0)}/${miles(pz.need.subida || 0)} Mbps de bajada/subida` : null;
+        if(!pc.opciones.length){
+          filas.push({por:CASILLA_REQ[pz.req], cat:'Módulos', desc:'Módulo celular (PIM) — elegir uno', sku:null, qty, unit:null, nota:'Referencia en la guía de pedido de esta familia: consultar en CCW.'});
+        } else if(!pc.elegibles.length){
+          filas.push({por:CASILLA_REQ[pz.req], cat:'Módulos', desc:'Módulo celular (PIM) — consultar', sku:null, qty, unit:null,
+            nota:`Ningún PIM de su guía de pedido llega por categoría a ${need}${pc.max ? ` (el mayor, ${rot(pc.max)})` : ''}: consultar.`});
+        } else {
+          filas.push({por:CASILLA_REQ[pz.req], cat:'Módulos', desc:`Módulo celular (PIM)${pc.elegibles.length > 1 ? ' — elegir uno' : ''}`, sku:pc.elegibles.length === 1 ? pc.elegibles[0].sku : null, qty, unit:null,
+            nota:`${pc.falta ? 'Según la región y el operador' : `Llegan a ${need} por categoría; según la región y el operador`}: ${pc.elegibles.map(rot).join(', ')} (guía de pedido, ${mods.pim}). La categoría da el pico de la norma, no el caudal del operador.`});
+        }
+      } else if(pz.macsec){
+        if(/^C-NIM-WAN/.test(sel.nim || '')) continue;
+        filas.push({por:CASILLA_REQ[pz.req], cat:'Módulos', desc:'NIM WAN con MACsec — elegir una', sku:null, qty, unit:null,
+          nota:g2 ? 'C-NIM-WAN-2X (2 × 1/10G SFP+) o C-NIM-WAN-4S (4 × 1G SFP), guía de pedido, tabla 7.' : 'Referencia en la guía de pedido de esta familia.'});
+      } else {
+        filas.push({por:CASILLA_REQ[pz.req], cat:pz.cat, desc:pz.desc, sku:pz.sku, qty, unit:null, nota:pz.nota || ''});
+      }
+    }
+    for(const id of ['modNim', 'modSm', 'modPim']){
+      const sku = selDe[id];
+      const x = sku && mods.lista.find(y => y.sku === sku);
+      if(x) filas.push({cat:'Módulos', desc:x.d, sku:x.sku, qty, unit:null, nota:`Guía de pedido ${g2 ? 'de la G2' : 'de los Catalyst 8300/8200'}; precio en CCW.`});
+    }
+    // Piezas de hardware del catálogo que no son licencias ni celulares (los bundles HA del ASR).
+    const pims = new Set(PIM_SKUS || []);
+    (m.parts || []).filter(x => !/^(LIC|DNA)/.test(x) && !pims.has(x))
+      .forEach(x => filas.push({cat:'Módulos', desc:x, sku:x, qty, unit:null, nota:PARTS_DESC[x] || ''}));
+    if(optQty > 0){
+      const [k, sku] = (sel.opt || '|').split('|');
+      const o = k && (OPTICS[k] || []).find(y => y.sku === sku);
+      filas.push(o
+        ? {cat:'Ópticas', desc:`${OPTIC_LABEL[k] || k} — ${o.sku}`, sku:o.bom || o.sku, qty:optQty * qty, unit:null, nota:o.d}
+        : {cat:'Ópticas', desc:'Óptica — elegir el modelo', sku:null, qty:optQty * qty, unit:null, nota:'Elige la óptica en «Módulos y ópticas».'});
+    }
+    // Lo que pide el reparto de los enlaces: módulos, ópticas y transceptores. Un módulo que ya se
+    // eligió a mano no se repite.
+    const enl = repartoHa(m, p);
+    const aMano = new Set([sel.nim, sel.sm, sel.pim].filter(Boolean));
+    piezasEnlaces(enl).filter(pz => !(pz.moduloEnlace && aMano.has(pz.sku))).forEach(pz => filas.push({...pz, qty:pz.porRouter ? sedesQty : qty, unit:null}));
+    const avisosPuertos = [
+      ...enl.sinAsignar.map(x => x.motivo[0].toUpperCase() + x.motivo.slice(1) + '.'),
+      ...enl.asignados.filter(a => motivoOptica(a)).map(a => `Enlace ${a.enlace}: ${motivoOptica(a)}; consultar con Cisco.`),
+      ...(motivoCombinacion(enl) ? [`${motivoCombinacion(enl)[0].toUpperCase()}${motivoCombinacion(enl).slice(1)}.`] : []),
+      ...(enl.modular ? ['Chasis modular: los puertos de los enlaces dependen de las tarjetas que se pidan (consultar).'] : []),
+      ...(m.notaPuertos && enl.asignados.length ? [m.notaPuertos] : []),
+    ];
+    const lic = licencias(m, ctx.licencia, LIC_G2, LIC_DNA);
+    lic.filas.forEach(x => filas.push({...x, por:CASILLA_LIC[x.req], qty:x.qty * qty, nota:x.incluida ? `${x.nota} Incluida con el equipo.` : x.nota}));
+    // El firewall dedicado, uno por sede (su cifra ya es la de toda la salida a Internet).
+    const pf = piezasFirewall(ctx.firewall, anios);
+    pf.filas.forEach(x => filas.push({...x, qty:sedesQty, unit:null}));
+    lic.avisos.push(...pf.avisos);
+    // Secure Access va por cliente y por usuario, no por equipo: su cantidad no se multiplica.
+    const sa = ctx.secureAccess || {filas:[], avisos:[]};
+    sa.filas.forEach(x => filas.push({...x, por:CASILLA_SA[x.req], unit:null}));
+    lic.avisos.push(...sa.avisos);
+    const sn = SMARTNET[crit];
+    if(sn) filas.push({cat:'Soporte', desc:sn.n, sku:null, qty, unit:null, nota:`${sn.sla || ''} · término ${anios} año(s)`});
+    return { filas, avisosPuertos, avisosLic: lic.avisos };
+  }
+
   return {
-    PLATAFORMAS, PERFILES, SEGURIDAD, PUERTOS_UTILES,
+    PLATAFORMAS, PERFILES, SEGURIDAD, PUERTOS_UTILES, lineasBom,
     TIPOS_ENLACE, ROLES_ENLACE, ENTREGAS, FIBRAS, MAX_ENLACES, elegirOptica, motivoOptica, fmtKm, secureAccess, firewallDedicado, piezasFirewall, pimsCelular, controladoresSdwan,
     fmt, cifra, capaOverlay, demanda, requisitos, escala, tunelesTopologia, evaluar,
     enlacesValidos, requisitosConEnlaces, modulosEquipo, asignarEnlaces, repartoHa, motivoCombinacion, piezasEnlaces, rotuloPuerto, enlacesFrenteCaudal, resumenApartados, licencias, traficoLicencia, tierDna, poolCgnat, memoria,

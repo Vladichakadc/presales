@@ -724,10 +724,8 @@ function renderBom(){
   // Con dos routers por sede (propuesta 1.3), todo lo que va por equipo se duplica; lo que el reparto
   // con TLOC ya asigna a un router (`porRouter`) no.
   const sedesQty = Math.max(1, parseInt($('qty').value, 10) || 1);
-  const qty = sedesQty * (p.ha ? 2 : 1);
   const anios = +$('termYears').value || 3;
   const optQty = Math.max(0, parseInt($('optQty').value, 10) || 0);
-  const g2 = m.lic === 'cswan';
 
   // Módulos: solo los de la guía de pedido de su familia, y solo en el equipo que tiene la ranura.
   const mods = modulosDe(m);
@@ -744,76 +742,16 @@ function renderBom(){
   const optLista = (m.optics || []).flatMap(k => (OPTICS[k] || []).map(o => ({v:`${k}|${o.sku}`, t:`${OPTIC_LABEL[k] || k} — ${o.sku} · ${o.d}`})));
   opciones('optSel', optLista, optLista.length ? '— elegir óptica —' : 'Este equipo no lista ópticas');
 
-  const filas = [
-    {cat:'Equipo', desc:m.id, sku:pidDe(m), qty, unit:m.elpN != null ? m.elpN : null,
-     nota:`${m.fam} · Serie ${m.ser} · ${m.ports}${m.eolAnnounced ? (vencido(m) ? ' · FIN DE VENTA VENCIDO' : ' · FIN DE VENTA ANUNCIADO') : ''}`},
-  ];
-  const rq = M.requisitos(m, M.requisitosConEnlaces(p));
-  for(const pz of rq.piezas){
-    if(pz.pim){
-      if($('modPim').value) continue;
-      // Por categoría (propuesta 1.2): con la bajada y la subida del enlace celular, solo los PIM de
-      // su guía cuya categoría llega; es un pico teórico, no el caudal del operador.
-      const pc = M.pimsCelular(mods.lista.filter(x => x.en === 'pim'), CELULAR, pz.need);
-      const rot = o => `${o.sku}${o.red ? ` (${o.red}, ${miles(o.bajada)}/${miles(o.subida)} Mbps)` : ' (categoría sin dato)'}`;
-      const need = pz.need && (pz.need.bajada || pz.need.subida) ? `${miles(pz.need.bajada || 0)}/${miles(pz.need.subida || 0)} Mbps de bajada/subida` : null;
-      if(!pc.opciones.length){
-        filas.push({por:CASILLA_REQ[pz.req], cat:'Módulos', desc:'Módulo celular (PIM) — elegir uno', sku:null, qty, unit:null, nota:'Referencia en la guía de pedido de esta familia: consultar en CCW.'});
-      } else if(!pc.elegibles.length){
-        filas.push({por:CASILLA_REQ[pz.req], cat:'Módulos', desc:'Módulo celular (PIM) — consultar', sku:null, qty, unit:null,
-          nota:`Ningún PIM de su guía de pedido llega por categoría a ${need}${pc.max ? ` (el mayor, ${rot(pc.max)})` : ''}: consultar.`});
-      } else {
-        filas.push({por:CASILLA_REQ[pz.req], cat:'Módulos', desc:`Módulo celular (PIM)${pc.elegibles.length > 1 ? ' — elegir uno' : ''}`, sku:pc.elegibles.length === 1 ? pc.elegibles[0].sku : null, qty, unit:null,
-          nota:`${pc.falta ? 'Según la región y el operador' : `Llegan a ${need} por categoría; según la región y el operador`}: ${pc.elegibles.map(rot).join(', ')} (guía de pedido, ${mods.pim}). La categoría da el pico de la norma, no el caudal del operador.`});
-      }
-    } else if(pz.macsec){
-      if(/^C-NIM-WAN/.test($('modNim').value)) continue;
-      filas.push({por:CASILLA_REQ[pz.req], cat:'Módulos', desc:'NIM WAN con MACsec — elegir una', sku:null, qty, unit:null,
-        nota:g2 ? 'C-NIM-WAN-2X (2 × 1/10G SFP+) o C-NIM-WAN-4S (4 × 1G SFP), guía de pedido, tabla 7.' : 'Referencia en la guía de pedido de esta familia.'});
-    } else {
-      filas.push({por:CASILLA_REQ[pz.req], cat:pz.cat, desc:pz.desc, sku:pz.sku, qty, unit:null, nota:pz.nota || ''});
-    }
-  }
-  for(const id of ['modNim', 'modSm', 'modPim']){
-    const sku = $(id).value;
-    const x = sku && mods.lista.find(y => y.sku === sku);
-    if(x) filas.push({cat:'Módulos', desc:x.d, sku:x.sku, qty, unit:null, nota:`Guía de pedido ${g2 ? 'de la G2' : 'de los Catalyst 8300/8200'}; precio en CCW.`});
-  }
-  // Piezas de hardware del catálogo que no son licencias ni celulares (los bundles HA del ASR).
-  const pims = PIM_SKUS();
-  (m.parts || []).filter(x => !/^(LIC|DNA)/.test(x) && !pims.has(x))
-    .forEach(x => filas.push({cat:'Módulos', desc:x, sku:x, qty, unit:null, nota:PARTS_DESC[x] || ''}));
-  if(optQty > 0){
-    const [k, sku] = ($('optSel').value || '|').split('|');
-    const o = k && (OPTICS[k] || []).find(y => y.sku === sku);
-    filas.push(o
-      ? {cat:'Ópticas', desc:`${OPTIC_LABEL[k] || k} — ${o.sku}`, sku:o.bom || o.sku, qty:optQty * qty, unit:null, nota:o.d}
-      : {cat:'Ópticas', desc:'Óptica — elegir el modelo', sku:null, qty:optQty * qty, unit:null, nota:'Elige la óptica en «Módulos y ópticas».'});
-  }
-  // Lo que pide el reparto de los enlaces: módulos, ópticas y transceptores. Un módulo que ya se
-  // eligió a mano no se repite.
-  const enl = M.repartoHa(m, p);
-  const aMano = new Set(['modNim', 'modSm', 'modPim'].map(id => $(id).value).filter(Boolean));
-  M.piezasEnlaces(enl).filter(pz => !(pz.moduloEnlace && aMano.has(pz.sku))).forEach(pz => filas.push({...pz, qty:pz.porRouter ? sedesQty : qty, unit:null}));
-  const avisosPuertos = [
-    ...enl.sinAsignar.map(x => x.motivo[0].toUpperCase() + x.motivo.slice(1) + '.'),
-    ...enl.asignados.filter(a => M.motivoOptica(a)).map(a => `Enlace ${a.enlace}: ${M.motivoOptica(a)}; consultar con Cisco.`),
-    ...(M.motivoCombinacion(enl) ? [`${M.motivoCombinacion(enl)[0].toUpperCase()}${M.motivoCombinacion(enl).slice(1)}.`] : []),
-    ...(enl.modular ? ['Chasis modular: los puertos de los enlaces dependen de las tarjetas que se pidan (consultar).'] : []),
-    ...(m.notaPuertos && enl.asignados.length ? [m.notaPuertos] : []),
-  ];
-  const lic = M.licencias(m, opcionesLicencia(p, m), LIC_G2, LIC_DNA);
-  lic.filas.forEach(x => filas.push({...x, por:CASILLA_LIC[x.req], qty:x.qty * qty, nota:x.incluida ? `${x.nota} Incluida con el equipo.` : x.nota}));
-  // El firewall dedicado, uno por sede (su cifra ya es la de toda la salida a Internet).
-  const pf = M.piezasFirewall(firewallDe(p), anios);
-  pf.filas.forEach(x => filas.push({...x, qty:sedesQty, unit:null}));
-  lic.avisos.push(...pf.avisos);
-  // Secure Access va por cliente y por usuario, no por equipo: su cantidad no se multiplica.
-  const sa = lineasSecureAccess(p);
-  sa.filas.forEach(x => filas.push({...x, por:CASILLA_SA[x.req], unit:null}));
-  lic.avisos.push(...sa.avisos);
-  const sn = SMARTNET[crit];
-  if(sn) filas.push({cat:'Soporte', desc:sn.n, sku:null, qty, unit:null, nota:`${sn.sla || ''} · término ${anios} año(s)`});
+  // La lista de materiales sale de CiscoMotor.lineasBom (fase 2 de la auditoría del 2026-11-09,
+  // ADR-1): sin DOM ni estado. Aquí se lee lo que hay en pantalla y se pasa.
+  const lb = M.lineasBom({ m, p, sedesQty, anios, optQty, mods, crit,
+    sel:{nim:$('modNim').value, sm:$('modSm').value, pim:$('modPim').value, opt:$('optSel').value},
+    pid:pidDe(m), vencido:vencido(m), licencia:opcionesLicencia(p, m), firewall:firewallDe(p),
+    secureAccess:lineasSecureAccess(p),
+    datos:{CELULAR, OPTICS, OPTIC_LABEL, PARTS_DESC, SMARTNET, LIC_G2, LIC_DNA, PIM_SKUS:[...PIM_SKUS()],
+      CASILLA_REQ, CASILLA_LIC, CASILLA_SA} });
+  const filas = lb.filas, avisosPuertos = lb.avisosPuertos;
+  const lic = {avisos:lb.avisosLic};
 
   // Ficha resumida del equipo en el BOM.
   $('bomBody').innerHTML = `${BOM.avisoDesvio({elegido:FICHA.elegido('verdict'), enBom:m.id, hayCandidato})}<section class="panel"><h2>Ficha del equipo</h2>
