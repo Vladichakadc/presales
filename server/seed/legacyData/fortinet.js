@@ -827,24 +827,70 @@ for (const m of MODELS) if (/^FortiGate 8[01]F$/.test(m.id)) m.seg=m.seg.replace
        celda del FG-90G). Ninguna de las ramas que ofrece esta herramienta cae en ese rango.
    Las ramas son tres a proposito: son las que las fuentes distinguen. Una lista de versiones
    mas fina solo daria precision a lo que el catalogo no sabe. */
+/* FortiOS 8.0 (2026-11-10, encargo del dueño: «trae las características de la versión 8.0.2 al
+   dimensionador»). Lo que entra es lo que dicen las Release Notes de FortiOS 8.0.2 (build 0251, 2026-10-26;
+   PDF traído a la rama fuente/fortios-rn-2026-11-09, fortinet-rn-8.0.2.pdf), LEÍDAS:
+     · «Supported models» (p. 6) y «FortiGate 6000 and 7000 support» (p. 7): un modelo que esas listas no
+       nombran se aparta con 8.0. Hoy solo el FortiWiFi 50G-5G-II: la lista dice FWF-50G-5G.
+     · «SSL VPN tunnel mode is not longer supported on any models» (p. 10): retirado, como en 7.6.3+.
+     · «2 GB RAM FortiGate models no longer support most FortiOS proxy-related features» (p. 11): «This
+       change impacts the FortiGate 40F, 60F, and 50G series devices, along with their variants».
+   Lo que NO entra, y se dice en pantalla (`supuesto`): las cifras y los topes siguen siendo los del Product
+   Matrix y la Maximum Values Table de FortiOS 7.6.7; la tabla de 8.0 no se ha traído. Tampoco las funciones
+   nuevas de la rama 8.0: las Release Notes de un parche no las listan (van en la guía «New Features»), y
+   ninguna entra sin su documento. El Agentless VPN (antes SSL-VPN en modo web), que 8.0.2 retira de 40F, 50G,
+   60F, 61F, 70G y 90G/91G, no es un método de acceso remoto de esta herramienta. */
+const RN802='FortiOS 8.0.2 Release Notes (build 0251, 2026-10-26)';
+const RN802_SOPORTADOS=[
+  // «Supported models», p. 6: FortiGate
+  'FG-30G', 'FG-31G', 'FG-40F', 'FG-40F-3G4G', 'FG-50G', 'FG-51G', 'FG-50G-5G', 'FG-51G-5G', 'FG-50G-SFP',
+  'FG-50G-DSL', 'FG-50G-SFP-POE', 'FG-51G-SFP-POE', 'FG-60F', 'FG-61F', 'FG-70F', 'FG-71F', 'FG-70G', 'FG-71G',
+  'FG-70G-POE', 'FG-71G-POE', 'FG-80F', 'FG-80F-BP', 'FG-80F-DSL', 'FG-80F-POE', 'FG-81F', 'FG-81F-POE', 'FG-90G',
+  'FG-91G', 'FG-100F', 'FG-101F', 'FG-120G', 'FG-121G', 'FG-200E', 'FG-200F', 'FG-200G', 'FG-201E',
+  'FG-201F', 'FG-201G', 'FG-300E', 'FG-301E', 'FG-400E', 'FG-400E-BP', 'FG-401E', 'FG-400F', 'FG-401F',
+  'FG-400G', 'FG-401G', 'FG-500E', 'FG-501E', 'FG-600E', 'FG-601E', 'FG-600F', 'FG-601F', 'FG-700G',
+  'FG-701G', 'FG-800D', 'FG-900D', 'FG-900G', 'FG-901G', 'FG-1000D', 'FG-1000F', 'FG-1001F', 'FG-1100E',
+  'FG-1101E', 'FG-1800F', 'FG-1801F', 'FG-2000E', 'FG-2200E', 'FG-2201E', 'FG-2500E', 'FG-2600F', 'FG-2601F',
+  'FG-3000F', 'FG-3001F', 'FG-3000G', 'FG-3001G', 'FG-3200F', 'FG-3201F', 'FG-3300E', 'FG-3301E', 'FG-3400E',
+  'FG-3401E', 'FG-3500F', 'FG-3501F', 'FG-3500G', 'FG-3501G', 'FG-3600E', 'FG-3601E', 'FG-3700F', 'FG-3701F',
+  'FG-3800G', 'FG-3801G', 'FG-3960E', 'FG-3980E', 'FG-4200F', 'FG-4201F', 'FG-4400F', 'FG-4401F', 'FG-4800F',
+  'FG-4801F', 'FG-6000F', 'FG-7000E', 'FG-7000F', 'FG-ARM64-AWS', 'FG-ARM64-AZURE', 'FG-ARM64-GCP', 'FG-ARM64-KVM', 'FG-ARM64-OCI',
+  'FG-VM64', 'FG-VM64-ALI', 'FG-VM64-AWS', 'FG-VM64-AZURE', 'FG-VM64-GCP', 'FG-VM64-HV', 'FG-VM64-IBM', 'FG-VM64-KVM', 'FG-VM64-XEN',
+  // «FortiGate 6000 and 7000 support», p. 7
+  'FG-6001F', 'FG-6300F', 'FG-6301F', 'FG-6500F', 'FG-6501F', 'FG-7030E', 'FG-7040E', 'FG-7060E', 'FG-7081F', 'FG-7121F',
+  // «Supported models», p. 6: FortiWiFi
+  'FWF-30G', 'FWF-31G', 'FWF-40F', 'FWF-40F-3G4G', 'FWF-50G', 'FWF-50G-5G', 'FWF-50G-SFP', 'FWF-50G-DSL', 'FWF-51G',
+  'FWF-60F', 'FWF-61F', 'FWF-70G', 'FWF-71G', 'FWF-70G-POE', 'FWF-80F-2R', 'FWF-80F-2R-3G4G-DSL', 'FWF-81F-2R', 'FWF-81F-2R-3G4G-DSL',
+  'FWF-81F-2R-POE', 'FWF-81F-2R-3G4G-POE',
+];
 const FORTIOS={
   versiones:[
     {id:'7.4',         n:'FortiOS 7.4.x'},
     {id:'7.6.0-7.6.2', n:'FortiOS 7.6.0 a 7.6.2'},
     {id:'7.6.3+',      n:'FortiOS 7.6.3 o superior (rama vigente)'},
+    {id:'8.0',         n:'FortiOS 8.0 (8.0.2)',
+     soportados:RN802_SOPORTADOS,
+     soportadosFuente:`${RN802}, pp. 6-7, «Supported models» y «FortiGate 6000 and 7000 support»`,
+     supuesto:'FortiOS 8.0: las cifras de rendimiento y los topes de configuración (vecinos BGP, políticas, túneles) son los del Product Matrix y la Maximum Values Table de FortiOS 7.6.7; la tabla de 8.0 no se ha traído. De 8.0.2 se aplican sus modelos soportados, el retiro del modo túnel SSL-VPN y el límite de las funciones proxy en los modelos de 2 GB.'},
   ],
   porDefecto:'7.6.3+',
   reglas:[
+    {funcion:'sslvpn', versiones:['8.0'], modelos:'*', estado:'retirada', sustituto:'ipsec',
+     fuente:`${RN802}, p. 10: «SSL VPN tunnel mode is not longer supported on any models.»`,
+     leida:true},
+    {funcion:'proxy', versiones:['8.0'], modelos:['40F','50G','51G','60F','61F'], estado:'limitada',
+     fuente:`${RN802}, p. 11, «2 GB RAM FortiGate models no longer support most FortiOS proxy-related features»: «This change impacts the FortiGate 40F, 60F, and 50G series devices, along with their variants» (la inspección proxy de correo —SMTP, POP3, IMAP, NNTP— volvió en 7.6.5)`,
+     leida:true},
     {funcion:'sslvpn', versiones:['7.6.3+'], modelos:'*', estado:'retirada', sustituto:'ipsec',
      fuente:'FortiOS 7.6.3 Release Notes, p. 15, «SSL VPN tunnel mode replaced with IPsec VPN»: «Starting in FortiOS 7.6.3, the SSL VPN tunnel mode feature is replaced with IPsec VPN [...] This applies to all FortiGate models.»',
      leida:true},
     {funcion:'sslvpn', versiones:['7.6.0-7.6.2'], modelos:['40F','60F','61F'], estado:'no-soportada', sustituto:'ipsec',
      fuente:'FortiOS 7.6.0 Release Notes, pp. 10-11, «SSL VPN removed from 2GB RAM models for tunnel and web mode»: 40F y variantes, 60F y 61F; «FortiGate models not listed above will continue to have SSL VPN web and tunnel mode support» (y nota 10 del Product Matrix oct-2026, igual que en la de septiembre)',
      leida:true},
-    {funcion:'sslvpn', versiones:['7.4','7.6.0-7.6.2','7.6.3+'], modelos:['90G','91G'], estado:'no-soportada', sustituto:'ipsec',
+    {funcion:'sslvpn', versiones:['7.4','7.6.0-7.6.2','7.6.3+','8.0'], modelos:['90G','91G'], estado:'no-soportada', sustituto:'ipsec',
      fuente:'Product Matrix oct-2026, nota 11 en la celda SSL VPN del FG-90G: «SSL VPN only supported between 7.0.12 and 7.0.15»',
      leida:true},
-    {funcion:'proxy', versiones:['7.4','7.6.0-7.6.2','7.6.3+'], modelos:['30G','31G','40F','50G','51G','60F','61F'], estado:'limitada',
+    {funcion:'proxy', versiones:['7.4','7.6.0-7.6.2','7.6.3+','8.0'], modelos:['30G','31G','40F','50G','51G','60F','61F'], estado:'limitada',
      fuente:'Product Matrix oct-2026, nota 12: «Proxy features limited supported, refer to data sheet»; para 40F y 60F, las FortiOS 7.6.0 Release Notes: sin funciones proxy desde 7.4.4 en los modelos de 2 GB de RAM',
      leida:true},
   ],
