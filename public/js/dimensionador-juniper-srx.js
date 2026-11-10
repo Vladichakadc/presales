@@ -225,7 +225,8 @@ function render() {
   const head = (parseFloat($('head').value) || 0) / 100;
   $('headVal').textContent = `${Math.round(head * 100)} %`;
   const bwMbps = (parseFloat($('bw').value) || 0) * (parseFloat($('unit').value) || 1);
-  const need = Math.round(bwMbps * (1 + head));
+  // La misma cuenta que filtra el motor (demandaSrx): una sola, para que el umbral y el filtro no diverjan.
+  const { need } = JM.demandaSrx({ bwMbps, head });
 
   // Sin ancho de banda no hay recomendación (regla de preventa 2026-09-13): es el dato
   // mínimo del dimensionamiento; sin él la página pide valores en vez de proponer un
