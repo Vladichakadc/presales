@@ -407,6 +407,9 @@ traspaso (el #37, de otra sesión, se fusionó mientras se cerraba esta).
   Del PR #140: la PQC del FortiWiFi 50G-5G-II (las otras diez la llevan desde el PR #146, por
   «Supported models» de FortiOS 7.6.7, que dice FWF-50G-5G y no FWF-50G-5G-II; revisado el 2026-11-09: tampoco lo nombran las de 7.6.8, build 3744 con edición del 2026-11-03, ni las de 8.0.2, build 0251, traídas en el PR #163; tres ediciones seguidas dicen FWF-50G-5G, así que no lo cerrarán otras Release Notes sino un documento de Fortinet que diga qué FortiOS corre el FWF-50G-5G-II, su ficha o una respuesta escrita de Fortinet), el caudal del módem integrado (ninguna ficha lo publica) y las
   figuras de las variantes (están en sus fichas por serie).
+  Del PR #172: enseñar en la página las figuras de FortiExtender (WAN 50G, 511G y 511G-WiFi, ya en
+  `fortinet-vistas-equipos.json` con su leyenda) junto al FortiExtender elegido y en «Fotos del equipo» del
+  Excel; espera a que se fusione el #166, que tiene tomada la página de Fortinet.
 
 ### Bloqueado por acceso (se reporta, no se rodea)
 
@@ -415,6 +418,14 @@ fabricantes (y `presales.up.railway.app`); los ejecutores de GitHub Actions sí 
 existen los workflows de transporte. Huawei y HPE niegan además el navegador automatizado (Akamai).
 
 ## Mejoras propuestas sin decidir
+
+- **Figuras del FortiExtender 101G, 201F, 202F y 211G** (propuesta al cerrar el PR #172). La ficha R57 solo
+  dibuja el WAN 50G, el 511G y el 511G-WiFi, así que los cuatro 4G salen sin figura. Su QuickStart Guide de
+  docs.fortinet.com los dibuja: tres entradas en `scripts/transporte/documentos.js` (descubriendo el PDF en la
+  página de la guía, como las de FortiWiFi), una corrida, y sus figuras con caja y lock como las de hoy. Evita
+  que el preventa enseñe un FortiExtender 4G sin saber cómo es ni dónde va cada puerto. Cuesta tres entradas
+  de transporte y cuatro figuras con su leyenda. Si se hace mal, una guía de otra revisión de hardware
+  dibujaría otro panel: el pie tiene que citar el modelo que dibuja, como en los FortiWiFi.
 
 - **La misma firma de `evaluar` en los ocho y una prueba de contrato que la exija** (propuesta al cerrar el PR #171).
   ADR-1 pide `evaluar(escenario, catalogo, opciones)` con el mismo sobre en todos; Juniper y Nokia ya lo tienen,
