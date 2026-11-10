@@ -2334,8 +2334,9 @@ Lo que dejó la entrega de FortiWiFi, FortiGate con módem 4G/5G y FortiExtender
    el dueño. Hasta entonces van «consultar», y la pantalla lo dice como «no se extrajo».
 2. **PQC del FortiWiFi 50G-5G-II**: «no consta». Las otras diez variantes la llevan desde el PR #146,
    porque «Supported models» de las Release Notes de FortiOS 7.6.7 las nombra; esa lista dice FWF-50G-5G
-   y el SKU de esta es FWF-50G-5G-II. Lo cierra un documento de Fortinet que nombre FWF-50G-5G-II (las
-   Release Notes de una versión posterior, o su ficha diciendo que corre FortiOS 7.6.1 o posterior).
+   y el SKU de esta es FWF-50G-5G-II. Las de 7.6.8 (build 3744) y 8.0.2 (build 0251), traídas en el
+   PR #163, siguen diciendo FWF-50G-5G: lo cierra un documento de Fortinet que diga qué FortiOS corre el
+   FWF-50G-5G-II (su ficha, o una respuesta escrita de Fortinet), no otras Release Notes.
 3. **Caudal del módem integrado** (40F-3G4G, 50G-5G, 51G-5G y FortiWiFi 50G-5G-II): su ficha no lo publica
    y el motor lo avisa en vez de comprobarlo. Lo cierra un documento de Fortinet con esa cifra.
 4. **Figuras de las variantes**: la ficha del equipo no las trae todavía. Las fichas por serie traen las

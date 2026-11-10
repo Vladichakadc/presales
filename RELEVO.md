@@ -352,6 +352,13 @@ traspaso (el #37, de otra sesión, se fusionó mientras se cerraba esta).
 ### Se pueden hacer desde una sesión, sin acceso especial
 
 1. **Mejoras propuestas**: las de abajo, cuando el dueño las apruebe (no se hacen solas).
+2. **Fases 2 y 3 de la auditoría de los dimensionadores** (decididas por el dueño el 2026-11-10: «Ejecuta fase 2 y fase 3»;
+   las fases 0 y 1 se hicieron en los PR #150, #153, #156 y #162). Fase 2, un corte por PR medido con `npm run
+   equivalencia`: 1, la lista de materiales de Aruba fuera de `renderBom()` (hecho, PR #167); 2, Juniper con motor,
+   orden de candidatos y caso de contraste (hecho, PR #168); 3, la lista de Cisco al motor (hecho, PR #169); 4, Nokia 7750 y 7220 con motor propio (hecho, PR #170); 5,
+   las listas de Huawei y MikroTik al motor, con la versión de motor de cada uno en «Supuestos» (hecho, PR #171). Fase 3: el catálogo
+   en memoria sin SQLite (ADR-3) y las dependencias mayores de una en una (SDK de Anthropic, ESLint, dotenv,
+   pdf-parse). Los precios de Cisco, Huawei, Juniper y Nokia los cierra el dueño con las listas de un distribuidor.
 
 ### Esperan un documento oficial (se cierran trayéndolo por Actions)
 
@@ -378,14 +385,14 @@ traspaso (el #37, de otra sesión, se fusionó mientras se cerraba esta).
   17.9, anterior a la PPK, y la ficha dice «no la trae» (`pqcNo`). Si un documento oficial dice que
   otro equipo no la trae, entra igual: `pqcNo` con su fuente en `fuentes.js` (`campos: ['pqcNo']`).
 - **Cisco**: precio del Secure Firewall (sin lista oficial), precio de Secure
-  Access por usuario (CCW), velocidad mínima de los mGig de los C8111/C8121-G2-MX, 10GBASE-T en
+  Access por usuario (CCW), velocidad mínima de los mGig de los C8111/C8121-G2-MX (su guía de instalación, traída otra vez el 2026-11-09, solo dice «2.5 MGig»), 10GBASE-T en
   SFP+ fuera de la serie 8300 y de las 8100 VAI/VAP, módulos del ASR (fuera de venta), breakout
   4x10G (pide su cable u óptica en el catálogo).
-- **Juniper**: cifra de inspección del SSR (tampoco en la ficha inglesa), foto del SSR120 base,
+- **Juniper**: cifra de inspección del SSR (tampoco en la ficha inglesa; desde el 2026-11-09 sus páginas HTML ya no traen la ficha, solo los PDF), foto del SSR120 base,
   FEC del SSR; no hay lista de precios ni SKU de chasis.
 - **Aruba**: EC-XL S3N77A (fuera de venta, sin ópticas de 25G en su matriz). Las dos fuentes que
   eran un cascarón quedaron cerradas en el PR #47.
-- **MikroTik**: si la cifra IPsec es por sentido o la suma (respuesta escrita de soporte), figuras
+- **MikroTik** (revisado el 2026-11-09 en el PR #163, sin cambios): si la cifra IPsec es por sentido o la suma (respuesta escrita de soporte), figuras
   traseras que la galería no publica, el CCR2004-16G-2S+PC en la matriz de compatibilidad (su manual
   no dice qué módulos admite: lo cierra una respuesta escrita de soporte).
 - **Huawei**: **el controlador iMaster NCE-WAN** —su código, su modelo de licencia y si el paquete N1 de
@@ -398,7 +405,7 @@ traspaso (el #37, de otra sesión, se fusionó mientras se cerraba esta).
 - **Fortinet**: el resto de F4, F5 (derates), 17 renovaciones sin precio en la lista firmada y
   co-term. F3 cerrado (PR #56); el heartbeat, dicho para las series con licencia única.
   Del PR #140: la PQC del FortiWiFi 50G-5G-II (las otras diez la llevan desde el PR #146, por
-  «Supported models» de FortiOS 7.6.7, que dice FWF-50G-5G y no FWF-50G-5G-II; revisado el 2026-11-09: sigue sin nombrarlo y no hay una 7.6.8 publicada), el caudal del módem integrado (ninguna ficha lo publica) y las
+  «Supported models» de FortiOS 7.6.7, que dice FWF-50G-5G y no FWF-50G-5G-II; revisado el 2026-11-09: tampoco lo nombran las de 7.6.8, build 3744 con edición del 2026-11-03, ni las de 8.0.2, build 0251, traídas en el PR #163; tres ediciones seguidas dicen FWF-50G-5G, así que no lo cerrarán otras Release Notes sino un documento de Fortinet que diga qué FortiOS corre el FWF-50G-5G-II, su ficha o una respuesta escrita de Fortinet), el caudal del módem integrado (ninguna ficha lo publica) y las
   figuras de las variantes (están en sus fichas por serie).
 
 ### Bloqueado por acceso (se reporta, no se rodea)
@@ -409,7 +416,28 @@ existen los workflows de transporte. Huawei y HPE niegan además el navegador au
 
 ## Mejoras propuestas sin decidir
 
-- **Auditoría de los dimensionadores (2026-11-09): fases 1 a 3** (propuesta al cerrar el PR #150, que hizo la fase 0). Fase 1: trazabilidad (hecha en el PR #153: `datasetVersion` en los ocho dimensionadores con catálogo y las dos filas en «Supuestos»; falta la versión de motor de los demás, que llega con el contrato común), Express 5 (hecho en el PR #156) y archivar el código muerto (hecho en el PR #162, por la opción recomendada, con «Ejecuta pendientes» del dueño del 2026-11-09: `sizing_engine.js`, `presales_api_controller.js`, `plan18` y `SyncLog`, en `docs/archivo/README.md` con el commit para recuperarlos). Fase 2: un contrato común de motor y un corte del BOM por PR (`render()` y `renderBom()` de Aruba pasan de 500 líneas). Fase 3: catálogo en memoria y mayores de dependencias. Evita que la recomendación cambie sin dejar rastro de qué catálogo la produjo. Cuesta un PR por paso; si se hace mal, el contrato común sin las equivalencias de `npm run equivalencia` cambiaría resultados sin que nada lo frene.
+- **La misma firma de `evaluar` en los ocho y una prueba de contrato que la exija** (propuesta al cerrar el PR #171).
+  ADR-1 pide `evaluar(escenario, catalogo, opciones)` con el mismo sobre en todos; Juniper y Nokia ya lo tienen,
+  Cisco (`evaluar(models, p)`), Huawei y MikroTik conservan su firma y Aruba no tiene `evaluar`. Con una envoltura por
+  fabricante (sin tocar las firmas de hoy) una sola prueba recorrería los ocho y exigiría versión, candidatos
+  ordenados, recomendado y apartados: la «batería única» del ADR. Coste: ocho envolturas y una prueba, cada envoltura
+  con su caso de equivalencia. Si se hace mal, una envoltura que reordene los candidatos cambiaría el recomendado.
+- **Un caso de contraste para el fabric 7220 IXR** (propuesta al cerrar el PR #170). Es el único dimensionador que
+  ningún caso conduce: `nokia-fabric-motor.js` y su página salen «sin conducir» en el lock, y un cambio del leaf, el
+  spine o sus cantidades solo lo vería la equivalencia de su corte. Coste: un archivo en `scripts/contrastes/` con
+  escenarios medidos en la pantalla de `main` y el lock regenerado. Si se hace mal, una línea base escrita a ojo daría
+  por buena una respuesta que la pantalla no da.
+- **Dejar pedir un módulo MPIM en Juniper, para que el SRX320 tenga cuándo salir** (propuesta al cerrar el PR #168).
+  Empata con el SRX300 en todas las cifras, y su única diferencia en el catálogo son dos ranuras MPIM (LTE, VDSL…);
+  sin forma de pedir un módulo, el desempate nunca lo recomienda y una sucursal que lo necesita sale con un SRX300
+  que no lo admite. Coste: una casilla y los módulos de la guía de hardware de la línea SRX300, con su documento en
+  `fuentes.js` (sin él no entra ninguno). Si se hace mal, se ofrecería un módulo que el modelo no admite.
+- **Que el modal de accesorios de Aruba no duplique lo que el motor ya pone** (propuesta al cerrar el PR #167). Al
+  elegir en el modal un accesorio que el motor también añade (kit S2N67A del EC-10150 con Boost, una óptica que el
+  builder ya resolvió, la de la interconexión EdgeHA), esa pasada de `renderBom()` cotiza las dos filas; la manual
+  solo se suelta para la siguiente, y un Excel exportado entonces lleva el kit dos veces. Arreglo: calcular primero
+  lo que pone el motor y dejarlo fuera de las filas manuales, en `ArubaReglas.lineasBom`, con
+  `equivalencia-acepta: aruba-bom`. Si se hace mal, una óptica elegida en el modal que el motor no pone desaparecería.
 - **Que `npm run traspasos` cuente las ramas cedidas aparte** (propuesta al cerrar el PR #164). Desde ese PR
   la reserva que pierde una carrera deja su rama con el traspaso «cerrado (cedido…)» en vez de borrarla, porque el
   proxy de git corta a veces el borrado. `traspasos` la sigue listando entre los temas en curso; se diría en una

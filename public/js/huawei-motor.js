@@ -637,5 +637,46 @@
     return Math.round(m) + ' Mbps';
   }
 
-  return { N1_SOLO_ADVANCED, REQUISITOS, estadoRequisito, PLATAFORMAS, TRAFICO, SUPUESTOS, UMBRAL_NGFW_MBPS, CAPAS, PROFILE, PISO_POR_FUNCION, capaEfectiva, evaluar, licencias, piezasBom, opticasBom, ROL_PIEZA, respaldoBidireccional, formulaBidireccional, resumenApartados, ETIQUETA_CUELLO, memoria, fmt };
+  // Sube cuando una misma entrada puede dar otra recomendacion o otra lista; viaja a «Supuestos»
+  // (fase 2 de la auditoria del 2026-11-09, ADR-1).
+  const VERSION_MOTOR = '1.0.0';
+
+  /* LA LISTA DE MATERIALES (fase 2 de la auditoria del 2026-11-09, ADR-1, corte 5). Las filas que
+     filasBom() armaba en la pagina, sin DOM: lo que la pagina calcula (las piezas de piezasBom, las
+     opticas validas de opticasBom, las licencias, el soporte Hi-Care, el termino y el precio de
+     referencia del cotizador) llega en `ctx`. La equivalencia la mide scripts/equivalencias/huawei-bom.js.
+       ctx { m, qty, opticas, piezas, lics, soporte, anios, precioRef, datos: { PARTS, OPTIC_LABEL, CASILLA_REQ } } */
+  function lineasBom(ctx) {
+    const { m, qty, opticas, piezas, lics, anios, precioRef } = ctx;
+    const s = ctx.soporte;
+    const { PARTS, OPTIC_LABEL, CASILLA_REQ } = ctx.datos;
+    const filas=[
+      {cat:'Equipo', desc:m.id, sku:null, qty, unit:precioRef ?? null,
+        nota:`Serie ${m.ser} · ${m.fam} · ${m.ports}`+(precioRef != null ? ' · Precio de referencia estimado del cotizador, sin descuentos ni impuestos.' : '')},
+    ];
+    // H-06: solo lo que se PIDE; lo que es una alternativa va en una sola linea «elegir una»
+    // (sin codigo, marcada por confirmar) y lo condicional o de ampliacion no se cotiza solo.
+    // Lo que hace falta para encender el chasis abre su nota con «Base del chasis» (2026-10-19), para
+    // que el Excel y el texto distingan la configuracion minima de lo que se anade por eleccion.
+    const base = p => (p.base ? `Base del chasis: ${p.base}` : null);
+    piezas.pedir.forEach(p=>{ const c=PARTS[p.codigo];
+      filas.push({cat:'Componentes de hardware', desc:c.sku, sku:c.bom||null, qty:qty*(p.qty||1), unit:null, nota:[base(p), c.d, p.nota].filter(Boolean).join(' · ')}); });
+    piezas.elegir.forEach(g=>filas.push({cat:'Componentes de hardware', desc:`${g.nombre} — elegir una`, sku:null,
+      qty:qty*g.qty, unit:null, nota:[base(g), 'Opciones: '+g.opciones.map(k=>PARTS[k].sku).join(' · '), g.nota].filter(Boolean).join(' · ')}));
+    // H-07: una linea por optica DECLARADA (familia, modelo, cantidad por equipo), con su codigo.
+    opticas.forEach(v => filas.push({cat:'Ópticas', desc:`${OPTIC_LABEL[v.fam] || v.fam} — ${v.o.sku}`,
+      sku:(v.o.bom && v.o.bom.length) ? v.o.bom.join(' / ') : null, qty:v.qty*qty, unit:null,
+      nota:`${v.o.d || ''} · cada extremo del enlace necesita el suyo`}));
+    // SnS ya sale en Soporte: dejarlo tambien como licencia lo cotizaba dos veces.
+    // Huawei no publica lista: ninguna licencia tiene precio, y las que la ficha no codifica (RTU de
+    // capacidad, NCE, la de funcion sin ficha leida) tampoco tienen codigo. Se dice en la linea.
+    lics.filter(l=>l.on && !/^SnS/.test(l.t)).forEach(l=>filas.push({por:CASILLA_REQ[l.req], cat:'Licencias', desc:l.t, sku:l.sku||null, qty, unit:null,
+      nota:[l.d, l.sku ? 'Precio: consultar (Huawei no publica lista)' : 'Sin código en la ficha ni precio de lista: consultar con Huawei o su configurador'].filter(Boolean).join(' · ')}));
+    filas.push({cat:'Soporte', desc:s.n, sku:null, qty, unit:null, nota:`${s.sla} · ${anios * 12} meses`});
+    filas.push({cat:'Soporte', desc:'SnS — Software Subscription and Support', sku:null, qty, unit:null,
+      nota:'Actualizaciones y parches de VRP. Va separada del paquete de hardware. '+(anios * 12)+' meses.'});
+    return filas;
+  }
+
+  return { VERSION_MOTOR, lineasBom, N1_SOLO_ADVANCED, REQUISITOS, estadoRequisito, PLATAFORMAS, TRAFICO, SUPUESTOS, UMBRAL_NGFW_MBPS, CAPAS, PROFILE, PISO_POR_FUNCION, capaEfectiva, evaluar, licencias, piezasBom, opticasBom, ROL_PIEZA, respaldoBidireccional, formulaBidireccional, resumenApartados, ETIQUETA_CUELLO, memoria, fmt };
 });

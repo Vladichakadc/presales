@@ -615,36 +615,10 @@ function renderBom(){
   // cantidad de routers: cada equipo necesita las suyas. La licencia embebida y el soporte de
   // comunidad valen 0, que es su precio de verdad; el contrato con partner y la capacitacion
   // no tienen precio publicado y salen «sin cotizar».
-  const filas=[
-    {cat:'Equipo', desc:m.id, sku:null, qty, unit:m.elpN!=null?m.elpN:null,
-     nota:`${m.seg} · ${m.ports}${m.eol?' · DESCONTINUADO':''}${m.legacy?' · línea anterior':''}`},
-  ];
-  // Los modulos de los enlaces WAN salen solos, del puerto que el motor les asigno en ESTE equipo
-  // (el del BOM, que puede ser el elegido a mano). Se agrupan por SKU; los del selector de abajo
-  // son los adicionales (LAN, uplinks).
-  enlacesBom(m).forEach(x=>filas.push({cat:'Ópticas y cables', desc:x.sku||`Módulo del enlace ${x.ns.join(', ')}`, sku:x.sku||null,
-    qty:x.ns.length*qty, unit:x.sku?x.precio:null,
-    nota:`${x.ns.length>1?'Enlaces':'Enlace'} WAN ${x.ns.join(', ')} → ${x.puertos.join(', ')}${x.d?' · '+x.d:''}${x.kit?' · '+M.NOTA_BIDI:''}${x.sku?'':' · el equipo no figura en la matriz oficial de compatibilidad: módulo a consultar'}`}));
-  optics.forEach(o=>filas.push({cat:'Ópticas y cables', desc:o.optic.sku, sku:o.optic.sku,
-    qty:o.qty*qty, unit:o.optic.price, nota:`Adicional · ${o.optic.d}`}));
-  if(apQty&&ap) filas.push({por:apManual?null:'chkCapsman', cat:'Puntos de acceso', desc:ap.sku, sku:ap.hwModel||null,
-    qty:apQty, unit:ap.price, nota:ap.d});
-  // Fuente de 48 V para el PoE (2026-10-14): si se eligió, es una línea más de la propuesta. MikroTik
-  // no publica su precio aquí: sale «sin cotizar», con la potencia mínima que tiene que dar.
-  if(fuentePoe()==='48'&&$('chkCapsman').checked&&$('chkPoe').checked&&!isChr){
-    const pAp=(APS.find(a=>a.sku===$('apModel').value)||{}).poeDraw||0, nAp=Math.max(0,parseInt($('apCount').value)||0);
-    const base=m.consumoSinAcc;
-    filas.push({por:['chkPoe', 'chkCapsman'], cat:'Alimentación', desc:'Fuente de 48 V para PoE (no incluida en la caja)', sku:null, qty, unit:null,
-      nota:`Al menos ${nAp*pAp}${base!=null?` + ${base}`:''} W (PoE de ${nAp} AP${base!=null?' + consumo del equipo sin accesorios':''}). MikroTik no publica aquí su precio: confirmar con el distribuidor.`});
-  }
-  filas.push({cat:'Licencia', desc:isChr?`Licencia CHR ${m.id.replace('CHR ','')}`:`RouterOS ${lvlTxt(m)} — perpetua`,
-    sku:null, qty, unit:0,
-    nota:isChr?`Incluida en la línea del equipo. Tope de ${fmt(m.fwd)} de subida por interfaz.`
-              :`Incluida en el hardware, sin costo recurrente. ${lic.d||''}`});
-  filas.push({cat:'Soporte', desc:support?support.n:'', sku:null, qty:null, unit:supCode==='sw-basic'?0:null,
-    nota:support?support.sla:''});
-  if($('chkTraining').checked) filas.push({por:'chkTraining', cat:'Capacitación', desc:SUPPORT.training.n, sku:null, qty:null, unit:null,
-    nota:SUPPORT.training.d});
+  // Las filas salen de MikrotikMotor.lineasBom (fase 2 de la auditoría del 2026-11-09, ADR-1): sin DOM.
+  const filas=M.lineasBom({ m, qty, enlaces:enlacesBom(m), optics, ap:{qty:apQty, modelo:ap, manual:apManual},
+    poe:{fuente:fuentePoe(), capsman:$('chkCapsman').checked, poe:$('chkPoe').checked, apModel:$('apModel').value, apCount:$('apCount').value},
+    licencia:lic, nivel:lvlTxt(m), soporte:{support, supCode}, training:$('chkTraining').checked, datos:{APS, SUPPORT} });
 
   const meta={
     titulo:`Lista de materiales — ${m.id}`,
@@ -775,7 +749,7 @@ $('memoriaBtn').addEventListener('click',()=>{
 (async function initApp(){
   const res=await fetch('/api/dimensionador/mikrotik');
   const data=await res.json();
-  if (typeof BOM !== 'undefined' && BOM.fijarCatalogo) BOM.fijarCatalogo(data.datasetVersion);
+  if (typeof BOM !== 'undefined' && BOM.fijarCatalogo) BOM.fijarCatalogo(data.datasetVersion, `mikrotik-motor ${M.VERSION_MOTOR}`);
   // Pendiente 34: el respaldo de ciclo de vida de ESTE fabricante, tal como lo declara
   // `legacyData/fuentes.js` con sus `campos`. Sin el, la ficha dice «el catalogo no trae el
   // ciclo de vida» en vez de afirmar vigencia por omision.

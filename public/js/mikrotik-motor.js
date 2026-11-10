@@ -673,7 +673,60 @@
     return Math.round(v) + ' Mbps';
   }
 
-  return { TRAMAS, TRAMA_DEFECTO, CONFIGS, FIREWALL, CIFRADOS, PERFILES, TUNELES_MEDIDOS,
+  // Sube cuando una misma entrada puede dar otra recomendacion o otra lista; viaja a «Supuestos»
+  // (fase 2 de la auditoria del 2026-11-09, ADR-1).
+  const VERSION_MOTOR = '1.0.0';
+
+  /* LA LISTA DE MATERIALES (fase 2 de la auditoria del 2026-11-09, ADR-1, corte 5). Las filas que
+     renderBom() armaba entre el pintado, sin DOM: la pagina lee lo elegido (opticas adicionales, AP,
+     fuente de PoE, soporte, capacitacion) y calcula los modulos de los enlaces (enlacesBom); todo llega
+     en `ctx`. Las opticas multiplican por la cantidad de routers: cada equipo necesita las suyas. La
+     licencia embebida y el soporte de comunidad valen 0, que es su precio de verdad; el contrato con
+     partner y la capacitacion no tienen precio publicado y salen «sin cotizar». La equivalencia la mide
+     scripts/equivalencias/mikrotik-bom.js.
+       ctx { m, qty, enlaces, optics, ap: { qty, modelo, manual }, poe: { fuente, capsman, poe, apModel, apCount },
+             licencia, nivel, soporte: { support, supCode }, training, datos: { APS, SUPPORT } } */
+  function lineasBom(ctx) {
+    const { m, qty, enlaces, optics, poe, nivel, training } = ctx;
+    const lic = ctx.licencia || {};
+    const { support, supCode } = ctx.soporte || {};
+    const apQty = ctx.ap.qty, ap = ctx.ap.modelo, apManual = ctx.ap.manual;
+    const { APS, SUPPORT } = ctx.datos;
+    const isChr = m.ser === 'CHR';
+    const filas=[
+      {cat:'Equipo', desc:m.id, sku:null, qty, unit:m.elpN!=null?m.elpN:null,
+       nota:`${m.seg} · ${m.ports}${m.eol?' · DESCONTINUADO':''}${m.legacy?' · línea anterior':''}`},
+    ];
+    // Los modulos de los enlaces WAN salen solos, del puerto que el motor les asigno en ESTE equipo
+    // (el del BOM, que puede ser el elegido a mano). Se agrupan por SKU; los del selector de abajo
+    // son los adicionales (LAN, uplinks).
+    enlaces.forEach(x=>filas.push({cat:'Ópticas y cables', desc:x.sku||`Módulo del enlace ${x.ns.join(', ')}`, sku:x.sku||null,
+      qty:x.ns.length*qty, unit:x.sku?x.precio:null,
+      nota:`${x.ns.length>1?'Enlaces':'Enlace'} WAN ${x.ns.join(', ')} → ${x.puertos.join(', ')}${x.d?' · '+x.d:''}${x.kit?' · '+NOTA_BIDI:''}${x.sku?'':' · el equipo no figura en la matriz oficial de compatibilidad: módulo a consultar'}`}));
+    optics.forEach(o=>filas.push({cat:'Ópticas y cables', desc:o.optic.sku, sku:o.optic.sku,
+      qty:o.qty*qty, unit:o.optic.price, nota:`Adicional · ${o.optic.d}`}));
+    if(apQty&&ap) filas.push({por:apManual?null:'chkCapsman', cat:'Puntos de acceso', desc:ap.sku, sku:ap.hwModel||null,
+      qty:apQty, unit:ap.price, nota:ap.d});
+    // Fuente de 48 V para el PoE (2026-10-14): si se eligió, es una línea más de la propuesta. MikroTik
+    // no publica su precio aquí: sale «sin cotizar», con la potencia mínima que tiene que dar.
+    if(poe.fuente==='48'&&poe.capsman&&poe.poe&&!isChr){
+      const pAp=(APS.find(a=>a.sku===poe.apModel)||{}).poeDraw||0, nAp=Math.max(0,parseInt(poe.apCount)||0);
+      const base=m.consumoSinAcc;
+      filas.push({por:['chkPoe', 'chkCapsman'], cat:'Alimentación', desc:'Fuente de 48 V para PoE (no incluida en la caja)', sku:null, qty, unit:null,
+        nota:`Al menos ${nAp*pAp}${base!=null?` + ${base}`:''} W (PoE de ${nAp} AP${base!=null?' + consumo del equipo sin accesorios':''}). MikroTik no publica aquí su precio: confirmar con el distribuidor.`});
+    }
+    filas.push({cat:'Licencia', desc:isChr?`Licencia CHR ${m.id.replace('CHR ','')}`:`RouterOS ${nivel} — perpetua`,
+      sku:null, qty, unit:0,
+      nota:isChr?`Incluida en la línea del equipo. Tope de ${fmt(m.fwd)} de subida por interfaz.`
+                :`Incluida en el hardware, sin costo recurrente. ${lic.d||''}`});
+    filas.push({cat:'Soporte', desc:support?support.n:'', sku:null, qty:null, unit:supCode==='sw-basic'?0:null,
+      nota:support?support.sla:''});
+    if(training) filas.push({por:'chkTraining', cat:'Capacitación', desc:SUPPORT.training.n, sku:null, qty:null, unit:null,
+      nota:SUPPORT.training.d});
+    return filas;
+  }
+
+  return { VERSION_MOTOR, lineasBom, TRAMAS, TRAMA_DEFECTO, CONFIGS, FIREWALL, CIFRADOS, PERFILES, TUNELES_MEDIDOS,
     TIPOS_ENLACE, ROLES, MEDIOS, MAX_ENLACES, MODULOS, NOTA_BIDI, ALCANCE_COBRE_KM,
     configuraciones, evaluar, memoria, maxFeeds, ramParaFeeds, fmt, presupuestoPoe, FUENTE_48,
     normalizarEnlaces, escenariosWan, asignarPuertos, comportamiento, etiquetaEnlace };
