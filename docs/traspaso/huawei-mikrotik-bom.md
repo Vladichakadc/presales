@@ -22,7 +22,7 @@
 
 ## Decisiones y hallazgos
 
-- Reservado pasando por alto los archivos de claude/aruba-lineas-bom, claude/juniper-motor-orden, claude/cisco-lineas-bom, claude/nokia-motores (`--aunque`): rama parada cuyo tema ya está en main.
+- Reservado pasando por alto los archivos de claude/aruba-lineas-bom, claude/juniper-motor-orden, claude/cisco-lineas-bom y claude/nokia-motores (`--aunque`): no son ramas paradas, son los cortes 1 a 4 de esta misma cadena (PR #167 a #170), sobre los que esta rama va apilada; el choque son los archivos de Aruba del #167.
 - La medición de equivalencias vigila `aruba-bom` (por public/js/aruba-reglas.js), `aruba-eleccion` (por public/js/aruba-reglas.js), `aruba-estado` (por public/js/aruba-reglas.js): se corre en cada PR; un cambio a propósito se declara con `equivalencia-acepta: <caso>: <motivo>`.
 
 - <Lo decidido y su porqué; lo medido; lo que no funcionó, para no repetirlo.>
