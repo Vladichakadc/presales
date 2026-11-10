@@ -62,7 +62,7 @@
   },
   "devDependencies": {
     "axe-core": "^4.14.0",
-    "eslint": "^9.39.5",
+    "eslint": "^10.14.0",
     "pdf-parse": "^1.1.4"
   },
   "allowScripts": {
