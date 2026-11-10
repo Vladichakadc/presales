@@ -318,3 +318,52 @@ test('una reserva cuyo tema se cerró en main desde otra rama deja de bloquear; 
     assert.match(vivo.salida, /claude\/tema-x/);
   } finally { fs.rmSync(base, { recursive: true, force: true }); }
 });
+
+// LA SEGUNDA MIRADA EN LA RESERVA NORMAL (2026-11-09, mejora propuesta al cerrar el PR #160): dos sesiones
+// reservaron la misma mejora con temas de nombre distinto y 15 segundos de diferencia (PR #160 y #161).
+test('el traspaso cedido dice «cerrado» y quién reservó antes; un traspaso sin estado lo gana', () => {
+  const t = R.traspasoInicial({ tema: 'x', rama: 'claude/x', archivos: ['a.js'], fecha: '2026-11-09 22:00' });
+  const c = R.traspasoCedido(t, ['claude/y']);
+  assert.match(c, /^- \*\*Estado:\*\* cerrado \(cedido: claude\/y reservó lo mismo antes\)$/m);
+  assert.ok(!/^- \*\*Estado:\*\* reservado$/m.test(c));
+  assert.match(R.traspasoCedido('# Traspaso: x\n', ['claude/y']), /- \*\*Estado:\*\* cerrado/);
+  // `choques` ya no lo cuenta.
+  assert.deepStrictEqual(R.choques(['a.js'], [{ origen: 'claude/x', estado: 'cerrado (cedido: claude/y reservó lo mismo antes)', archivos: ['a.js'] }]), []);
+});
+
+test('dos sesiones que reservan los mismos archivos con temas distintos a la vez: la segunda cede la suya', () => {
+  const { base, clonar } = escenario();
+  try {
+    const a = clonar('sesion-a');
+    const b = clonar('sesion-b');
+    // B mira antes de que A empuje y empuja después: con nombres distintos, GitHub no para nada.
+    sh(b, 'fetch', '-q', 'origin');
+    assert.strictEqual(correr(a, ['tema-a', '--archivos', 'src/x.js']).rc, 0);
+    const tarde = correr(b, ['tema-b', '--archivos', 'src/x.js, src/z.js', '--sin-fetch']);
+    assert.strictEqual(tarde.rc, 1, tarde.salida);
+    assert.match(tarde.salida, /CHOQUE tras empujar: claude\/tema-a \(src\/x\.js\) reservó lo mismo antes/);
+    assert.match(tarde.salida, /claude\/tema-b queda cedida/);
+    sh(b, 'fetch', '-q', 'origin');
+    const cedido = sh(b, 'show', 'origin/claude/tema-b:docs/traspaso/tema-b.md');
+    assert.match(cedido, /- \*\*Estado:\*\* cerrado \(cedido: claude\/tema-a reservó lo mismo antes\)/);
+    assert.match(sh(b, 'show', 'origin/claude/tema-b^:docs/traspaso/tema-b.md'), /- \*\*Estado:\*\* reservado/, 'la reserva queda en la historia');
+    assert.strictEqual(sh(b, 'rev-parse', '--abbrev-ref', 'HEAD').trim(), 'main', 'B no cambia de rama');
+    assert.match(sh(a, 'show', 'origin/claude/tema-a:docs/traspaso/tema-a.md'), /- \*\*Estado:\*\* reservado/, 'la de A sigue');
+    const c = clonar('sesion-c');
+    assert.strictEqual(correr(c, ['tema-c', '--archivos', 'src/z.js', '--comprobar']).rc, 0, 'lo que solo declaraba B vuelve a estar libre');
+    assert.strictEqual(correr(c, ['tema-c', '--archivos', 'src/x.js', '--comprobar']).rc, 1, 'lo de A sigue tomado');
+  } finally { fs.rmSync(base, { recursive: true, force: true }); }
+});
+
+test('la primera en reservar no cede ante la que llega después: lo dice como aviso', () => {
+  const { base, clonar } = escenario();
+  try {
+    const a = clonar('sesion-a');
+    const b = clonar('sesion-b');
+    assert.strictEqual(correr(a, ['tema-a', '--archivos', 'src/x.js']).rc, 0);
+    // B reserva con --aunque (pasa por alto a A): no hay carrera que ceder, y A sigue reservada.
+    const r = correr(b, ['tema-b', '--archivos', 'src/x.js', '--aunque', 'claude/tema-a']);
+    assert.strictEqual(r.rc, 0, r.salida);
+    assert.match(sh(b, 'show', 'origin/claude/tema-b:docs/traspaso/tema-b.md'), /- \*\*Estado:\*\* reservado/);
+  } finally { fs.rmSync(base, { recursive: true, force: true }); }
+});

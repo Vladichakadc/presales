@@ -239,6 +239,36 @@ function empujarReserva(rama, ruta, contenido, mensaje) {
   }
 }
 
+// LA SEGUNDA MIRADA, TAMBIÉN EN LA RESERVA NORMAL (2026-11-09, mejora propuesta al cerrar el PR #160). Dos
+// sesiones con el mismo encargo reservaron la misma mejora con 15 segundos de diferencia (PR #160 y #161):
+// cada una miró antes de que la otra empujara y, como los temas tenían nombres distintos, GitHub no arbitró
+// nada. Tras empujar se vuelve a mirar, con la misma regla que --en-esta-rama (`ganaLaReserva`): la que
+// pierde no borra su rama (borrar ramas remotas lo deniega a veces el proxy de git), la deja CEDIDA: un
+// segundo commit, sin --force, que pone su traspaso en «cerrado (cedido…)». `choques` no cuenta un traspaso
+// cerrado, así que sus archivos vuelven a estar libres, y `npm run traspasos` enseña por qué.
+function cederReserva(rama, ruta, contenido, padre, mensaje) {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'reservar-'));
+  const env = { ...process.env, GIT_INDEX_FILE: path.join(tmp, 'index') };
+  try {
+    git(['read-tree', padre], { env });
+    const blob = git(['hash-object', '-w', '--stdin'], { input: contenido, stdio: ['pipe', 'pipe', 'pipe'] }).trim();
+    git(['update-index', '--add', '--cacheinfo', `100644,${blob},${ruta}`], { env });
+    const arbol = git(['write-tree'], { env }).trim();
+    const commit = git(['commit-tree', arbol, '-p', padre, '-m', mensaje]).trim();
+    git(['push', 'origin', `${commit}:refs/heads/${rama}`]);
+    return commit;
+  } finally {
+    fs.rmSync(tmp, { recursive: true, force: true });
+  }
+}
+// Puro: el traspaso con su estado en «cerrado (cedido…)».
+function traspasoCedido(contenido, ganadoras) {
+  const texto = `cerrado (cedido: ${ganadoras.join(', ')} reservó lo mismo antes)`;
+  return /^- \*\*Estado:\*\* .*$/m.test(contenido)
+    ? contenido.replace(/^- \*\*Estado:\*\* .*$/m, `- **Estado:** ${texto}`)
+    : `${contenido.trimEnd()}\n- **Estado:** ${texto}\n`;
+}
+
 // --en-esta-rama: un commit con el traspaso sobre HEAD, empujado sin --force (si origin/<rama> no es
 // antecesor de HEAD, el push se niega). Solo entra ese archivo: el resto del índice y del árbol, lo que la
 // sesión tenga a medias, se queda como estaba; la rama local avanza y el archivo queda en el índice y en
@@ -354,20 +384,28 @@ function main(argv, opts = {}) {
       : 'Si otra sesión creó la rama a la vez, la reserva es suya: npm run traspasos.');
     return 1;
   }
-  if (o.enEstaRama) {
-    // Tras empujar, se vuelve a mirar: sin la creación de rama, la carrera la decide la reserva más antigua.
-    try { git(['fetch', '--prune', '--quiet', 'origin']); } catch { /* se mira con lo que haya */ }
-    const propia = { rama, fecha: git(['show', '-s', '--format=%cI', commit]).trim() };
-    const rivales = choques(archivos, ocupadosRemotos().ocupados, { ignorar: [...o.aunque, rama] });
-    const antes = rivales.filter((r) => !ganaLaReserva(propia, { rama: r.origen, fecha: r.reservado || r.fecha }));
-    if (antes.length) {
-      const retirada = retirarEnEstaRama(rama, ruta, `Retira la reserva de ${o.tema}: ${antes.map((r) => r.origen).join(', ')} reservó antes`);
-      console.log(`CHOQUE tras empujar: ${antes.map((r) => `${r.origen} (${r.pisa.join(', ')})`).join('; ')} reservó lo mismo antes.`);
+  // Tras empujar, se vuelve a mirar (en las dos formas): la carrera la decide la reserva más antigua.
+  try { git(['fetch', '--prune', '--quiet', 'origin']); } catch { /* se mira con lo que haya */ }
+  const propia = { rama, fecha: git(['show', '-s', '--format=%cI', commit]).trim() };
+  const rivales = choques(archivos, ocupadosRemotos().ocupados, { ignorar: [...o.aunque, rama] });
+  const antes = rivales.filter((r) => !ganaLaReserva(propia, { rama: r.origen, fecha: r.reservado || r.fecha }));
+  if (antes.length) {
+    const quien = antes.map((r) => r.origen);
+    console.log(`CHOQUE tras empujar: ${antes.map((r) => `${r.origen} (${r.pisa.join(', ')})`).join('; ')} reservó lo mismo antes.`);
+    if (o.enEstaRama) {
+      const retirada = retirarEnEstaRama(rama, ruta, `Retira la reserva de ${o.tema}: ${quien.join(', ')} reservó antes`);
       console.log(`Manda la reserva más antigua: se retiró la de ${rama} (${retirada.slice(0, 7)}).`);
-      return 1;
+    } else {
+      try {
+        const cedida = cederReserva(rama, ruta, traspasoCedido(contenido, quien), commit, `Cede la reserva de ${o.tema}: ${quien.join(', ')} reservó antes`);
+        console.log(`Manda la reserva más antigua: ${rama} queda cedida (${cedida.slice(0, 7)}); su traspaso dice «cerrado» y no bloquea.`);
+      } catch (e) {
+        console.log(`Manda la reserva más antigua, pero no se pudo marcar ${rama} como cedida (${String(e.stderr || e.message).trim().split('\n').slice(-1)[0]}): bórrala o ciérrala a mano (git push origin --delete ${rama}).`);
+      }
     }
-    for (const r of rivales) console.log(`AVISO: ${r.origen} declaró ${r.pisa.join(', ')} después; manda esta reserva, la más antigua.`);
+    return 1;
   }
+  for (const r of rivales) console.log(`AVISO: ${r.origen} declaró ${r.pisa.join(', ')} después; manda esta reserva, la más antigua.`);
   console.log(`Reservado: ${rama} (${commit.slice(0, 7)}) con ${ruta}.`);
   if (vigilan.length) console.log(avisoEquivalencias(vigilan));
   if (!o.enEstaRama) console.log(`Para trabajar en él: git fetch origin && git switch ${rama}  (o git switch -c ${rama} --track origin/${rama}).`);
@@ -376,5 +414,5 @@ function main(argv, opts = {}) {
 
 if (require.main === module) process.exitCode = main(process.argv.slice(2));
 
-module.exports = { main, ocupadosRemotos, ganaLaReserva, casosQueVigilan, avisoEquivalencias, normalizarArchivos, solapan, choques, esComun, traspasoInicial, horaBogota, argumentos, diasDesde,
+module.exports = { main, ocupadosRemotos, ganaLaReserva, traspasoCedido, casosQueVigilan, avisoEquivalencias, normalizarArchivos, solapan, choques, esComun, traspasoInicial, horaBogota, argumentos, diasDesde,
   COMUNES_AL_CIERRE, DIAS_PARADA };
