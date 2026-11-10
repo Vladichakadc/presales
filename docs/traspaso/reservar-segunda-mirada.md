@@ -3,28 +3,28 @@
 - **Tema:** npm run reservar vuelve a mirar después de empujar: manda la reserva más antigua también sin --en-esta-rama (propuesta al cerrar el PR #160)
 - **Rama:** claude/reservar-segunda-mirada
 - **Cuenta:** (no consta)
-- **Estado:** reservado
+- **Estado:** en revisión (PR abierto)
 - **Actualizado:** 2026-11-09 23:14
 - **Archivos que toca:** scripts/reservar.js, test/reservar.test.js
-- **Siguiente paso:** empezar: el tema está reservado y todavía no tiene código
+- **Siguiente paso:** CI del PR y commit de cierre
 
 ## Encargo del dueño
 
-<Las palabras del dueño, literales, y lo que se entendió de ellas.>
+«Ejecuta pendientes como arquitecto senior» (2026-11-09): la mejora propuesta al cerrar el PR #160.
 
 ## Hecho
 
-- <Lo terminado, con el commit que lo contiene.>
+- La segunda mirada tras empujar corre también sin `--en-esta-rama`; la que pierde deja su rama cedida (`traspasoCedido`, `cederReserva`).
 
 ## Falta
 
-- <Lo pendiente de este tema, en orden.>
+- Cierre: CLAUDE.md, entrega y relevo.
 
 ## Decisiones y hallazgos
 
 
-- <Lo decidido y su porqué; lo medido; lo que no funcionó, para no repetirlo.>
+- Ceder en vez de borrar la rama: el proxy de git a veces corta el borrado de ramas remotas (pasó hoy con claude/skus-fortinet-variantes).
 
 ## Verificación
 
-- <Qué se corrió (`npm run verificar`, `auditar`, `pantallas`…) y con qué resultado.>
+- `node --test test/reservar.test.js`: 20/20; sin la segunda mirada en la reserva normal, la carrera nueva falla. eslint limpio.
