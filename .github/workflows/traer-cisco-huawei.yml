@@ -58,6 +58,10 @@ on:
         description: 'Rama de transporte de destino (fuente/...). Una rama propia no pisa lo traido antes en fuente/cisco-huawei.'
         required: false
         default: 'fuente/cisco-huawei'
+      buscar:
+        description: 'Expresion a contar antes y ahora en cada documento (opcional), p. ej. FWF-50G-5G-II o MACsec|quantum'
+        required: false
+        default: ''
 
 permissions:
   contents: write
@@ -115,3 +119,41 @@ jobs:
             "
             echo '```'
           } >> "$GITHUB_STEP_SUMMARY"
+
+  # Lo traido, frente a su copia anterior (2026-11-09, scripts/comparar-fuente.js): cada documento de la
+  # rama recien empujada contra el mismo documento en las demas ramas fuente/*. IGUAL, BYTES, TEXTO, NUEVO
+  # o SIN-TEXTO, en anotaciones, que es lo unico de Actions que una sesion lee. Job APARTE y sin
+  # escritura: lee PDF y HTML de fuera, asi que no comparte job con el que empuja; instala del lock sin
+  # dejar que ninguna dependencia ejecute codigo (pdf-parse, para el texto de los PDF) y no guarda el
+  # token. Nunca falla: la corrida va sobre la cabeza de main y Railway espera a sus checks.
+  comparar:
+    needs: traer
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # Todas las ramas: la copia anterior de cada documento vive en otra rama fuente/*.
+          fetch-depth: 0
+          persist-credentials: false
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: package.json
+
+      - run: npm ci --ignore-scripts
+
+      - name: Comparar con la copia anterior
+        env:
+          RAMA: ${{ inputs.rama }}
+          BUSCAR: ${{ inputs.buscar }}
+        run: |
+          [[ "$RAMA" =~ ^fuente/[a-z0-9-]+$ ]] || { echo "rama no valida: $RAMA"; exit 0; }
+          if [ -n "$BUSCAR" ]; then
+            node scripts/comparar-fuente.js "$RAMA" --sin-traer --anotaciones "--buscar=$BUSCAR"
+          else
+            node scripts/comparar-fuente.js "$RAMA" --sin-traer --anotaciones
+          fi

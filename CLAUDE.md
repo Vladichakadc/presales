@@ -299,7 +299,13 @@ carga con `test/transporte-documentos.test.js`—,
 `traer-fortinet-pendientes.yml`, `candidatas-fuentes.yml`…) a ramas `fuente/*` que se leen y se
 descartan, **una por corrida y nunca con `--force` a un nombre fijo** (pisaba la edición anterior); el workflow no da por guardada una pantalla de inicio de sesión (`test/traer-pantalla-login.test.js`),
 y cada entrada HTML declara `debeContener` o `exploracion: true`: lo explorado sale EXPL, no OK
-(`test/traer-exploracion.test.js`).
+(`test/traer-exploracion.test.js`). **Lo traído se compara con `node scripts/comparar-fuente.js <fuente/…>`**
+(2026-11-09, PR #157): cada documento contra su copia anterior en las demás ramas `fuente/*`, IGUAL, BYTES,
+TEXTO —siempre con las líneas que cambian—, NUEVO o SIN-TEXTO (que es «no se sabe»); `--buscar=<regex>`
+cuenta una expresión antes y ahora. Solo lee (`test/comparar-fuente.test.js`). **`traer-cisco-huawei.yml` lo
+corre solo** (job `comparar`, PR #159; entrada `buscar`): deja el recuento en un `::notice` y un `::warning` por
+documento con TEXTO o SIN-TEXTO, que se leen con `gh api …/check-runs/<id>/annotations`. Job aparte del que
+empuja, sin escritura ni token, `npm ci --ignore-scripts`, y nunca falla.
 Huawei (`support.huawei.com`) y HPE (`buy.hpe.com`) niegan además el navegador
 automatizado con Akamai, y eso tampoco se rodea; desde el 2026-10-07 Info-Finder pide iniciar
 sesión, también bajo `support.huawei.com/enterprise/en/info-finder/`, y las páginas estáticas de
@@ -598,7 +604,7 @@ Módulos compartidos:
   Excel, copiar y enviar con un P0, un SKU sin casar o la lista vencida, y el override exige motivo.
   Si el override solo choca con `CICLO_VIDA` (cumple el escenario), su caja ofrece declarar ampliación o
   renovación en un clic (`motivo-ciclo`), que lleva a la justificación sin escribirla.
-  Un SKU nunca se busca con el marcador `-DD`. Figuras desde la página «Hardware» de cada ficha; los ocho FortiWiFi, con su propio dibujo de las fichas FGFWF (`fwf-*.webp`, 2026-11-09, PR #148), nunca el de su FortiGate. **Cada figura está en `scripts/figuras-fortinet.lock.json`** (2026-11-09, PR #149): documento y rama `fuente/*`, página, caja en puntos PDF —medida por correlación con la figura servida, no escrita—, tamaño y huella; `npm run figuras-fortinet` frena una figura sin lock, tocada a mano o de otra página que su pie (`test/figuras-fortinet.test.js`), y `--rehacer` la saca de nuevo de su PDF (Poppler y `cwebp` o Pillow) y dice si la ficha es de otra edición. **El vigía las vigila** (PR #152): cada documento lleva su `url` y `urlDe` (de qué informe de `fuente/*` sale; `fuentes.js` declara esas fichas sin URL y el vigía no las mide), y el job `contrastar_figuras` las baja cada lunes con `--traer`: misma edición, nada; otra, rehace sus figuras y el issue dice IGUAL o DISTINTA; lo que no baja es ERROR.
+  Un SKU nunca se busca con el marcador `-DD`. Figuras desde la página «Hardware» de cada ficha; los ocho FortiWiFi, con su propio dibujo de las fichas FGFWF (`fwf-*.webp`, 2026-11-09, PR #148), nunca el de su FortiGate. **Cada figura está en `scripts/figuras-fortinet.lock.json`** (2026-11-09, PR #149): documento y rama `fuente/*`, página, caja en puntos PDF —medida por correlación con la figura servida, no escrita—, tamaño y huella; `npm run figuras-fortinet` frena una figura sin lock, tocada a mano o de otra página que su pie (`test/figuras-fortinet.test.js`), y `--rehacer` la saca de nuevo de su PDF (Poppler y `cwebp` o Pillow) y dice si la ficha es de otra edición. **El vigía las vigila** (PR #152): cada documento lleva su `url` y `urlDe` (de qué informe de `fuente/*` sale; el vigía solo mide las que tienen entrada en `fuentes.js`), y el job `contrastar_figuras` las baja cada lunes con `--traer`: misma edición, nada; otra, rehace sus figuras y el issue dice IGUAL o DISTINTA; lo que no baja es ERROR. **Cada ficha o guía de hardware que `fuentes.js` cita es una entrada con un solo documento, con URL y estable** (PR #155; once), y entra al lock del vigía con la huella de la copia leída, nunca con la de la primera medición (`test/fuentes-fichas-fortinet.test.js`); y la URL de cada una es la misma en el lock de figuras, por nombre de archivo (PR #158; las coreanas de 100F y 200F, sin figuras, declaradas aparte).
   **HA y FortiGuard** (F3, 2026-10-28): una suscripción por nodo, salvo en activo-pasivo de las
   series que la guía de FortiOS 7.6.6 nombra (`haLicenciaUnica`: 40F, 60F, 70F, 80F, 100F y
   variantes, con su SKU de HA y su heartbeat), que admiten una sola. Con la casilla «Licencia FortiGuard
