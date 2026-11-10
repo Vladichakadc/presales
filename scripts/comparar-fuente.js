@@ -186,6 +186,9 @@ function pintar(fila, o) {
 const TOPE_AVISOS = 9;
 const escaparAnotacion = (t) => String(t).replace(/%/g, '%25').replace(/\r/g, '%0D').replace(/\n/g, '%0A');
 function anotaciones(filas, rama) {
+  // Una rama sin ningún documento no es «nada cambió»: lo más probable es que el transporte empujara a otra
+  // carpeta o con otro nombre, y un «ninguno» en un aviso corriente pasaría por calma. Va como aviso.
+  if (!filas.length) return [`::warning title=comparar-fuente::${escaparAnotacion(`Rama ${rama}: no trae ningún documento que comparar. No es «sin cambios»: no dice nada de lo traído; revisar el transporte.`)}`];
   const recuento = {};
   for (const f of filas) recuento[f.veredicto.estado] = (recuento[f.veredicto.estado] || 0) + 1;
   const orden = ['IGUAL', 'BYTES', 'TEXTO', 'NUEVO', 'SIN-TEXTO'].filter((k) => recuento[k]);

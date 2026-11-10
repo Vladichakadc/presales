@@ -44,6 +44,8 @@ jobs:
   traer:
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    outputs:
+      rama: ${{ steps.rama.outputs.rama }}
 
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -204,3 +206,14 @@ jobs:
             "
             echo '```'
           } >> "$GITHUB_STEP_SUMMARY"
+
+  # Lo traido, frente a su copia anterior (2026-11-09): el workflow reutilizable comparar-fuente.yml. Solo si
+  # el transporte llego a empujar una rama (su salida no esta vacia).
+  comparar:
+    needs: traer
+    if: needs.traer.outputs.rama != ''
+    permissions:
+      contents: read
+    uses: ./.github/workflows/comparar-fuente.yml
+    with:
+      rama: ${{ needs.traer.outputs.rama }}

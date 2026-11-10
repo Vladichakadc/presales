@@ -25,11 +25,20 @@ const DUENOS = new Set(['actions']);
 const FORMA = /^(?<accion>[a-z0-9-]+\/[a-z0-9._-]+)@(?<sha>[0-9a-f]{40}) # (?<version>v\d+\.\d+\.\d+)$/;
 
 // Cada `uses:` de cada workflow, sin los comentarios de línea completa.
+// Los workflows reutilizables del propio repositorio (`uses: ./.github/workflows/<x>.yml`) no son una
+// acción de terceros: son código de este árbol, versionado con el PR. Se declaran aquí con su motivo, y
+// la prueba exige que existan y que expongan `workflow_call`.
+const LOCALES = {
+  './.github/workflows/comparar-fuente.yml': 'el job que compara lo traido con su copia anterior, el mismo para los cuatro transportes (PR #160)',
+};
 const usos = [];
+const locales = [];
 for (const yml of fs.readdirSync(DIR).filter((f) => f.endsWith('.yml'))) {
   fs.readFileSync(path.join(DIR, yml), 'utf8').split('\n').forEach((linea, i) => {
     const m = linea.match(/^\s*(?:- )?uses:\s*(.+?)\s*$/);
-    if (m && !/^\s*#/.test(linea)) usos.push({ donde: `${yml}:${i + 1}`, valor: m[1] });
+    if (!m || /^\s*#/.test(linea)) return;
+    if (m[1].startsWith('./')) locales.push({ donde: `${yml}:${i + 1}`, valor: m[1] });
+    else usos.push({ donde: `${yml}:${i + 1}`, valor: m[1] });
   });
 }
 
@@ -60,6 +69,19 @@ test('solo acciones oficiales de GitHub, y ninguna local que se cuele sin declar
   for (const { donde, valor } of usos) {
     const dueno = valor.split('/')[0];
     assert.ok(DUENOS.has(dueno), `${donde}: «${dueno}» no es un dueño de acciones declarado; decide si entra y añádelo a DUENOS con su motivo`);
+  }
+});
+
+test('un workflow reutilizable local está declarado, existe y se puede llamar', () => {
+  assert.ok(locales.length >= 4, `se esperaban las cuatro llamadas de los transportes y hay ${locales.length}`);
+  for (const { donde, valor } of locales) {
+    assert.ok(LOCALES[valor], `${donde}: «${valor}» no está declarado en LOCALES, con su motivo`);
+    const archivo = path.join(RAIZ, valor);
+    assert.ok(fs.existsSync(archivo), `${donde}: «${valor}» no existe`);
+    assert.match(fs.readFileSync(archivo, 'utf8'), /^on:\n {2}workflow_call:/m, `${valor}: no expone workflow_call`);
+  }
+  for (const declarado of Object.keys(LOCALES)) {
+    assert.ok(locales.some((l) => l.valor === declarado), `${declarado} está declarado y nadie lo llama: quítalo`);
   }
 });
 
