@@ -12,7 +12,7 @@ const { cargar } = require('./ayuda/navegador.js');
 const { MODELS_ROUTER, PLATAFORMAS } = require('../server/seed/legacyData/nokia.js');
 
 // pqc.js va antes, como en la página: el requisito de criptografía post-cuántica (2026-10-27).
-const { NOKIA_SR } = cargar('public/js/pqc.js', 'public/js/dimensionador-nokia-7750sr.js');
+const { NOKIA_SR } = cargar('public/js/pqc.js', 'public/js/nokia-sr-motor.js', 'public/js/dimensionador-nokia-7750sr.js');
 const de = (id) => MODELS_ROUTER.find((m) => m.id === id);
 
 test('el catalogo estructura los 14 modelos que no son fabric, y ninguno inventa densidad', () => {

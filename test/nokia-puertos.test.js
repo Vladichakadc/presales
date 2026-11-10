@@ -18,8 +18,8 @@ const { MODELS, MODELS_ROUTER } = require('../server/seed/legacyData/nokia.js');
 // `ficha.js` va PRIMERO: desde el 2026-09-16 la regla de puertos vive ahi (pendiente 35) y
 // la pagina de Nokia solo la llama. Que esta prueba siga pasando sin tocar una asercion es
 // la mejor senal de que el traslado no cambio la regla, solo su domicilio.
-const { NOKIA_SR } = cargar('public/js/ficha.js', 'public/js/dimensionador-nokia-7750sr.js');
-const { NOKIA_7220 } = cargar('public/js/dimensionador-nokia-7220ixr.js');
+const { NOKIA_SR } = cargar('public/js/pqc.js', 'public/js/ficha.js', 'public/js/nokia-sr-motor.js', 'public/js/dimensionador-nokia-7750sr.js');
+const { NOKIA_7220 } = cargar('public/js/nokia-fabric-motor.js', 'public/js/dimensionador-nokia-7220ixr.js');
 
 const deRouter = (id) => MODELS_ROUTER.find((m) => m.id === id);
 const deFabric = (id) => MODELS.find((m) => m.id === id);

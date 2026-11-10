@@ -592,6 +592,15 @@ Módulos compartidos:
 
 ## Fabricantes: lo que cada uno tiene de propio
 
+**Lo común: cada fabricante tiene un motor** (ADR-1 de la auditoría del 2026-11-10):
+`<fabricante>-motor.js` (Aruba, `aruba-reglas.js`; Nokia, uno por dimensionador), que carga igual en
+Node que en el navegador. **Una regla nueva va al motor, no a la página**, que lee la pantalla y pinta,
+y mover una regla de la página al motor deja su caso en `scripts/equivalencias/`. Cada motor declara
+`VERSION_MOTOR`; la página la pasa a `BOM.fijarCatalogo` y «Supuestos» la enseña en «Versión del
+motor» (`e2e-trazabilidad-catalogo.js`): un Excel dice con qué reglas se hizo, así que se sube al
+cambiar una regla. Donde el motor ordena candidatos, el empate termina en el id natural
+(`localeCompare` numérico), nunca en el orden del catálogo.
+
 - **Fortinet** (`public/js/fortinet-motor.js`, `fortinet-reglas.js`; historia en
   `docs/rediseno-fortinet.md` y `docs/auditoria-fortinet-2026-09-23/`). **Arquitectura aprobada por
   el dueño el 2026-10-07: veredicto GO.** Una sola verdad: `evaluar(escenario, catálogo)` corre en
@@ -785,8 +794,9 @@ Módulos compartidos:
   margen multiplica lo que procesa el equipo (celda de ruteo, IPsec del respaldo, tope de CHR),
   nunca el puerto, que lleva el enlace contratado. Las casillas de los enlaces van en la unidad del
   sitio (el JSON guarda Mbps).
-- **Nokia**: dos dimensionadores — 7750 SR / 7250 IXR (equipo, por plataforma; chasis modulares
-  apartados por densidad) y 7220 IXR (fabric). Capacidad en Gbps; `aMbps()` es el único que lo sabe.
+- **Nokia** (`nokia-sr-motor.js`, `nokia-fabric-motor.js`): dos dimensionadores — 7750 SR / 7250 IXR
+  (equipo, por plataforma; chasis modulares apartados por densidad) y 7220 IXR (fabric,
+  `calcularFabric`). Capacidad en Gbps; `aMbps()` es el único que lo sabe.
 - **Starlink LEO**: motor canónico integrado byte a byte (`starlink-leo-dimensionador/` es la línea
   base para verificar su SHA-256). La hoja servida no es la de la línea base: lleva la piel del
   portal y conserva las variables que el motor escribe en línea (`--red`, `--amber`, `--green`,
