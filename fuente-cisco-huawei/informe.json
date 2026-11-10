@@ -1,0 +1,17 @@
+[
+  {
+    "archivo": "cisco-isr1000-ds.html",
+    "para": "CISCO",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://www.cisco.com/c/en/us/products/collateral/routers/1000-series-integrated-services-routers-isr/datasheet-c78-739512.html",
+        "status": 200,
+        "bytes": 736009,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  }
+]
