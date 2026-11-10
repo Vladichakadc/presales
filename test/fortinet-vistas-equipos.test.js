@@ -25,7 +25,7 @@ const path = require('path');
 
 const RAIZ = path.join(__dirname, '..');
 const VISTAS = JSON.parse(fs.readFileSync(path.join(RAIZ, 'public/data/fortinet-vistas-equipos.json'), 'utf8'));
-const { MODELS } = require('../server/seed/legacyData/fortinet.js');
+const { MODELS, FORTIEXTENDER } = require('../server/seed/legacyData/fortinet.js');
 
 const entradas = Object.entries(VISTAS).filter(([k]) => !k.startsWith('_'));
 
@@ -42,7 +42,9 @@ test('cada foto declarada existe de verdad en el repositorio', () => {
 });
 
 test('cada modelo con foto existe en el catálogo, y ninguno se queda huérfano', () => {
-  const ids = new Set(MODELS.map((m) => m.id));
+  // Los FortiExtender no son filas de MODELS (no se dimensionan como firewall), pero tienen figura
+  // desde el 2026-11-10: valen los de su tabla, `FORTIEXTENDER.modelos`, con la misma regla.
+  const ids = new Set([...MODELS.map((m) => m.id), ...FORTIEXTENDER.modelos.map((x) => x.id)]);
   for (const [modelo] of entradas) {
     assert.ok(ids.has(modelo), `${modelo} tiene foto pero ya no está en el catálogo — la forma de CISCO_EOL_MODELS`);
   }
@@ -57,7 +59,8 @@ test('cada figura declara su procedencia: de qué documento y de qué figura sal
     // tiene que nombrar esa guía, la página y el rótulo literal de la figura.
     if (/^Datasheet/.test(v.fuente)) {
       // La página 7 en los FortiGate; los FortiWiFi 50G-5G-II y 70G-POE se dibujan en la 10 y la 8.
-      assert.match(v.fuente, /p\. \d+ «Hardware»/, `${modelo}: no dice de qué página del datasheet sale`);
+      // La ficha de FortiExtender titula su página «Hardware and Interfaces».
+      assert.match(v.fuente, /p\. \d+ «Hardware(?: and Interfaces)?»/, `${modelo}: no dice de qué página del datasheet sale`);
     } else {
       assert.match(v.fuente, /(QuickStart Guide|System Guide) .*docs\.fortinet\.com/,
         `${modelo}: la procedencia no nombra ni un datasheet ni una guía oficial de hardware`);
