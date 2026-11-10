@@ -143,6 +143,7 @@ npm run reservar    # reserva un tema antes de escribir código: empuja claude/<
 npm run equivalencia # mide main contra la versión nueva de un script de public/js/ (caso en scripts/equivalencias/; exige mutación de control; --todos en cada PR)
 npm run entregas    # las entregas más recientes, de docs/entregas/ (--todas, --n=N; solo lee)
 npm run vigia       # ¿cambió el documento de cada fuente? (hash contra fuentes.lock.json)
+npm run comparar-fuente # una rama fuente/* contra la copia anterior de cada documento: IGUAL, BYTES, TEXTO (con sus líneas), NUEVO o SIN-TEXTO (--buscar=<regex>, --lineas=N; solo lee)
 npm run vigencia    # ¿desapareció algún modelo de Aruba de su guía de pedido oficial?
 npm run candidatas  # grupo de control: distingue el 403 de un fabricante del de un proxy
 npm run datasheets  # PDF oficiales de HPE a public/datasheets/
@@ -299,13 +300,16 @@ carga con `test/transporte-documentos.test.js`—,
 `traer-fortinet-pendientes.yml`, `candidatas-fuentes.yml`…) a ramas `fuente/*` que se leen y se
 descartan, **una por corrida y nunca con `--force` a un nombre fijo** (pisaba la edición anterior); el workflow no da por guardada una pantalla de inicio de sesión (`test/traer-pantalla-login.test.js`),
 y cada entrada HTML declara `debeContener` o `exploracion: true`: lo explorado sale EXPL, no OK
-(`test/traer-exploracion.test.js`). **Lo traído se compara con `node scripts/comparar-fuente.js <fuente/…>`**
+(`test/traer-exploracion.test.js`). **Lo traído se compara con `npm run comparar-fuente -- <fuente/…>`**
 (2026-11-09, PR #157): cada documento contra su copia anterior en las demás ramas `fuente/*`, IGUAL, BYTES,
 TEXTO —siempre con las líneas que cambian—, NUEVO o SIN-TEXTO (que es «no se sabe»); `--buscar=<regex>`
-cuenta una expresión antes y ahora. Solo lee (`test/comparar-fuente.test.js`). **`traer-cisco-huawei.yml` lo
-corre solo** (job `comparar`, PR #159; entrada `buscar`): deja el recuento en un `::notice` y un `::warning` por
-documento con TEXTO o SIN-TEXTO, que se leen con `gh api …/check-runs/<id>/annotations`. Job aparte del que
-empuja, sin escritura ni token, `npm ci --ignore-scripts`, y nunca falla.
+cuenta una expresión antes y ahora. Solo lee (`test/comparar-fuente.test.js`). **Los cuatro transportes lo
+corren solos** (`comparar-fuente.yml`, reutilizable, PR #159 y #160; `traer-cisco-huawei.yml` le pasa además
+`buscar`): deja el recuento en un `::notice` y un `::warning` por documento con TEXTO o SIN-TEXTO —y si la rama
+no trae ningún documento—, que se leen con `gh api …/check-runs/<id>/annotations`. Job aparte del que empuja,
+sin escritura ni token, `npm ci --ignore-scripts`, y nunca falla; un `traer-*.yml` nuevo tiene que llamarlo, y un
+workflow local reutilizable se declara en `LOCALES` (`test/workflows-acciones.test.js`). También se lanza a mano
+sobre una rama que ya existe.
 Huawei (`support.huawei.com`) y HPE (`buy.hpe.com`) niegan además el navegador
 automatizado con Akamai, y eso tampoco se rodea; desde el 2026-10-07 Info-Finder pide iniciar
 sesión, también bajo `support.huawei.com/enterprise/en/info-finder/`, y las páginas estáticas de

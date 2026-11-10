@@ -1,0 +1,82 @@
+name: comparar-fuente
+
+# Lo traido por un transporte, frente a su copia anterior (scripts/comparar-fuente.js): cada documento
+# de una rama fuente/* contra el mismo documento en las demas. IGUAL, BYTES, TEXTO, NUEVO o SIN-TEXTO,
+# en anotaciones, que es lo unico de Actions que una sesion lee:
+#   gh api repos/<owner>/<repo>/check-runs/<id del job>/annotations
+#
+# UN SOLO SITIO PARA LOS CUATRO TRANSPORTES (2026-11-09). Nacio como un job de traer-cisco-huawei.yml
+# (PR #159). Los otros tres (traer-fortinet-pendientes, traer-fortinet-matrix, traer-juniper-matrix)
+# empujaban a su rama y no decian que habia cambiado, y copiar el job tres veces era tener cuatro
+# versiones de su aislamiento. Cada transporte lo llama con `uses:` despues de empujar, pasandole su rama.
+#
+# AISLAMIENTO. Lee PDF y HTML de fuera, asi que no comparte job con el que empuja: solo lectura del
+# repositorio, sin guardar el token, e instala del lock sin dejar que ninguna dependencia ejecute
+# codigo (pdf-parse, para el texto de los PDF). NUNCA FALLA: la corrida va sobre la cabeza de main y
+# Railway espera a sus checks; lo que no se puede comparar se dice en un aviso.
+#
+# A MANO (workflow_dispatch): vuelve a comparar una rama fuente/* que ya existe, por ejemplo con otra
+# expresion en `buscar`, sin volver a traer nada.
+
+on:
+  workflow_call:
+    inputs:
+      rama:
+        description: 'Rama de transporte recien empujada (fuente/...)'
+        required: true
+        type: string
+      buscar:
+        description: 'Expresion a contar antes y ahora en cada documento (opcional)'
+        required: false
+        default: ''
+        type: string
+  workflow_dispatch:
+    inputs:
+      rama:
+        description: 'Rama de transporte que comparar (fuente/...)'
+        required: true
+        type: string
+      buscar:
+        description: 'Expresion a contar antes y ahora en cada documento (opcional), p. ej. MACsec|quantum'
+        required: false
+        default: ''
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  comparar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # Todas las ramas: la copia anterior de cada documento vive en otra rama fuente/*.
+          fetch-depth: 0
+          persist-credentials: false
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: package.json
+
+      - run: npm ci --ignore-scripts
+
+      - name: Comparar con la copia anterior
+        env:
+          RAMA: ${{ inputs.rama }}
+          BUSCAR: ${{ inputs.buscar }}
+        run: |
+          # La rama llega de otro workflow o de un formulario: solo se acepta una rama de transporte.
+          if ! [[ "$RAMA" =~ ^fuente/[a-z0-9-]+$ ]]; then
+            echo "::warning title=comparar-fuente::Rama no valida, no se comparo nada: se espera fuente/<nombre>."
+            exit 0
+          fi
+          if [ -n "$BUSCAR" ]; then
+            node scripts/comparar-fuente.js "$RAMA" --sin-traer --anotaciones "--buscar=$BUSCAR"
+          else
+            node scripts/comparar-fuente.js "$RAMA" --sin-traer --anotaciones
+          fi
