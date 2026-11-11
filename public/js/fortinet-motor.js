@@ -49,7 +49,8 @@
   // 7.3.0 (2026-11-10): FortiOS 8.0 (8.0.2) en `software.fortiOS`: modelos soportados por la rama (`FORTIOS_MODELO`),
   // modo túnel SSL-VPN retirado e inspección proxy fuera de los modelos de 2 GB. El PR #166 lo trajo sin subir la versión.
   // 7.4.0 (2026-11-11): todos los FortiExtender de la ficha y la guía de pedido; los de vehículo y exterior compiten solo
-  // al pedirlos (`fisico.celularEntorno`) y el 200F, sin módem, se aparta siempre.
+  // al pedirlos (`fisico.celularEntorno`) y el 200F, sin módem, se aparta siempre. Y los topes por versión (`porVersion`):
+  // con FortiOS 8.0, los FortiSwitch gestionados y los vecinos BGP que da su Maximum Values Table.
   const VERSION_MOTOR = '7.4.0';
   const ESQUEMA = 1;
   // Encapsulacion ESP sobre la fraccion que viaja por el overlay. Supuesto de la herramienta,
@@ -525,6 +526,31 @@
   const versionDe = (s, fortios) => ((fortios && fortios.versiones) || []).find((v) => v.id === s.software.fortiOS) || null;
   // El codigo con que las Release Notes nombran un equipo: su SKU de hardware, sin el codigo regional.
   const codigoRn = (m) => (m.hwSku ? String(m.hwSku).replace(/-\[RC\]$/, '') : `FG-${String(m.id).replace('FortiGate ', '')}`);
+  /* Lo que la tabla oficial de una version da distinto para un modelo (`m.porVersion[<version>]`,
+     fortinet.js: hoy la Maximum Values Table de FortiOS 8.0.2). Devuelve el modelo con esas cifras
+     y `versionAplicada`, que dice que cambio y de que documento sale; sin dato para la version, el
+     mismo objeto. Un vecino BGP por version solo rellena un hueco: nunca pisa el de la 7.6.7. */
+  function conVersion(m, version) {
+    const v = m && m.porVersion && version ? m.porVersion[version] : null;
+    if (!v) return m;
+    const x = { ...m };
+    const cambios = [];
+    const metodoDe = {};
+    if (v.switches != null && v.switches !== m.switches) {
+      x.switches = v.switches;
+      metodoDe.switches = `switch-controller.managed-switch (${v.fuente})`;
+      cambios.push(`${v.switches} FortiSwitch gestionados${v.switchesAntes != null ? ` (con 7.6, ${v.switchesAntes})` : ''}`);
+    }
+    if (v.bgpPeers != null && m.bgpPeers == null) {
+      x.bgpPeers = v.bgpPeers; x.bgpDe = v.bgpDe || null;
+      metodoDe.bgpPeers = `router.bgp:neighbor (${v.fuente})`;
+      cambios.push(`${v.bgpPeers} vecinos BGP (la tabla de 7.6.7 no lista este modelo)`);
+    }
+    if (!cambios.length) return m;
+    x.versionAplicada = { version, fuente: v.fuente, cambios };
+    x.metodoDe = metodoDe;
+    return x;
+  }
   /* ¿Las Release Notes de la version elegida nombran el modelo? `null` si la rama no trae lista (no se
      sabe, y no se frena); si la trae, que no este es un hecho del documento, no una deduccion. */
   function soportadoEnVersion(m, s, fortios) {
@@ -740,9 +766,10 @@
   function evaluar(entrada, catalogo, opciones) {
     const cat = catalogo || {};
     const o = opciones || {};
-    const modelos = cat.models || [];
     const norm = normalizar(entrada, cat);
     const s = norm.snapshot;
+    // Los topes que su tabla oficial da distintos en la versión elegida (`porVersion`, hoy FortiOS 8.0).
+    const modelos = (cat.models || []).map((m) => conVersion(m, s.software.fortiOS));
     const res = {
       motor: VERSION_MOTOR, esquema: ESQUEMA, datasetVersion: cat.datasetVersion || null,
       scenarioHash: huella(s), snapshot: s,
@@ -1113,6 +1140,10 @@
     }
     const vFortiOS = versionDe(s, cat.fortios);
     if (vFortiOS && vFortiOS.supuesto) sup.push(vFortiOS.supuesto);
+    const mSel = res.seleccion && res.seleccion.modelo;
+    if (mSel && mSel.versionAplicada) {
+      sup.push(`${vFortiOS ? vFortiOS.n : `FortiOS ${mSel.versionAplicada.version}`} en ${mSel.id}: ${mSel.versionAplicada.cambios.join(' y ')} (${mSel.versionAplicada.fuente}).`);
+    }
     if (s.fisico.celular) sup.push('WAN celular: la categoría LTE o 5G del módem es un máximo de la tecnología, no un caudal garantizado; depende de la cobertura del operador en el sitio.');
     sup.push(`Encapsulación ESP del ${Math.round(OVERHEAD_ESP * 100)} % sobre la fracción que viaja por el overlay (supuesto de la herramienta, no una cifra de Fortinet).`);
     if (s.escala.sesionesPorUsuario && !s.escala.cpsMedido) sup.push(`Sesiones nuevas por segundo derivadas de una vida media de sesión de ${s.escala.vidaSesionS} s.`);
@@ -1138,7 +1169,7 @@
 
   return {
     VERSION_MOTOR, ESQUEMA, OVERHEAD_ESP, TIPOS_PUERTO, TIPOS_WAN, POR_DEFECTO, REGLAS, ACCIONES,
-    sha256, canon, huella, normalizar, escenariosTrafico, compatibilidad, soportadoEnVersion, sslvpnRetirada, asignarPuertos,
+    sha256, canon, huella, normalizar, escenariosTrafico, compatibilidad, soportadoEnVersion, conVersion, sslvpnRetirada, asignarPuertos,
     evaluar, permite,
   };
 }));

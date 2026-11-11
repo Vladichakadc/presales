@@ -802,6 +802,63 @@ for (const m of MODELS) {
 // cotiza (FG-80F / FG-81F) no tiene PoE. El rotulo era un dato falso con pinta de cierto.
 for (const m of MODELS) if (/^FortiGate 8[01]F$/.test(m.id)) m.seg=m.seg.replace(/\s*\+\s*PoE/i,'');
 
+// ── LA «MAXIMUM VALUES TABLE» DE FORTIOS 8.0.2 (2026-11-11, mejora propuesta al cerrar el PR #166) ──
+// La misma API que la de 7.6.7, con los mismos 56 modelos y `version=8.0.2`, traida por
+// `traer-cisco-huawei.yml` (corrida 43099163600, rama fuente/fex-fortios8-2026-11-11,
+// fortinet-mvt-8.0.2.json). La respuesta cambio de forma (una fila por objeto con `instance`,
+// `vdom` y `global` por columna) y se comparo con la de 7.6.7 por programa, columna a columna:
+//
+//   · `firewall.policy`, `vpn.ipsec.phase1` y `router.bgp:neighbor` (ambito global) dan EXACTAMENTE
+//     lo mismo que en 7.6.7 en las 50 columnas que las dos listan. Los topes que el catalogo ya
+//     aplica valen tambien para 8.0: no hay nada que cambiar en ellos, y se dice en el supuesto.
+//   · 400G/401G, 3000G/3001G y 3500G/3501G, que la tabla de 7.6.7 imprimia con «-», en 8.0.2 SI
+//     estan: 1.000, 13.000 y 13.000 vecinos BGP. Sus dos anclas casan con el catalogo.
+//   · `switch-controller.managed-switch` sube en tres bases: 50G de 8 a 16, 200G de 64 a 96 y
+//     2600F de 196 a 300 (la guia «New Features» de 8.0 lo titula «Increase number of supported
+//     switches»). El 7.6.7 de la misma tabla daba 8, 64 y 196, que es lo que el catalogo trae.
+//
+// Va aqui, tras los limites de plataforma, porque una de sus comprobaciones lee `switches`.
+// Por eso esto NO pisa los campos del modelo: es un dato POR VERSION (`m.porVersion['8.0']`), y el
+// motor lo aplica solo cuando el escenario elige FortiOS 8.0. Con 7.6, el equipo sigue con lo suyo.
+// Mismo doble anclaje que arriba, comprobado al cargar; las variantes con disco lo heredan por
+// `hermanasDe` (la respuesta da lo mismo en 51G, 201G, 401G, 2601F, 3001G y 3501G).
+//
+// LO QUE NO SE TOMA:
+//   - 3800G: sigue dando 200.000 politicas frente a las 400.000 del Product Matrix. Un ancla
+//     contradice, como en 7.6.7: no se aplica.
+//   - Lo que la tabla de 8.0.2 da distinto del Product Matrix sin que conste que cambio con la
+//     version: `Max Virtual Domains` (60F 5 frente a 10; 200F 25 frente a 10; 400G 25 frente a 50;
+//     1800F 500 frente a 250) y los FortiSwitch del 400G (48 frente a 96). La fila de VDOM es nueva
+//     en la respuesta y el 400G no estaba en 7.6.7: no hay con que saber si es la version o una
+//     errata de uno de los dos documentos. Queda apuntado en RELEVO.md; manda el Product Matrix.
+const MVT8_FUENTE='Maximum Values Table, FortiOS 8.0.2';
+const MVT8_LIMITES={
+  '50G':   {switches:16,     antes:{switches:8},   ancla:{policies:2000,   tunGw:200}},
+  '200G':  {switches:96,     antes:{switches:64},  ancla:{policies:10000,  tunGw:2000}},
+  '2600F': {switches:300,    antes:{switches:196}, ancla:{policies:100000, tunGw:20000}},
+  '400G':  {bgpPeers:1000,   antes:{bgpPeers:null}, ancla:{policies:30000,  tunGw:2000}},
+  '3000G': {bgpPeers:13000,  antes:{bgpPeers:null}, ancla:{policies:200000, tunGw:40000}},
+  '3500G': {bgpPeers:13000,  antes:{bgpPeers:null}, ancla:{policies:200000, tunGw:40000}},
+};
+for (const [base, fila] of Object.entries(MVT8_LIMITES)) {
+  const m=MODELS.find((x)=>bareId(x.id)===base);
+  if (!m) { console.warn(`[fortinet] MVT8_LIMITES declara "${base}" y no hay tal modelo`); continue; }
+  // Tres comprobaciones: las dos anclas, y que el catalogo siga trayendo lo que la tabla de 7.6.7
+  // daba (`antes`). Si el catalogo ya cambio esa cifra, la diferencia por version deja de constar.
+  const discrepan=Object.entries({...fila.ancla, ...fila.antes}).filter(([k,v])=>m[k]!==v);
+  if (discrepan.length) {
+    console.warn(`[fortinet] la ${MVT8_FUENTE} ya no casa con el catalogo en ${base} (${discrepan.map(([k])=>k).join(', ')}): no se aplica.`);
+    continue;
+  }
+  for (const h of [m].concat(hermanasDe(m))) {
+    const de={modelo:base, fuente:MVT8_FUENTE+(h===m?'':' (variante del mismo silicio)')};
+    const v={fuente:de.fuente};
+    if (fila.switches!=null) { v.switches=fila.switches; v.switchesAntes=fila.antes.switches; }
+    if (fila.bgpPeers!=null) { v.bgpPeers=fila.bgpPeers; v.bgpDe=de; }
+    h.porVersion={...(h.porVersion||{}), '8.0':v};
+  }
+}
+
 /* ── COMPATIBILIDAD FortiOS × FUNCION × MODELO (hallazgo P0 F02 del 23-sep) ─────────────
    La pagina aceptaba SSL-VPN en modo tunel sin preguntar la version de FortiOS y recomendaba
    un 90G con sus 200 usuarios publicados. Tres reglas, y cada una con su procedencia REAL:
@@ -871,7 +928,24 @@ const FORTIOS={
     {id:'8.0',         n:'FortiOS 8.0 (8.0.2)',
      soportados:RN802_SOPORTADOS,
      soportadosFuente:`${RN802}, pp. 6-7, «Supported models» y «FortiGate 6000 and 7000 support»`,
-     supuesto:'FortiOS 8.0: las cifras de rendimiento y los topes de configuración (vecinos BGP, políticas, túneles) son los del Product Matrix y la Maximum Values Table de FortiOS 7.6.7; la tabla de 8.0 no se ha traído. De 8.0.2 se aplican sus modelos soportados, el retiro del modo túnel SSL-VPN y el límite de las funciones proxy en los modelos de 2 GB.'},
+     supuesto:'FortiOS 8.0: las cifras de rendimiento son las del Product Matrix, que no las da por versión. Los topes de configuración se contrastaron con la Maximum Values Table de FortiOS 8.0.2: políticas, túneles IPsec y vecinos BGP son los mismos que en 7.6.7; cambian los FortiSwitch gestionados de las series 50G, 200G y 2600F y aparecen los vecinos BGP de 400G, 3000G y 3500G, y esas cifras se aplican solo con esta versión. De las Release Notes de 8.0.2 se aplican sus modelos soportados, el retiro del modo túnel SSL-VPN y el límite de las funciones proxy en los modelos de 2 GB.',
+     // Lo nuevo de la rama que toca lo que esta herramienta dimensiona: los TÍTULOS de la guía
+     // «New Features» de FortiOS 8.0 (índice por versión, traído el 2026-11-11 a la rama
+     // fuente/fex-fortios8-2026-11-11), con la versión en que entra cada uno. Son para leer, con su
+     // enlace: ninguno cambia una cifra ni una regla del motor, porque el índice no trae el detalle.
+     novedades:{
+       fuente:'FortiOS 8.0 New Features (docs.fortinet.com), índice por versión',
+       url:'https://docs.fortinet.com/document/fortigate/8.0.0/new-features',
+       lista:[
+         {titulo:'Increase number of supported switches', desde:'8.0.0', es:'Más FortiSwitch gestionados en algunos modelos (aplicado: 50G, 200G y 2600F, de la Maximum Values Table)'},
+         {titulo:'FortiExtender integration with SD-WAN', desde:'8.0.1', es:'El FortiExtender se integra con SD-WAN'},
+         {titulo:'GUI support for 5G modem management', desde:'8.0.1', es:'Gestión del módem 5G desde la interfaz'},
+         {titulo:'Signature authentication for VPNs using Post Quantum Cryptography', desde:'8.0.0', es:'Autenticación por firma poscuántica en las VPN'},
+         {titulo:'TLS 1.3 based VPN over TCP', desde:'8.0.0', es:'VPN sobre TCP con TLS 1.3'},
+         {titulo:'GPON support for FortiGates with SFP/SFP+ ports', desde:'8.0.0', es:'GPON en los FortiGate con puertos SFP/SFP+'},
+         {titulo:'Stop packet duplication upon reaching bandwidth utilization threshold', desde:'8.0.0', es:'La duplicación de paquetes de SD-WAN se detiene al llegar a un umbral de uso'},
+         {titulo:'Support BGP large communities', desde:'8.0.1', es:'Comunidades grandes de BGP'},
+       ]}},
   ],
   porDefecto:'7.6.3+',
   reglas:[
@@ -1436,4 +1510,4 @@ for (const x of FORTIEXTENDER.modelos) {
 }
 
 module.exports = { EOL_ANNOUNCED, MODELS, BUNDLES, CARE, LICENSES, HW_SKU, FUNCIONES, SERVICIOS_SDWAN, SDWAN_SERVICIO, EMS_LICENCIAS, SASE_USUARIOS, TERMINOS, MATRIX_LIMITES,
-  FICHAS_LIMITES, MATRIX_PLATAFORMA, FICHAS_PLATAFORMA, PUERTOS, FORTIOS, REANCLAJE, MVT_LIMITES, FORTIEXTENDER };
+  FICHAS_LIMITES, MATRIX_PLATAFORMA, FICHAS_PLATAFORMA, PUERTOS, FORTIOS, REANCLAJE, MVT_LIMITES, MVT8_LIMITES, FORTIEXTENDER };

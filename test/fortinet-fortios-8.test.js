@@ -112,7 +112,8 @@ test('lo que 8.0.2 no documenta se dice: cifras y topes de 7.6, en los supuestos
   const r = ev(esc({ software: { fortiOS: '8.0' } }));
   const sup = r.supuestos.find((x) => /^FortiOS 8\.0:/.test(x));
   assert.ok(sup, r.supuestos.join(' | '));
-  assert.match(sup, /Maximum Values Table de FortiOS 7\.6\.7; la tabla de 8\.0 no se ha traído/);
+  assert.match(sup, /se contrastaron con la Maximum Values Table de FortiOS 8\.0\.2: políticas, túneles IPsec y vecinos BGP son los mismos que en 7\.6\.7/);
+  assert.match(sup, /cifras de rendimiento son las del Product Matrix, que no las da por versión/);
   // Mismo equipo y mismas cifras que con 7.6.3+ en un escenario que 8.0 no restringe.
   const r76 = ev(esc());
   assert.strictEqual(r.recomendacion.modelo.id, r76.recomendacion.modelo.id);
@@ -127,10 +128,97 @@ test('la página nombra las mismas ramas sin SSL-VPN que las reglas del catálog
   assert.deepStrictEqual(enPagina, enReglas);
 });
 
+// LA MAXIMUM VALUES TABLE DE FORTIOS 8.0.2 (2026-11-11, mejora propuesta al cerrar el PR #166). Lo que
+// su tabla da distinto de la de 7.6.7 se aplica SOLO con FortiOS 8.0, y con el mismo doble anclaje.
+const mod = (id) => F.MODELS.find((m) => m.id === `FortiGate ${id}`);
+const en = (r, id) => [r.recomendacion, ...(r.elegibles || []), ...(r.candidatos || [])].map((c) => c && c.modelo).find((m) => m && m.id === `FortiGate ${id}`)
+  || (r.descartados || []).map((d) => d.modelo).find((m) => m.id === `FortiGate ${id}`);
+
+test('MVT 8.0.2: son doce modelos, cada fila ancla con el catálogo y no pisa los campos de 7.6', () => {
+  const con = F.MODELS.filter((m) => m.porVersion && m.porVersion['8.0']).map((m) => m.id.replace('FortiGate ', '')).sort();
+  assert.deepStrictEqual(con, ['200G', '201G', '2600F', '2601F', '3000G', '3001G', '3500G', '3501G', '400G', '401G', '50G', '51G']);
+  for (const [base, fila] of Object.entries(F.MVT8_LIMITES)) {
+    const m = mod(base);
+    for (const [k, v] of Object.entries({ ...fila.ancla, ...fila.antes })) assert.strictEqual(m[k], v, `${base}.${k}`);
+    assert.match(m.porVersion['8.0'].fuente, /^Maximum Values Table, FortiOS 8\.0\.2/);
+  }
+  // Lo de 7.6 sigue en el modelo: el dato de 8.0 va aparte.
+  assert.strictEqual(mod('50G').switches, 8);
+  assert.strictEqual(mod('200G').switches, 64);
+  assert.strictEqual(mod('2600F').switches, 196);
+  assert.strictEqual(mod('400G').bgpPeers, null);
+  // El 3800G no entra: su ancla de políticas contradice al Product Matrix, como en 7.6.7.
+  assert.ok(!mod('3800G').porVersion);
+  // Las variantes (FortiWiFi, con módem) no heredan un tope que la tabla no les da.
+  assert.ok(F.MODELS.filter((m) => m.variante).every((m) => !m.porVersion));
+});
+
+test('conVersion: con 8.0 cambia la cifra y dice de dónde; con 7.6, el mismo objeto', () => {
+  const m50 = mod('50G');
+  assert.strictEqual(M.conVersion(m50, '7.6.3+'), m50);
+  assert.strictEqual(M.conVersion(m50, undefined), m50);
+  const x = M.conVersion(m50, '8.0');
+  assert.strictEqual(x.switches, 16);
+  assert.strictEqual(m50.switches, 8, 'el catálogo no se toca');
+  assert.deepStrictEqual(x.versionAplicada, { version: '8.0', fuente: 'Maximum Values Table, FortiOS 8.0.2', cambios: ['16 FortiSwitch gestionados (con 7.6, 8)'] });
+  const g = M.conVersion(mod('3000G'), '8.0');
+  assert.strictEqual(g.bgpPeers, 13000);
+  assert.deepStrictEqual(g.bgpDe, { modelo: '3000G', fuente: 'Maximum Values Table, FortiOS 8.0.2' });
+  // Un modelo sin dato por versión, igual en las dos.
+  assert.strictEqual(M.conVersion(mod('100F'), '8.0'), mod('100F'));
+});
+
+const fila = (r, id) => [...(r.candidatos || []), ...(r.descartados || [])].find((c) => c.modelo.id === `FortiGate ${id}`);
+const ejeDe = (r, id, k) => fila(r, id).eval.ejes.find((x) => x.k === k);
+
+test('FortiSwitch gestionados: 12 caben en un 50G con FortiOS 8.0 y no con 7.6', () => {
+  const e = (ver) => ev(esc({ escala: { fortiSwitches: 12 }, ...(ver ? { software: { fortiOS: ver } } : {}) }));
+  const r76 = e();
+  const r80 = e('8.0');
+  assert.strictEqual(ejeDe(r76, '50G', 'switches').cap, 8);
+  assert.strictEqual(ejeDe(r76, '50G', 'switches').estado, 'excede');
+  assert.match(ejeDe(r76, '50G', 'switches').metodo, /Product Matrix/);
+  assert.strictEqual(ejeDe(r80, '50G', 'switches').cap, 16);
+  assert.strictEqual(ejeDe(r80, '50G', 'switches').estado, 'ok');
+  assert.strictEqual(ejeDe(r80, '50G', 'switches').metodo, 'switch-controller.managed-switch (Maximum Values Table, FortiOS 8.0.2)');
+  // Un modelo sin cambio en la tabla sigue con el mismo tope y el mismo método en las dos versiones.
+  assert.strictEqual(ejeDe(r80, '100F', 'switches').cap, ejeDe(r76, '100F', 'switches').cap);
+  assert.match(ejeDe(r80, '100F', 'switches').metodo, /Product Matrix/);
+  // Elegido el 50G a mano con 8.0, los supuestos dicen qué cambió y de dónde sale.
+  const man = ev(esc({ escala: { fortiSwitches: 12 }, software: { fortiOS: '8.0' }, seleccion: { manual: 'FortiGate 50G' } }));
+  assert.strictEqual(man.seleccion.modelo.id, 'FortiGate 50G');
+  assert.ok(man.supuestos.some((x) => x === 'FortiOS 8.0 (8.0.2) en FortiGate 50G: 16 FortiSwitch gestionados (con 7.6, 8) (Maximum Values Table, FortiOS 8.0.2).'), man.supuestos.join(' | '));
+  assert.ok(!r76.supuestos.some((x) => /FortiSwitch gestionados \(con 7\.6/.test(x)));
+});
+
+test('vecinos BGP: el 400G tiene tope con FortiOS 8.0 (1.000) y sigue sin dato con 7.6', () => {
+  const e = (ver) => ev(esc({ escala: { bgpPeers: 500 }, ...(ver ? { software: { fortiOS: ver } } : {}) }));
+  const r80 = e('8.0');
+  assert.strictEqual(ejeDe(r80, '400G', 'bgpPeers').cap, 1000);
+  assert.strictEqual(ejeDe(r80, '400G', 'bgpPeers').metodo, 'router.bgp:neighbor (Maximum Values Table, FortiOS 8.0.2)');
+  assert.strictEqual(fila(r80, '400G').modelo.bgpDe.fuente, 'Maximum Values Table, FortiOS 8.0.2');
+  const r76 = e();
+  assert.strictEqual(ejeDe(r76, '400G', 'bgpPeers').cap, null, 'con 7.6 la tabla no lista el 400G: sin dato, no con el de 8.0');
+  // Donde la tabla de 7.6.7 ya daba la cifra, 8.0 no la toca.
+  assert.strictEqual(ejeDe(r80, '200G', 'bgpPeers').cap, 1000);
+  assert.match(ejeDe(r80, '200G', 'bgpPeers').metodo, /FortiOS 7\.6\.7/);
+});
+
+test('las novedades de la rama son títulos de su guía, con versión y enlace, y no cambian ninguna cifra', () => {
+  const n = V8.novedades;
+  assert.match(n.url, /^https:\/\/docs\.fortinet\.com\/document\/fortigate\/8\.0\.0\/new-features$/);
+  assert.ok(n.lista.length >= 6);
+  for (const x of n.lista) {
+    assert.match(x.desde, /^8\.0\.[01]$/, x.titulo);
+    assert.ok(x.titulo && x.es, x.titulo);
+  }
+  assert.ok(F.FORTIOS.versiones.filter((v) => v.id !== '8.0').every((v) => !v.novedades));
+});
+
 test('la versión del motor se subió con las reglas de 8.0, y su última nota es la de la versión declarada', () => {
   const M = require('../public/js/fortinet-motor.js');
   const [mayor, menor] = M.VERSION_MOTOR.split('.').map(Number);
-  assert.ok(mayor > 7 || (mayor === 7 && menor >= 3), `VERSION_MOTOR ${M.VERSION_MOTOR}: las reglas de FortiOS 8.0 entraron con la 7.3.0`);
+  assert.ok(mayor > 7 || (mayor === 7 && menor >= 4), `VERSION_MOTOR ${M.VERSION_MOTOR}: las reglas de FortiOS 8.0 entraron con la 7.3.0 y sus topes con la 7.4.0`);
   const js = fs.readFileSync(path.join(__dirname, '..', 'public', 'js', 'fortinet-motor.js'), 'utf8');
   const notas = [...js.matchAll(/^\s*\/\/ (\d+\.\d+\.\d+) \(\d{4}-\d{2}-\d{2}\):/gm)].map((x) => x[1]);
   assert.strictEqual(notas[notas.length - 1], M.VERSION_MOTOR, 'la última nota de versión no es la de VERSION_MOTOR');
