@@ -126,3 +126,12 @@ test('la página nombra las mismas ramas sin SSL-VPN que las reglas del catálog
   const enReglas = [...new Set(F.FORTIOS.reglas.filter((r) => r.funcion === 'sslvpn' && r.modelos === '*' && r.estado === 'retirada').flatMap((r) => r.versiones))].sort();
   assert.deepStrictEqual(enPagina, enReglas);
 });
+
+test('la versión del motor se subió con las reglas de 8.0, y su última nota es la de la versión declarada', () => {
+  const M = require('../public/js/fortinet-motor.js');
+  const [mayor, menor] = M.VERSION_MOTOR.split('.').map(Number);
+  assert.ok(mayor > 7 || (mayor === 7 && menor >= 3), `VERSION_MOTOR ${M.VERSION_MOTOR}: las reglas de FortiOS 8.0 entraron con la 7.3.0`);
+  const js = fs.readFileSync(path.join(__dirname, '..', 'public', 'js', 'fortinet-motor.js'), 'utf8');
+  const notas = [...js.matchAll(/^\s*\/\/ (\d+\.\d+\.\d+) \(\d{4}-\d{2}-\d{2}\):/gm)].map((x) => x[1]);
+  assert.strictEqual(notas[notas.length - 1], M.VERSION_MOTOR, 'la última nota de versión no es la de VERSION_MOTOR');
+});
