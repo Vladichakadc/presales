@@ -1,3 +1,4 @@
+'use strict';
 // Los modelos que leen las proyecciones: los de Sequelize (SQLite) por defecto; `usarModelos()`
 // los cambia por los de `catalogoEnMemoria.js` (ADR-3). Las consultas no cambian.
 let {
