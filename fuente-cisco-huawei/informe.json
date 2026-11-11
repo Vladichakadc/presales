@@ -1,0 +1,98 @@
+[
+  {
+    "archivo": "fortinet-fortiextender-101g-qsg.html",
+    "para": "FORTINET",
+    "guardado": false,
+    "exploracion": true,
+    "intentos": [
+      {
+        "url": "https://docs.fortinet.com/document/fortiextender/hardware/fortiextender-101g-quickstart-guide",
+        "status": 503
+      }
+    ]
+  },
+  {
+    "archivo": "fortinet-fortiextender-101g-qsg.pdf",
+    "para": "FORTINET",
+    "guardado": false,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "fortinet-fortiextender-101g-qsg.html",
+        "error": "la pagina donde descubrir la URL no se guardo"
+      }
+    ]
+  },
+  {
+    "archivo": "fortinet-fortiextender-201f-qsg.html",
+    "para": "FORTINET",
+    "guardado": false,
+    "exploracion": true,
+    "intentos": [
+      {
+        "url": "https://docs.fortinet.com/document/fortiextender/hardware/fortiextender-201f-quickstart-guide",
+        "status": 503
+      }
+    ]
+  },
+  {
+    "archivo": "fortinet-fortiextender-201f-qsg.pdf",
+    "para": "FORTINET",
+    "guardado": false,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "fortinet-fortiextender-201f-qsg.html",
+        "error": "la pagina donde descubrir la URL no se guardo"
+      }
+    ]
+  },
+  {
+    "archivo": "fortinet-fortiextender-202f-qsg.html",
+    "para": "FORTINET",
+    "guardado": false,
+    "exploracion": true,
+    "intentos": [
+      {
+        "url": "https://docs.fortinet.com/document/fortiextender/hardware/fortiextender-202f-quickstart-guide",
+        "status": 503
+      }
+    ]
+  },
+  {
+    "archivo": "fortinet-fortiextender-202f-qsg.pdf",
+    "para": "FORTINET",
+    "guardado": false,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "fortinet-fortiextender-202f-qsg.html",
+        "error": "la pagina donde descubrir la URL no se guardo"
+      }
+    ]
+  },
+  {
+    "archivo": "fortinet-fortiextender-211g-qsg.html",
+    "para": "FORTINET",
+    "guardado": false,
+    "exploracion": true,
+    "intentos": [
+      {
+        "url": "https://docs.fortinet.com/document/fortiextender/hardware/fortiextender-211g-quickstart-guide",
+        "status": 503
+      }
+    ]
+  },
+  {
+    "archivo": "fortinet-fortiextender-211g-qsg.pdf",
+    "para": "FORTINET",
+    "guardado": false,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "fortinet-fortiextender-211g-qsg.html",
+        "error": "la pagina donde descubrir la URL no se guardo"
+      }
+    ]
+  }
+]
