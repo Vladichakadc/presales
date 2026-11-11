@@ -623,7 +623,9 @@
 
   // Sube cuando una misma entrada puede dar otra recomendacion o otra lista; viaja a «Supuestos»
   // (fase 2 de la auditoria del 2026-11-09, ADR-1).
-  const VERSION_MOTOR = '1.0.0';
+  // 1.0.1 (2026-11-11): un accesorio que el motor pone y que también se eligió en el modal sale una
+  // sola vez, en esa misma pasada (antes, la fila manual se soltaba solo para la siguiente).
+  const VERSION_MOTOR = '1.0.1';
 
   /* LA LISTA DE MATERIALES (fase 2 de la auditoria del 2026-11-09, ADR-1, primer corte). Las filas
      que renderBom() armaba entre el pintado salen aqui, sin DOM ni estado: la pagina lee lo que hay
@@ -700,10 +702,16 @@
     Object.keys(acc).forEach(sku=>{
       if(!cfgAcc||!cfgAcc.items.includes(sku)) quita(sku);
     });
+    // Las filas del modal se guardan aparte y entran al final, detrás del Equipo: el motor pone después
+    // accesorios que también se eligen en el modal (el kit de Boost, la óptica de un enlace, la de la
+    // interconexión EdgeHA) y los suelta con `suelta()`; sin esperar, esa misma pasada ya llevaba la
+    // fila manual y el Excel exportado entonces cotizaba el kit dos veces (mejora propuesta al cerrar el
+    // PR #167, hecha el 2026-11-11).
+    const manuales=[];
     Object.entries(acc).forEach(([sku,n])=>{
       const a=ACCESSORY_CATALOG[sku];
       if(!a||n<=0) return;
-      filas.push({cat:'Accesorios', desc:a.name, sku, qty:n, unit:a.listPrice!=null?a.listPrice:null,
+      manuales.push({cat:'Accesorios', desc:a.name, sku, qty:n, unit:a.listPrice!=null?a.listPrice:null,
         nota:'List Price de la lista oficial del distribuidor (vigencia '+(a.vigencia||'s/f')+') — catálogo maestro de accesorios; confirmar precio firme antes de cotizar'});
     });
     // M4 · Inyección automática de hardware (SPEC B.5): accesorios que el DISEÑO exige y
@@ -893,6 +901,9 @@
       filas.push({cat:'Soporte', desc:CARE[care].n, sku:tierSku(careTier,termYrs), qty, unit:carePrice,
         nota:`${termino} · ${CARE[care].sla}`});
     }
+    // Lo que el motor soltó del modal porque ya lo pone él no entra: una sola fila por accesorio.
+    const sueltos=new Set(soltar);
+    filas.splice(1, 0, ...manuales.filter(f=>!sueltos.has(f.sku)));
     return { filas, soltar, licHa };
   }
 

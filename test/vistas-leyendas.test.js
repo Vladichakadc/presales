@@ -21,7 +21,9 @@ const leer = (f) => JSON.parse(fs.readFileSync(path.join(RAIZ, `public/data/${f}
 const CARAS = ['front', 'rear'];
 
 // Figuras CON números, miradas una a una el 2026-10-27.
-const CON_NUMEROS = (ruta) => /^\/img\/equipos\/jn-/.test(ruta) || /^\/img\/equipos\/gw-7010-(front|rear)\.webp$/.test(ruta);
+// Y las tres de FortiExtender (2026-11-10): su ficha numera los puertos de la cara que dibuja.
+const CON_NUMEROS = (ruta) => /^\/img\/equipos\/jn-/.test(ruta) || /^\/img\/equipos\/gw-7010-(front|rear)\.webp$/.test(ruta)
+  || /^\/img\/equipos\/fex-/.test(ruta);
 
 function entradas(fab) {
   return Object.entries(leer(fab)).filter(([k, v]) => !k.startsWith('_') && v && typeof v === 'object');
@@ -35,7 +37,9 @@ test('cada leyenda está completa: números seguidos, rótulo literal y traducci
         if (!ley) continue;
         const id = `${fab} ${modelo} ${cara}`;
         assert.ok(v[cara], `${id}: leyenda de una cara sin figura`);
-        assert.match(ley.tabla || '', /tabla \d+|leyenda de la figura \d+/, `${id}: no dice de qué tabla sale`);
+        // La ficha de FortiExtender no numera ni tablas ni figuras: su leyenda es la lista «Interfaces»
+        // junto a la figura, y entonces tiene que decir la página.
+        assert.match(ley.tabla || '', /tabla \d+|leyenda de la figura \d+|lista «[^»]+» junto a la figura, p\. \d+/, `${id}: no dice de qué tabla sale`);
         if (ley.lang !== undefined) assert.match(ley.lang, /^[a-z]{2}$/, `${id}: idioma «${ley.lang}» no válido`);
         assert.ok(Array.isArray(ley.filas) && ley.filas.length, `${id}: leyenda vacía`);
         const primero = ley.filas[0][0];

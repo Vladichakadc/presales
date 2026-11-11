@@ -72,7 +72,9 @@ test('solo lleva `pqc` el equipo que su documento nombra', () => {
     'FortiGate 3501G', 'FortiGate 3800G', 'FortiGate 3801G', 'FortiGate 7081F', 'FortiGate 7121F',
     // Desde el 2026-11-09, las variantes Wi-Fi y celulares que «Supported models» de 7.6.7 nombra.
     'FortiWiFi 30G', 'FortiWiFi 31G', 'FortiWiFi 50G', 'FortiWiFi 51G', 'FortiWiFi 70G', 'FortiWiFi 70G-POE',
-    'FortiWiFi 71G', 'FortiGate 40F-3G4G', 'FortiGate 50G-5G', 'FortiGate 51G-5G'];
+    'FortiWiFi 71G', 'FortiGate 40F-3G4G', 'FortiGate 50G-5G', 'FortiGate 51G-5G',
+    // Desde el 2026-11-10, las dos de la R17 que la misma línea FortiWiFi nombra.
+    'FortiWiFi 50G-SFP', 'FortiWiFi 50G-DSL'];
   for (const m of CATALOGOS.fortinet) {
     assert.strictEqual(!!m.pqc, !!m.bgpDe || porRn.includes(m.id), `${m.id}: pqc sin la MVT 7.6.7 ni sus Release Notes, o al revés`);
     if (!m.bgpDe && m.pqc) assert.match(m.pqc.alcance, /Release Notes de FortiOS 7\.6\.[67]/);

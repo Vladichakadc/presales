@@ -411,6 +411,9 @@ traspaso (el #37, de otra sesión, se fusionó mientras se cerraba esta).
   Del PR #140: la PQC del FortiWiFi 50G-5G-II (las otras diez la llevan desde el PR #146, por
   «Supported models» de FortiOS 7.6.7, que dice FWF-50G-5G y no FWF-50G-5G-II; revisado el 2026-11-09: tampoco lo nombran las de 7.6.8, build 3744 con edición del 2026-11-03, ni las de 8.0.2, build 0251, traídas en el PR #163; tres ediciones seguidas dicen FWF-50G-5G, así que no lo cerrarán otras Release Notes sino un documento de Fortinet que diga qué FortiOS corre el FWF-50G-5G-II, su ficha o una respuesta escrita de Fortinet), el caudal del módem integrado (ninguna ficha lo publica) y las
   figuras de las variantes (están en sus fichas por serie).
+  Del PR #172: enseñar en la página las figuras de FortiExtender (WAN 50G, 511G y 511G-WiFi, ya en
+  `fortinet-vistas-equipos.json` con su leyenda) junto al FortiExtender elegido y en «Fotos del equipo» del
+  Excel; espera a que se fusione el #166, que tiene tomada la página de Fortinet.
 
 ### Bloqueado por acceso (se reporta, no se rodea)
 
@@ -426,6 +429,13 @@ existen los workflows de transporte. Huawei y HPE niegan además el navegador au
   respuesta y cada error. La próxima versión mayor del SDK o de la API se mediría en CI y no en la primera
   sincronización fallida. Coste: un archivo de prueba sin red, de la sonda del PR #173. Si se hace mal, fijar las
   cabeceras que cambian en cada parche (`user-agent`, `x-stainless-*`) la pondría en rojo en cada subida.
+- **Figuras del FortiExtender 101G, 201F, 202F y 211G** (propuesta al cerrar el PR #172). La ficha R57 solo
+  dibuja el WAN 50G, el 511G y el 511G-WiFi, así que los cuatro 4G salen sin figura. Su QuickStart Guide de
+  docs.fortinet.com los dibuja: tres entradas en `scripts/transporte/documentos.js` (descubriendo el PDF en la
+  página de la guía, como las de FortiWiFi), una corrida, y sus figuras con caja y lock como las de hoy. Evita
+  que el preventa enseñe un FortiExtender 4G sin saber cómo es ni dónde va cada puerto. Cuesta tres entradas
+  de transporte y cuatro figuras con su leyenda. Si se hace mal, una guía de otra revisión de hardware
+  dibujaría otro panel: el pie tiene que citar el modelo que dibuja, como en los FortiWiFi.
 - **Traer la guía «New Features» y la Maximum Values Table de FortiOS 8.0** (propuesta al cerrar el PR #166).
   El selector ya ofrece la 8.0, pero solo con lo que dicen las Release Notes de 8.0.2: modelos soportados,
   SSL-VPN retirado y proxy en 2 GB. Lo que de verdad es nuevo en la rama (funciones) y sus topes están en esos
@@ -450,12 +460,11 @@ existen los workflows de transporte. Huawei y HPE niegan además el navegador au
   sin forma de pedir un módulo, el desempate nunca lo recomienda y una sucursal que lo necesita sale con un SRX300
   que no lo admite. Coste: una casilla y los módulos de la guía de hardware de la línea SRX300, con su documento en
   `fuentes.js` (sin él no entra ninguno). Si se hace mal, se ofrecería un módulo que el modelo no admite.
-- **Que el modal de accesorios de Aruba no duplique lo que el motor ya pone** (propuesta al cerrar el PR #167). Al
-  elegir en el modal un accesorio que el motor también añade (kit S2N67A del EC-10150 con Boost, una óptica que el
-  builder ya resolvió, la de la interconexión EdgeHA), esa pasada de `renderBom()` cotiza las dos filas; la manual
-  solo se suelta para la siguiente, y un Excel exportado entonces lleva el kit dos veces. Arreglo: calcular primero
-  lo que pone el motor y dejarlo fuera de las filas manuales, en `ArubaReglas.lineasBom`, con
-  `equivalencia-acepta: aruba-bom`. Si se hace mal, una óptica elegida en el modal que el motor no pone desaparecería.
+- **Que el modal de accesorios de Aruba diga qué ya pone el diseño** (propuesta al cerrar el PR #179). Desde ese PR,
+  un accesorio del modal que el motor también pone sale una sola vez, pero desaparece de la selección sin explicarlo; el
+  modal lo marcaría «ya lo pone el diseño (por …)» y no dejaría elegirlo. Coste: leer las filas con `por` del último
+  `lineasBom` al abrir el modal y su prueba. Si se hace mal, un accesorio que el motor deja de poner seguiría bloqueado:
+  la marca se calcula al abrir, nunca se guarda.
 - **Que `npm run traspasos` cuente las ramas cedidas aparte** (propuesta al cerrar el PR #164). Desde ese PR
   la reserva que pierde una carrera deja su rama con el traspaso «cerrado (cedido…)» en vez de borrarla, porque el
   proxy de git corta a veces el borrado. `traspasos` la sigue listando entre los temas en curso; se diría en una
