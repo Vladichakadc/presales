@@ -420,6 +420,11 @@ existen los workflows de transporte. Huawei y HPE niegan además el navegador au
 
 ## Mejoras propuestas sin decidir
 
+- **Quitar «1 GbE» del acceso del 7220 IXR, o decir junto a la opción que ningún modelo lo publica** (propuesta al cerrar el PR #182).
+  La página lo ofrece, y su propia nota dice «solo se listan las velocidades que la línea 7220 IXR realmente publica», pero
+  elegirlo da «sin diseño posible». Lo mejor sería que las opciones salieran de los puertos del catálogo (`puertosDe`)
+  en vez de estar escritas en el HTML. Coste: el desplegable generado y su escenario en el caso `nokia-fabric`. Si se hace
+  mal, un enlace guardado con `accesoVel=1` quedaría sin opción: lo tiene que anunciar `estado.js` (`avisoOrigen`).
 - **`'use strict'` en `catalogProjection.js` y `cifrasCotizador.js`** (propuesta al cerrar el PR #175). Hoy no son
   estrictos, así que una escritura en un objeto congelado se ignora en silencio en vez de lanzar: la prueba del PR #175
   lo cubre con una huella, pero en producción, con la caché del corte 2 del ADR-3, el congelado no avisaría. Coste: dos
@@ -445,11 +450,6 @@ existen los workflows de transporte. Huawei y HPE niegan además el navegador au
   fabricante (sin tocar las firmas de hoy) una sola prueba recorrería los ocho y exigiría versión, candidatos
   ordenados, recomendado y apartados: la «batería única» del ADR. Coste: ocho envolturas y una prueba, cada envoltura
   con su caso de equivalencia. Si se hace mal, una envoltura que reordene los candidatos cambiaría el recomendado.
-- **Un caso de contraste para el fabric 7220 IXR** (propuesta al cerrar el PR #170). Es el único dimensionador que
-  ningún caso conduce: `nokia-fabric-motor.js` y su página salen «sin conducir» en el lock, y un cambio del leaf, el
-  spine o sus cantidades solo lo vería la equivalencia de su corte. Coste: un archivo en `scripts/contrastes/` con
-  escenarios medidos en la pantalla de `main` y el lock regenerado. Si se hace mal, una línea base escrita a ojo daría
-  por buena una respuesta que la pantalla no da.
 - **Dejar pedir un módulo MPIM en Juniper, para que el SRX320 tenga cuándo salir** (propuesta al cerrar el PR #168).
   Empata con el SRX300 en todas las cifras, y su única diferencia en el catálogo son dos ranuras MPIM (LTE, VDSL…);
   sin forma de pedir un módulo, el desempate nunca lo recomienda y una sucursal que lo necesita sale con un SRX300
