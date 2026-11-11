@@ -156,7 +156,7 @@
   const ESQ = {
     esquema: I(1, 1),
     sitio: { segmento: E(['branch', 'campus', 'dc']) },
-    software: { fortiOS: E(['7.4', '7.6.0-7.6.2', '7.6.3+']), inspeccion: E(['flow', 'proxy']) },
+    software: { fortiOS: E(['7.4', '7.6.0-7.6.2', '7.6.3+', '8.0']), inspeccion: E(['flow', 'proxy']) },
     topologia: { rol: E(['none', 'spoke', 'hub']), enlaces: { t: 'enlaces' }, hubs: I(1, 100000),
       spokes: I(1, 100000), simultaneidadPct: N(0, 100) },
     trafico: { interVlanMbps: N(0, 1e8), picosNoConcurrentes: B },
@@ -511,6 +511,22 @@
     return { estado, regla };
   }
 
+  /* La version del diseño, tal como la declara el catalogo (`fortios.versiones`). Una rama puede traer
+     la lista de modelos que sus Release Notes soportan (`soportados`, FortiOS 8.0) y un `supuesto`. */
+  const versionDe = (s, fortios) => ((fortios && fortios.versiones) || []).find((v) => v.id === s.software.fortiOS) || null;
+  // El codigo con que las Release Notes nombran un equipo: su SKU de hardware, sin el codigo regional.
+  const codigoRn = (m) => (m.hwSku ? String(m.hwSku).replace(/-\[RC\]$/, '') : `FG-${String(m.id).replace('FortiGate ', '')}`);
+  /* ¿Las Release Notes de la version elegida nombran el modelo? `null` si la rama no trae lista (no se
+     sabe, y no se frena); si la trae, que no este es un hecho del documento, no una deduccion. */
+  function soportadoEnVersion(m, s, fortios) {
+    const v = versionDe(s, fortios);
+    if (!v || !Array.isArray(v.soportados)) return null;
+    return { ok: v.soportados.includes(codigoRn(m)), codigo: codigoRn(m), version: v };
+  }
+  // La regla que retira el modo tunel SSL-VPN de TODOS los modelos en la version elegida, si la hay.
+  const sslvpnRetirada = (s, fortios) => ((fortios && fortios.reglas) || [])
+    .find((r) => r.funcion === 'sslvpn' && r.modelos === '*' && r.estado === 'retirada' && r.versiones.includes(s.software.fortiOS)) || null;
+
   /* ── 6 · RESTRICCIONES QUE NO SON EJES DE RENDIMIENTO (F06, F14) ──────────────────────
      Cada una devuelve bloqueos con codigo estable, valor requerido y disponible, y la
      correccion que lo resolveria. Un bloqueo DESCARTA el modelo: ninguna holgura en otro eje
@@ -544,6 +560,13 @@
     if (s.comercial.motivo === 'nueva' && (m.eol || !m.hwSku)) {
       b.push({ codigo: 'CICLO_VIDA', mensaje: `${m.id} está fuera de venta: no se ofrece en compra nueva (solo como referencia de un parque instalado).`,
         correccion: 'Elegir un modelo vigente, o declarar la operación como ampliación, renovación o co-term con su justificación.' });
+    }
+    // FortiOS: el modelo tiene que estar entre los que soportan las Release Notes de la version (8.0).
+    const sop = soportadoEnVersion(m, s, cat.fortios);
+    if (sop && !sop.ok) {
+      b.push({ codigo: 'FORTIOS_MODELO', mensaje: `${m.id} (${sop.codigo}) no figura entre los modelos soportados por ${sop.version.n}.`,
+        fuente: sop.version.soportadosFuente, fuenteLeida: true,
+        correccion: 'Un modelo que esa versión soporte, u otra versión de FortiOS para el diseño.' });
     }
     // FortiOS: SSL-VPN en modo tunel.
     if (s.remoto.activo && s.remoto.metodo === 'sslvpn') {
@@ -992,14 +1015,29 @@
       // Incompatibilidad FortiOS a nivel de escenario: si NINGUN modelo admite la funcion con
       // esa version, la correccion es del escenario y se ofrece como tal. Va PRIMERO: es la
       // causa, y «ningun modelo cumple» es solo su consecuencia.
-      if (s.remoto.activo && s.remoto.metodo === 'sslvpn' && s.software.fortiOS === '7.6.3+') {
-        const r = ((cat.fortios && cat.fortios.reglas) || []).find((x) => x.funcion === 'sslvpn' && x.modelos === '*');
+      const r = s.remoto.activo && s.remoto.metodo === 'sslvpn' ? sslvpnRetirada(s, cat.fortios) : null;
+      // Sin catalogo de reglas, la rama 7.6.3+ sigue retirandolo: es lo que este bloqueo hizo siempre.
+      if (r || (s.remoto.activo && s.remoto.metodo === 'sslvpn' && s.software.fortiOS === '7.6.3+')) {
         bl.push({ codigo: 'fortios-funcion-retirada', nivel: 'bloqueo',
-          mensaje: 'SSL-VPN en modo túnel está retirado en FortiOS 7.6.3 o superior: el acceso remoto se diseña con IPsec.',
+          mensaje: `SSL-VPN en modo túnel está retirado en FortiOS ${s.software.fortiOS === '7.6.3+' ? '7.6.3 o superior' : s.software.fortiOS}: el acceso remoto se diseña con IPsec.`,
           // `leida:false` en el catalogo: la regla sale de una referencia del informe de
           // auditoria y el documento del fabricante no se leyo desde este entorno. Se dice.
           fuente: r ? r.fuente : null, fuenteLeida: r ? r.leida !== false : null,
           correccion: { accion: 'cambiar', campo: 'remoto.metodo', valor: 'ipsec' } });
+      }
+      // La version elegida deja fuera a modelos que si cumplen el escenario (FortiOS 8.0: sus Release
+      // Notes no los nombran). Va antes de «ningun modelo cumple»: es la causa, y la correccion es
+      // del escenario (otra version), no de la lista de equipos.
+      if (!res.recomendacion && !res.seleccion) {
+        const fuera = (res.descartados || []).filter((c) => c.eval && c.eval.estado === 'ok'
+          && c.bloqueos.length && c.bloqueos.every((b) => b.codigo === 'FORTIOS_MODELO'));
+        if (fuera.length) {
+          const v = versionDe(s, cat.fortios);
+          bl.push({ codigo: 'fortios-modelo-no-soportado', nivel: 'bloqueo',
+            mensaje: `Con ${v.n}, ${fuera.map((c) => c.id).join(', ')} cumple${fuera.length > 1 ? 'n' : ''} el escenario pero no figura${fuera.length > 1 ? 'n' : ''} entre los modelos que esa versión soporta.`,
+            fuente: v.soportadosFuente, fuenteLeida: true,
+            correccion: { accion: 'cambiar', campo: 'software.fortiOS', valor: (cat.fortios && cat.fortios.porDefecto) || '7.6.3+' } });
+        }
       }
       if (!res.recomendacion && !res.seleccion) {
         bl.push({ codigo: 'sin-candidato', nivel: 'bloqueo', mensaje: 'Ningún modelo vigente cumple todas las restricciones del escenario.' });
@@ -1051,6 +1089,8 @@
         mensaje: 'Hay un enlace 4G/5G y no se pidió cómo llega al FortiGate: marca «WAN celular» (módem integrado o FortiExtender) '
           + 'para que el equipo o el FortiExtender entren en el dimensionamiento y en el BOM.' });
     }
+    const vFortiOS = versionDe(s, cat.fortios);
+    if (vFortiOS && vFortiOS.supuesto) sup.push(vFortiOS.supuesto);
     if (s.fisico.celular) sup.push('WAN celular: la categoría LTE o 5G del módem es un máximo de la tecnología, no un caudal garantizado; depende de la cobertura del operador en el sitio.');
     sup.push(`Encapsulación ESP del ${Math.round(OVERHEAD_ESP * 100)} % sobre la fracción que viaja por el overlay (supuesto de la herramienta, no una cifra de Fortinet).`);
     if (s.escala.sesionesPorUsuario && !s.escala.cpsMedido) sup.push(`Sesiones nuevas por segundo derivadas de una vida media de sesión de ${s.escala.vidaSesionS} s.`);
@@ -1076,7 +1116,7 @@
 
   return {
     VERSION_MOTOR, ESQUEMA, OVERHEAD_ESP, TIPOS_PUERTO, TIPOS_WAN, POR_DEFECTO, REGLAS, ACCIONES,
-    sha256, canon, huella, normalizar, escenariosTrafico, compatibilidad, asignarPuertos,
+    sha256, canon, huella, normalizar, escenariosTrafico, compatibilidad, soportadoEnVersion, sslvpnRetirada, asignarPuertos,
     evaluar, permite,
   };
 }));

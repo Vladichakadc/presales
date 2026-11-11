@@ -53,7 +53,7 @@
 
 const fs = require('fs');
 const path = require('path');
-const pdf = require('pdf-parse');
+const { PDFParse } = require('pdf-parse');
 const { MODELS, DATASHEETS } = require('../server/seed/legacyData/aruba');
 
 const JSON_OUT = process.argv.slice(2).includes('--json');
@@ -124,20 +124,19 @@ function clasificar(presencia, eolAnnounced) {
     detalle: `${presencia} de la guia de pedido oficial SIN boletin en el catalogo — posible fin de venta no documentado: revisar el boletin oficial a mano` };
 }
 
-// pdf.js escribe sus avisos de fuentes («Warning: TT: undefined function…») en STDOUT,
-// no en stderr: sin este filtro, `--json` llevaria una linea basura delante y CI no
-// podria parsearlo. Se tragan solo esas lineas y solo mientras dura el parseo — el
-// resto de la salida del proceso no se toca.
+// Texto y metadatos del PDF. pdf.js escribe sus avisos de fuentes («Warning: TT: undefined
+// function…») en STDOUT, y `--json` llevaria una linea basura delante que CI no podria
+// parsear: con `verbosity: 0` solo cuenta un error, y un error se lanza. Hasta el 2026-11-10
+// (pdf-parse 1, con pdf.js 1.10) se tragaban esas lineas de la salida del proceso.
+// Sin marca de pagina (`pageJoiner: ''`): pdf-parse 2 pondria «-- N of M --» en el texto.
 async function parsearPdf(buf) {
-  const original = process.stdout.write.bind(process.stdout);
-  process.stdout.write = (chunk, ...rest) => {
-    if (String(chunk).startsWith('Warning:')) return true;
-    return original(chunk, ...rest);
-  };
+  const lector = new PDFParse({ data: new Uint8Array(buf), verbosity: 0 });
   try {
-    return await pdf(buf);
+    const { text } = await lector.getText({ pageJoiner: '' });
+    const { info } = await lector.getInfo();
+    return { text, info };
   } finally {
-    process.stdout.write = original;
+    await lector.destroy();
   }
 }
 

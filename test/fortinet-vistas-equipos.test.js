@@ -25,7 +25,7 @@ const path = require('path');
 
 const RAIZ = path.join(__dirname, '..');
 const VISTAS = JSON.parse(fs.readFileSync(path.join(RAIZ, 'public/data/fortinet-vistas-equipos.json'), 'utf8'));
-const { MODELS } = require('../server/seed/legacyData/fortinet.js');
+const { MODELS, FORTIEXTENDER } = require('../server/seed/legacyData/fortinet.js');
 
 const entradas = Object.entries(VISTAS).filter(([k]) => !k.startsWith('_'));
 
@@ -42,7 +42,9 @@ test('cada foto declarada existe de verdad en el repositorio', () => {
 });
 
 test('cada modelo con foto existe en el catálogo, y ninguno se queda huérfano', () => {
-  const ids = new Set(MODELS.map((m) => m.id));
+  // Los FortiExtender no son filas de MODELS (no se dimensionan como firewall), pero tienen figura
+  // desde el 2026-11-10: valen los de su tabla, `FORTIEXTENDER.modelos`, con la misma regla.
+  const ids = new Set([...MODELS.map((m) => m.id), ...FORTIEXTENDER.modelos.map((x) => x.id)]);
   for (const [modelo] of entradas) {
     assert.ok(ids.has(modelo), `${modelo} tiene foto pero ya no está en el catálogo — la forma de CISCO_EOL_MODELS`);
   }
@@ -57,7 +59,8 @@ test('cada figura declara su procedencia: de qué documento y de qué figura sal
     // tiene que nombrar esa guía, la página y el rótulo literal de la figura.
     if (/^Datasheet/.test(v.fuente)) {
       // La página 7 en los FortiGate; los FortiWiFi 50G-5G-II y 70G-POE se dibujan en la 10 y la 8.
-      assert.match(v.fuente, /p\. \d+ «Hardware»/, `${modelo}: no dice de qué página del datasheet sale`);
+      // La ficha de FortiExtender titula su página «Hardware and Interfaces».
+      assert.match(v.fuente, /p\. \d+ «Hardware(?: and Interfaces)?»/, `${modelo}: no dice de qué página del datasheet sale`);
     } else {
       assert.match(v.fuente, /(QuickStart Guide|System Guide) .*docs\.fortinet\.com/,
         `${modelo}: la procedencia no nombra ni un datasheet ni una guía oficial de hardware`);
@@ -167,13 +170,13 @@ test('los cuatro sin datasheet (100F, 200F, 7081F y 7121F) tienen las dos caras 
   assert.match(VISTAS['FortiGate 7121F'].fuente, /generacion 1/);
 });
 
-test('los ocho FortiWiFi traen las dos caras de su propio dibujo, no la del FortiGate', () => {
+test('los diez FortiWiFi traen las dos caras de su propio dibujo, no la del FortiGate', () => {
   // 2026-11-09, petición del dueño: «incluir el gráfico de los equipos FortiWiFi». La ficha FGFWF
   // dibuja el FortiWiFi aparte del FortiGate de la serie: lleva las antenas, y servirle la figura
   // del FortiGate sería enseñar otro equipo. El 31G, el 51G y el 71G comparten la de su pareja,
   // que es la que dibuja la ficha, y el pie lo dice.
   const pares = [['FortiWiFi 30G', 'FortiWiFi 31G'], ['FortiWiFi 50G', 'FortiWiFi 51G'], ['FortiWiFi 70G', 'FortiWiFi 71G']];
-  const solos = ['FortiWiFi 50G-5G-II', 'FortiWiFi 70G-POE'];
+  const solos = ['FortiWiFi 50G-5G-II', 'FortiWiFi 70G-POE', 'FortiWiFi 50G-SFP', 'FortiWiFi 50G-DSL'];
   for (const m of [...pares.flat(), ...solos]) {
     const v = VISTAS[m];
     assert.ok(v && v.front && v.rear, `${m}: le falta una cara`);
@@ -189,4 +192,11 @@ test('los ocho FortiWiFi traen las dos caras de su propio dibujo, no la del Fort
   }
   assert.match(VISTAS['FortiWiFi 50G-5G-II'].fuente, /p\. 10 «Hardware»/);
   assert.match(VISTAS['FortiWiFi 70G-POE'].fuente, /p\. 8 «Hardware»/);
+  // 2026-11-10: el SFP y el DSL tienen su propio dibujo (p. 8 y 9 de la R17), con su puerto: no
+  // comparten la figura de la 50G, que no tiene ni la jaula SFP ni el RJ11.
+  assert.match(VISTAS['FortiWiFi 50G-SFP'].fuente, /p\. 8 «Hardware».*FortiWiFi 50G SFP/);
+  assert.match(VISTAS['FortiWiFi 50G-DSL'].fuente, /p\. 9 «Hardware».*FortiWiFi 50G DSL/);
+  for (const m of ['FortiWiFi 50G-SFP', 'FortiWiFi 50G-DSL']) {
+    assert.notStrictEqual(VISTAS[m].rear, VISTAS['FortiWiFi 50G'].rear, `${m}: su trasera no es la de la 50G`);
+  }
 });

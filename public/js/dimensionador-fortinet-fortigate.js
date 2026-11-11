@@ -19,6 +19,9 @@
 
 const R = FortinetReglas;
 const M = FortinetMotor;
+// Las ramas de FortiOS sin modo túnel SSL-VPN, con el texto con que se nombran (reglas `sslvpn` con
+// `modelos: '*'` de fortinet.js: 7.6.3 Release Notes y 8.0.2 Release Notes).
+const SIN_SSLVPN = { '7.6.3+': '7.6.3 o superior', '8.0': '8.0' };
 // El enlace TAL COMO LLEGO. Se captura antes de que nada lo toque: estado.js reescribe la URL
 // con cada cambio, y la verificacion de la huella (T30) tiene que comparar contra la huella
 // que TRAIA el enlace, no contra la que la propia pagina acaba de escribir — si no, una
@@ -513,9 +516,9 @@ function autocorregir(origen) {
         + `${esc(f ? f.n : 'la función marcada')} no está en ${esc(BUNDLES[antes] ? BUNDLES[antes].n : antes)}.`);
     }
   }
-  if (origen === 'fortiOS' && $('fortiOS').value === '7.6.3+' && $('chkRemoto').checked && $('vpnTipo').value === 'sslvpn') {
+  if (origen === 'fortiOS' && SIN_SSLVPN[$('fortiOS').value] && $('chkRemoto').checked && $('vpnTipo').value === 'sslvpn') {
     $('vpnTipo').value = 'ipsec';
-    mostrarCorreccion('vpnTipo', 'sslvpn', 'El acceso remoto pasó a <b>IPsec</b>: el modo túnel SSL-VPN no existe en FortiOS 7.6.3 o superior.');
+    mostrarCorreccion('vpnTipo', 'sslvpn', `El acceso remoto pasó a <b>IPsec</b>: el modo túnel SSL-VPN no existe en FortiOS ${SIN_SSLVPN[$('fortiOS').value]}.`);
   }
 }
 function mostrarCorreccion(id, antes, texto) {
@@ -796,10 +799,12 @@ function pintarControles(r) {
   }
   // FortiOS decide si SSL-VPN existe (T06): con 7.6.3+ la opcion se deshabilita y se dice.
   const opSsl = $('vpnTipo').querySelector('option[value=sslvpn]');
-  const retirado = s.software.fortiOS === '7.6.3+';
+  const retirado = !!SIN_SSLVPN[s.software.fortiOS];
   opSsl.disabled = retirado && $('vpnTipo').value !== 'sslvpn';
-  opSsl.textContent = retirado ? 'SSL-VPN en modo túnel — retirado en FortiOS 7.6.3+' : 'SSL-VPN en modo túnel';
-  $('fortiOSHint').innerHTML = retirado
+  opSsl.textContent = retirado ? `SSL-VPN en modo túnel — retirado en FortiOS ${s.software.fortiOS}` : 'SSL-VPN en modo túnel';
+  $('fortiOSHint').innerHTML = s.software.fortiOS === '8.0'
+    ? 'Con <b>FortiOS 8.0</b> se aplica lo que dicen las Release Notes de 8.0.2: solo compiten los modelos que soporta, <b>el modo túnel SSL-VPN no existe</b> y los modelos de 2 GB de RAM (40F, 50G, 60F) no admiten inspección proxy. Las cifras y los topes siguen siendo los publicados para 7.6: la tabla de 8.0 no se ha traído.'
+    : retirado
     ? 'Decide qué funciones existen, no qué cifra aplica. En <b>7.6.3 o superior el modo túnel SSL-VPN ya no existe</b>: el acceso remoto se diseña con IPsec.'
     : `Con ${esc(s.software.fortiOS)} el modo túnel SSL-VPN existe salvo en los modelos que el Product Matrix excluye (serie 90G${s.software.fortiOS === '7.6.0-7.6.2' ? ', y los de 2 GB de RAM' : ''}).`;
   // Tipo de compra.
@@ -959,7 +964,7 @@ function pintarCabecera(r) {
     const c = b.correccion;
     if (c && c.accion === 'cambiar') {
       const txt = c.campo === 'comercial.bundle' ? `Cambiar a ${BUNDLES[c.valor] ? BUNDLES[c.valor].n : c.valor}`
-        : c.campo === 'remoto.metodo' ? 'Cambiar a IPsec' : 'Corregir';
+        : c.campo === 'remoto.metodo' ? 'Cambiar a IPsec' : c.campo === 'software.fortiOS' ? `Volver a FortiOS ${c.valor}` : 'Corregir';
       accion = `<button type="button" class="btn ghost btn-corr" data-corregir='${esc(JSON.stringify(c))}'>${esc(txt)}</button>`;
     } else if (b.campo && (b.codigo === 'dato-requerido' || b.codigo === 'entrada-invalida')) {
       accion = `<button type="button" class="btn ghost btn-corr" data-corregir='${esc(JSON.stringify({ accion: 'ir', campo: b.campo }))}'>Ir al campo</button>`;
@@ -1524,7 +1529,7 @@ function pintarPuerta(r) {
     html += `<ul>${lista.map((b) => {
       const c = b.correccion;
       const btn = c && c.accion === 'cambiar'
-        ? ` <button type="button" class="btn ghost btn-corr" data-corregir='${esc(JSON.stringify(c))}'>${esc(c.campo === 'comercial.bundle' ? `Cambiar a ${BUNDLES[c.valor] ? BUNDLES[c.valor].n : c.valor}` : c.campo === 'remoto.metodo' ? 'Cambiar a IPsec' : 'Corregir')}</button>`
+        ? ` <button type="button" class="btn ghost btn-corr" data-corregir='${esc(JSON.stringify(c))}'>${esc(c.campo === 'comercial.bundle' ? `Cambiar a ${BUNDLES[c.valor] ? BUNDLES[c.valor].n : c.valor}` : c.campo === 'remoto.metodo' ? 'Cambiar a IPsec' : c.campo === 'software.fortiOS' ? `Volver a FortiOS ${c.valor}` : 'Corregir')}</button>`
         : c && c.accion === 'volver-recomendado' ? ` <button type="button" class="btn ghost btn-corr" data-corregir='${esc(JSON.stringify(c))}'>Volver al recomendado</button>` : '';
       return `<li${b.nivel === 'bloqueo' ? ' class="warn"' : ''}>${esc(b.mensaje)}${btn}</li>`;
     }).join('')}</ul>`;
