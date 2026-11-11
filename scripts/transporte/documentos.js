@@ -1347,6 +1347,30 @@ module.exports = [
   { archivo: 'fortinet-rn-7.6.8-modelos.html', tipo: 'html', para: 'FORTINET', exploracion: true, urls: [
     'https://docs.fortinet.com/document/fortigate/7.6.8/fortios-release-notes/760203/introduction-and-supported-models',
   ] },
+  // 2026-11-11 (encargo del dueño: «gráficos actualizados» de FortiWiFi y FortiExtender). La ficha
+  // FEXT-DAT-R57 no dibuja los cuatro FortiExtender 4G (101G, 201F, 202F, 211G) y remite a su
+  // QuickStart Guide en docs.fortinet.com. Primero, el listado de hardware: de él salen las páginas
+  // de cada guía, y de cada página su PDF (como las Release Notes de arriba). Exploración: aún no se
+  // sabe qué enlaza.
+  { archivo: 'fortinet-fortiextender-hardware.html', tipo: 'html', para: 'FORTINET', exploracion: true, urls: [
+    'https://docs.fortinet.com/product/fortiextender/hardware',
+  ] },
+  // Del listado (corrida 43011692697) salen las páginas de las cuatro guías, pero docs.fortinet.com
+  // responde 503 a esas páginas al ejecutor (corridas 43012304805 y 43013866088, las ocho veces), y
+  // eso no se rodea. Los PDF están en el almacén de documentos de Fortinet, como las Release Notes
+  // 7.6.8 de más arriba: URL buscadas, no compuestas (2026-11-11).
+  { archivo: 'fortinet-fortiextender-101g-qsg.pdf', tipo: 'pdf', para: 'FORTINET', urls: [
+    'https://fortinetweb.s3.amazonaws.com/docs.fortinet.com/v2/attachments/01635e9f-940d-11f0-855d-6af4c3636dc7/FEX-101G-QSG.pdf',
+  ] },
+  { archivo: 'fortinet-fortiextender-201f-qsg.pdf', tipo: 'pdf', para: 'FORTINET', urls: [
+    'https://fortinetweb.s3.amazonaws.com/docs.fortinet.com/v2/attachments/bf894af8-5cbb-11ed-96f0-fa163e15d75b/FortiExtender-201F-QuickStart_Online.pdf',
+  ] },
+  { archivo: 'fortinet-fortiextender-202f-qsg.pdf', tipo: 'pdf', para: 'FORTINET', urls: [
+    'https://fortinetweb.s3.amazonaws.com/docs.fortinet.com/v2/attachments/c5ffef0b-5d2a-11ed-96f0-fa163e15d75b/FortiExtender-202F-QuickStart_Online.pdf',
+  ] },
+  { archivo: 'fortinet-fortiextender-211g-qsg.pdf', tipo: 'pdf', para: 'FORTINET', urls: [
+    'https://fortinetweb.s3.amazonaws.com/docs.fortinet.com/v2/attachments/38ede52b-9f0c-11f0-855d-6af4c3636dc7/FEX-211G-QSG.pdf',
+  ] },
   { archivo: 'fortinet-rn-8.0.2.pdf', tipo: 'pdf', para: 'FORTINET', urls: [
     'https://fortinetweb.s3.amazonaws.com/docs.fortinet.com/v2/attachments/8f18b7aa-cbdf-11f1-8c5a-8e4c95ff11ac/fortios-v8.0.2-release-notes.pdf',
   ] },

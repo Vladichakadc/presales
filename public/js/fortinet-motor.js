@@ -46,7 +46,9 @@
 
   // 7.1.0 (2026-10-27): el requisito de criptografía post-cuántica (`seguridad.pqc`).
   // 7.2.0 (2026-11-04): Wi-Fi integrado y WAN celular 4G/5G (`fisico.wifi`, `fisico.celular`, `fisico.celularVia`).
-  const VERSION_MOTOR = '7.2.0';
+  // 7.3.0 (2026-11-10): FortiOS 8.0 (8.0.2) en `software.fortiOS`: modelos soportados por la rama (`FORTIOS_MODELO`),
+  // modo túnel SSL-VPN retirado e inspección proxy fuera de los modelos de 2 GB. El PR #166 lo trajo sin subir la versión.
+  const VERSION_MOTOR = '7.3.0';
   const ESQUEMA = 1;
   // Encapsulacion ESP sobre la fraccion que viaja por el overlay. Supuesto de la herramienta,
   // no una cifra de Fortinet, y por eso se declara en `supuestos` en cada evaluacion.
