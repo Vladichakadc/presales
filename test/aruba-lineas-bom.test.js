@@ -40,6 +40,36 @@ test('un accesorio que el diseno ya exige se suelta del modal: no se cotiza dos 
   assert.ok(r.filas.some((f) => f.sku === 'S2N67A' && f.por === 'chkBoost'));
 });
 
+// 2026-11-11 (mejora propuesta al cerrar el PR #167): la fila manual se soltaba solo para la pasada
+// SIGUIENTE; en esta, las dos filas iban al BOM, y un Excel exportado entonces llevaba el kit dos veces.
+test('un accesorio que el motor pone y que tambien se eligio en el modal sale UNA vez, ya en esta pasada', () => {
+  const r = R.lineasBom(ctx({ m: modelo('EC-10150'), elegidos: { S2N67A: 1 },
+    inyectados: [{ sku: 'S2N67A', qty: 1, por: 'chkBoost', nota: 'kit de Boost' }] }));
+  const kit = r.filas.filter((f) => f.sku === 'S2N67A');
+  assert.strictEqual(kit.length, 1, `el kit sale ${kit.length} veces`);
+  assert.strictEqual(kit[0].por, 'chkBoost', 'manda la fila del motor, con su porqué');
+});
+
+test('lo mismo con la optica de un enlace que el builder ya resolvio', () => {
+  const optica = A.ACCESSORY_COMPAT['EC-10106'].items.find((s) => /SFP/i.test((A.ARUBA_ACCESSORY_CATALOG[s] || {}).name || ''));
+  assert.ok(optica, 'el EC-10106 admite alguna optica del catalogo');
+  const r = R.lineasBom(ctx({ elegidos: { [optica]: 3 },
+    necesidadesOptica: () => ({ 'SFP 10G': 1 }), opticaResuelta: () => ({ ops: [optica], sku: optica }) }));
+  const filas = r.filas.filter((f) => f.sku === optica);
+  assert.strictEqual(filas.length, 1, `la optica sale ${filas.length} veces`);
+  assert.strictEqual(filas[0].qty, 1, 'con la cantidad del builder (un enlace), no la del modal');
+  assert.deepStrictEqual(r.soltar, [optica]);
+});
+
+test('un accesorio del modal que el motor no pone sigue entrando, detras del equipo', () => {
+  const compatible = A.ACCESSORY_COMPAT['EC-10150'].items.find((s) => s !== 'S2N67A');
+  const r = R.lineasBom(ctx({ m: modelo('EC-10150'), elegidos: { [compatible]: 2, S2N67A: 1 },
+    inyectados: [{ sku: 'S2N67A', qty: 1, por: 'chkBoost', nota: 'kit de Boost' }] }));
+  assert.strictEqual(r.filas[0].cat, 'Equipo');
+  assert.deepStrictEqual({ sku: r.filas[1].sku, qty: r.filas[1].qty }, { sku: compatible, qty: 2 }, 'el manual va justo detras del equipo, como antes');
+  assert.deepStrictEqual(r.soltar, ['S2N67A']);
+});
+
 test('par HA de EdgeConnect: suscripcion del nodo primario y la del segundo nodo, por la casilla', () => {
   const r = R.lineasBom(ctx({ D: { ...D0, qty: 2 }, haMarcado: true }));
   const subs = r.filas.filter((f) => f.cat === 'Suscripción SD-WAN');

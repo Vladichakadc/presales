@@ -48,10 +48,12 @@ segClick('profileSeg',v=>{profile=v; $('profileHint').textContent=PROFILE_HINT[v
 segClick('mediaSeg',v=>{media=v;});
 segClick('modoSeg',v=>{modo=v;});
 segClick('tramaSeg',v=>{trama=Number(v)||M.TRAMA_DEFECTO;});
-// Los sub-campos solo existen mientras su opcion este activa.
-[['chkBgp','bgpBox'],['chkPppoe','pppoeBox'],['chkCapsman','capsBox']].forEach(([chk,box])=>{
-  $(chk).addEventListener('change',()=>{ $(box).hidden = !$(chk).checked; });
-});
+// Los sub-campos solo existen mientras su opcion este activa. Se sincronizan tambien en cada
+// render (2026-11-11): ESTADO restaura la casilla de un enlace o del almacenamiento sin disparar
+// su `change`, y el bloque se quedaba oculto con la opcion marcada (el calculo si la contaba).
+const SUBCAMPOS=[['chkBgp','bgpBox'],['chkPppoe','pppoeBox'],['chkCapsman','capsBox']];
+function mostrarSubcampos(){ SUBCAMPOS.forEach(([chk,box])=>{ $(box).hidden = !$(chk).checked; }); }
+SUBCAMPOS.forEach(([chk])=>$(chk).addEventListener('change',mostrarSubcampos));
 ['bw','head','dirMult','sedes','conc','firewall','cifrado','chkVirtual','chkQos','chkL3hw','chkBgp','bgpFeeds',
  'chkPppoe','pppoeSess','ovpnTun','hotspotUsers','chkCapsman','apCount','apModel','chkPoe','poeFuente','chkHa','reqPqc']
   .forEach(id=>$(id).addEventListener('input',render));
@@ -207,6 +209,7 @@ function pintarAvisos(ev){
 }
 
 function render(){
+  mostrarSubcampos();
   $('headVal').textContent=Math.round((parseFloat($('head').value)||0))+' %';
   $('hubBox').hidden = modo!=='hub';
   $('bwLbl').textContent=modo==='hub'?'Caudal por sede (por sentido)':'Caudal del sitio (por sentido)';

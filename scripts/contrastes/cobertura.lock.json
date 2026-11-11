@@ -1,19 +1,12 @@
 {
  "medidoEn": {
-  "commit": "30a9107",
-  "fecha": "2026-11-10"
+  "commit": "3aa1374",
+  "fecha": "2026-11-11"
  },
  "umbralRozado": 25,
  "modulos": [
   {
    "modulo": "cuenta.js",
-   "estado": "sin conducir",
-   "total": null,
-   "usadas": null,
-   "pct": null
-  },
-  {
-   "modulo": "dimensionador-nokia-7220ixr.js",
    "estado": "sin conducir",
    "total": null,
    "usadas": null,
@@ -28,13 +21,6 @@
   },
   {
    "modulo": "guia-diseno-interactiva.js",
-   "estado": "sin conducir",
-   "total": null,
-   "usadas": null,
-   "pct": null
-  },
-  {
-   "modulo": "nokia-fabric-motor.js",
    "estado": "sin conducir",
    "total": null,
    "usadas": null,
@@ -174,6 +160,13 @@
    "pct": 75
   },
   {
+   "modulo": "dimensionador-nokia-7220ixr.js",
+   "estado": "ejercitado",
+   "total": 21,
+   "usadas": 16,
+   "pct": 76
+  },
+  {
    "modulo": "dimensionador-cisco-catalyst8k.js",
    "estado": "ejercitado",
    "total": 168,
@@ -218,8 +211,15 @@
   {
    "modulo": "fortinet-motor.js",
    "estado": "ejercitado",
-   "total": 120,
-   "usadas": 96,
+   "total": 127,
+   "usadas": 101,
+   "pct": 80
+  },
+  {
+   "modulo": "fuentes.js",
+   "estado": "ejercitado",
+   "total": 5,
+   "usadas": 4,
    "pct": 80
   },
   {
@@ -272,11 +272,11 @@
    "pct": 91
   },
   {
-   "modulo": "fuentes.js",
+   "modulo": "nokia-fabric-motor.js",
    "estado": "ejercitado",
-   "total": 5,
-   "usadas": 5,
-   "pct": 100
+   "total": 17,
+   "usadas": 16,
+   "pct": 94
   },
   {
    "modulo": "motor-ingenieria.js",
