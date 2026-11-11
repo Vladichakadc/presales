@@ -1347,6 +1347,14 @@ module.exports = [
   { archivo: 'fortinet-rn-7.6.8-modelos.html', tipo: 'html', para: 'FORTINET', exploracion: true, urls: [
     'https://docs.fortinet.com/document/fortigate/7.6.8/fortios-release-notes/760203/introduction-and-supported-models',
   ] },
+  // 2026-11-11 (encargo del dueño: «gráficos actualizados» de FortiWiFi y FortiExtender). La ficha
+  // FEXT-DAT-R57 no dibuja los cuatro FortiExtender 4G (101G, 201F, 202F, 211G) y remite a su
+  // QuickStart Guide en docs.fortinet.com. Primero, el listado de hardware: de él salen las páginas
+  // de cada guía, y de cada página su PDF (como las Release Notes de arriba). Exploración: aún no se
+  // sabe qué enlaza.
+  { archivo: 'fortinet-fortiextender-hardware.html', tipo: 'html', para: 'FORTINET', exploracion: true, urls: [
+    'https://docs.fortinet.com/product/fortiextender/hardware',
+  ] },
   { archivo: 'fortinet-rn-8.0.2.pdf', tipo: 'pdf', para: 'FORTINET', urls: [
     'https://fortinetweb.s3.amazonaws.com/docs.fortinet.com/v2/attachments/8f18b7aa-cbdf-11f1-8c5a-8e4c95ff11ac/fortios-v8.0.2-release-notes.pdf',
   ] },
