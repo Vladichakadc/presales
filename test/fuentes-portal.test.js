@@ -133,18 +133,12 @@ test('el resumen del vigía cuenta lo del lock y dice de cuándo es, sin las car
 });
 
 test('el resumen del vigía casa con la forma real de /api/fuentes y cuenta los mismos documentos que la salud', () => {
-  // Se siembra una base en memoria con la siembra del arranque, como scripts/ayuda/pantallas-servidas.js.
+  // El catalogo en memoria, sembrado con la siembra del arranque, como scripts/ayuda/pantallas-servidas.js.
   const programa = `
-    process.env.DATABASE_PATH = ':memory:';
     console.log = (...a) => console.error(...a);
-    const { sequelize } = require('./server/models');
-    const seedCatalog = require('./server/seed/seedCatalog');
     const { toFuentes } = require('./server/services/catalogProjection');
     (async () => {
-      await sequelize.sync();
-      await seedCatalog();
       process.stdout.write(JSON.stringify(await toFuentes()));
-      await sequelize.close();
     })().catch((e) => { console.error(e); process.exit(1); });`;
   const datos = JSON.parse(require('child_process').execFileSync(process.execPath, ['-e', programa], {
     cwd: RAIZ, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'], maxBuffer: 64 * 1024 * 1024,

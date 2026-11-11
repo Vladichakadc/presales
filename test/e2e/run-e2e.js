@@ -72,8 +72,8 @@ function esperarServidor(intentos = 60) {
   }
 
   console.log(`[e2e] levantando el servidor en ${BASE} (AUTH de corrida, base efímera)…`);
-  // Base y auth en un directorio PROPIO DE ESTA CORRIDA, que se borra al terminar: la corrida
-  // nunca toca el datos.sqlite de desarrollo. Hasta el 2026-09-24 eran rutas fijas en /tmp y
+  // El estado (usuarios) en un directorio PROPIO DE ESTA CORRIDA, que se borra al terminar; el
+  // catalogo vive en memoria desde el ADR-3 (2026-11-11). Hasta el 2026-09-24 eran rutas fijas en /tmp y
   // el usuarios.json del 22-sep seguía allí: una corrida con otra E2E_PASSWORD no podía entrar
   // (el almacén de usuarios solo se siembra desde AUTH_PASSWORD si el archivo NO existe) y dos
   // corridas a la vez compartían base. Una corrida tiene que empezar de cero para no depender
@@ -88,7 +88,6 @@ function esperarServidor(intentos = 60) {
       AUTH_USER: process.env.E2E_USER || 'presales',
       AUTH_PASSWORD: process.env.E2E_PASSWORD || 'e2e-local',
       SESSION_SECRET: 'secreto-solo-de-la-corrida-e2e',
-      DATABASE_PATH: path.join(tmp, 'catalogo.sqlite'),
       AUTH_STATE_DIR: path.join(tmp, 'auth'),
     },
     stdio: ['ignore', 'pipe', 'pipe'],

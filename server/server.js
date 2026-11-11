@@ -6,8 +6,7 @@ const helmet = require('helmet');
 const compression = require('compression');
 
 const auth = require('./auth');
-const { sequelize, Vendor, Product } = require('./models');
-const seedCatalog = require('./seed/seedCatalog');
+const catalogoEnMemoria = require('./services/catalogoEnMemoria');
 const { fuentesQueAvisan, agruparAvisos, FUENTES } = require('./seed/legacyData/fuentes');
 
 const catalogRoutes = require('./routes/catalog');
@@ -136,15 +135,16 @@ const exige = (permiso) => (req, res, next) => {
 // cuales ni a que precio.
 app.get('/salud', async (req, res) => {
   try {
+    const { Vendor, Product } = await catalogoEnMemoria.listo();
     const [fabricantes, modelos] = await Promise.all([Vendor.count(), Product.count()]);
     if (!fabricantes || !modelos) {
       return res.status(503).json({ ok: false, error: 'catálogo vacío', fabricantes, modelos });
     }
     res.json({ ok: true, fabricantes, modelos });
   } catch {
-    // La base no responde: 503 y no 500, que es lo que hace que Railway retire este
+    // El catalogo no se pudo sembrar: 503 y no 500, que es lo que hace que Railway retire este
     // contenedor del balanceo en vez de mandarle trafico.
-    res.status(503).json({ ok: false, error: 'base de datos no disponible' });
+    res.status(503).json({ ok: false, error: 'catálogo no disponible' });
   }
 });
 
@@ -396,18 +396,13 @@ function avisarDeFuentes() {
 }
 
 async function start() {
-  await sequelize.sync();
-  const sembrada = await seedCatalog();
-  // Dónde vive la base y si este arranque la sembró. En producción la base tiene que salir
-  // vacía en cada despliegue: la siembra solo corre con la base vacía, así que una base que
-  // sobrevive (DATABASE_PATH dentro del volumen, por ejemplo) sigue sirviendo el catálogo de
-  // antes y los cambios de legacyData/ de este commit no llegan. Se avisa en vez de fallar:
-  // el sitio funciona, pero con datos viejos.
-  const base = sequelize.options.storage;
-  console.log(`[db] SQLite en ${base}: ${sembrada ? 'catálogo sembrado desde legacyData/ en este arranque' : 'catálogo reutilizado de un arranque anterior'}.`);
-  if (!sembrada && process.env.NODE_ENV === 'production') {
-    console.warn('[db] La base ya traía catálogo y no se volvió a sembrar: los cambios de legacyData/ de este despliegue NO están en producción. Revisa DATABASE_PATH: la base tiene que ser efímera.');
-  }
+  // El catalogo vive en memoria y se siembra desde legacyData/ en cada arranque (ADR-3, 2026-11-11):
+  // no hay base que pueda sobrevivir a un despliegue y servir el catalogo de antes, que era lo que
+  // vigilaba la linea [db] cuando era SQLite.
+  const inicio = Date.now();
+  const { Vendor, Product } = await catalogoEnMemoria.listo();
+  const [fabricantes, modelos] = await Promise.all([Vendor.count(), Product.count()]);
+  console.log(`[catalogo] En memoria, sembrado desde legacyData/ en este arranque: ${fabricantes} fabricantes y ${modelos} modelos en ${Date.now() - inicio} ms.`);
   avisarDeFuentes();
   // Sin contrasena no se puede autenticar a nadie: se falla cerrado en produccion en lugar
   // de arrancar un sitio con precios abierto al publico.

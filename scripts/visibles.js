@@ -330,7 +330,6 @@ async function levantar(dir, usuario, clave) {
       AUTH_USER: usuario,
       AUTH_PASSWORD: clave,
       SESSION_SECRET: crypto.randomBytes(24).toString('hex'),
-      DATABASE_PATH: path.join(tmp, 'catalogo.sqlite'),
       AUTH_STATE_DIR: path.join(tmp, 'auth'),
     },
     stdio: ['ignore', 'pipe', 'pipe'],
