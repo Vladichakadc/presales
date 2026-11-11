@@ -83,6 +83,22 @@ const VARIANTES = [
     ifaces: '5 GE RJ45 (1 WAN, 3 internos, 1 FortiLink) + Wi-Fi 6 doble radio, 3 SMA + 64 GB SSD',
     puertos: [P(5, 1, 'RJ45')], almacenamientoGB: 64, wifi: RADIO_50G,
     psu: { watts: 12.74, maxW: 14, amps: '0,4 A @100 V · 0,2 A @240 V' } },
+  // Las columnas FWF-50G-SFP y FWF-50G-DSL de la misma ficha R17 (p. 8 y 9 «Hardware», p. 12 a 15
+  // «Specifications», «Ordering Information»), que comparten con la 50G toda la tabla de rendimiento
+  // (IPS 2,25 Gbps, NGFW 1,25 Gbps, Threat Protection 1,1 Gbps, firewall 5/5/4 Gbps, IPsec 4,5 Gbps,
+  // 720 000 sesiones, 85 000 por segundo) y la «Radio Specifications» de la 50G. Faltaban desde el
+  // PR #140; entran el 2026-11-10. Sus FortiGate (FG-50G-SFP, FG-50G-DSL) no son variante de nada aqui:
+  // el SFP y el DSL solo cuentan como puertos de esta columna.
+  { id: 'FortiWiFi 50G-SFP', de: 'FortiGate 50G', ficha: '50G', sku: 'FWF-50G-SFP-[RC]', rc: true,
+    ifaces: '5 GE RJ45 (1 WAN, 3 internos, 1 FortiLink) + 1 GE SFP + Wi-Fi 6 doble radio, 3 SMA',
+    puertos: [P(5, 1, 'RJ45'), P(1, 1, 'SFP')], almacenamientoGB: 0, wifi: RADIO_50G,
+    psu: { watts: 12.5, maxW: 13.9, amps: '0,4 A @100 V · 0,2 A @240 V' } },
+  // «xDSL Modem Supported Mode»: VDSL2, ADSL2, ADSL2+, G.DMT, T1.413 y G.Lite; «Supported Type»:
+  // anexos A, B, I, J, M y L. La tabla no da caudal del modem DSL: no se dimensiona con el.
+  { id: 'FortiWiFi 50G-DSL', de: 'FortiGate 50G', ficha: '50G', sku: 'FWF-50G-DSL-[RC]', rc: true,
+    ifaces: '5 GE RJ45 (1 WAN, 3 internos, 1 FortiLink) + 1 DSL RJ11 (VDSL2, ADSL2/2+, G.DMT, T1.413, G.Lite; anexos A, B, I, J, M, L) + Wi-Fi 6 doble radio, 3 SMA',
+    puertos: [P(5, 1, 'RJ45')], almacenamientoGB: 0, wifi: RADIO_50G,
+    psu: { watts: 17.74, maxW: 19, amps: '0,3 A @100 V · 0,15 A @240 V' } },
   { id: 'FortiWiFi 70G', de: 'FortiGate 70G', ficha: '70G', sku: 'FWF-70G-[RC]', rc: true,
     ifaces: '10 GE RJ45 (2 WAN, 6 internos, 2 FortiLink) + Wi-Fi 6 doble radio, 3 SMA',
     puertos: [P(10, 1, 'RJ45')], almacenamientoGB: 0, wifi: RADIO(),
@@ -225,7 +241,9 @@ function casaSku(skuFicha, sku) {
    mismo equipo; sigue en «no consta». Las limitaciones de los modelos de 2 GB de RAM que dan esas
    notas (funciones de proxy, Security Rating, cp-accel-mode) no tocan IPsec. */
 const RN767_SOPORTADOS = ['FG-40F-3G4G', 'FG-50G-5G', 'FG-51G-5G',
-  'FWF-30G', 'FWF-31G', 'FWF-50G', 'FWF-51G', 'FWF-70G', 'FWF-70G-POE', 'FWF-71G'];
+  'FWF-30G', 'FWF-31G', 'FWF-50G', 'FWF-51G', 'FWF-70G', 'FWF-70G-POE', 'FWF-71G',
+  // 2026-11-10: las dos variantes que entraron ese dia, nombradas en la misma linea.
+  'FWF-50G-SFP', 'FWF-50G-DSL'];
 const codigoRn = (v) => v.sku.replace(/-\[RC\]$/, '');
 
 module.exports = { FICHAS, VARIANTES, FORTIEXTENDER, CODIGOS_REGIONALES, casaSku, RN767_SOPORTADOS, codigoRn };

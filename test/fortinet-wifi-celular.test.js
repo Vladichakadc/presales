@@ -23,13 +23,14 @@ const esc = (fisico, enlaces) => ({ topologia: { rol: 'none', enlaces: enlaces |
 const ev = (e) => M.evaluar(e, CAT, HOY);
 const porId = (id) => F.MODELS.find((m) => m.id === id);
 
-test('las once variantes existen, comparten la tabla de su base y citan su ficha', () => {
+test('las trece variantes existen, comparten la tabla de su base y citan su ficha', () => {
   assert.deepStrictEqual(V.VARIANTES.filter((v) => V.RN767_SOPORTADOS.includes(V.codigoRn(v))).map((v) => v.id).sort(),
     ['FortiGate 40F-3G4G', 'FortiGate 50G-5G', 'FortiGate 51G-5G', 'FortiWiFi 30G', 'FortiWiFi 31G', 'FortiWiFi 50G',
-      'FortiWiFi 51G', 'FortiWiFi 70G', 'FortiWiFi 70G-POE', 'FortiWiFi 71G'], 'las diez que nombra «Supported models» de 7.6.7');
+      'FortiWiFi 50G-DSL', 'FortiWiFi 50G-SFP', 'FortiWiFi 51G', 'FortiWiFi 70G', 'FortiWiFi 70G-POE', 'FortiWiFi 71G'],
+    'las doce que nombra «Supported models» de 7.6.7');
   const vars = F.MODELS.filter((m) => m.variante);
   assert.deepStrictEqual(vars.map((m) => m.id).sort(), V.VARIANTES.map((v) => v.id).sort());
-  assert.strictEqual(vars.length, 11);
+  assert.strictEqual(vars.length, 13);
   for (const m of vars) {
     const base = porId(m.variante.de);
     for (const k of ['fw', 'ips', 'ngfw', 'tp', 'vpn', 'sess', 'cps', 'ssl', 'tunGw', 'aps', 'switches']) {

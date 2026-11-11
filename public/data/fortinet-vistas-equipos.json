@@ -308,6 +308,16 @@
   "rear": "/img/equipos/fwf-50g-rear.webp",
   "fuente": "Datasheet FortiGate/FortiWiFi 50G Series (FGFWF-50G-DAT-R17-20260901), p. 7 «Hardware» — «FortiWiFi 50G/51G Series». Unidad dibujada: FortiWiFi 50G"
  },
+ "FortiWiFi 50G-SFP": {
+  "front": "/img/equipos/fwf-50g-sfp-front.webp",
+  "rear": "/img/equipos/fwf-50g-sfp-rear.webp",
+  "fuente": "Datasheet FortiGate/FortiWiFi 50G Series (FGFWF-50G-DAT-R17-20260901), p. 8 «Hardware» — «FortiGate/ FortiWiFi 50G-SFP». Unidad dibujada: FortiWiFi 50G SFP (la trasera, con las tres antenas Wi-Fi que la ficha marca «FWF models only»)"
+ },
+ "FortiWiFi 50G-DSL": {
+  "front": "/img/equipos/fwf-50g-dsl-front.webp",
+  "rear": "/img/equipos/fwf-50g-dsl-rear.webp",
+  "fuente": "Datasheet FortiGate/FortiWiFi 50G Series (FGFWF-50G-DAT-R17-20260901), p. 9 «Hardware» — «FortiGate/ FortiWiFi 50G-DSL». Unidad dibujada: FortiWiFi 50G DSL (la trasera, con las tres antenas Wi-Fi que la ficha marca «FWF models only»)"
+ },
  "FortiWiFi 50G-5G-II": {
   "front": "/img/equipos/fwf-50g-5g-ii-front.webp",
   "rear": "/img/equipos/fwf-50g-5g-ii-rear.webp",

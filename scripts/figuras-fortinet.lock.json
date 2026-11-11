@@ -1525,6 +1525,74 @@
    "sha256": "e79ad55567f7eb9371846ea7898fc0a2daaec981601be2893c638d06e1607b1b",
    "medido": "figura nueva (2026-11-10): caja de la imagen incrustada (pdfplumber) más la fila de números de su leyenda; correlación 0.948 entre la imagen incrustada y su recorte",
    "diferencia": 0
+  },
+  "/img/equipos/fwf-50g-sfp-front.webp": {
+   "documento": "fortigate-fortiwifi-50g-series.pdf",
+   "pagina": 8,
+   "caja": [
+    35.07,
+    175.55,
+    373.94,
+    68.42
+   ],
+   "tamano": [
+    1600,
+    293
+   ],
+   "sha256": "959389787121780a10b17645687d46138ec55c9a9dddec7156eb8d3688fbbdab",
+   "medido": "figura nueva (2026-11-10): caja del dibujo vectorial medida a 300 ppp sobre la página, con el método que reproduce a menos de 0,5 pt las dos cajas ya medidas de la p. 7 (FortiWiFi 50G); el borde superior de la trasera es el del chasis, no la línea de su leyenda; correlación 0.9011 entre la figura servida y su recorte a 300 ppp",
+   "diferencia": 0
+  },
+  "/img/equipos/fwf-50g-sfp-rear.webp": {
+   "documento": "fortigate-fortiwifi-50g-series.pdf",
+   "pagina": 8,
+   "caja": [
+    35.79,
+    268.39,
+    374.66,
+    69.62
+   ],
+   "tamano": [
+    1600,
+    297
+   ],
+   "sha256": "08d307779b6e78982012679491c839a3ad279077625354477e1bf1fdb1ad4fa6",
+   "medido": "figura nueva (2026-11-10): caja del dibujo vectorial medida a 300 ppp sobre la página, con el método que reproduce a menos de 0,5 pt las dos cajas ya medidas de la p. 7 (FortiWiFi 50G); el borde superior de la trasera es el del chasis, no la línea de su leyenda; correlación 0.9792 entre la figura servida y su recorte a 300 ppp",
+   "diferencia": 0
+  },
+  "/img/equipos/fwf-50g-dsl-front.webp": {
+   "documento": "fortigate-fortiwifi-50g-series.pdf",
+   "pagina": 9,
+   "caja": [
+    36.03,
+    174.11,
+    373.94,
+    68.42
+   ],
+   "tamano": [
+    1600,
+    293
+   ],
+   "sha256": "a61ae485673cef8fe546ea6b4cc496b96b26afccee1651682a6664d2ab6c05e2",
+   "medido": "figura nueva (2026-11-10): caja del dibujo vectorial medida a 300 ppp sobre la página, con el método que reproduce a menos de 0,5 pt las dos cajas ya medidas de la p. 7 (FortiWiFi 50G); el borde superior de la trasera es el del chasis, no la línea de su leyenda; correlación 0.8406 entre la figura servida y su recorte a 300 ppp",
+   "diferencia": 0
+  },
+  "/img/equipos/fwf-50g-dsl-rear.webp": {
+   "documento": "fortigate-fortiwifi-50g-series.pdf",
+   "pagina": 9,
+   "caja": [
+    35.55,
+    264.95,
+    374.42,
+    69.62
+   ],
+   "tamano": [
+    1600,
+    298
+   ],
+   "sha256": "9561f1f35909232a60f42aa77733f2bd4fdd420b5d25bc0e79f490094e9661ff",
+   "medido": "figura nueva (2026-11-10): caja del dibujo vectorial medida a 300 ppp sobre la página, con el método que reproduce a menos de 0,5 pt las dos cajas ya medidas de la p. 7 (FortiWiFi 50G); el borde superior de la trasera es el del chasis, no la línea de su leyenda; correlación 0.9428 entre la figura servida y su recorte a 300 ppp",
+   "diferencia": 0
   }
  }
 }
