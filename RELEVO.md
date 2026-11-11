@@ -343,7 +343,9 @@ traspaso (el #37, de otra sesión, se fusionó mientras se cerraba esta).
    (lo dicen en pantalla). `/api/sync/estado` dice si está puesta. Con ella, tras desplegar el PR #173
    (SDK 1.8, API 2026-10-21), una sincronización con IA y un PDF pequeño es la prueba de la llamada
    real, que desde una sesión no se puede hacer sin clave.
-5. **Cuenta de Huawei** (Info-Finder pide sesión): sin ella no hay ciclo de vida de Huawei, ni el
+5. **Borrar `DATABASE_PATH` del servicio de Railway** (PR #183): el catálogo vive en memoria y la variable ya no
+   se lee. El volumen `/data` se queda: sigue guardando `AUTH_STATE_DIR` (usuarios y fuentes subidas).
+6. **Cuenta de Huawei** (Info-Finder pide sesión): sin ella no hay ciclo de vida de Huawei, ni el
    tope de túneles y rutas por modelo AR.
 
 - **Precio de FortiWiFi y FortiExtender** (PR #140; importador ampliado en el PR #143): la lista firmada
