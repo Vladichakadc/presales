@@ -423,18 +423,12 @@ existen los workflows de transporte. Huawei y HPE niegan además el navegador au
 
 ## Mejoras propuestas sin decidir
 
+- **Figuras del FortiExtender 101G, 201F, 202F y 211G** (propuesta al cerrar el PR #172). La ficha R57 solo
 - **Quitar «1 GbE» del acceso del 7220 IXR, o decir junto a la opción que ningún modelo lo publica** (propuesta al cerrar el PR #182).
   La página lo ofrece, y su propia nota dice «solo se listan las velocidades que la línea 7220 IXR realmente publica», pero
   elegirlo da «sin diseño posible». Lo mejor sería que las opciones salieran de los puertos del catálogo (`puertosDe`)
   en vez de estar escritas en el HTML. Coste: el desplegable generado y su escenario en el caso `nokia-fabric`. Si se hace
   mal, un enlace guardado con `accesoVel=1` quedaría sin opción: lo tiene que anunciar `estado.js` (`avisoOrigen`).
-- **La sonda del SDK de Anthropic, convertida en prueba de contrato de `aiSync.js`** (propuesta al cerrar el PR #173).
-  Con el SDK real y un fetch de mentira, fijaría lo que sale por la red (modelo, `anthropic-beta`, `fallbacks`,
-  `output_config`, el documento en el mensaje del usuario y ningún parámetro de muestreo) y cómo se traduce cada
-  respuesta y cada error. La próxima versión mayor del SDK o de la API se mediría en CI y no en la primera
-  sincronización fallida. Coste: un archivo de prueba sin red, de la sonda del PR #173. Si se hace mal, fijar las
-  cabeceras que cambian en cada parche (`user-agent`, `x-stainless-*`) la pondría en rojo en cada subida.
-- **Figuras del FortiExtender 101G, 201F, 202F y 211G** (propuesta al cerrar el PR #172; en curso desde el 2026-11-11 por encargo del dueño, rama `claude/fortiextender-4g-figuras`: el listado de hardware de docs.fortinet.com ya dio la página de cada guía). La ficha R57 solo
   dibuja el WAN 50G, el 511G y el 511G-WiFi, así que los cuatro 4G salen sin figura. Su QuickStart Guide de
   docs.fortinet.com los dibuja: tres entradas en `scripts/transporte/documentos.js` (descubriendo el PDF en la
   página de la guía, como las de FortiWiFi), una corrida, y sus figuras con caja y lock como las de hoy. Evita
