@@ -1,0 +1,17 @@
+[
+  {
+    "archivo": "fortinet-fortiextender-hardware.html",
+    "para": "FORTINET",
+    "guardado": true,
+    "exploracion": true,
+    "intentos": [
+      {
+        "url": "https://docs.fortinet.com/product/fortiextender/hardware",
+        "status": 200,
+        "bytes": 222074,
+        "guardado": true,
+        "verificado": false
+      }
+    ]
+  }
+]
