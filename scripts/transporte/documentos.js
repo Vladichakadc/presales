@@ -1355,36 +1355,22 @@ module.exports = [
   { archivo: 'fortinet-fortiextender-hardware.html', tipo: 'html', para: 'FORTINET', exploracion: true, urls: [
     'https://docs.fortinet.com/product/fortiextender/hardware',
   ] },
-  // Del listado (corrida 43011692697, rama fuente/fortiextender-hardware-2026-11-11) salen sus
-  // páginas; de cada página, su PDF, solo si su ruta nombra el modelo.
-  { archivo: 'fortinet-fortiextender-101g-qsg.html', tipo: 'html', para: 'FORTINET', exploracion: true, urls: [
-    'https://docs.fortinet.com/document/fortiextender/hardware/fortiextender-101g-quickstart-guide',
+  // Del listado (corrida 43011692697) salen las páginas de las cuatro guías, pero docs.fortinet.com
+  // responde 503 a esas páginas al ejecutor (corridas 43012304805 y 43013866088, las ocho veces), y
+  // eso no se rodea. Los PDF están en el almacén de documentos de Fortinet, como las Release Notes
+  // 7.6.8 de más arriba: URL buscadas, no compuestas (2026-11-11).
+  { archivo: 'fortinet-fortiextender-101g-qsg.pdf', tipo: 'pdf', para: 'FORTINET', urls: [
+    'https://fortinetweb.s3.amazonaws.com/docs.fortinet.com/v2/attachments/01635e9f-940d-11f0-855d-6af4c3636dc7/FEX-101G-QSG.pdf',
   ] },
-  { archivo: 'fortinet-fortiextender-101g-qsg.pdf', tipo: 'pdf', para: 'FORTINET', urls: [],
-    descubrirEnlace: { de: 'fortinet-fortiextender-101g-qsg.html', contiene: '101G',
-      base: 'https://docs.fortinet.com/document/fortiextender/hardware/fortiextender-101g-quickstart-guide',
-      dominios: ['fortinet.com', 'fortinetweb.s3.amazonaws.com'] } },
-  { archivo: 'fortinet-fortiextender-201f-qsg.html', tipo: 'html', para: 'FORTINET', exploracion: true, urls: [
-    'https://docs.fortinet.com/document/fortiextender/hardware/fortiextender-201f-quickstart-guide',
+  { archivo: 'fortinet-fortiextender-201f-qsg.pdf', tipo: 'pdf', para: 'FORTINET', urls: [
+    'https://fortinetweb.s3.amazonaws.com/docs.fortinet.com/v2/attachments/bf894af8-5cbb-11ed-96f0-fa163e15d75b/FortiExtender-201F-QuickStart_Online.pdf',
   ] },
-  { archivo: 'fortinet-fortiextender-201f-qsg.pdf', tipo: 'pdf', para: 'FORTINET', urls: [],
-    descubrirEnlace: { de: 'fortinet-fortiextender-201f-qsg.html', contiene: '201F',
-      base: 'https://docs.fortinet.com/document/fortiextender/hardware/fortiextender-201f-quickstart-guide',
-      dominios: ['fortinet.com', 'fortinetweb.s3.amazonaws.com'] } },
-  { archivo: 'fortinet-fortiextender-202f-qsg.html', tipo: 'html', para: 'FORTINET', exploracion: true, urls: [
-    'https://docs.fortinet.com/document/fortiextender/hardware/fortiextender-202f-quickstart-guide',
+  { archivo: 'fortinet-fortiextender-202f-qsg.pdf', tipo: 'pdf', para: 'FORTINET', urls: [
+    'https://fortinetweb.s3.amazonaws.com/docs.fortinet.com/v2/attachments/c5ffef0b-5d2a-11ed-96f0-fa163e15d75b/FortiExtender-202F-QuickStart_Online.pdf',
   ] },
-  { archivo: 'fortinet-fortiextender-202f-qsg.pdf', tipo: 'pdf', para: 'FORTINET', urls: [],
-    descubrirEnlace: { de: 'fortinet-fortiextender-202f-qsg.html', contiene: '202F',
-      base: 'https://docs.fortinet.com/document/fortiextender/hardware/fortiextender-202f-quickstart-guide',
-      dominios: ['fortinet.com', 'fortinetweb.s3.amazonaws.com'] } },
-  { archivo: 'fortinet-fortiextender-211g-qsg.html', tipo: 'html', para: 'FORTINET', exploracion: true, urls: [
-    'https://docs.fortinet.com/document/fortiextender/hardware/fortiextender-211g-quickstart-guide',
+  { archivo: 'fortinet-fortiextender-211g-qsg.pdf', tipo: 'pdf', para: 'FORTINET', urls: [
+    'https://fortinetweb.s3.amazonaws.com/docs.fortinet.com/v2/attachments/38ede52b-9f0c-11f0-855d-6af4c3636dc7/FEX-211G-QSG.pdf',
   ] },
-  { archivo: 'fortinet-fortiextender-211g-qsg.pdf', tipo: 'pdf', para: 'FORTINET', urls: [],
-    descubrirEnlace: { de: 'fortinet-fortiextender-211g-qsg.html', contiene: '211G',
-      base: 'https://docs.fortinet.com/document/fortiextender/hardware/fortiextender-211g-quickstart-guide',
-      dominios: ['fortinet.com', 'fortinetweb.s3.amazonaws.com'] } },
   { archivo: 'fortinet-rn-8.0.2.pdf', tipo: 'pdf', para: 'FORTINET', urls: [
     'https://fortinetweb.s3.amazonaws.com/docs.fortinet.com/v2/attachments/8f18b7aa-cbdf-11f1-8c5a-8e4c95ff11ac/fortios-v8.0.2-release-notes.pdf',
   ] },
