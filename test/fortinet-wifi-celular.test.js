@@ -23,13 +23,14 @@ const esc = (fisico, enlaces) => ({ topologia: { rol: 'none', enlaces: enlaces |
 const ev = (e) => M.evaluar(e, CAT, HOY);
 const porId = (id) => F.MODELS.find((m) => m.id === id);
 
-test('las once variantes existen, comparten la tabla de su base y citan su ficha', () => {
+test('las trece variantes existen, comparten la tabla de su base y citan su ficha', () => {
   assert.deepStrictEqual(V.VARIANTES.filter((v) => V.RN767_SOPORTADOS.includes(V.codigoRn(v))).map((v) => v.id).sort(),
     ['FortiGate 40F-3G4G', 'FortiGate 50G-5G', 'FortiGate 51G-5G', 'FortiWiFi 30G', 'FortiWiFi 31G', 'FortiWiFi 50G',
-      'FortiWiFi 51G', 'FortiWiFi 70G', 'FortiWiFi 70G-POE', 'FortiWiFi 71G'], 'las diez que nombra «Supported models» de 7.6.7');
+      'FortiWiFi 50G-DSL', 'FortiWiFi 50G-SFP', 'FortiWiFi 51G', 'FortiWiFi 70G', 'FortiWiFi 70G-POE', 'FortiWiFi 71G'],
+    'las doce que nombra «Supported models» de 7.6.7');
   const vars = F.MODELS.filter((m) => m.variante);
   assert.deepStrictEqual(vars.map((m) => m.id).sort(), V.VARIANTES.map((v) => v.id).sort());
-  assert.strictEqual(vars.length, 11);
+  assert.strictEqual(vars.length, 13);
   for (const m of vars) {
     const base = porId(m.variante.de);
     for (const k of ['fw', 'ips', 'ngfw', 'tp', 'vpn', 'sess', 'cps', 'ssl', 'tunGw', 'aps', 'switches']) {
@@ -205,4 +206,23 @@ test('FortiExtender: cada fila de la tabla cita su ficha y no inventa el caudal 
   }
   const fex511 = F.FORTIEXTENDER.modelos.find((x) => x.id === 'FortiExtender 511G');
   assert.strictEqual(fex511.bajada, null);
+});
+
+// EL FORTIEXTENDER 511G-WIFI (2026-11-10): lo trae la ficha FEXT-DAT-R57 y su guía de pedido FEX-OG-R18,
+// y el catálogo no lo tenía. Mismo módem y cifras que el 511G: a igualdad, el motor deja primero al
+// 511G (va antes en la tabla), así que meterlo no cambia ninguna recomendación ni cuela el Wi-Fi.
+test('el 511G-WiFi está con las cifras de su ficha y no adelanta al 511G', () => {
+  const w = F.FORTIEXTENDER.modelos.find((x) => x.id === 'FortiExtender 511G-WiFi');
+  const g = F.FORTIEXTENDER.modelos.find((x) => x.id === 'FortiExtender 511G');
+  assert.ok(w, 'el 511G-WiFi de la ficha FEXT-DAT-R57');
+  for (const k of ['gen', 'modem', 'nat', 'ipsec', 'bajada', 'subida', 'puertos', 'poePd']) assert.deepStrictEqual(w[k], g[k], k);
+  assert.strictEqual(w.maxW, 22.5, '«Power Consumption (Maximum)» de su columna');
+  assert.strictEqual(w.care, 'FC-10-XW51G-247-02-DD', 'FortiCare de la guía de pedido');
+  assert.match(w.wifi, /802\.11ax/);
+  assert.ok(w.skuRegional && /\[RC\]$/.test(w.skus[0]), 'el código regional no se inventa');
+  const enl = [{ id: 1, tipo: 'DIA', down: 300 }, { id: 2, tipo: '4G/5G', down: 500, rol: 'respaldo' }];
+  const r = ev(esc({ celular: '5g', celularVia: 'extender' }, enl));
+  assert.strictEqual(r.celular.extender.recomendado.id, 'FortiExtender WAN 50G');
+  const alt = r.celular.extender.alternativas.map((x) => x.id);
+  assert.ok(alt.indexOf('FortiExtender 511G') < alt.indexOf('FortiExtender 511G-WiFi'), alt.join(', '));
 });

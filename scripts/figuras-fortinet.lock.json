@@ -224,6 +224,41 @@
    "url": "https://www.fortinet.com/content/dam/fortinet/assets/data-sheets/pdf/fortigate-fortiwifi-80f-series.pdf",
    "urlDe": "rama fuente/fortinet-serie, serie-informe.json; base de la URL en el workflow del commit 9eef2d8",
    "sha256": "a1e710f208eb7efb6c119e2093b5438080c4ef581f664df83f825d5313bc202e"
+  },
+  "FortiExtender.pdf": {
+   "rama": "fuente/fortinet-wifi-extender-2026-11-10",
+   "ruta": "fuente-cisco-huawei/fortinet-fortiextender-ds.pdf",
+   "url": "https://www.fortinet.com/content/dam/fortinet/assets/data-sheets/FortiExtender.pdf",
+   "urlDe": "rama fuente/fortinet-wifi-extender-2026-11-10, fuente-cisco-huawei/informe.json (traer-cisco-huawei, corrida 42799828926): 200 en esa URL",
+   "sha256": "2f41c6aee18bfebffe309c3f7e67dd5a118e6e04410737ec0e2a1282b2458925"
+  },
+  "FEX-101G-QSG.pdf": {
+   "rama": "fuente/fortiextender-qsg-2026-11-11-3",
+   "ruta": "fuente-cisco-huawei/fortinet-fortiextender-101g-qsg.pdf",
+   "url": "https://fortinetweb.s3.amazonaws.com/docs.fortinet.com/v2/attachments/01635e9f-940d-11f0-855d-6af4c3636dc7/FEX-101G-QSG.pdf",
+   "urlDe": "rama fuente/fortiextender-qsg-2026-11-11-3, fuente-cisco-huawei/informe.json (traer-cisco-huawei, corrida 43014445156): 200 en esa URL; la página de docs.fortinet.com dio 503 al ejecutor dos veces (corridas 43012304805 y 43013866088)",
+   "sha256": "b7884ee48c820a860cc752c2a83be877a0d82a8b9932550aac51abca3bb69433"
+  },
+  "FortiExtender-201F-QuickStart_Online.pdf": {
+   "rama": "fuente/fortiextender-qsg-2026-11-11-3",
+   "ruta": "fuente-cisco-huawei/fortinet-fortiextender-201f-qsg.pdf",
+   "url": "https://fortinetweb.s3.amazonaws.com/docs.fortinet.com/v2/attachments/bf894af8-5cbb-11ed-96f0-fa163e15d75b/FortiExtender-201F-QuickStart_Online.pdf",
+   "urlDe": "rama fuente/fortiextender-qsg-2026-11-11-3, fuente-cisco-huawei/informe.json (traer-cisco-huawei, corrida 43014445156): 200 en esa URL; la página de docs.fortinet.com dio 503 al ejecutor dos veces (corridas 43012304805 y 43013866088)",
+   "sha256": "cc44961e4a5153c25f5095cf59598976ae3339e51eb23de7efa411b319b05570"
+  },
+  "FortiExtender-202F-QuickStart_Online.pdf": {
+   "rama": "fuente/fortiextender-qsg-2026-11-11-3",
+   "ruta": "fuente-cisco-huawei/fortinet-fortiextender-202f-qsg.pdf",
+   "url": "https://fortinetweb.s3.amazonaws.com/docs.fortinet.com/v2/attachments/c5ffef0b-5d2a-11ed-96f0-fa163e15d75b/FortiExtender-202F-QuickStart_Online.pdf",
+   "urlDe": "rama fuente/fortiextender-qsg-2026-11-11-3, fuente-cisco-huawei/informe.json (traer-cisco-huawei, corrida 43014445156): 200 en esa URL; la página de docs.fortinet.com dio 503 al ejecutor dos veces (corridas 43012304805 y 43013866088)",
+   "sha256": "78a7124fc0bc5cd853383db37b4ed8f4b21fd6dc738236d2bb07c9e8cc2f604e"
+  },
+  "FEX-211G-QSG.pdf": {
+   "rama": "fuente/fortiextender-qsg-2026-11-11-3",
+   "ruta": "fuente-cisco-huawei/fortinet-fortiextender-211g-qsg.pdf",
+   "url": "https://fortinetweb.s3.amazonaws.com/docs.fortinet.com/v2/attachments/38ede52b-9f0c-11f0-855d-6af4c3636dc7/FEX-211G-QSG.pdf",
+   "urlDe": "rama fuente/fortiextender-qsg-2026-11-11-3, fuente-cisco-huawei/informe.json (traer-cisco-huawei, corrida 43014445156): 200 en esa URL; la página de docs.fortinet.com dio 503 al ejecutor dos veces (corridas 43012304805 y 43013866088)",
+   "sha256": "0f49d1e088a35758b29bfb789ce3392cd614cf4b251f97737e97fdbce67a053a"
   }
  },
  "figuras": {
@@ -1467,6 +1502,261 @@
    "sha256": "98ef34dfb045fccc4686724347b7431ef1f4b71afaa55d4f39611f19ebeaf636",
    "medido": "correlación 0.9756 con la figura servida, a su escala, 2026-11-09",
    "diferencia": 6.04
+  },
+  "/img/equipos/fex-50g-front.webp": {
+   "documento": "FortiExtender.pdf",
+   "pagina": 2,
+   "caja": [
+    30.0,
+    294.0,
+    296.0,
+    127.0
+   ],
+   "tamano": [
+    1000,
+    429
+   ],
+   "sha256": "d2c47530d863edc898f49a04acb5614fc017732ca7f475bbb7f9e25fcb130f5c",
+   "medido": "figura nueva (2026-11-10): caja de la imagen incrustada (pdfplumber) más la fila de números de su leyenda; correlación 0.9708 entre la imagen incrustada y su recorte",
+   "diferencia": 0
+  },
+  "/img/equipos/fex-511g-front.webp": {
+   "documento": "FortiExtender.pdf",
+   "pagina": 3,
+   "caja": [
+    18.0,
+    176.0,
+    561.0,
+    131.0
+   ],
+   "tamano": [
+    1600,
+    374
+   ],
+   "sha256": "34770c9598e9b2a14af797f4037c081d838d965da32f58d1551a5214ca62f3b5",
+   "medido": "figura nueva (2026-11-10): caja de la imagen incrustada (pdfplumber) más la fila de números de su leyenda; correlación 0.9426 entre la imagen incrustada y su recorte",
+   "diferencia": 0
+  },
+  "/img/equipos/fex-511g-wifi-front.webp": {
+   "documento": "FortiExtender.pdf",
+   "pagina": 3,
+   "caja": [
+    20.0,
+    506.0,
+    570.0,
+    127.0
+   ],
+   "tamano": [
+    1600,
+    356
+   ],
+   "sha256": "e79ad55567f7eb9371846ea7898fc0a2daaec981601be2893c638d06e1607b1b",
+   "medido": "figura nueva (2026-11-10): caja de la imagen incrustada (pdfplumber) más la fila de números de su leyenda; correlación 0.948 entre la imagen incrustada y su recorte",
+   "diferencia": 0
+  },
+  "/img/equipos/fwf-50g-sfp-front.webp": {
+   "documento": "fortigate-fortiwifi-50g-series.pdf",
+   "pagina": 8,
+   "caja": [
+    35.07,
+    175.55,
+    373.94,
+    68.42
+   ],
+   "tamano": [
+    1600,
+    293
+   ],
+   "sha256": "959389787121780a10b17645687d46138ec55c9a9dddec7156eb8d3688fbbdab",
+   "medido": "figura nueva (2026-11-10): caja del dibujo vectorial medida a 300 ppp sobre la página, con el método que reproduce a menos de 0,5 pt las dos cajas ya medidas de la p. 7 (FortiWiFi 50G); el borde superior de la trasera es el del chasis, no la línea de su leyenda; correlación 0.9011 entre la figura servida y su recorte a 300 ppp",
+   "diferencia": 0
+  },
+  "/img/equipos/fwf-50g-sfp-rear.webp": {
+   "documento": "fortigate-fortiwifi-50g-series.pdf",
+   "pagina": 8,
+   "caja": [
+    35.79,
+    268.39,
+    374.66,
+    69.62
+   ],
+   "tamano": [
+    1600,
+    297
+   ],
+   "sha256": "08d307779b6e78982012679491c839a3ad279077625354477e1bf1fdb1ad4fa6",
+   "medido": "figura nueva (2026-11-10): caja del dibujo vectorial medida a 300 ppp sobre la página, con el método que reproduce a menos de 0,5 pt las dos cajas ya medidas de la p. 7 (FortiWiFi 50G); el borde superior de la trasera es el del chasis, no la línea de su leyenda; correlación 0.9792 entre la figura servida y su recorte a 300 ppp",
+   "diferencia": 0
+  },
+  "/img/equipos/fwf-50g-dsl-front.webp": {
+   "documento": "fortigate-fortiwifi-50g-series.pdf",
+   "pagina": 9,
+   "caja": [
+    36.03,
+    174.11,
+    373.94,
+    68.42
+   ],
+   "tamano": [
+    1600,
+    293
+   ],
+   "sha256": "a61ae485673cef8fe546ea6b4cc496b96b26afccee1651682a6664d2ab6c05e2",
+   "medido": "figura nueva (2026-11-10): caja del dibujo vectorial medida a 300 ppp sobre la página, con el método que reproduce a menos de 0,5 pt las dos cajas ya medidas de la p. 7 (FortiWiFi 50G); el borde superior de la trasera es el del chasis, no la línea de su leyenda; correlación 0.8406 entre la figura servida y su recorte a 300 ppp",
+   "diferencia": 0
+  },
+  "/img/equipos/fwf-50g-dsl-rear.webp": {
+   "documento": "fortigate-fortiwifi-50g-series.pdf",
+   "pagina": 9,
+   "caja": [
+    35.55,
+    264.95,
+    374.42,
+    69.62
+   ],
+   "tamano": [
+    1600,
+    298
+   ],
+   "sha256": "9561f1f35909232a60f42aa77733f2bd4fdd420b5d25bc0e79f490094e9661ff",
+   "medido": "figura nueva (2026-11-10): caja del dibujo vectorial medida a 300 ppp sobre la página, con el método que reproduce a menos de 0,5 pt las dos cajas ya medidas de la p. 7 (FortiWiFi 50G); el borde superior de la trasera es el del chasis, no la línea de su leyenda; correlación 0.9428 entre la figura servida y su recorte a 300 ppp",
+   "diferencia": 0
+  },
+  "/img/equipos/fex-101g-front.webp": {
+   "documento": "FEX-101G-QSG.pdf",
+   "pagina": 5,
+   "caja": [
+    32.6,
+    89.8,
+    329.2,
+    122
+   ],
+   "tamano": [
+    1372,
+    508
+   ],
+   "sha256": "8a29f01776d333ffba73a6cb67ce59d00dbe34699813763d75282fe470e097ad",
+   "medido": "figura nueva (2026-11-11): caja medida a 300 ppp sobre la página (imagen incrustada más la fila de números de su leyenda); correlación 0.9932 entre la figura servida y su recorte a 300 ppp",
+   "diferencia": 0
+  },
+  "/img/equipos/fex-101g-rear.webp": {
+   "documento": "FEX-101G-QSG.pdf",
+   "pagina": 5,
+   "caja": [
+    462,
+    80.2,
+    224.2,
+    232
+   ],
+   "tamano": [
+    934,
+    967
+   ],
+   "sha256": "15c62dc8b4003e2b8eb5f1c7080c20f1fb1565c180864585c9e5c688af399bfe",
+   "medido": "figura nueva (2026-11-11): caja medida a 300 ppp sobre la página (imagen incrustada más la fila de números de su leyenda); correlación 0.9457 entre la figura servida y su recorte a 300 ppp",
+   "diferencia": 0
+  },
+  "/img/equipos/fex-211g-front.webp": {
+   "documento": "FEX-211G-QSG.pdf",
+   "pagina": 5,
+   "caja": [
+    31.4,
+    90,
+    335,
+    122
+   ],
+   "tamano": [
+    1396,
+    508
+   ],
+   "sha256": "11b68de0e42758b0447082a64807e1cf4138fd1d6c5f0960b22d5382d109f35d",
+   "medido": "figura nueva (2026-11-11): caja medida a 300 ppp sobre la página (imagen incrustada más la fila de números de su leyenda); correlación 0.9896 entre la figura servida y su recorte a 300 ppp",
+   "diferencia": 0
+  },
+  "/img/equipos/fex-211g-rear.webp": {
+   "documento": "FEX-211G-QSG.pdf",
+   "pagina": 5,
+   "caja": [
+    462,
+    80.2,
+    220.1,
+    232
+   ],
+   "tamano": [
+    917,
+    967
+   ],
+   "sha256": "699de9a2944d823720d35b8006fef41535d4db1e197a62914018621730426d03",
+   "medido": "figura nueva (2026-11-11): caja medida a 300 ppp sobre la página (imagen incrustada más la fila de números de su leyenda); correlación 0.9814 entre la figura servida y su recorte a 300 ppp",
+   "diferencia": 0
+  },
+  "/img/equipos/fex-201f-front.webp": {
+   "documento": "FortiExtender-201F-QuickStart_Online.pdf",
+   "pagina": 4,
+   "caja": [
+    25,
+    50,
+    305,
+    178
+   ],
+   "tamano": [
+    1271,
+    742
+   ],
+   "sha256": "bda5a783c96024cf7b3fbed610fa6fc2696438d1858595af938f0e04bd00411e",
+   "medido": "figura nueva (2026-11-11): caja medida a 300 ppp sobre la página (foto con sus rótulos y líneas de llamada, sin el título de la página); correlación 0.9722 entre la figura servida y su recorte a 300 ppp",
+   "diferencia": 0
+  },
+  "/img/equipos/fex-201f-rear.webp": {
+   "documento": "FortiExtender-201F-QuickStart_Online.pdf",
+   "pagina": 4,
+   "caja": [
+    80,
+    262,
+    233,
+    126
+   ],
+   "tamano": [
+    971,
+    525
+   ],
+   "sha256": "f6dbe595e07d097e412e5557dfc2fd33acaec2531c243b403a17ec9e3cf968db",
+   "medido": "figura nueva (2026-11-11): caja medida a 300 ppp sobre la página (foto con sus rótulos y líneas de llamada, sin el título de la página); correlación 0.9816 entre la figura servida y su recorte a 300 ppp",
+   "diferencia": 0
+  },
+  "/img/equipos/fex-202f-front.webp": {
+   "documento": "FortiExtender-202F-QuickStart_Online.pdf",
+   "pagina": 4,
+   "caja": [
+    25,
+    130,
+    306,
+    188
+   ],
+   "tamano": [
+    1275,
+    783
+   ],
+   "sha256": "52f95988d367b42d5f37e4c9b134560e13826e83de845c9d0b897bf34aefeda7",
+   "medido": "figura nueva (2026-11-11): caja medida a 300 ppp sobre la página (foto con sus rótulos y líneas de llamada, sin el título de la página); correlación 0.9754 entre la figura servida y su recorte a 300 ppp",
+   "diferencia": 0
+  },
+  "/img/equipos/fex-202f-rear.webp": {
+   "documento": "FortiExtender-202F-QuickStart_Online.pdf",
+   "pagina": 4,
+   "caja": [
+    388,
+    115,
+    298,
+    193
+   ],
+   "tamano": [
+    1242,
+    804
+   ],
+   "sha256": "77f69ce09e3e5a03b2f2d398bc99beeb54b89d1b8e75d5b40458d542578d8cdc",
+   "medido": "figura nueva (2026-11-11): caja medida a 300 ppp sobre la página (foto con sus rótulos y líneas de llamada, sin el título de la página); correlación 0.9772 entre la figura servida y su recorte a 300 ppp",
+   "diferencia": 0
   }
  }
 }
