@@ -705,22 +705,39 @@ function pintarCelular(r) {
   caja.hidden = false;
 }
 
-/* La figura del FortiExtender elegido (2026-11-10, encargo del dueño: «gráficos actualizados de los
-   equipos»). Sale de `fortinet-vistas-equipos.json`, con el mismo lock que las de los FortiGate (PR
-   #172), y lleva su leyenda numerada con la tabla de la ficha. Un FortiExtender que su ficha no dibuja
-   lo dice: nunca se enseña la figura de otro modelo. */
+/* Las figuras del FortiExtender elegido (2026-11-10 y 2026-11-11, encargo del dueño: «todos los
+   gráficos correspondientes»). Salen de `fortinet-vistas-equipos.json`, con el mismo lock que las de
+   los FortiGate (PR #172 y #185): las dos caras que su documento dibuje, cada una con su leyenda
+   numerada si la trae. Un FortiExtender sin figura lo dice: nunca se enseña la de otro modelo. */
 function figuraExtender(x) {
   if (!VISTAS) return ''; // el mapa aún no llegó (o no cargó): no se sabe, y no se dice nada
   const v = VISTAS[x.id];
-  if (!v || !v.front) {
-    return `<p class="fex-sin-figura" style="margin:8px 0 0">La ficha de FortiExtender no dibuja el ${esc(x.id)}: sin figura oficial.</p>`;
+  if (!v || !(v.front || v.rear)) {
+    return `<p class="fex-sin-figura" style="margin:8px 0 0">Ningún documento oficial traído dibuja el ${esc(x.id)}: sin figura.</p>`;
   }
-  const ley = v.frontLeyenda && v.frontLeyenda.filas && v.frontLeyenda.filas.length && window.FICHA && FICHA.tablaLeyenda
-    ? `<details class="ficha-vista-leyenda" style="padding:6px 0 0"><summary>Qué es cada número (${v.frontLeyenda.filas.length})</summary>${FICHA.tablaLeyenda(v.frontLeyenda, 'front')}</details>`
-    : '';
+  const cara = (src, ley, clave, nombre) => {
+    if (!src) return '';
+    const tabla = ley && ley.filas && ley.filas.length && window.FICHA && FICHA.tablaLeyenda
+      ? `<details class="ficha-vista-leyenda" style="padding:6px 0 0"><summary>Qué es cada número (${ley.filas.length})</summary>${FICHA.tablaLeyenda(ley, clave)}</details>`
+      : '';
+    return `<div class="fex-cara" data-cara="${clave}" style="margin:8px 0 0">`
+      + `<img src="${esc(src)}" alt="${nombre} del ${esc(x.id)}, de su documento oficial" loading="lazy" decoding="async" style="display:block;max-width:100%;height:auto;border:1px solid var(--rule);border-radius:4px;background:#fff">${tabla}</div>`;
+  };
   return `<figure class="fex-figura" style="margin:10px 0 0">`
-    + `<img src="${esc(v.front)}" alt="Cara de puertos del ${esc(x.id)}, de su ficha oficial" loading="lazy" decoding="async" style="display:block;max-width:100%;height:auto;border:1px solid var(--rule);border-radius:4px;background:#fff">`
-    + `<figcaption style="font-size:11px;line-height:1.45;margin-top:4px">${esc(v.fuente)}${v.rearNota ? ` ${esc(v.rearNota)}` : ''}</figcaption>${ley}</figure>`;
+    + cara(v.front, v.frontLeyenda, 'front', 'Cara de puertos')
+    + cara(v.rear, v.rearLeyenda, 'rear', 'Otra cara')
+    + `<figcaption style="font-size:11px;line-height:1.45;margin-top:4px">${esc(v.fuente)}${v.rearNota ? ` ${esc(v.rearNota)}` : ''}</figcaption></figure>`;
+}
+
+/* Lo mismo para el Excel: el FortiExtender del BOM viaja a «Fotos del equipo» detrás del FortiGate,
+   con su nombre, su pie y sus leyendas (`fotos.acompanan`, bom.js). Sin figura, no viaja. */
+function fotosExtender(r) {
+  const fex = r && r.celular && r.celular.extender;
+  const x = fex && fex.recomendado;
+  const v = x && VISTAS && VISTAS[x.id];
+  if (!v || !(v.front || v.rear)) return [];
+  return [{ modelo: x.id, qty: fex.qty, front: v.front || null, rear: v.rear || null, pie: v.fuente || '',
+    frontLeyenda: v.frontLeyenda || null, rearLeyenda: v.rearLeyenda || null }];
 }
 
 /* ══ PINTADO ══════════════════════════════════════════════════════════════════════════════ */
@@ -1495,7 +1512,7 @@ function documentoMeta(r, confirmacion) {
     ] },
     subtitulo: `${m.seg} · FortiOS · ${r.bom.nodos} nodo(s) · término ${anios} año${anios > 1 ? 's' : ''}`,
     archivo: `${borrador ? 'BORRADOR_' : ''}BOM_${m.id}`,
-    ...(v && v.front ? { fotos: { modelo: m.id, origen: 'Extraídas de los documentos oficiales de Fortinet', front: v.front, rear: v.rear || null, pie: [v.tamano, v.fuente].filter(Boolean).join(' · ') } } : {}),
+    ...(v && v.front ? { fotos: { modelo: m.id, origen: 'Extraídas de los documentos oficiales de Fortinet', front: v.front, rear: v.rear || null, pie: [v.tamano, v.fuente].filter(Boolean).join(' · '), acompanan: fotosExtender(r) } } : {}),
     notas: [
       '',
       ...(borrador ? ['BORRADOR TECNICO: NO ES UNA COTIZACION EN FIRME. Falta, para cotizar:',

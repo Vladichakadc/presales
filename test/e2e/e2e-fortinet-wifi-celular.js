@@ -76,14 +76,26 @@ const SUCURSAL = new URLSearchParams({
   t.ok(fig && fig.src === '/img/equipos/fex-50g-front.webp' && fig.ancho > 0,
     `el FortiExtender WAN 50G enseña su figura de la ficha (${fig ? `${fig.src}, ${fig.ancho} px` : 'ninguna'})`);
   t.ok(fig && fig.filas === 8, `con su leyenda de 8 números (${fig ? fig.filas : 0})`);
+  t.ok((await page.$$('#celularResultado figure.fex-figura .fex-cara')).length === 1 && /solo dibuja la cara de puertos/.test(res + (await texto('#celularResultado'))),
+    'del WAN 50G la ficha solo dibuja una cara, y lo dice');
 
   // 4G por FortiExtender: 400 Mbps no caben en el 101G (300 Mbps de bajada).
   await page.selectOption('#celularGen', '4g');
   await asentar(page);
   const res4 = await texto('#celularResultado');
   t.ok(/FortiExtender 211G/.test(res4) && /101G, su módem publica 300 Mbps/.test(res4), 'con 4G a 400 Mbps va el 211G y el 101G se aparta por su bajada');
-  t.ok(/no dibuja el FortiExtender 211G: sin figura oficial/.test(res4) && !(await page.$('#celularResultado figure.fex-figura')),
-    'el 211G, que la ficha no dibuja, lo dice y no enseña la figura de otro');
+  // El 211G, que la ficha no dibuja, enseña las dos caras de su QuickStart Guide, cada una con su leyenda (PR #185).
+  const fig4 = await page.$eval('#celularResultado', (c) => ({
+    caras: [...c.querySelectorAll('figure.fex-figura .fex-cara')].map((d) => ({ cara: d.dataset.cara, src: d.querySelector('img').getAttribute('src'), filas: d.querySelectorAll('.ficha-leyenda tbody tr').length })),
+    pie: (c.querySelector('figure.fex-figura figcaption') || {}).textContent || '',
+  })).catch(() => ({ caras: [], pie: '' }));
+  await page.waitForFunction(() => [...document.querySelectorAll('#celularResultado figure.fex-figura img')].every((i) => i.complete && i.naturalWidth > 0), null, { timeout: 15000 }).catch(() => {});
+  const anchos = await page.$$eval('#celularResultado figure.fex-figura img', (is) => is.map((i) => i.naturalWidth));
+  t.ok(fig4.caras.length === 2 && fig4.caras[0].src === '/img/equipos/fex-211g-front.webp' && fig4.caras[1].src === '/img/equipos/fex-211g-rear.webp',
+    `el 211G enseña sus dos figuras, no las de otro (${fig4.caras.map((x) => x.src).join(', ') || 'ninguna'})`);
+  t.ok(anchos.length === 2 && anchos.every((w) => w > 0), `y las dos cargan (${anchos.join(', ')} px)`);
+  t.ok(fig4.caras.length === 2 && fig4.caras.every((x) => x.filas === 6), `cada una con su leyenda de 6 números (${fig4.caras.map((x) => x.filas).join(', ')})`);
+  t.ok(/QuickStart Guide FortiExtender 211G/.test(fig4.pie), 'y el pie dice de qué documento salen');
 
   // El enlace compartido reabre lo mismo.
   const url = page.url();
