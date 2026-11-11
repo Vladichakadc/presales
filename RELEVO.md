@@ -425,12 +425,6 @@ existen los workflows de transporte. Huawei y HPE niegan además el navegador au
   lo cubre con una huella, pero en producción, con la caché del corte 2 del ADR-3, el congelado no avisaría. Coste: dos
   líneas, medidas con `catalogo-en-memoria.test.js` y `proyecciones-sin-escritura.test.js`. Si se hace mal, el modo
   estricto rompe también lo que hoy pasa en silencio (una variable sin declarar, un `this` suelto).
-- **La sonda del SDK de Anthropic, convertida en prueba de contrato de `aiSync.js`** (propuesta al cerrar el PR #173).
-  Con el SDK real y un fetch de mentira, fijaría lo que sale por la red (modelo, `anthropic-beta`, `fallbacks`,
-  `output_config`, el documento en el mensaje del usuario y ningún parámetro de muestreo) y cómo se traduce cada
-  respuesta y cada error. La próxima versión mayor del SDK o de la API se mediría en CI y no en la primera
-  sincronización fallida. Coste: un archivo de prueba sin red, de la sonda del PR #173. Si se hace mal, fijar las
-  cabeceras que cambian en cada parche (`user-agent`, `x-stainless-*`) la pondría en rojo en cada subida.
 - **Traer la guía «New Features» y la Maximum Values Table de FortiOS 8.0** (propuesta al cerrar el PR #166).
   El selector ya ofrece la 8.0, pero solo con lo que dicen las Release Notes de 8.0.2: modelos soportados,
   SSL-VPN retirado y proxy en 2 GB. Lo que de verdad es nuevo en la rama (funciones) y sus topes están en esos
