@@ -643,7 +643,8 @@ cambiar una regla. Donde el motor ordena candidatos, el empate termina en el id 
   aparta con `FORTIOS_MODELO`, hoy el FortiWiFi 50G-5G-II), el modo túnel SSL-VPN está retirado y los modelos
   de 2 GB no admiten inspección proxy. Las cifras y los topes siguen siendo los de 7.6.7 y se dice en los
   supuestos; las funciones nuevas de la rama no entran sin su documento (`test/fortinet-fortios-8.test.js`,
-  `e2e-fortinet-fortios-8.js`). Una rama nueva es una entrada del catálogo, no código en el motor.
+  `e2e-fortinet-fortios-8.js`). Una rama nueva es una entrada del catálogo, no código en el motor. La versión del motor
+  lleva su nota fechada encima, y la prueba exige que la última nota sea la de `VERSION_MOTOR` (PR #177).
 - **Aruba** (`dimensionador-aruba-edgeconnect.js`, `aruba-reglas.js`, `motor-ingenieria.js`). El
   caudal es el **Multi-Underlay Builder** (filas `{tipo, medio, down, up, rol}`; un respaldo ocupa
   puerto pero no suma); `migrarEstadoV1()` traduce los enlaces viejos. **Cada enlace va a un puerto
