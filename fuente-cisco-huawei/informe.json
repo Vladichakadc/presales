@@ -1,0 +1,62 @@
+[
+  {
+    "archivo": "fortinet-fortiextender-101g-qsg.pdf",
+    "para": "FORTINET",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://fortinetweb.s3.amazonaws.com/docs.fortinet.com/v2/attachments/01635e9f-940d-11f0-855d-6af4c3636dc7/FEX-101G-QSG.pdf",
+        "status": 200,
+        "bytes": 5254175,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "fortinet-fortiextender-201f-qsg.pdf",
+    "para": "FORTINET",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://fortinetweb.s3.amazonaws.com/docs.fortinet.com/v2/attachments/bf894af8-5cbb-11ed-96f0-fa163e15d75b/FortiExtender-201F-QuickStart_Online.pdf",
+        "status": 200,
+        "bytes": 4535501,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "fortinet-fortiextender-202f-qsg.pdf",
+    "para": "FORTINET",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://fortinetweb.s3.amazonaws.com/docs.fortinet.com/v2/attachments/c5ffef0b-5d2a-11ed-96f0-fa163e15d75b/FortiExtender-202F-QuickStart_Online.pdf",
+        "status": 200,
+        "bytes": 3637993,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "fortinet-fortiextender-211g-qsg.pdf",
+    "para": "FORTINET",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://fortinetweb.s3.amazonaws.com/docs.fortinet.com/v2/attachments/38ede52b-9f0c-11f0-855d-6af4c3636dc7/FEX-211G-QSG.pdf",
+        "status": 200,
+        "bytes": 5119529,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  }
+]
