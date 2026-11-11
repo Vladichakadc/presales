@@ -323,8 +323,9 @@ traspaso (el #37, de otra sesión, se fusionó mientras se cerraba esta).
   pintaría de vigentes a los 47 FortiGate que nadie miró. Lo cierra mirar esos 47 en el portal: los que
   tengan fecha entran en `EOL_ANNOUNCED`, y con la línea entera mirada la fuente pasa a
   `campos: ['eolAnnounced']` y `modelos: '*'`.
-0. **Borrar las ramas** `claude/leyendas-figuras-cisco`, `claude/leyendas-retoques` y
-   `claude/ia-pliego-cisco` (el PR #23 ya está cerrado): el control de permisos de la sesión no deja
+0. **Borrar las ramas** `claude/leyendas-figuras-cisco`, `claude/leyendas-retoques`,
+   `claude/ia-pliego-cisco` (el PR #23 ya está cerrado) y `claude/fortinet-wifi-celular` (fusionada en el PR #140;
+   el 2026-11-11 el borrado desde la sesión lo cortó el proxy de git): el control de permisos de la sesión no deja
    borrar ramas remotas. Sus commits están en `main` o en sus PR cerrados; es solo limpieza.
 
 1. **Proteger `main`** (el 2026-11-01 se volvió a intentar por la API de rulesets y el control de permisos de la sesión la denegó de nuevo): *Settings → Rules → Rulesets* (o *Branches*): exigir las comprobaciones
@@ -354,6 +355,9 @@ traspaso (el #37, de otra sesión, se fusionó mientras se cerraba esta).
 ### Se pueden hacer desde una sesión, sin acceso especial
 
 1. **Mejoras propuestas**: las de abajo, cuando el dueño las apruebe (no se hacen solas).
+2. **Figuras de los FortiGate 40F-3G4G, 50G-5G y 51G-5G** (encargo del dueño del 2026-11-11): de la página
+   «Hardware» de su ficha por serie, como las de los FortiWiFi. Esperan a que se fusione el PR #185, que toca
+   `fortinet-vistas-equipos.json` y `figuras-fortinet.lock.json`.
 2. **Fases 2 y 3 de la auditoría de los dimensionadores** (decididas por el dueño el 2026-11-10: «Ejecuta fase 2 y fase 3»;
    las fases 0 y 1 se hicieron en los PR #150, #153, #156 y #162). Fase 2, un corte por PR medido con `npm run
    equivalencia`: 1, la lista de materiales de Aruba fuera de `renderBom()` (hecho, PR #167); 2, Juniper con motor,
