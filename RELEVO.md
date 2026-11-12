@@ -412,11 +412,7 @@ traspaso (el #37, de otra sesión, se fusionó mientras se cerraba esta).
 - **Fortinet**: el resto de F4, F5 (derates), 17 renovaciones sin precio en la lista firmada y
   co-term. F3 cerrado (PR #56); el heartbeat, dicho para las series con licencia única.
   Del PR #140: la PQC del FortiWiFi 50G-5G-II (las otras doce la llevan desde el PR #146 y el #181, por
-  «Supported models» de FortiOS 7.6.7, que dice FWF-50G-5G y no FWF-50G-5G-II; revisado el 2026-11-09: tampoco lo nombran las de 7.6.8, build 3744 con edición del 2026-11-03, ni las de 8.0.2, build 0251, traídas en el PR #163; tres ediciones seguidas dicen FWF-50G-5G, así que no lo cerrarán otras Release Notes sino un documento de Fortinet que diga qué FortiOS corre el FWF-50G-5G-II, su ficha o una respuesta escrita de Fortinet), el caudal del módem integrado (ninguna ficha lo publica) y las
-  figuras de las variantes (están en sus fichas por serie).
-  Del PR #172: enseñar en la página las figuras de FortiExtender (WAN 50G, 511G y 511G-WiFi, ya en
-  `fortinet-vistas-equipos.json` con su leyenda) junto al FortiExtender elegido y en «Fotos del equipo» del
-  Excel; espera a que se fusione el #166, que tiene tomada la página de Fortinet.
+  «Supported models» de FortiOS 7.6.7, que dice FWF-50G-5G y no FWF-50G-5G-II; revisado el 2026-11-09: tampoco lo nombran las de 7.6.8, build 3744 con edición del 2026-11-03, ni las de 8.0.2, build 0251, traídas en el PR #163; tres ediciones seguidas dicen FWF-50G-5G, así que no lo cerrarán otras Release Notes sino un documento de Fortinet que diga qué FortiOS corre el FWF-50G-5G-II, su ficha o una respuesta escrita de Fortinet) y el caudal del módem integrado (ninguna ficha lo publica).
 
 ### Bloqueado por acceso (se reporta, no se rodea)
 
@@ -425,12 +421,6 @@ fabricantes (y `presales.up.railway.app`); los ejecutores de GitHub Actions sí 
 existen los workflows de transporte. Huawei y HPE niegan además el navegador automatizado (Akamai).
 
 ## Mejoras propuestas sin decidir
-
-- **Que la medición de una caja nueva de Fortinet compruebe que no coincide con la de otra figura del mismo
-  documento** (propuesta al cerrar el PR #188). La trasera del FortiWiFi 50G-5G-II tenía en el lock la caja de la
-  del FortiGate 50G-5G de la misma página: dos dibujos casi iguales engañaron a la correlación. Una comprobación en
-  `npm run figuras-fortinet` (dos cajas de la misma página que se solapan más de la mitad son un error, salvo las
-  declaradas) lo frenaría. Cuesta esa comprobación y su prueba; mal ajustada, frenaría figuras legítimas muy juntas.
 
 - **Servir cada proyección ya serializada y cacheada por arranque** (propuesta al cerrar el PR #183). El catálogo
   vive en memoria y no cambia sin un despliegue, pero cada petición vuelve a proyectar (Fortinet, 215 KB). El PR
