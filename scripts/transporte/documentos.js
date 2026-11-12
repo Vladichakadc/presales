@@ -1835,6 +1835,16 @@ module.exports = [
   { archivo: 'fortinet-fortiextender-vehicle-212f-qsg.pdf', tipo: 'pdf', para: 'FORTINET', urls: [
     'https://fortinetweb.s3.amazonaws.com/docs.fortinet.com/v2/attachments/7c0ddfdb-d4ff-11ef-8766-ca4255feedd9/FortiExtenderVehicle-212F-QuickStart_Online.pdf',
   ] },
+  // 2026-11-12 (pendientes del FortiWiFi 50G-5G-II): las Release Notes de 7.6.7, 7.6.8 y 8.0.2 nombran
+  // «FWF-50G-5G», y su SKU es FWF-50G-5G-II; la ficha R17 da el módem (Telit FN990A28-HP) sin su caudal.
+  // La guía de pedido NGFW y la Wireless Product Matrix (URL buscadas) pueden decir si son el mismo modelo
+  // y dar la bajada y la subida del módem.
+  { archivo: 'fortinet-og-ngfw.pdf', tipo: 'pdf', para: 'FORTINET', urls: [
+    'https://www.fortinet.com/content/dam/fortinet/assets/data-sheets/og-next-generation-firewall.pdf',
+  ] },
+  { archivo: 'fortinet-wireless-product-matrix.pdf', tipo: 'pdf', para: 'FORTINET', urls: [
+    'https://www.fortinet.com/content/dam/fortinet/assets/data-sheets/Fortinet_Wireless_Product_Matrix.pdf',
+  ] },
   // 2026-11-11 (mejora propuesta al cerrar el PR #166, aprobada por el dueño): lo que las Release
   // Notes de 8.0.2 no traen. La guía «New Features» de FortiOS 8.0 (portada e índice por versión,
   // URL buscadas) va como exploración: no se sabe aún si docs.fortinet.com la sirve al ejecutor.
