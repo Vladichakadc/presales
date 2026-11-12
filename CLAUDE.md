@@ -500,7 +500,10 @@ Módulos compartidos:
   que la página declara migrar; un `<select>` que el HTML trae vacío y se rellena con el catálogo se
   declara en `opcionesTarde` y se repone cuando llegan sus opciones, o se anuncia si ya estaban
   (MikroTik, `apModel`; Aruba, `pickModel`, que su `change` marca como elegido a mano, y `selTier`);
-  `test/opciones-tarde.test.js` frena un desplegable vacío del enlace sin declarar.
+  `test/opciones-tarde.test.js` frena un desplegable vacío del enlace sin declarar. Y uno de opciones
+  escritas en el HTML se declara en `opcionesFijas` (2026-11-12, PR #204; hoy el `accesoVel` del 7220): si
+  el enlace pide una que ya no está, `avisoOrigen` dice el campo, lo pedido y lo que quedó
+  (`e2e-enlace-opcion-retirada.js`); nunca en uno que rellena el catálogo, que daría un aviso falso.
 - `procedencia.js` — la pestaña de fuentes (se pide **al verse**, no al abrir la página: `IntersectionObserver`, y sin él en el acto; 2026-11-01, PR #120, `test/procedencia-perezosa.test.js`; y **solo su fabricante**, `/api/fuentes?vendor=<code>`, como «Supuestos» y el arranque de Fortinet —misma forma, 404 si no existe; sin el parámetro, los siete—, PR #121, `test/fuentes-por-fabricante.test.js`; leer, subir, borrar, contrastar en el acto con
   `contraste.js`: cambios, altas, sin cambio y columnas ignoradas; nunca adivina un mapeo); y
   «↻ Actualizar fuentes», 2026-10-29: `/api/fuentes/:vendor/salud` con `server/vigiaEnVivo.js` vuelve a
@@ -819,7 +822,8 @@ la página, y la prueba sujeta esas dos líneas.
   sitio (el JSON guarda Mbps).
 - **Nokia** (`nokia-sr-motor.js`, `nokia-fabric-motor.js`): dos dimensionadores — 7750 SR / 7250 IXR
   (equipo, por plataforma; chasis modulares apartados por densidad) y 7220 IXR (fabric,
-  `calcularFabric`). Capacidad en Gbps; `aMbps()` es el único que lo sabe.
+  `calcularFabric`). Capacidad en Gbps; `aMbps()` es el único que lo sabe. El acceso del 7220 ofrece solo
+  las velocidades que publica algún leaf (`velocidadesAcceso`; la prueba ata el desplegable al catálogo).
 - **Starlink LEO**: motor canónico integrado byte a byte (`starlink-leo-dimensionador/` es la línea
   base para verificar su SHA-256). La hoja servida no es la de la línea base: lleva la piel del
   portal y conserva las variables que el motor escribe en línea (`--red`, `--amber`, `--green`,
