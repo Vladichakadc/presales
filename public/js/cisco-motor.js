@@ -844,7 +844,11 @@
   // Evalúa cada modelo de la plataforma contra la demanda. Devuelve todos, con su utilización y
   // sus motivos; los que cumplen van ordenados por su capacidad equivalente para esta mezcla de
   // tráfico (la menor primero: el más pequeño que cumple).
-  function evaluar(models, p) {
+  // `opciones` (2026-11-12, PR de la firma común): con `rango` y `recomendar` de FICHA, el motor da
+  // también `orden` (los modelos que cumplen, vigente antes que fuera de venta y, dentro, el orden de
+  // `candidatos`) y `recomendado`. Eran dos líneas de la página. Sin opciones, todo cuenta como vigente
+  // y se recomienda el primero. `candidatos` no cambia: sigue siendo la lista de filas por capacidad.
+  function evaluar(models, p, opciones) {
     const d = demanda(p);
     // Los túneles escritos mandan; sin ellos, los que da la topología.
     const topo = tunelesTopologia(p.topologia, d.modo);
@@ -898,7 +902,12 @@
       // Desempate por id natural: el resultado no debe depender del orden en que llega el catalogo.
       || String(a.m.id).localeCompare(String(b.m.id), 'en', { numeric: true }));
     const apartados = filas.filter((f) => !f.ok);
-    return { demanda: d, plataforma: plat, seguridad: seg, tlsEnRouter, filas, candidatos, apartados, topo, tunelesManual: num((p.escala || {}).tuneles) > 0,
+    const o = opciones || {};
+    const rango = typeof o.rango === 'function' ? o.rango : () => 0;
+    // Orden estable: dentro de cada grupo de ciclo de vida queda el de `candidatos` (capacidad e id).
+    const orden = candidatos.map((f) => f.m).sort((a, b) => rango(a) - rango(b));
+    const recomendado = typeof o.recomendar === 'function' ? o.recomendar(orden) : orden[0] || null;
+    return { demanda: d, plataforma: plat, seguridad: seg, tlsEnRouter, filas, candidatos, apartados, orden, recomendado, topo, tunelesManual: num((p.escala || {}).tuneles) > 0,
       enlaces: enlacesValidos(p.enlaces), enlacesCaudal: enlacesFrenteCaudal(p),
       ha: p.ha ? { tloc: !!p.haTloc, celular: enlacesValidos(p.enlaces).some((x) => x.tipo === 'celular') } : null };
   }
