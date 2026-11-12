@@ -323,10 +323,17 @@ traspaso (el #37, de otra sesión, se fusionó mientras se cerraba esta).
   pintaría de vigentes a los 47 FortiGate que nadie miró. Lo cierra mirar esos 47 en el portal: los que
   tengan fecha entran en `EOL_ANNOUNCED`, y con la línea entera mirada la fuente pasa a
   `campos: ['eolAnnounced']` y `modelos: '*'`.
-0. **Borrar las ramas** `claude/leyendas-figuras-cisco`, `claude/leyendas-retoques`,
-   `claude/ia-pliego-cisco` (el PR #23 ya está cerrado) y `claude/fortinet-wifi-celular` (fusionada en el PR #140;
-   el 2026-11-11 el borrado desde la sesión lo cortó el proxy de git): el control de permisos de la sesión no deja
-   borrar ramas remotas. Sus commits están en `main` o en sus PR cerrados; es solo limpieza.
+0. **Borrar las ramas ya cerradas** (revisado el 2026-11-12; las cuatro de la lista anterior ya no existen). El control de
+   permisos de la sesión deniega el borrado también por la API (`DELETE …/git/refs/heads/…`), así que va a mano.
+   `main` ya contiene `claude/archivar-codigo-muerto`, `claude/reservar-segunda-mirada`, `claude/fortiwifi-50g-sfp-dsl`,
+   `claude/fortiextender-4g-figuras`, `claude/fortiextender-figura-pagina` y `claude/traspasos-cedidas`. Dos más
+   tienen commits fuera de `main`, pero su trabajo ya está hecho por otro camino:
+   - `claude/skus-fortinet-variantes`: PR #142, cuyo importador de FortiWiFi y FortiExtender entró por el PR #143.
+   - `claude/contrato-motor`: cedida a la fase 2 por decisión del dueño; `VERSION_MOTOR` entró en los motores por
+     los PR #167 a #171. Le queda solo un `motores.lock.json` que frena cambiar un motor sin subir su versión: si se
+     quiere, es una mejora aparte.
+
+   `npm run traspasos` dice el comando de cada una. Es solo limpieza.
 
 1. **Proteger `main`** (el 2026-11-01 se volvió a intentar por la API de rulesets y el control de permisos de la sesión la denegó de nuevo): *Settings → Rules → Rulesets* (o *Branches*): exigir las comprobaciones
    `verificar` y `pantallas` y «Require branches to be up to date before merging», **con el
@@ -422,6 +429,14 @@ existen los workflows de transporte. Huawei y HPE niegan además el navegador au
 
 ## Mejoras propuestas sin decidir
 
+- **La misma regla para todo el catálogo de Fortinet: cada modelo y cada variante, con figura o con su motivo**
+  (propuesta al cerrar el PR #193). La prueba del #193 cubre los siete FortiExtender; los 71 de `MODELS` y las 13
+  `VARIANTES` de `fortinetVariantes.js` también tienen figura hoy (medido el 2026-11-12), pero nada lo exige: un
+  FortiGate o un FortiWiFi nuevo entraría sin figura en silencio. Sería extender `sinCubrir` de
+  `test/fortiextender-figuras.test.js` a esas dos tablas, con su `SIN_FIGURA`. No fija un número de modelos
+  con foto, que es lo que `fortinet-vistas-equipos.test.js` evita a propósito: fija que no haya hueco sin motivo.
+  Coste: una prueba sin red. Si se hace mal, una variante nueva sin dibujo propio tentaría a servir el de su
+  FortiGate, que el PR #148 prohibió; la salida es `SIN_FIGURA`, nunca la figura de otro.
 - **Servir cada proyección ya serializada y cacheada por arranque** (propuesta al cerrar el PR #183). El catálogo
   vive en memoria y no cambia sin un despliegue, pero cada petición vuelve a proyectar (Fortinet, 215 KB). El PR
   #175 garantiza que las proyecciones no escriben en `legacyData/`, así que una caché por función y argumento es
@@ -460,13 +475,6 @@ existen los workflows de transporte. Huawei y HPE niegan además el navegador au
   sin forma de pedir un módulo, el desempate nunca lo recomienda y una sucursal que lo necesita sale con un SRX300
   que no lo admite. Coste: una casilla y los módulos de la guía de hardware de la línea SRX300, con su documento en
   `fuentes.js` (sin él no entra ninguno). Si se hace mal, se ofrecería un módulo que el modelo no admite.
-- **Que `npm run traspasos` cuente las ramas cedidas aparte** (propuesta al cerrar el PR #164). Desde ese PR
-  la reserva que pierde una carrera deja su rama con el traspaso «cerrado (cedido…)» en vez de borrarla, porque el
-  proxy de git corta a veces el borrado. `traspasos` la sigue listando entre los temas en curso; se diría en una
-  línea aparte («CEDIDA a <rama>, se puede borrar») como ya hace con las CERRADO EN MAIN, con el comando para
-  borrarla. Evita que una sesión lea una rama cedida como trabajo de otra. Cuesta un estado más en `traspasos.js`
-  y su prueba. Si se hace mal, una rama con un traspaso cerrado por otra razón saldría como cedida: se reconoce
-  por el texto «cedido:», que solo escribe `reservar`.
 - **`traer-juniper-matrix.yml` falla al descargar** desde el 2026-09-02 (visto otra vez el 2026-11-10, corrida
   42749825425). Los logs de Actions no se leen desde una sesión: hay que mirarlos desde GitHub para saber si
   Juniper cambió la URL o corta al ejecutor.
