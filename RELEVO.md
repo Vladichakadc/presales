@@ -344,7 +344,9 @@ traspaso (el #37, de otra sesión, se fusionó mientras se cerraba esta).
    (lo dicen en pantalla). `/api/sync/estado` dice si está puesta. Con ella, tras desplegar el PR #173
    (SDK 1.8, API 2026-10-21), una sincronización con IA y un PDF pequeño es la prueba de la llamada
    real, que desde una sesión no se puede hacer sin clave.
-5. **Cuenta de Huawei** (Info-Finder pide sesión): sin ella no hay ciclo de vida de Huawei, ni el
+5. **Borrar `DATABASE_PATH` del servicio de Railway** (PR #183): el catálogo vive en memoria y la variable ya no
+   se lee. El volumen `/data` se queda: sigue guardando `AUTH_STATE_DIR` (usuarios y fuentes subidas).
+6. **Cuenta de Huawei** (Info-Finder pide sesión): sin ella no hay ciclo de vida de Huawei, ni el
    tope de túneles y rutas por modelo AR.
 
 - **Precio de FortiWiFi y FortiExtender** (PR #140; importador ampliado en el PR #143): la lista firmada
@@ -361,8 +363,8 @@ traspaso (el #37, de otra sesión, se fusionó mientras se cerraba esta).
    orden de candidatos y caso de contraste (hecho, PR #168); 3, la lista de Cisco al motor (hecho, PR #169); 4, Nokia 7750 y 7220 con motor propio (hecho, PR #170); 5,
    las listas de Huawei y MikroTik al motor, con la versión de motor de cada uno en «Supuestos» (hecho, PR #171). Fase 3: el catálogo
    en memoria sin SQLite (ADR-3, su opción recomendada A, en tres cortes: 1, los modelos en memoria medidos contra SQLite y
-   el orden escrito en las consultas, hecho, PR #174; 2, el servidor siembra en memoria y las rutas leen de él; 3, fuera
-   SQLite, Sequelize y `sqlite3`, con el «aplicar» local en `npm run propuesta`), y las dependencias mayores de una en una
+   el orden escrito en las consultas, hecho, PR #174; 2 y 3, el servidor sirve el catálogo en memoria y salen SQLite,
+   Sequelize y `sqlite3`, con el «aplicar» en `npm run propuesta`, hecho, PR #183), y las dependencias mayores de una en una
    (hecho, PR #173: dotenv 18, ESLint 10, SDK de Anthropic 1.8 y pdf-parse 2). Los precios de Cisco, Huawei, Juniper y Nokia los cierra el dueño con las listas de un distribuidor.
 
 ### Esperan un documento oficial (se cierran trayéndolo por Actions)
@@ -429,6 +431,12 @@ existen los workflows de transporte. Huawei y HPE niegan además el navegador au
   del FortiGate 50G-5G de la misma página: dos dibujos casi iguales engañaron a la correlación. Una comprobación en
   `npm run figuras-fortinet` (dos cajas de la misma página que se solapan más de la mitad son un error, salvo las
   declaradas) lo frenaría. Cuesta esa comprobación y su prueba; mal ajustada, frenaría figuras legítimas muy juntas.
+
+- **Servir cada proyección ya serializada y cacheada por arranque** (propuesta al cerrar el PR #183). El catálogo
+  vive en memoria y no cambia sin un despliegue, pero cada petición vuelve a proyectar (Fortinet, 215 KB). El PR
+  #175 garantiza que las proyecciones no escriben en `legacyData/`, así que una caché por función y argumento es
+  segura. Coste: el mapa y la prueba de que la caché sirve lo mismo que una proyección nueva. Si se hace mal,
+  `toFuentes`, que lee las fuentes subidas al volumen, quedaría congelada: va fuera de la caché.
 
 - **Borrar desde Actions las ramas que ya no bloquean** (propuesta al cerrar el PR #165). Desde una sesión el
   proxy de git corta el borrado de ramas remotas («the remote end hung up»: el 2026-11-09 y el 2026-11-10 fallaron

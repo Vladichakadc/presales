@@ -383,7 +383,7 @@ function aplicar(archivo) {
 
   console.log(`\nEscritos ${escritos} valores en ${path.relative(process.cwd(), ARCHIVO_CATALOGO)}.`);
   console.log('Vuelve a correr con --check para ver la cobertura que queda.');
-  console.log('\nSiguiente paso: borra database.sqlite para forzar el reseed, levanta el servidor');
+  console.log('\nSiguiente paso: reinicia el servidor (el catalogo se siembra en memoria al arrancar)');
   console.log('y comprueba la pagina antes de desplegar.');
   console.log('Y si la matriz trae cifras que este catalogo declara "sin confirmar" en su');
   console.log('cabecera (las sesiones de la linea SRX300, el IPS de la generacion 2024),');

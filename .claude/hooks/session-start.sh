@@ -17,8 +17,8 @@
 #     —fallo cerrado, deliberado— y cada corrida de verificacion genera la suya, que vive y
 #     muere con esa corrida. Un valor por defecto escrito aqui seria justo el secreto de
 #     larga vida que este repositorio ya rechazo al descartar el entorno de staging.
-#   · NO siembra la base. `database.sqlite` esta en .gitignore y `seedCatalog.js` la puebla
-#     sola en el primer arranque desde `legacyData/`.
+#   · NO siembra nada: el catalogo vive en memoria y `seedCatalog.js` lo siembra desde
+#     `legacyData/` en cada arranque del servidor (ADR-3, 2026-11-11).
 set -euo pipefail
 
 # Solo en remoto: en una maquina propia las dependencias ya estan y volver a instalarlas en

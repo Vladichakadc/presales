@@ -19,11 +19,9 @@ name: pantallas
 # Se quedan en el mismo job porque los tres necesitan exactamente lo que este ya monta:
 # Chromium, un servidor y una clave efimera.
 #
-# POR QUE AQUI Y NO CONTRA UN SITIO DESPLEGADO. La base de produccion es efimera: `DATABASE_PATH`
-# apunta a un archivo dentro del contenedor (`./database.sqlite`, leido de la linea [db] del
-# arranque el 2026-10-02), que no sobrevive al despliegue, asi que se resiembra desde
-# `server/seed/legacyData/` en CADA despliegue: lo que pinta una pantalla es funcion del commit,
-# no del entorno. Este job
+# POR QUE AQUI Y NO CONTRA UN SITIO DESPLEGADO. El catalogo vive en memoria y se siembra desde
+# `server/seed/legacyData/` en CADA arranque (ADR-3, 2026-11-11; antes, una SQLite efimera): lo que
+# pinta una pantalla es funcion del commit, no del entorno. Este job
 # arranca ESE MISMO COMMIT con NODE_ENV=production, asi que renderiza exactamente los mismos
 # datos que produccion. La alternativa que se estudio -un entorno de staging en Railway- habria
 # anadido una segunda copia publica del catalogo de PRECIOS, tras una contrasena guardada en
@@ -144,7 +142,6 @@ jobs:
           AUTH_USER: verificacion
           SESSION_SECRET: secreto-solo-de-esta-corrida
           AUTH_STATE_DIR: ./.auth-pantallas
-          DATABASE_PATH: ./pantallas.sqlite
         run: |
           # La contrasena se genera aqui y no sale del ejecutor: nunca es un secreto del
           # repositorio ni una credencial que abra nada mas que este proceso efimero.
