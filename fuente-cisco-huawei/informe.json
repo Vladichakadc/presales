@@ -1,0 +1,17 @@
+[
+  {
+    "archivo": "fortinet-fortiextender-vehicle-212f-qsg.pdf",
+    "para": "FORTINET",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://fortinetweb.s3.amazonaws.com/docs.fortinet.com/v2/attachments/7c0ddfdb-d4ff-11ef-8766-ca4255feedd9/FortiExtenderVehicle-212F-QuickStart_Online.pdf",
+        "status": 200,
+        "bytes": 9992557,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  }
+]
