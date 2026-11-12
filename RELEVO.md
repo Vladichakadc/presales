@@ -466,11 +466,13 @@ existen los workflows de transporte. Huawei y HPE niegan además el navegador au
   sin forma de pedir un módulo, el desempate nunca lo recomienda y una sucursal que lo necesita sale con un SRX300
   que no lo admite. Coste: una casilla y los módulos de la guía de hardware de la línea SRX300, con su documento en
   `fuentes.js` (sin él no entra ninguno). Si se hace mal, se ofrecería un módulo que el modelo no admite.
-- **Que el modal de accesorios de Aruba diga qué ya pone el diseño** (propuesta al cerrar el PR #179). Desde ese PR,
-  un accesorio del modal que el motor también pone sale una sola vez, pero desaparece de la selección sin explicarlo; el
-  modal lo marcaría «ya lo pone el diseño (por …)» y no dejaría elegirlo. Coste: leer las filas con `por` del último
-  `lineasBom` al abrir el modal y su prueba. Si se hace mal, un accesorio que el motor deja de poner seguiría bloqueado:
-  la marca se calcula al abrir, nunca se guarda.
+- **Que `npm run traspasos` cuente las ramas cedidas aparte** (propuesta al cerrar el PR #164). Desde ese PR
+  la reserva que pierde una carrera deja su rama con el traspaso «cerrado (cedido…)» en vez de borrarla, porque el
+  proxy de git corta a veces el borrado. `traspasos` la sigue listando entre los temas en curso; se diría en una
+  línea aparte («CEDIDA a <rama>, se puede borrar») como ya hace con las CERRADO EN MAIN, con el comando para
+  borrarla. Evita que una sesión lea una rama cedida como trabajo de otra. Cuesta un estado más en `traspasos.js`
+  y su prueba. Si se hace mal, una rama con un traspaso cerrado por otra razón saldría como cedida: se reconoce
+  por el texto «cedido:», que solo escribe `reservar`.
 - **`traer-juniper-matrix.yml` falla al descargar** desde el 2026-09-02 (visto otra vez el 2026-11-10, corrida
   42749825425). Los logs de Actions no se leen desde una sesión: hay que mirarlos desde GitHub para saber si
   Juniper cambió la URL o corta al ejecutor.

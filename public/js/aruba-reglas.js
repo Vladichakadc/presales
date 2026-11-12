@@ -625,7 +625,9 @@
   // (fase 2 de la auditoria del 2026-11-09, ADR-1).
   // 1.0.1 (2026-11-11): un accesorio que el motor pone y que también se eligió en el modal sale una
   // sola vez, en esa misma pasada (antes, la fila manual se soltaba solo para la siguiente).
-  const VERSION_MOTOR = '1.0.1';
+  // 1.0.2 (2026-11-11): lineasBom devuelve `delMotor`, lo que pone el diseño con SKU del catálogo de
+  // accesorios y su origen, para que el modal lo marque; las filas no cambian.
+  const VERSION_MOTOR = '1.0.2';
 
   /* LA LISTA DE MATERIALES (fase 2 de la auditoria del 2026-11-09, ADR-1, primer corte). Las filas
      que renderBom() armaba entre el pintado salen aqui, sin DOM ni estado: la pagina lee lo que hay
@@ -708,6 +710,9 @@
     // fila manual y el Excel exportado entonces cotizaba el kit dos veces (mejora propuesta al cerrar el
     // PR #167, hecha el 2026-11-11).
     const manuales=[];
+    // Lo que pone el diseño con un SKU del catálogo de accesorios, y por qué (2026-11-11, mejora
+    // propuesta al cerrar el PR #179): el modal lo marca en vez de dejar que se elija y desaparezca.
+    const delMotor=[];
     Object.entries(acc).forEach(([sku,n])=>{
       const a=ACCESSORY_CATALOG[sku];
       if(!a||n<=0) return;
@@ -723,6 +728,7 @@
       // suelta: duplicar el kit en la cotización sería un error de pedido.
       suelta(sku);
       const a=ACCESSORY_CATALOG[sku]||null;
+      delMotor.push({sku, qty:qIny, origen:'inyectado', por});
       filas.push({por, cat:'Accesorios', desc:a?a.name:sku, sku, qty:qIny,
         unit:a&&a.listPrice!=null?a.listPrice:null, nota});
     });
@@ -747,6 +753,7 @@
       // en el modal, la línea del builder manda y la manual se suelta.
       suelta(sku);
       const a=ACCESSORY_CATALOG[sku];
+      delMotor.push({sku, qty:qtyO, origen:'enlace', medio});
       filas.push({cat:'Accesorios', desc:a.name, sku, qty:qtyO, unit:a.listPrice!=null?a.listPrice:null,
         nota:`Óptica ${medio} × ${qtyO} (${nLinks} enlace${nLinks===1?'':'s'}${esEC&&qty>1?' — EdgeHA: cada enlace aterriza en UN chasis del par (VSG SD-Branch, fig. «EC HA»)':qty>1?` × ${qty} unidades`:''}) — List Price de la lista oficial (vigencia ${a.vigencia||'s/f'}); tipo seleccionado en el builder WAN`});
     });
@@ -776,6 +783,7 @@
         // modal, la línea del builder manda y la manual se suelta.
         suelta(ha.sku);
         const aHA=ACCESSORY_CATALOG[ha.sku];
+        delMotor.push({sku:ha.sku, qty:2, origen:'edgeha', por:'chkHa'});
         filas.push({por:'chkHa', cat:'Accesorios', desc:`${aHA.name} — interconexión EdgeHA del par`, sku:ha.sku, qty:2, unit:aHA.listPrice!=null?aHA.listPrice:null,
           nota:`Óptica ${ha.vel} × 2 (1 por chasis)${ha.puerto?`, por ${NOMBRE_PUERTO[ha.puerto]}: no queda cobre libre del mismo tipo en los dos chasis`:''} — ≥ agregado del sitio (${agr}), regla declarada de la casa. List Price de la lista oficial (vigencia ${aHA.vigencia||'s/f'}); tipo seleccionado en el builder WAN`});
       }
@@ -904,7 +912,7 @@
     // Lo que el motor soltó del modal porque ya lo pone él no entra: una sola fila por accesorio.
     const sueltos=new Set(soltar);
     filas.splice(1, 0, ...manuales.filter(f=>!sueltos.has(f.sku)));
-    return { filas, soltar, licHa };
+    return { filas, soltar, licHa, delMotor };
   }
 
   return { VERSION_MOTOR, BOOST_CUOTA, tierParaCaudal, capacidadSo, boostMbpsSitio, boostRecMbps, admiteDtd, escenariosUnderlay, escenarioBoost,
