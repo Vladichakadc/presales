@@ -1,0 +1,32 @@
+[
+  {
+    "archivo": "fortinet-og-ngfw.pdf",
+    "para": "FORTINET",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://www.fortinet.com/content/dam/fortinet/assets/data-sheets/og-next-generation-firewall.pdf",
+        "status": 200,
+        "bytes": 206872,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  },
+  {
+    "archivo": "fortinet-wireless-product-matrix.pdf",
+    "para": "FORTINET",
+    "guardado": true,
+    "exploracion": false,
+    "intentos": [
+      {
+        "url": "https://www.fortinet.com/content/dam/fortinet/assets/data-sheets/Fortinet_Wireless_Product_Matrix.pdf",
+        "status": 200,
+        "bytes": 783225,
+        "guardado": true,
+        "verificado": true
+      }
+    ]
+  }
+]
