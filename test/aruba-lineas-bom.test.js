@@ -112,3 +112,23 @@ test('Dynamic Threat Defense: la escalera de la lista con suscripcion; 7 anos se
   const sinSuscripcion = R.lineasBom(ctx({ secMode: 'dtd', datos: conDtd, D: { ...D0, bundle: '' } }));
   assert.ok(!sinSuscripcion.filas.some((f) => f.cat === 'Seguridad'), 'sin suscripcion, DTD no se cotiza');
 });
+
+// 2026-11-11 (mejora propuesta al cerrar el PR #179): `delMotor` dice al modal qué pone el diseño con un
+// SKU del catálogo de accesorios y por qué, para marcarlo en vez de dejar que se elija y desaparezca.
+test('delMotor: el kit de Boost, con su casilla', () => {
+  const r = R.lineasBom(ctx({ m: modelo('EC-10150'),
+    inyectados: [{ sku: 'S2N67A', qty: 1, por: 'chkBoost', nota: 'kit de Boost' }] }));
+  assert.deepStrictEqual(r.delMotor, [{ sku: 'S2N67A', qty: 1, origen: 'inyectado', por: 'chkBoost' }]);
+});
+
+test('delMotor: la optica de los enlaces, con su medio y su cantidad', () => {
+  const optica = A.ACCESSORY_COMPAT['EC-10106'].items.find((s) => /SFP/i.test((A.ARUBA_ACCESSORY_CATALOG[s] || {}).name || ''));
+  const r = R.lineasBom(ctx({ necesidadesOptica: () => ({ 'SFP 10G': 2 }), opticaResuelta: () => ({ ops: [optica], sku: optica }) }));
+  assert.deepStrictEqual(r.delMotor, [{ sku: optica, qty: 2, origen: 'enlace', medio: 'SFP 10G' }]);
+});
+
+test('delMotor: vacio si el diseno no pone ningun accesorio del catalogo, y nunca lo elegido a mano', () => {
+  const compatible = A.ACCESSORY_COMPAT['EC-10150'].items.find((s) => s !== 'S2N67A');
+  const r = R.lineasBom(ctx({ m: modelo('EC-10150'), elegidos: { [compatible]: 1 } }));
+  assert.deepStrictEqual(r.delMotor, []);
+});
