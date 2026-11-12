@@ -1405,8 +1405,8 @@
    "documento": "fortigate-fortiwifi-50g-series.pdf",
    "pagina": 7,
    "caja": [
-    35.29,
-    174.81,
+    36.01,
+    467.21,
     373.92,
     68.01
    ],
@@ -1415,8 +1415,8 @@
     291
    ],
    "sha256": "9d1fb0698740fc513c6ec1574ee874d2f32ca0c1524d305a1cf452e3df4b1d20",
-   "medido": "correlación 0.9066 con la figura servida, a su escala, 2026-11-09",
-   "diferencia": 5.11
+   "medido": "corregida el 2026-11-12: la caja medida el 2026-11-09 (y = 174,81, correlación 0.9066) caía en el frontal del FortiGate 50G de la misma página, casi igual a este pero rotulado «FortiGate 50G» y sin el LED «WIFI»; la figura servida es la del FortiWiFi 50G («FortiWiFi 50G», con «WIFI»). Caja nueva registrada con el mismo desplazamiento que la del FortiGate 50G sobre su dibujo; correlación 0.9568 entre la figura servida y su recorte, a su escala",
+   "diferencia": 3.38
   },
   "/img/equipos/fwf-50g-rear.webp": {
    "documento": "fortigate-fortiwifi-50g-series.pdf",
