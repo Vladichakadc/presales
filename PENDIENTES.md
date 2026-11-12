@@ -2339,11 +2339,8 @@ Lo que dejó la entrega de FortiWiFi, FortiGate con módem 4G/5G y FortiExtender
    FWF-50G-5G-II (su ficha, o una respuesta escrita de Fortinet), no otras Release Notes.
 3. **Caudal del módem integrado** (40F-3G4G, 50G-5G, 51G-5G y FortiWiFi 50G-5G-II): su ficha no lo publica
    y el motor lo avisa en vez de comprobarlo. Lo cierra un documento de Fortinet con esa cifra.
-4. **Figuras de los tres FortiGate con módem** (40F-3G4G, 50G-5G y 51G-5G). Las de los FortiWiFi
-   entraron en el PR #148 (y las de 50G-SFP y 50G-DSL en el #181); las de los FortiExtender WAN 50G, 511G y
-   511G-WiFi, en el #172. Las de estos tres están en la página «Hardware» de su ficha por serie (FG-40F-R49 y
-   FGFWF-50G-R17). Encargado por el dueño el 2026-11-11; se hace cuando se fusione el PR #185 (figuras de los
-   FortiExtender 4G), que toca los mismos archivos.
+4. ~~**Figuras de las variantes**~~ Cerrado: las de los FortiWiFi (PR #148 y #181), las de los
+   FortiExtender (#172 y #185) y las de los FortiGate 40F-3G4G, 50G-5G y 51G-5G (#188).
 5. **Fuera a propósito**: FortiExtender Vehicle y Rugged. El FEX-511G-WiFi, que el PR #140 dejaba fuera,
    entró en el PR #172. Los FortiWiFi 40F, 60F y 80F-2R y el FG-80F-3G4G no son un pendiente:
    las fichas vigentes de esas series (R49/R51/R48, 2026-10-01) ya no los publican.

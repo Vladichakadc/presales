@@ -355,9 +355,6 @@ traspaso (el #37, de otra sesión, se fusionó mientras se cerraba esta).
 ### Se pueden hacer desde una sesión, sin acceso especial
 
 1. **Mejoras propuestas**: las de abajo, cuando el dueño las apruebe (no se hacen solas).
-2. **Figuras de los FortiGate 40F-3G4G, 50G-5G y 51G-5G** (encargo del dueño del 2026-11-11): de la página
-   «Hardware» de su ficha por serie, como las de los FortiWiFi. Esperan a que se fusione el PR #185, que toca
-   `fortinet-vistas-equipos.json` y `figuras-fortinet.lock.json`.
 2. **Fases 2 y 3 de la auditoría de los dimensionadores** (decididas por el dueño el 2026-11-10: «Ejecuta fase 2 y fase 3»;
    las fases 0 y 1 se hicieron en los PR #150, #153, #156 y #162). Fase 2, un corte por PR medido con `npm run
    equivalencia`: 1, la lista de materiales de Aruba fuera de `renderBom()` (hecho, PR #167); 2, Juniper con motor,
@@ -426,6 +423,12 @@ fabricantes (y `presales.up.railway.app`); los ejecutores de GitHub Actions sí 
 existen los workflows de transporte. Huawei y HPE niegan además el navegador automatizado (Akamai).
 
 ## Mejoras propuestas sin decidir
+
+- **Que la medición de una caja nueva de Fortinet compruebe que no coincide con la de otra figura del mismo
+  documento** (propuesta al cerrar el PR #188). La trasera del FortiWiFi 50G-5G-II tenía en el lock la caja de la
+  del FortiGate 50G-5G de la misma página: dos dibujos casi iguales engañaron a la correlación. Una comprobación en
+  `npm run figuras-fortinet` (dos cajas de la misma página que se solapan más de la mitad son un error, salvo las
+  declaradas) lo frenaría. Cuesta esa comprobación y su prueba; mal ajustada, frenaría figuras legítimas muy juntas.
 
 - **Quitar «1 GbE» del acceso del 7220 IXR, o decir junto a la opción que ningún modelo lo publica** (propuesta al cerrar el PR #182).
   La página lo ofrece, y su propia nota dice «solo se listan las velocidades que la línea 7220 IXR realmente publica», pero
