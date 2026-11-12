@@ -33,7 +33,7 @@ const filasModal = (page) => page.evaluate(() => [...globalThis.document.querySe
   await abrirSesion(page);
 
   // Fibra: el builder pone la óptica del enlace. Si hay varias compatibles, se elige la primera en el builder.
-  await trasNavegar(page, () => page.goto(BASE + enlace('SFP+ 10G'), { waitUntil: 'domcontentloaded' }), { selector: '#accBtn' });
+  await trasNavegar(page, () => page.goto(BASE + enlace('SFP+ 10G'), { waitUntil: 'domcontentloaded' }), { selector: '[data-tab="bom"]' });
   await asentar(page);
   const sel = await page.$('select[data-sfp-medio="SFP+ 10G"]');
   if (sel) {
@@ -59,7 +59,7 @@ const filasModal = (page) => page.evaluate(() => [...globalThis.document.querySe
   await page.keyboard.press('Escape');
 
   // Cobre: el diseño no pone ninguna óptica, y la misma óptica vuelve a poder elegirse (la marca no se guarda).
-  await trasNavegar(page, () => page.goto(BASE + enlace('RJ45'), { waitUntil: 'domcontentloaded' }), { selector: '#accBtn' });
+  await trasNavegar(page, () => page.goto(BASE + enlace('RJ45'), { waitUntil: 'domcontentloaded' }), { selector: '[data-tab="bom"]' });
   await asentar(page);
   await abrirModal(page);
   filas = await filasModal(page);
