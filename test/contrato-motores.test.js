@@ -182,11 +182,17 @@ for (const fabricante of Object.keys(FABRICANTES)) {
   });
 }
 
-test('Cisco: la envoltura ordena con la regla que tiene la página, y la página la conserva', () => {
+test('Cisco: la página delega el orden y el recomendado en CiscoMotor.evaluar', () => {
   const pag = fs.readFileSync(path.join(__dirname, '..', 'public/js/dimensionador-cisco-catalyst8k.js'), 'utf8');
-  assert.ok(pag.includes('const candidatos = FICHA.ordenar(ev.candidatos.map(f => f.m), (a, b) => capEq(a) - capEq(b));'),
-    'la página ordena por ciclo de vida sobre el orden del motor: si cambia, cambia también contratoMotores.js');
-  assert.ok(pag.includes('const pick = FICHA.recomendar(candidatos);'), 'y recomienda con FICHA.recomendar');
+  assert.ok(pag.includes('const ev = M.evaluar(MODELS, p, {rango:FICHA.rango, recomendar:FICHA.recomendar});'));
+  assert.ok(pag.includes('const candidatos = ev.orden;') && pag.includes('const pick = ev.recomendado;'));
+  assert.doesNotMatch(pag, /FICHA\.ordenar\(ev\.candidatos/, 'el orden no vuelve a la página');
+  // Sin opciones, el motor no sabe de ciclo de vida: el orden es el de capacidad y se recomienda el primero.
+  const M = C.MOTORES.cisco.motor;
+  const modelos = require('../server/seed/legacyData/cisco').MODELS;
+  const r = M.evaluar(modelos, { modo: 'link', bwMbps: 500, dirMult: 2, headPct: 30, perfil: Object.keys(M.PERFILES)[0], plataforma: 'xe', seguridad: 'ninguna', diaPct: 0 });
+  assert.deepStrictEqual(r.orden.map((m) => m.id), r.candidatos.map((f) => f.m.id));
+  assert.strictEqual(r.recomendado, r.orden[0] || null);
 });
 
 test('Aruba: la página delega el orden y el recomendado en ArubaReglas.evaluar', () => {

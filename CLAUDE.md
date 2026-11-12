@@ -611,9 +611,9 @@ envuelve cada motor sin tocar la suya —`evaluar(fabricante, escenario, catalog
 `{ fabricante, version, candidatos, recomendado, apartados, nativo }`— y `test/contrato-motores.test.js`
 les exige lo mismo sobre el catálogo de su ruta: el recomendado sale de los candidatos y no está fuera
 de venta, nadie es a la vez candidato y apartado, y barajar el catálogo no cambia el recomendado. Una
-envoltura no decide; un motor nuevo entra con su envoltura y su batería. En Aruba el orden y el
-recomendado salen de `ArubaReglas.evaluar`, no de la página; en Cisco el ciclo de vida lo ordena todavía
-la página, y la prueba sujeta esas dos líneas.
+envoltura no decide; un motor nuevo entra con su envoltura y su batería. El orden y el recomendado
+salen siempre del motor, que recibe la regla de FICHA en `opciones` (`rango`, `recomendar`): en Aruba,
+`ArubaReglas.evaluar`; en Cisco, `orden` y `recomendado` de `evaluar` (PR #203).
 
 - **Fortinet** (`public/js/fortinet-motor.js`, `fortinet-reglas.js`; historia en
   `docs/rediseno-fortinet.md` y `docs/auditoria-fortinet-2026-09-23/`). **Arquitectura aprobada por

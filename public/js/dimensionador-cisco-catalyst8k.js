@@ -366,12 +366,14 @@ function render(){
     return;
   }
 
-  const ev = M.evaluar(MODELS, p);
+  // El orden por ciclo de vida y el recomendado salen del motor (2026-11-12): la página le pasa la
+  // regla de FICHA y solo lee.
+  const ev = M.evaluar(MODELS, p, {rango:FICHA.rango, recomendar:FICHA.recomendar});
   ultimaEval = ev;
   const d = ev.demanda;
   const capEq = m => { const f = filaDe(m.id); return f && f.capEq != null ? f.capEq : Infinity; };
-  const candidatos = FICHA.ordenar(ev.candidatos.map(f => f.m), (a, b) => capEq(a) - capEq(b));
-  const pick = FICHA.recomendar(candidatos);
+  const candidatos = ev.orden;
+  const pick = ev.recomendado;
   lastPick = pick;
   hayCandidato = !!pick;
 
