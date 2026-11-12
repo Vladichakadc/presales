@@ -3,14 +3,14 @@
 - **Tema:** La figura del FortiExtender Vehicle 212F, de su QuickStart Guide
 - **Rama:** claude/pendientes-fortinet-212f
 - **Cuenta:** servicioiptv2025@gmail.com
-- **Estado:** reservado
+- **Estado:** en curso
 - **Actualizado:** 2026-11-12 16:36
-- **Archivos que toca:** scripts/transporte/documentos.js, public/data/fortinet-vistas-equipos.json, scripts/figuras-fortinet.lock.json, test/fortinet-figuras-cobertura.test.js, public/img/equipos/
+- **Archivos que toca:** scripts/transporte/documentos.js, test/vistas-leyendas.test.js, public/data/fortinet-vistas-equipos.json, scripts/figuras-fortinet.lock.json, test/fortinet-figuras-cobertura.test.js, public/img/equipos/
 - **Siguiente paso:** empezar: el tema está reservado y todavía no tiene código
 
 ## Encargo del dueño
 
-<Las palabras del dueño, literales, y lo que se entendió de ellas.>
+«ejecuta los pendientes que puedas cerrar […]». Pendiente del PR #190: la figura del Vehicle 212F, que espera su QuickStart Guide.
 
 ## Hecho
 

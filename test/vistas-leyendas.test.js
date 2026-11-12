@@ -28,8 +28,9 @@ const CON_NUMEROS = (ruta) => /^\/img\/equipos\/jn-/.test(ruta) || /^\/img\/equi
   || (/^\/img\/equipos\/fex-/.test(ruta) && !/^\/img\/equipos\/fex-20[012]f-/.test(ruta))
   // Los de vehículo y exterior (2026-11-11), de la ficha Rugged: numera solo la cara de puertos
   // (su «Rear View» o «Bottom View»), que aquí es la primera. El 200F, de su QuickStart Guide,
-  // rotula sobre el dibujo como el 201F y el 202F.
-  || /^\/img\/equipos\/fe[vr]-[0-9a-z]+-front\.webp$/.test(ruta);
+  // rotula sobre el dibujo como el 201F y el 202F. El Vehicle 212F (2026-11-12), que la ficha no dibuja, sale
+  // de su QuickStart Guide, que también rotula sobre el dibujo, sin números.
+  || (/^\/img\/equipos\/fe[vr]-[0-9a-z]+-front\.webp$/.test(ruta) && !/^\/img\/equipos\/fev-212f-/.test(ruta));
 
 function entradas(fab) {
   return Object.entries(leer(fab)).filter(([k, v]) => !k.startsWith('_') && v && typeof v === 'object');

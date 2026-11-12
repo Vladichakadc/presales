@@ -772,5 +772,10 @@
   "front": "/img/equipos/fg-50g-5g-front.webp",
   "rear": "/img/equipos/fg-50g-5g-rear.webp",
   "fuente": "Datasheet FortiGate/FortiWiFi 50G Series (FGFWF-50G-DAT-R17-20260901), p. 10 «Hardware» — «FortiGate 50G-5G/51G-5G». Unidad dibujada: FortiGate 50G-5G (antenas «5G» y «GPS» en las dos caras)"
+ },
+ "FortiExtender Vehicle 212F": {
+  "front": "/img/equipos/fev-212f-front.webp",
+  "rear": "/img/equipos/fev-212f-rear.webp",
+  "fuente": "QuickStart Guide FortiExtenderVehicle 212F/212F-AM (docs.fortinet.com, FortiExtenderVehicle-212F-QuickStart_Online.pdf), p. 5 «Ports, LEDs, Buttons, and Antenna Connectors» (cara de puertos, la que se da como frontal, como en el Vehicle 211F) y p. 4 «Front Panel LEDs & Controls» (cara de los LED, el botón Reset y la bahía SIM, en la pestaña trasera). Los rótulos van escritos sobre el dibujo, sin números. La ficha Rugged FEXR-DAT-R08 no dibuja este modelo."
  }
 }
