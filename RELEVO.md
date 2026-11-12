@@ -422,6 +422,14 @@ existen los workflows de transporte. Huawei y HPE niegan además el navegador au
 
 ## Mejoras propuestas sin decidir
 
+- **La misma regla para todo el catálogo de Fortinet: cada modelo y cada variante, con figura o con su motivo**
+  (propuesta al cerrar el PR #193). La prueba del #193 cubre los siete FortiExtender; los 71 de `MODELS` y las 13
+  `VARIANTES` de `fortinetVariantes.js` también tienen figura hoy (medido el 2026-11-12), pero nada lo exige: un
+  FortiGate o un FortiWiFi nuevo entraría sin figura en silencio. Sería extender `sinCubrir` de
+  `test/fortiextender-figuras.test.js` a esas dos tablas, con su `SIN_FIGURA`. No fija un número de modelos
+  con foto, que es lo que `fortinet-vistas-equipos.test.js` evita a propósito: fija que no haya hueco sin motivo.
+  Coste: una prueba sin red. Si se hace mal, una variante nueva sin dibujo propio tentaría a servir el de su
+  FortiGate, que el PR #148 prohibió; la salida es `SIN_FIGURA`, nunca la figura de otro.
 - **Servir cada proyección ya serializada y cacheada por arranque** (propuesta al cerrar el PR #183). El catálogo
   vive en memoria y no cambia sin un despliegue, pero cada petición vuelve a proyectar (Fortinet, 215 KB). El PR
   #175 garantiza que las proyecciones no escriben en `legacyData/`, así que una caché por función y argumento es
@@ -441,12 +449,6 @@ existen los workflows de transporte. Huawei y HPE niegan además el navegador au
   elegirlo da «sin diseño posible». Lo mejor sería que las opciones salieran de los puertos del catálogo (`puertosDe`)
   en vez de estar escritas en el HTML. Coste: el desplegable generado y su escenario en el caso `nokia-fabric`. Si se hace
   mal, un enlace guardado con `accesoVel=1` quedaría sin opción: lo tiene que anunciar `estado.js` (`avisoOrigen`).
-- **Cada FortiExtender de la tabla, con figura o con su motivo** (propuesta al cerrar el PR #185). Hoy los siete
-  de `FORTIEXTENDER.modelos` tienen figura, pero nada lo exige: uno nuevo de la ficha entraría sin figura y sin
-  que nadie lo note. Una prueba como `SIN_FIGURAS` de `test/fuentes-fichas-fortinet.test.js`: cada id de la
-  tabla con entrada en `fortinet-vistas-equipos.json` o declarado sin figura con su motivo. Evita que la cobertura
-  que deja este PR se pierda en silencio. Cuesta una prueba sin red. Si se hace mal, exigir figura sin dejar
-  excepción obligaría a poner la de otro modelo cuando ningún documento lo dibuje, que es lo que el catálogo prohíbe.
 - **Traer la guía «New Features» y la Maximum Values Table de FortiOS 8.0** (propuesta al cerrar el PR #166).
   El selector ya ofrece la 8.0, pero solo con lo que dicen las Release Notes de 8.0.2: modelos soportados,
   SSL-VPN retirado y proxy en 2 GB. Lo que de verdad es nuevo en la rama (funciones) y sus topes están en esos
@@ -466,13 +468,6 @@ existen los workflows de transporte. Huawei y HPE niegan además el navegador au
   sin forma de pedir un módulo, el desempate nunca lo recomienda y una sucursal que lo necesita sale con un SRX300
   que no lo admite. Coste: una casilla y los módulos de la guía de hardware de la línea SRX300, con su documento en
   `fuentes.js` (sin él no entra ninguno). Si se hace mal, se ofrecería un módulo que el modelo no admite.
-- **Que `npm run traspasos` cuente las ramas cedidas aparte** (propuesta al cerrar el PR #164). Desde ese PR
-  la reserva que pierde una carrera deja su rama con el traspaso «cerrado (cedido…)» en vez de borrarla, porque el
-  proxy de git corta a veces el borrado. `traspasos` la sigue listando entre los temas en curso; se diría en una
-  línea aparte («CEDIDA a <rama>, se puede borrar») como ya hace con las CERRADO EN MAIN, con el comando para
-  borrarla. Evita que una sesión lea una rama cedida como trabajo de otra. Cuesta un estado más en `traspasos.js`
-  y su prueba. Si se hace mal, una rama con un traspaso cerrado por otra razón saldría como cedida: se reconoce
-  por el texto «cedido:», que solo escribe `reservar`.
 - **`traer-juniper-matrix.yml` falla al descargar** desde el 2026-09-02 (visto otra vez el 2026-11-10, corrida
   42749825425). Los logs de Actions no se leen desde una sesión: hay que mirarlos desde GitHub para saber si
   Juniper cambió la URL o corta al ejecutor.
