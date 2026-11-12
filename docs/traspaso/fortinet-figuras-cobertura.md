@@ -3,10 +3,10 @@
 - **Tema:** fortinet-figuras-cobertura
 - **Rama:** claude/fortinet-figuras-cobertura
 - **Cuenta:** (no consta)
-- **Estado:** reservado
+- **Estado:** en revisión
 - **Actualizado:** 2026-11-12 12:34
 - **Archivos que toca:** test/fortinet-figuras-cobertura.test.js
-- **Siguiente paso:** empezar: el tema está reservado y todavía no tiene código
+- **Siguiente paso:** CI del PR, cierre y fusión
 
 ## Encargo del dueño
 
