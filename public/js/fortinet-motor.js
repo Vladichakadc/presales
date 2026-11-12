@@ -48,7 +48,10 @@
   // 7.2.0 (2026-11-04): Wi-Fi integrado y WAN celular 4G/5G (`fisico.wifi`, `fisico.celular`, `fisico.celularVia`).
   // 7.3.0 (2026-11-10): FortiOS 8.0 (8.0.2) en `software.fortiOS`: modelos soportados por la rama (`FORTIOS_MODELO`),
   // modo túnel SSL-VPN retirado e inspección proxy fuera de los modelos de 2 GB. El PR #166 lo trajo sin subir la versión.
-  const VERSION_MOTOR = '7.3.0';
+  // 7.4.0 (2026-11-11): todos los FortiExtender de la ficha y la guía de pedido; los de vehículo y exterior compiten solo
+  // al pedirlos (`fisico.celularEntorno`) y el 200F, sin módem, se aparta siempre. Y los topes por versión (`porVersion`):
+  // con FortiOS 8.0, los FortiSwitch gestionados y los vecinos BGP que da su Maximum Values Table.
+  const VERSION_MOTOR = '7.4.0';
   const ESQUEMA = 1;
   // Encapsulacion ESP sobre la fraccion que viaja por el overlay. Supuesto de la herramienta,
   // no una cifra de Fortinet, y por eso se declara en `supuestos` en cada evaluacion.
@@ -176,6 +179,8 @@
       // `comercial.haLicenciaUnica`: solo existen cuando se piden (ver `normalizar`), y asi la
       // huella de los escenarios guardados antes no cambia.
       wifi: B, celular: E(['4g', '5g']), celularVia: E(['integrado', 'extender']),
+      // Dónde va el FortiExtender (2026-11-11): solo existe si se pide vehículo o exterior.
+      celularEntorno: E(['vehiculo', 'exterior']),
     },
     disponibilidad: { modo: E(['standalone', 'ha-ap', 'ha-aa']) },
     politica: { crecimientoPct: N(0, 1000), techoPct: N(10, 100) },
@@ -342,6 +347,8 @@
     // sin elegirlo no hay a que equipos comparar, y no se elige por silencio.
     { campo: 'fisico.celularVia', visible: (s) => !!s.fisico.celular, requerido: (s) => !!s.fisico.celular,
       afecta: ['candidatos', 'bom'] },
+    // Dónde va el FortiExtender: solo tiene sentido con FortiExtender; sin elegir, el de interior.
+    { campo: 'fisico.celularEntorno', visible: (s) => !!s.fisico.celular && s.fisico.celularVia === 'extender', afecta: ['bom'] },
     { campo: 'comercial.justificacionEol', visible: (s, ctx) => s.comercial.motivo !== 'nueva' && !!(ctx && ctx.manualEsEol),
       requerido: (s, ctx) => s.comercial.motivo !== 'nueva' && !!(ctx && ctx.manualEsEol), afecta: ['puerta'] },
   ];
@@ -363,6 +370,7 @@
     if (s.fisico.wifi !== true) delete s.fisico.wifi;
     if (!s.fisico.celular) delete s.fisico.celular;
     if (!s.fisico.celularVia) delete s.fisico.celularVia;
+    if (!s.fisico.celularEntorno || s.fisico.celularVia !== 'extender' || !s.fisico.celular) delete s.fisico.celularEntorno;
     // FortiSandbox como FUNCION y el sandbox como LINEA son el mismo pedido: sin la funcion
     // marcada no hay linea, y con ella marcada sin modo elegido se asume la cobertura del
     // bundle, que es lo que la pagina hacia hasta ahora (no anadia linea).
@@ -518,6 +526,31 @@
   const versionDe = (s, fortios) => ((fortios && fortios.versiones) || []).find((v) => v.id === s.software.fortiOS) || null;
   // El codigo con que las Release Notes nombran un equipo: su SKU de hardware, sin el codigo regional.
   const codigoRn = (m) => (m.hwSku ? String(m.hwSku).replace(/-\[RC\]$/, '') : `FG-${String(m.id).replace('FortiGate ', '')}`);
+  /* Lo que la tabla oficial de una version da distinto para un modelo (`m.porVersion[<version>]`,
+     fortinet.js: hoy la Maximum Values Table de FortiOS 8.0.2). Devuelve el modelo con esas cifras
+     y `versionAplicada`, que dice que cambio y de que documento sale; sin dato para la version, el
+     mismo objeto. Un vecino BGP por version solo rellena un hueco: nunca pisa el de la 7.6.7. */
+  function conVersion(m, version) {
+    const v = m && m.porVersion && version ? m.porVersion[version] : null;
+    if (!v) return m;
+    const x = { ...m };
+    const cambios = [];
+    const metodoDe = {};
+    if (v.switches != null && v.switches !== m.switches) {
+      x.switches = v.switches;
+      metodoDe.switches = `switch-controller.managed-switch (${v.fuente})`;
+      cambios.push(`${v.switches} FortiSwitch gestionados${v.switchesAntes != null ? ` (con 7.6, ${v.switchesAntes})` : ''}`);
+    }
+    if (v.bgpPeers != null && m.bgpPeers == null) {
+      x.bgpPeers = v.bgpPeers; x.bgpDe = v.bgpDe || null;
+      metodoDe.bgpPeers = `router.bgp:neighbor (${v.fuente})`;
+      cambios.push(`${v.bgpPeers} vecinos BGP (la tabla de 7.6.7 no lista este modelo)`);
+    }
+    if (!cambios.length) return m;
+    x.versionAplicada = { version, fuente: v.fuente, cambios };
+    x.metodoDe = metodoDe;
+    return x;
+  }
   /* ¿Las Release Notes de la version elegida nombran el modelo? `null` si la rama no trae lista (no se
      sabe, y no se frena); si la trae, que no este es un hecho del documento, no una deduccion. */
   function soportadoEnVersion(m, s, fortios) {
@@ -680,19 +713,30 @@
   function demandaCelular(s) {
     const enlaces = s.topologia.enlaces.filter((l) => l.tipo === '4G/5G' && l.down > 0);
     return { pedido: !!s.fisico.celular, gen: s.fisico.celular === '5g' ? '5G' : s.fisico.celular === '4g' ? '4G' : null,
-      via: s.fisico.celularVia || null, enlaces: enlaces.length,
+      via: s.fisico.celularVia || null, entorno: s.fisico.celularEntorno || null, enlaces: enlaces.length,
       bajada: enlaces.length ? Math.max(...enlaces.map((l) => l.down)) : 0 };
   }
   /* FortiExtender: el de la generacion pedida (un 5G tambien da LTE, pero con 4G pedido van
      antes los 4G), que llegue a la bajada del enlace por su modem y por su reenvio LAN-WAN
      publicados, primero el que publica las dos cifras y despues el de menor reenvio. Los de un
      solo SKU regional (201F para EMEA/APAC, 202F para Norteamerica) no se recomiendan solos:
-     salen como alternativa con su region. Uno por enlace 4G/5G («Max WAN Uplinks Supported: 1»). */
+     salen como alternativa con su region. Uno por enlace 4G/5G («Max WAN Uplinks Supported: 1»).
+     Desde la 7.4.0 la tabla trae todos los de la ficha y la guía de pedido: el que no tiene módem
+     (200F) se aparta siempre, y los de vehículo o exterior (`entorno`) solo compiten cuando el
+     escenario pide ese entorno (`fisico.celularEntorno`); pedido uno, los de interior se apartan. */
+  const ENTORNO_N = { vehiculo: 'vehículo', exterior: 'exterior' };
   function elegirExtender(cel, cat) {
     const tabla = (cat.extenders && cat.extenders.modelos) || [];
     const elegibles = [];
     const descartados = [];
     for (const x of tabla) {
+      if (x.sinModem) { descartados.push({ x, motivo: 'no tiene módem: es una extensión de LAN por Ethernet' }); continue; }
+      if ((x.entorno || null) !== (cel.entorno || null)) {
+        descartados.push({ x, motivo: x.entorno
+          ? `es un equipo de ${ENTORNO_N[x.entorno] || x.entorno}: compite al pedir ese entorno`
+          : `es un equipo de interior y se pidió de ${ENTORNO_N[cel.entorno] || cel.entorno}` });
+        continue;
+      }
       if (cel.gen === '5G' && x.gen !== '5G') { descartados.push({ x, motivo: `su módem es ${x.categoria}: no es 5G` }); continue; }
       if (cel.bajada && x.bajada != null && x.bajada < cel.bajada) {
         descartados.push({ x, motivo: `su módem publica ${x.bajada} Mbps de bajada y el enlace pide ${cel.bajada}` }); continue;
@@ -709,8 +753,10 @@
     const recomendado = elegibles.find((x) => !regional(x)) || null;
     return { recomendado, alternativas: elegibles.filter((x) => x !== recomendado), descartados,
       qty: Math.max(1, cel.enlaces), max: (cat.extenders && cat.extenders.maxPorFortiGate) || null,
-      fuente: (cat.extenders && cat.extenders.fuente) || null,
-      url: (cat.extenders && cat.extenders.url) || null };
+      entorno: cel.entorno || null,
+      // Cada equipo cita SU ficha: los de vehículo y exterior salen de otra que los de interior.
+      fuente: (recomendado && recomendado.fuente) || (cat.extenders && cat.extenders.fuente) || null,
+      url: (recomendado && recomendado.url) || (cat.extenders && cat.extenders.url) || null };
   }
 
   /* ── 7 · EVALUACION COMPLETA ──────────────────────────────────────────────────────────
@@ -720,9 +766,10 @@
   function evaluar(entrada, catalogo, opciones) {
     const cat = catalogo || {};
     const o = opciones || {};
-    const modelos = cat.models || [];
     const norm = normalizar(entrada, cat);
     const s = norm.snapshot;
+    // Los topes que su tabla oficial da distintos en la versión elegida (`porVersion`, hoy FortiOS 8.0).
+    const modelos = (cat.models || []).map((m) => conVersion(m, s.software.fortiOS));
     const res = {
       motor: VERSION_MOTOR, esquema: ESQUEMA, datasetVersion: cat.datasetVersion || null,
       scenarioHash: huella(s), snapshot: s,
@@ -920,7 +967,7 @@
     const x = fex.recomendado;
     if (!x) {
       bloqueos.push({ codigo: 'fex-sin-candidato', nivel: 'bloqueo',
-        mensaje: 'Ningún FortiExtender de la ficha cumple el enlace 4G/5G pedido: '
+        mensaje: `Ningún FortiExtender${fex.entorno ? ` de ${ENTORNO_N[fex.entorno] || fex.entorno}` : ''} de la ficha cumple el enlace 4G/5G pedido: `
           + (fex.descartados.map((d) => `${d.x.id}, ${d.motivo}`).join('; ') || 'no hay ninguno de esa generación') + '.' });
       return;
     }
@@ -939,7 +986,7 @@
     filas.push({ req: 'fisico.celular', cat: 'WAN celular', desc: `${x.id} (${x.categoria})`, sku: unico ? x.skus[0] : null, qty: fex.qty, unit: pEquipo,
       nota: `${x.modems > 1 ? `${x.modems} módems` : '1 módem'} ${x.modem} · `
         + (x.bajada != null ? `bajada/subida ${x.bajada}/${x.subida} Mbps (máximo de la categoría) · ` : 'la ficha no publica el caudal del módem · ')
-        + `${x.puertos} · ${unico ? x.regionN : `elegir: ${x.regionN}`} · ${fex.fuente}` });
+        + `${x.puertos}${x.wifi ? ` · ${x.wifi}` : ''}${x.alimentacion ? ` · alimentación ${x.alimentacion}` : ''} · ${unico ? x.regionN : `elegir: ${x.regionN}`} · ${fex.fuente}` });
     const care = /^FC-10-[A-Z0-9]+-247-02-DD$/.test(x.care) ? R.skuTermino(x.care, s.comercial.anios, cat.terminos) : null;
     const pCare = care && care.exacto ? precioDe(care.sku) : null;
     filas.push({ req: 'fisico.celular', cat: 'Soporte', desc: `FortiCare Premium de ${x.id}`, sku: care && care.exacto ? care.sku : null,
@@ -987,7 +1034,7 @@
     'comercial.saseUsuarios': 'usuarios de FortiSASE', 'comercial.sandboxModalidad': 'modalidad del FortiSandbox dedicado',
     'comercial.emsDespliegue': 'despliegue de FortiClient EMS', 'comercial.saseEdicion': 'edición de FortiSASE',
     'comercial.serieInstalada': 'modelo y número de serie instalado',
-    'fisico.celularVia': 'cómo llega el enlace 4G/5G (módem del FortiGate o FortiExtender)', 'comercial.justificacionEol': 'justificación del equipo fuera de venta',
+    'fisico.celularVia': 'cómo llega el enlace 4G/5G (módem del FortiGate o FortiExtender)', 'fisico.celularEntorno': 'dónde va el FortiExtender (interior, vehículo o exterior)', 'comercial.justificacionEol': 'justificación del equipo fuera de venta',
   };
 
   function cerrar(res, s, cat, o) {
@@ -1093,6 +1140,10 @@
     }
     const vFortiOS = versionDe(s, cat.fortios);
     if (vFortiOS && vFortiOS.supuesto) sup.push(vFortiOS.supuesto);
+    const mSel = res.seleccion && res.seleccion.modelo;
+    if (mSel && mSel.versionAplicada) {
+      sup.push(`${vFortiOS ? vFortiOS.n : `FortiOS ${mSel.versionAplicada.version}`} en ${mSel.id}: ${mSel.versionAplicada.cambios.join(' y ')} (${mSel.versionAplicada.fuente}).`);
+    }
     if (s.fisico.celular) sup.push('WAN celular: la categoría LTE o 5G del módem es un máximo de la tecnología, no un caudal garantizado; depende de la cobertura del operador en el sitio.');
     sup.push(`Encapsulación ESP del ${Math.round(OVERHEAD_ESP * 100)} % sobre la fracción que viaja por el overlay (supuesto de la herramienta, no una cifra de Fortinet).`);
     if (s.escala.sesionesPorUsuario && !s.escala.cpsMedido) sup.push(`Sesiones nuevas por segundo derivadas de una vida media de sesión de ${s.escala.vidaSesionS} s.`);
@@ -1118,7 +1169,7 @@
 
   return {
     VERSION_MOTOR, ESQUEMA, OVERHEAD_ESP, TIPOS_PUERTO, TIPOS_WAN, POR_DEFECTO, REGLAS, ACCIONES,
-    sha256, canon, huella, normalizar, escenariosTrafico, compatibilidad, soportadoEnVersion, sslvpnRetirada, asignarPuertos,
+    sha256, canon, huella, normalizar, escenariosTrafico, compatibilidad, soportadoEnVersion, conVersion, sslvpnRetirada, asignarPuertos,
     evaluar, permite,
   };
 }));

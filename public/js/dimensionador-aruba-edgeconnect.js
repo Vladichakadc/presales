@@ -1973,18 +1973,18 @@ function render(){
 
   let sobrado=[];
   // Fase 3.1, tercera entrega (2026-11-01): el filtro de candidatos vive en aruba-reglas.js, con su
-  // cuerpo intacto; aquí se le pasa lo que leía de este render() y de la página.
-  const { candidates, outByBoost, outByClients, outByAps, outBySinDato, outByFlujos, outByPersona, outBySo, outByDtd, outByBoostRec, outBySinSec, outByIds, outByIdsEc, outByPuertos, outByPqc } = ArubaReglas.filtrarCandidatos(MODELS, {
-    coincideFiltro, famMode, personaMode, PERSONA_MODELOS, boost, secMode, ArubaReglas, IMIX_FACTOR, needProc, fmt, centralParaModelo, capacidadMax, capacidadComparable, needDe, clientesMax, apsMax, users, aps, flujosDe, flujosReq, D, evaluarPuertos, PQC, soMode, SO_NOMBRE,
+  // cuerpo intacto. El orden y el recomendado salen tambien del motor (ArubaReglas.evaluar,
+  // 2026-11-12): vigente antes que fuera de venta y, dentro, la menor capacidad maxima, la regla
+  // que tenia aqui FICHA.ordenar. La linea AOS 8 (series 7000/7200) solo se propone si no hay un
+  // equivalente vigente; sigue como alternativa y en el BOM, para ampliar un parque ya instalado.
+  const evMotor = ArubaReglas.evaluar({
+    famMode, personaMode, boost, secMode, needProc, needDe, users, aps, flujosReq, D, soMode,
     nivelPqc: $('reqPqc').value,
-  });
-  // Generacion actual primero: entre dos que cumplen, la linea AOS 8 (series 7000/7200)
-  // solo se propone si no hay un equivalente vigente. Sigue apareciendo como alternativa y
-  // en el BOM, que es donde tiene sentido para ampliar un parque ya instalado. El criterio
-  // pasa a ser el comun de ficha.js, que ademas deja fuera de la recomendacion lo que ya
-  // no se vende, en vez de tener aqui una version propia de la misma regla.
-  const ordenados=FICHA.ordenar(candidates,(a,b)=>capacidadMax(a)-capacidadMax(b));
-  candidates.length=0; candidates.push(...ordenados);
+  }, { models: MODELS }, { rango: FICHA.rango, recomendar: FICHA.recomendar, pagina: {
+    coincideFiltro, PERSONA_MODELOS, ArubaReglas, IMIX_FACTOR, fmt, centralParaModelo, capacidadMax, capacidadComparable, clientesMax, apsMax, flujosDe, evaluarPuertos, PQC, SO_NOMBRE,
+  } });
+  const candidates = evMotor.candidatos;
+  const { outByBoost, outByClients, outByAps, outBySinDato, outByFlujos, outByPersona, outBySo, outByDtd, outByBoostRec, outBySinSec, outByIds, outByIdsEc, outByPuertos, outByPqc } = evMotor.apartados;
 
   // Sobredimensionamiento: en EdgeConnect el rango publicado tiene suelo, y quedar por
   // debajo significa que hay un modelo mas barato que cumple. Es informacion de preventa
@@ -1995,7 +1995,7 @@ function render(){
   // solo reordenaba la recomendación por el texto del campo `seg`, y con «Sucursal» por defecto
   // saltaba al primer equipo cuyo rótulo dijera «Sucursal» aunque uno menor cumpliera. El
   // tamaño de sitio ya lo fija el arquetipo de sede (PERSONA_MODELOS), con modelos del VSG.
-  const pick=FICHA.recomendar(candidates, null);
+  const pick=evMotor.recomendado;
   lastPick=pick;
 
   sincronizarConBom(pick);

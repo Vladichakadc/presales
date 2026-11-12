@@ -142,7 +142,9 @@ test('FortiExtender: por generación y bajada del enlace, uno por enlace, y sin 
   // 5G: solo los 5G; el WAN 50G publica su módem y va antes que el 511G, que no lo publica.
   r = ev(esc({ celular: '5g', celularVia: 'extender' }, enl(500)));
   assert.strictEqual(r.celular.extender.recomendado.id, 'FortiExtender WAN 50G');
-  assert.ok(r.celular.extender.descartados.every((d) => /no es 5G/.test(d.motivo)));
+  // Se apartan los que no son 5G y, desde el 2026-11-11, el 200F (sin módem) y los de vehículo y exterior, que no se pidieron.
+  assert.ok(r.celular.extender.descartados.every((d) => /no es 5G|no tiene módem|compite al pedir ese entorno/.test(d.motivo)));
+  assert.ok(r.celular.extender.descartados.some((d) => /no es 5G/.test(d.motivo)));
   const l5 = r.bom.filas.find((f) => f.cat === 'WAN celular');
   assert.strictEqual(l5.sku, null, 'FEW-50G-AM o -EA: se elige por región');
   assert.match(l5.nota, /FEW-50G-AM para Norteamérica/);
@@ -200,8 +202,10 @@ test('las licencias de las variantes celulares salen por SKU exacto de la lista 
 test('FortiExtender: cada fila de la tabla cita su ficha y no inventa el caudal del 511G', () => {
   assert.match(F.FORTIEXTENDER.url, /^https:\/\/www\.fortinet\.com\/.+FortiExtender\.pdf$/);
   for (const x of F.FORTIEXTENDER.modelos) {
+    // FEX, FEW (WAN), FEV (Vehicle) y FER (Rugged): las cuatro familias de la ficha y la guía de pedido.
+    assert.ok(x.skus.length >= 1 && x.skus.every((s) => /^FE[XWVR]-/.test(s)), x.id);
+    if (x.sinModem) { assert.strictEqual(x.gen, null, `${x.id}: sin módem no tiene generación`); continue; }
     assert.ok(['4G', '5G'].includes(x.gen), x.id);
-    assert.ok(x.skus.length >= 1 && x.skus.every((s) => /^FE[XW]-/.test(s)), x.id);
     assert.ok(x.nat > 0, `${x.id}: reenvío LAN-WAN publicado`);
   }
   const fex511 = F.FORTIEXTENDER.modelos.find((x) => x.id === 'FortiExtender 511G');

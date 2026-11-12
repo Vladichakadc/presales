@@ -40,7 +40,7 @@ test('la página de Aruba y la hoja «Supuestos» pasan el sistema operativo del
   // El filtro vive en aruba-reglas.js desde el 2026-11-01 (fase 3.1); la página le pasa soMode.
   const reglas = fs.readFileSync(path.join(__dirname, '..', 'public/js/aruba-reglas.js'), 'utf8');
   assert.match(reglas, /PQC\.motivo\(m,nivelPqc,\{so:soMode/, 'el filtro del dimensionador no pasa el SO');
-  assert.match(pag, /ArubaReglas\.filtrarCandidatos\(MODELS, \{[^}]*\bsoMode\b/, 'la página no pasa el SO al filtro');
+  assert.match(pag, /ArubaReglas\.evaluar\(\{[^}]*\bsoMode\b/, 'la página no pasa el SO al filtro');
   assert.match(pag, /so:m\.fam==='gw'\?\{so:soMode/, 'los supuestos del Excel no llevan el SO');
   const bom = fs.readFileSync(path.join(__dirname, '..', 'public/js/bom.js'), 'utf8');
   assert.match(bom, /P\.motivo\(\{ pqc: p, pqcNo: s\.pqcNo \|\| null \}, exigida, s\.so \|\| null\)/, 'la hoja no pasa el SO');

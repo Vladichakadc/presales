@@ -220,9 +220,12 @@
       const req = Math.max(0, Number(demandas && demandas[def.k]) || 0);
       if (!req) continue;
       const cap = m[def.campo];
+      // Un tope que sale de la tabla de la versión elegida cita ESA tabla, no la del método por defecto
+      // (`metodoDe`, lo pone `conVersion` del motor; 2026-11-11).
+      const metodo = (m.metodoDe && m.metodoDe[def.k]) || def.metodo;
       if (cap == null) {
         ejes.push({ k: def.k, n: def.n, frase: def.frase, unidad: def.unidad || 'Mbps',
-          metodo: def.metodo, req, cap: null, u: null, estado: 'sinDato', dureza: def.dureza });
+          metodo, req, cap: null, u: null, estado: 'sinDato', dureza: def.dureza });
         if (def.dureza === 'dura' && !apartaPor) apartaPor = def;
         continue;
       }
@@ -231,7 +234,7 @@
       const techoEje = def.configuracion ? 1 : techo;
       const u = req / cap;
       ejes.push({ k: def.k, n: def.n, frase: def.frase, unidad: def.unidad || 'Mbps',
-        metodo: def.metodo, req, cap, u, configuracion: !!def.configuracion,
+        metodo, req, cap, u, configuracion: !!def.configuracion,
         estado: u > techoEje ? 'excede' : 'ok', dureza: def.dureza });
     }
     const conDato = ejes.filter((e) => e.u != null);

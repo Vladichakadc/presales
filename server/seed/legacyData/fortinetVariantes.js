@@ -211,6 +211,65 @@ const FORTIEXTENDER = {
       regionN: 'FEW-50G-AM para Norteamérica, FEW-50G-EA para EMEA, APAC y LATAM',
       puertos: '2 RJ45 5/2,5/1 GE (LAN o WAN)', poePd: '802.3at (25,5 W) en LAN2', maxW: 19,
       care: 'FC-10-FA50G-247-02-DD (AM) o FC-10-FE50G-247-02-DD (EA)' },
+
+    /* ── TODOS LOS DEMÁS DE LA FICHA Y DE LA GUÍA DE PEDIDO (2026-11-11, encargo del dueño:
+       «todos los equipos referencia FEX») ────────────────────────────────────────────────────
+       La ficha R57 trae además el FEX-200F, y la guía de pedido FEX-OG-R18 los FortiExtender
+       Vehicle 211F, 212F y 511G y el Rugged 511G. Sus cifras salen de la segunda ficha que enlaza
+       la página de producto, «FortiExtender Rugged Data Sheet» FEXR-DAT-R08-20260805 (traída el
+       2026-11-11 por traer-cisco-huawei.yml, corrida 43099163600, rama fuente/fex-fortios8-2026-11-11):
+       tablas «Hardware Specifications», «Bandwidth and Throughput Information», «Cellular Wireless
+       Specifications» y «Ordering Information». Cada uno lleva su `fuente` y su `url`, porque no
+       son los de la tabla.
+
+       `entorno` dice para qué es el equipo: 'vehiculo' (IP64, alimentación de 7 a 36 o 50 V de la
+       batería) o 'exterior' (IP67, poste o pared, alimentado por PoE). Un equipo con `entorno` SOLO
+       compite cuando el escenario lo pide (`fisico.celularEntorno`); sin pedirlo, la recomendación
+       es la de siempre. `sinModem`: el 200F es una extensión de LAN por Ethernet («Modem Support:
+       N/A» en la ficha R57) y nunca sirve un enlace 4G/5G: está para que la pantalla lo diga.
+
+       Lo que NO entra: FEX-101F, 201E/211E, 212F, 311F y 511F. La ficha vigente ya no los trae en
+       sus tablas ni en su «Ordering Information» (el 101F solo aparece en la descripción de un
+       adaptador de corriente), y la guía de pedido R18 tampoco. */
+    { id: 'FortiExtender 200F', skus: ['FEX-200F'], gen: null, sinModem: true, categoria: 'extensión de LAN por Ethernet, sin módem',
+      modem: null, modems: 0, bajada: null, subida: null, nat: null, ipsec: null, region: null, regionN: 'sin módem',
+      puertos: '5 GE RJ45 (WAN o LAN)', poePd: null, maxW: 6.81, care: null },
+    { id: 'FortiExtender Vehicle 211F', skus: ['FEV-211F-AM', 'FEV-211F'], gen: '4G', entorno: 'vehiculo', categoria: 'LTE CAT-12, para vehículo (IP64)',
+      modem: 'Sierra Wireless EM7511 (-AM) o EM7565', modems: 1, bajada: 600, subida: 150, nat: 930, ipsec: 120, region: 'AM/EA',
+      regionN: 'FEV-211F-AM para Norteamérica, FEV-211F para Europa, APAC y LATAM',
+      wifi: 'Wi-Fi 5 (802.11ac Wave 2) 2x2, 2,4 y 5 GHz',
+      puertos: '1 GE WAN + 4 GE LAN', poePd: null, alimentacion: '7 a 36 V CC (batería de 12 o 24 V)', maxW: 22.74,
+      care: 'FC-10-FV21F-247-02-DD (AM) o FC-10-FG21F-247-02-DD',
+      fuente: 'FortiExtender Rugged Data Sheet (FEXR-DAT-R08-20260805)',
+      url: 'https://www.fortinet.com/content/dam/fortinet/assets/data-sheets/fortiextender-rugged.pdf' },
+    { id: 'FortiExtender Vehicle 212F', skus: ['FEV-212F-AM', 'FEV-212F'], gen: '4G', entorno: 'vehiculo', categoria: 'LTE CAT-12 (dos módems), para vehículo (IP64)',
+      modem: 'Sierra Wireless EM7511 (-AM) o EM7565 (2 módems)', modems: 2, bajada: 600, subida: 150, nat: 930, ipsec: 120, region: 'AM/EA',
+      regionN: 'FEV-212F-AM para Norteamérica, FEV-212F para Europa, APAC y LATAM',
+      wifi: 'Wi-Fi 5 (802.11ac Wave 2) 2x2, 2,4 y 5 GHz',
+      puertos: '1 GE WAN + 4 GE LAN', poePd: null, alimentacion: '7 a 36 V CC (batería de 12 o 24 V)', maxW: 22.74,
+      care: 'FC-10-FV22F-247-02-DD (AM) o FC-10-FG22F-247-02-DD',
+      fuente: 'FortiExtender Rugged Data Sheet (FEXR-DAT-R08-20260805)',
+      url: 'https://www.fortinet.com/content/dam/fortinet/assets/data-sheets/fortiextender-rugged.pdf' },
+    // La ficha R08 (ago-2026) escribe los SKU FEV-511G y FER-511G; la guía de pedido R18 (jun-2025),
+    // FEV-511G-x y FER-511G-x. Manda el documento más reciente; `regionN` deja dicho lo de la guía.
+    { id: 'FortiExtender Vehicle 511G', skus: ['FEV-511G'], gen: '5G', entorno: 'vehiculo', categoria: '5G sub-6 GHz y LTE, con Wi-Fi 6, para vehículo (IP64)',
+      modem: 'Telit FN990A28-HP', modems: 1, bajada: 3400, subida: 460, nat: 940, ipsec: 400, region: null,
+      regionN: 'operadores globales (la guía de pedido R18 escribe el SKU con un sufijo regional, FEV-511G-x: confirmarlo al pedir)',
+      wifi: 'Wi-Fi 6 (802.11ax) 2x2, 2,4 y 5 GHz simultáneos',
+      puertos: '1 WAN 2,5 GE + 4 GE LAN', poePd: null, alimentacion: '7 a 50 V CC', maxW: 20,
+      care: 'FC-10-FV51G-247-02-DD',
+      fuente: 'FortiExtender Rugged Data Sheet (FEXR-DAT-R08-20260805)',
+      url: 'https://www.fortinet.com/content/dam/fortinet/assets/data-sheets/fortiextender-rugged.pdf' },
+    // Su «Ordering Information» no da la bajada del módem (la del Vehicle 511G, sí): null, y el motor
+    // comprueba solo su reenvío, como con el FEX-511G. No se le pone la del Vehicle por llevar el mismo módem.
+    { id: 'FortiExtender Rugged 511G', skus: ['FER-511G'], gen: '5G', entorno: 'exterior', categoria: '5G sub-6 GHz y LTE, con Wi-Fi 6, de exterior (IP67)',
+      modem: 'Telit FN990A28-HP', modems: 1, bajada: null, subida: null, nat: 940, ipsec: 400, region: null,
+      regionN: 'operadores de América y Europa según su «Ordering Information» (la guía de pedido R18 escribe el SKU FER-511G-x: confirmarlo al pedir)',
+      wifi: 'Wi-Fi 6 (802.11ax) 2x2, 2,4 y 5 GHz simultáneos',
+      puertos: '1 RJ45 2,5 GE con PoE + 1 GE', poePd: '802.3at (25,5 W) en el puerto de 2,5 GE; no admite otra alimentación', maxW: 16,
+      care: 'FC-10-XR51G-247-02-DD',
+      fuente: 'FortiExtender Rugged Data Sheet (FEXR-DAT-R08-20260805)',
+      url: 'https://www.fortinet.com/content/dam/fortinet/assets/data-sheets/fortiextender-rugged.pdf' },
   ],
 };
 

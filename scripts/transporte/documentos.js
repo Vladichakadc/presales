@@ -1816,4 +1816,50 @@ module.exports = [
   { archivo: 'fortinet-fortiwifi-80f-ds.pdf', tipo: 'pdf', para: 'FORTINET', urls: [],
     descubrirEnlace: { de: 'fortinet-fortiwifi-80f-pagina.html', contiene: '80f', dominios: ['fortinet.com'],
       base: 'https://www.fortinet.com/resources/data-sheets/fortigate-fortiwifi-80f-series' } },
+  // 2026-11-11 (encargo del dueño: «todos los equipos referencia FEX y todos los gráficos»). La
+  // página de producto de FortiExtender (fortinet-fortiextender-pagina.html, traída el 2026-11-10)
+  // enlaza una segunda ficha, la de la línea Rugged, que es la que trae los Vehicle 211F, 212F y
+  // 511G y el Rugged 511G de la guía de pedido FEX-OG-R18: cifras y figuras salen de ella.
+  { archivo: 'fortinet-fortiextender-rugged-ds.pdf', tipo: 'pdf', para: 'FORTINET', urls: [
+    'https://www.fortinet.com/content/dam/fortinet/assets/data-sheets/fortiextender-rugged.pdf',
+  ] },
+  // El FEX-200F (extensión LAN, sin módem) está en la ficha R57, que no lo dibuja. Su QuickStart
+  // Guide, del almacén de documentos de Fortinet como las cuatro de más arriba (URL buscada).
+  { archivo: 'fortinet-fortiextender-200f-qsg.pdf', tipo: 'pdf', para: 'FORTINET', urls: [
+    'https://fortinetweb.s3.amazonaws.com/docs.fortinet.com/v2/attachments/871190a7-10d8-11ec-a4c4-00505692583a/FortiExtender-200F-QuickStart_Online.pdf',
+  ] },
+  // 2026-11-12 (pendiente del PR #190): el Vehicle 212F, que la ficha Rugged FEXR-DAT-R08 no dibuja. El
+  // listado de hardware traído (rama fuente/fortiextender-hardware-2026-11-11) enlaza su guía
+  // «FortiExtenderVehicle 212F/212F-AM QuickStart Guide»; su PDF, del almacén de documentos de Fortinet
+  // (URL buscada, no compuesta: la página de la guía responde 503 al ejecutor).
+  { archivo: 'fortinet-fortiextender-vehicle-212f-qsg.pdf', tipo: 'pdf', para: 'FORTINET', urls: [
+    'https://fortinetweb.s3.amazonaws.com/docs.fortinet.com/v2/attachments/7c0ddfdb-d4ff-11ef-8766-ca4255feedd9/FortiExtenderVehicle-212F-QuickStart_Online.pdf',
+  ] },
+  // 2026-11-12 (pendientes del FortiWiFi 50G-5G-II): las Release Notes de 7.6.7, 7.6.8 y 8.0.2 nombran
+  // «FWF-50G-5G», y su SKU es FWF-50G-5G-II; la ficha R17 da el módem (Telit FN990A28-HP) sin su caudal.
+  // La guía de pedido NGFW y la Wireless Product Matrix (URL buscadas) pueden decir si son el mismo modelo
+  // y dar la bajada y la subida del módem.
+  { archivo: 'fortinet-og-ngfw.pdf', tipo: 'pdf', para: 'FORTINET', urls: [
+    'https://www.fortinet.com/content/dam/fortinet/assets/data-sheets/og-next-generation-firewall.pdf',
+  ] },
+  { archivo: 'fortinet-wireless-product-matrix.pdf', tipo: 'pdf', para: 'FORTINET', urls: [
+    'https://www.fortinet.com/content/dam/fortinet/assets/data-sheets/Fortinet_Wireless_Product_Matrix.pdf',
+  ] },
+  // 2026-11-11 (mejora propuesta al cerrar el PR #166, aprobada por el dueño): lo que las Release
+  // Notes de 8.0.2 no traen. La guía «New Features» de FortiOS 8.0 (portada e índice por versión,
+  // URL buscadas) va como exploración: no se sabe aún si docs.fortinet.com la sirve al ejecutor.
+  { archivo: 'fortinet-fortios-8.0-nuevas.html', tipo: 'html', para: 'FORTINET', exploracion: true, urls: [
+    'https://docs.fortinet.com/document/fortigate/8.0.0/new-features',
+  ] },
+  { archivo: 'fortinet-fortios-8.0-nuevas-indice.html', tipo: 'html', para: 'FORTINET', exploracion: true, urls: [
+    'https://docs.fortinet.com/document/fortigate/8.0.0/new-features/413462',
+  ] },
+  { archivo: 'fortinet-fortios-8.0-nuevas.pdf', tipo: 'pdf', para: 'FORTINET', urls: [],
+    descubrirEnlace: { de: 'fortinet-fortios-8.0-nuevas.html', contiene: 'new-features', dominios: ['fortinetweb.s3.amazonaws.com', 'fortinet.com'],
+      base: 'https://docs.fortinet.com/document/fortigate/8.0.0/new-features' } },
+  // La Maximum Values Table, por la misma API que la de 7.6.7 (más arriba) y con los mismos
+  // modelos, en 8.0.2. Si la API no conoce esa versión, el informe lo dice: no se guarda otra.
+  { archivo: 'fortinet-mvt-8.0.2.json', tipo: 'html', para: 'FORTINET', debeContener: '\"rows\"', urls: [
+    'https://docs.fortinet.com/api/tools/max-values?family=fortigate&version=8.0.2&models=30G%2C31G%2C50G%2C51G%2C70G%2C71G%2C90G%2C91G%2C120G%2C121G%2C200G%2C201G%2C400G%2C401G%2C700G%2C701G%2C900G%2C901G%2C3000G%2C3001G%2C3500G%2C3501G%2C3800G%2C3801G%2C40F%2C60F%2C61F%2C70F%2C71F%2C80F%2C81F%2C100F%2C200F%2C400F%2C401F%2C600F%2C1000F%2C1001F%2C1800F%2C1801F%2C2600F%2C2601F%2C3000F%2C3001F%2C3200F%2C3201F%2C3500F%2C3501F%2C3700F%2C3701F%2C4200F%2C4201F%2C4400F%2C4401F%2C4800F%2C4801F',
+  ] },
 ];
