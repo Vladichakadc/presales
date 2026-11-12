@@ -70,8 +70,22 @@ const diasSin = (fecha, ahora = Date.now()) => {
 function prsNombrados(texto) {
   return [...new Set((String(texto || '').match(/PR #(\d+)/g) || []).map((m) => Number(m.slice(4))))].sort((a, b) => a - b);
 }
+// RAMAS CEDIDAS (2026-11-10, mejora propuesta al cerrar el PR #164). Desde ese PR, la reserva que pierde
+// una carrera no borra su rama (el proxy de git corta a veces el borrado de ramas remotas): la deja con el
+// traspaso en «cerrado (cedido: <rama> reservó lo mismo antes)», un texto que solo escribe `npm run
+// reservar`. Salía como un CERRADO más y contaba como tema en curso; ahora dice a quién cedió y se cuenta
+// aparte. Puro: las ramas a las que cedió, o null si no es una cedida.
+function cedidaA(estado) {
+  const m = /^cerrado \(cedido: (.+?) reservó lo mismo antes\)/i.exec(String(estado || '').trim());
+  return m ? m[1].split(',').map((r) => r.trim()).filter(Boolean) : null;
+}
+
 // Puro: la marca de una rama. `fusionados` son los números de PR ya fusionados entre los que nombra.
 function marcaParada({ rama, fecha, estado, fusionados = [], ahora = Date.now() }) {
+  const cedida = cedidaA(estado);
+  if (cedida) {
+    return `CEDIDA a ${cedida.join(', ')}: perdió la carrera de la reserva y no lleva trabajo; ya no bloquea a npm run reservar; se puede borrar (git push origin --delete ${rama})`;
+  }
   const d = diasSin(fecha, ahora);
   const cerrado = /^cerrado/i.test(String(estado || '').trim());
   if (!cerrado && (d == null || d <= DIAS_PARADA)) return null;
@@ -114,6 +128,7 @@ function main(argv) {
     .filter(([ref]) => ref !== 'origin/HEAD' && ref !== 'origin' && !RAMA_NO_TEMA.test(ref));
 
   let temas = 0;
+  const yaNoBloquean = { cedidas: 0, cerradasEnMain: 0 };
   const ramasConTraspaso = [];
   for (const [ref, fecha] of refs) {
     let listado;
@@ -139,16 +154,29 @@ function main(argv) {
       const borrado = enMain ? null : borradoEnMain(git, ruta);
       if (borrado && cerradoEnMain({ borrado: borrado.fecha, ultimoCommitRama: fecha })) {
         console.log(`  >> CERRADO EN MAIN: main borró este traspaso en ${borrado.hash} (${borrado.fecha}) y la rama no tiene commits después; ya no bloquea a npm run reservar; se puede borrar (git push origin --delete ${rama})`);
+        yaNoBloquean.cerradasEnMain += 1;
         continue;
       }
+      if (!enMain && cedidaA(cab.Estado)) yaNoBloquean.cedidas += 1;
       if (!enMain && (/^cerrado/i.test(String(cab.Estado || '').trim()) || (diasSin(fecha) || 0) > DIAS_PARADA)) {
         console.log(`  >> ${marcaParada({ rama, fecha, estado: cab.Estado, fusionados: fusionadosDe(prsNombrados(texto)) })}`);
       }
     }
   }
   if (temas === 0) console.log('Ningún tema en curso: ninguna rama remota lleva un traspaso.');
-  else console.log(`\n${temas} tema(s) en curso. No tomes un tema ni un archivo que ya declaren.`);
+  else console.log(`\n${resumenTemas(temas, yaNoBloquean)}`);
   if (!argv.includes('--sin-prs')) listarPrs(ramasConTraspaso);
+}
+
+// Puro: la línea final. Lo que ya no bloquea (cedidas y cerradas en main) se cuenta aparte: sumado a los
+// temas en curso, un listado con tres ramas cedidas parecía tener tres temas más de los que había.
+function resumenTemas(total, { cedidas = 0, cerradasEnMain = 0 } = {}) {
+  const enCurso = total - cedidas - cerradasEnMain;
+  const aparte = [];
+  if (cedidas) aparte.push(`${cedidas} cedida(s)`);
+  if (cerradasEnMain) aparte.push(`${cerradasEnMain} cerrada(s) en main`);
+  const cola = aparte.length ? `; aparte, ${aparte.join(' y ')}, que ya no bloquean y se pueden borrar` : '';
+  return `${enCurso} tema(s) en curso${cola}. No tomes un tema ni un archivo que ya declaren.`;
 }
 
 // TEMAS CERRADOS EN MAIN (2026-11-03, tras el PR #129). Una reserva en `claude/<tema>` cuyo tema se
@@ -222,4 +250,5 @@ function listarPrs(ramasConTraspaso) {
 if (require.main === module) main(process.argv.slice(2));
 
 module.exports = { leerCabecera, archivosDeTema, prsSinTraspaso, repoDeOrigen, RAMA_NO_TEMA, CAMPOS, marcaParada, prsNombrados, DIAS_PARADA,
+  cedidaA, resumenTemas,
   cerradoEnMain, borradoEnMain };

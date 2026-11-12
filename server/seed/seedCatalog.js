@@ -1,5 +1,6 @@
-// Los modelos con los que se siembra: los de Sequelize (SQLite) si no se pasan otros, o los de
-// `services/catalogoEnMemoria.js` (ADR-3). `seedCatalog(modelos)` los fija al empezar cada siembra.
+// Los modelos con los que se siembra: los del catalogo en memoria del proceso
+// (`services/catalogoEnMemoria.js`, ADR-3) si no se pasan otros, como hacen las pruebas con uno
+// propio. `seedCatalog(modelos)` los fija al empezar cada siembra.
 let Vendor; let Product; let OpticCategory; let Optic; let Part;
 let ProductOptic; let ProductPart; let SupportTier; let LicenseBundle; let RoleRecommendation;
 
@@ -326,7 +327,7 @@ async function seedRoleRecommendations(vendorIds) {
 
 // Devuelve si sembró: `false` es que la base ya traía catálogo y no se tocó (ver `start()` en
 // server.js, que lo dice en el arranque).
-async function seedCatalog(modelos = require('../models')) {
+async function seedCatalog(modelos = require('../services/catalogoEnMemoria').catalogo) {
   ({
     Vendor, Product, OpticCategory, Optic, Part,
     ProductOptic, ProductPart, SupportTier, LicenseBundle, RoleRecommendation,

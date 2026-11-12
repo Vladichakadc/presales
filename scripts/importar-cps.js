@@ -224,7 +224,7 @@ function aplicar(archivo) {
   console.log(quedan > 0
     ? `Siguen en null ${quedan} modelo(s). Vuelve a correr con --check para verlos.`
     : 'Ya no queda ningun modelo en null.');
-  console.log('\nSiguiente paso: borra database.sqlite para forzar el reseed, levanta el servidor '
+  console.log('\nSiguiente paso: reinicia el servidor (el catalogo se siembra en memoria al arrancar) '
     + 'y comprueba la pagina antes de desplegar.');
 }
 

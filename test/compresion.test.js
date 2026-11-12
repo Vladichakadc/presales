@@ -52,7 +52,7 @@ function pedir(ruta, { metodo = 'GET', encoding, cookie, cuerpo } = {}) {
 
 test.before(() => new Promise((resolve, reject) => {
   servidor = spawn(process.execPath, ['server/server.js'], { cwd: RAIZ, env: { ...process.env, NODE_ENV: 'production', PORT: String(PORT),
-    AUTH_PASSWORD: 'no-se-usa', AUTH_STATE_DIR: dir, DATABASE_PATH: path.join(dir, 'c.sqlite'), SESSION_SECRET: 's', ANTHROPIC_API_KEY: '' } });
+    AUTH_PASSWORD: 'no-se-usa', AUTH_STATE_DIR: dir, SESSION_SECRET: 's', ANTHROPIC_API_KEY: '' } });
   const t = setTimeout(() => reject(new Error(`no arrancó:\n${salida}`)), 60000);
   const oir = (c) => { salida += c; if (salida.includes('Presales corriendo en')) { clearTimeout(t); resolve(); } };
   servidor.stdout.on('data', oir);
