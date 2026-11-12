@@ -363,6 +363,7 @@ contra lo verificado, queda como diff de `legacyData/` y llega a producción con
 - `server/services/catalogProjection.js` — el único sitio que da forma a las filas para cada página
   (`toIndexPR`, `toCotizadorCatalog`, `toDimensionador*`, `toGuiaRoles`, `toFuentes`).
   `fueraDeVenta()` aplica en portal, cotizador y guía la misma regla que `FICHA.rango()`.
+- `server/services/cacheRespuestas.js` — **las respuestas del catálogo, serializadas una vez al día UTC** (2026-11-12, PR #195): `/api/vendors`, `/api/catalog`, `/api/cotizador/catalog`, `/api/guia/roles` y `/api/dimensionador/:vendor` guardan su cuerpo JSON; el día va en la clave porque un `lastOrder` (siempre AAAA-MM-DD) vence a las 00:00 UTC, y `usarModelos()` la vacía. `/api/fuentes` va fuera: lee el volumen (`test/cache-respuestas.test.js`).
 - `server/services/cifrasCotizador.js` — casa cada línea del cotizador con su pareja del
   dimensionador; las cifras con pareja no se copian: el texto deja un hueco (`{fwd}`) que la
   siembra rellena (`rellenarSpec`), y lo que difiere sale «en revisión» con las dos cifras.
