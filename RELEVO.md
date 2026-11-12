@@ -429,6 +429,12 @@ existen los workflows de transporte. Huawei y HPE niegan además el navegador au
 
 ## Mejoras propuestas sin decidir
 
+- **Declarar `opcionesFijas` en los demás dimensionadores** (propuesta al cerrar el PR #204). Hoy solo el `accesoVel`
+  del 7220 avisa si un enlace pide una opción retirada; los otros desplegables escritos en el HTML (perfil, plataforma,
+  plazo, nivel de soporte…) siguen cayendo a su valor por defecto en silencio. Una prueba podría sacar de cada HTML
+  los `<select>` del enlace con todas sus opciones escritas y exigir que estén declarados, como hace
+  `test/opciones-tarde.test.js` con los vacíos. Coste: la prueba y una lista por página. Si se hace mal, un
+  desplegable que el catálogo amplía daría avisos falsos: por eso la prueba tiene que excluir los que el script toca.
 - **Que el caso `aruba-eleccion` mida con el catálogo en el orden de la ruta** (propuesta al cerrar el PR #203). Hoy
   usa el orden de `legacyData/`, que la página nunca ve: al medir el PR #194 daba 387 diferencias que en producción
   no existen, y hubo que ordenar aparte en `aruba-orden.js`. Con una ayuda común (`scripts/ayuda/`) que dé a
@@ -456,11 +462,6 @@ existen los workflows de transporte. Huawei y HPE niegan además el navegador au
   un workflow, exportar la lectura de `traspasos.js` y su prueba. Si se hace mal, borraría una rama viva: por eso
   solo las dos marcas que ya se calculan con fechas y nunca una PARADA (que decide una persona).
 
-- **Quitar «1 GbE» del acceso del 7220 IXR, o decir junto a la opción que ningún modelo lo publica** (propuesta al cerrar el PR #182).
-  La página lo ofrece, y su propia nota dice «solo se listan las velocidades que la línea 7220 IXR realmente publica», pero
-  elegirlo da «sin diseño posible». Lo mejor sería que las opciones salieran de los puertos del catálogo (`puertosDe`)
-  en vez de estar escritas en el HTML. Coste: el desplegable generado y su escenario en el caso `nokia-fabric`. Si se hace
-  mal, un enlace guardado con `accesoVel=1` quedaría sin opción: lo tiene que anunciar `estado.js` (`avisoOrigen`).
 - **`npm run figuras-fortinet -- --nueva`, para que una figura nueva no entre al lock a mano** (propuesta al cerrar
   el PR #200). Con PDF, página, caja y destino: recorta con `rehacerUna`, mide la correlación y escribe su entrada
   y su huella. Hoy la figura nueva entra con un guion aparte que escribe un lock que dice «no se edita a mano».

@@ -1,7 +1,7 @@
 {
  "medidoEn": {
-  "commit": "3aa1374",
-  "fecha": "2026-11-11"
+  "commit": "215e1d3",
+  "fecha": "2026-11-12"
  },
  "umbralRozado": 25,
  "modulos": [
@@ -99,14 +99,14 @@
   {
    "modulo": "dimensionador-aruba-edgeconnect.js",
    "estado": "ejercitado",
-   "total": 368,
-   "usadas": 241,
+   "total": 369,
+   "usadas": 240,
    "pct": 65
   },
   {
    "modulo": "bom.js",
    "estado": "ejercitado",
-   "total": 122,
+   "total": 123,
    "usadas": 81,
    "pct": 66
   },
@@ -139,13 +139,6 @@
    "pct": 72
   },
   {
-   "modulo": "index.js",
-   "estado": "ejercitado",
-   "total": 58,
-   "usadas": 42,
-   "pct": 72
-  },
-  {
    "modulo": "nokia-sr-motor.js",
    "estado": "ejercitado",
    "total": 18,
@@ -160,11 +153,25 @@
    "pct": 75
   },
   {
+   "modulo": "index.js",
+   "estado": "ejercitado",
+   "total": 57,
+   "usadas": 43,
+   "pct": 75
+  },
+  {
    "modulo": "dimensionador-nokia-7220ixr.js",
    "estado": "ejercitado",
    "total": 21,
    "usadas": 16,
    "pct": 76
+  },
+  {
+   "modulo": "aruba-reglas.js",
+   "estado": "ejercitado",
+   "total": 99,
+   "usadas": 76,
+   "pct": 77
   },
   {
    "modulo": "dimensionador-cisco-catalyst8k.js",
@@ -183,16 +190,9 @@
   {
    "modulo": "dimensionador-fortinet-fortigate.js",
    "estado": "ejercitado",
-   "total": 283,
-   "usadas": 221,
+   "total": 286,
+   "usadas": 222,
    "pct": 78
-  },
-  {
-   "modulo": "aruba-reglas.js",
-   "estado": "ejercitado",
-   "total": 94,
-   "usadas": 74,
-   "pct": 79
   },
   {
    "modulo": "cisco-motor.js",
@@ -211,15 +211,8 @@
   {
    "modulo": "fortinet-motor.js",
    "estado": "ejercitado",
-   "total": 127,
-   "usadas": 101,
-   "pct": 80
-  },
-  {
-   "modulo": "fuentes.js",
-   "estado": "ejercitado",
-   "total": 5,
-   "usadas": 4,
+   "total": 130,
+   "usadas": 104,
    "pct": 80
   },
   {
@@ -232,8 +225,8 @@
   {
    "modulo": "dimensionador-mikrotik-routeros.js",
    "estado": "ejercitado",
-   "total": 161,
-   "usadas": 134,
+   "total": 162,
+   "usadas": 135,
    "pct": 83
   },
   {
@@ -265,6 +258,13 @@
    "pct": 89
   },
   {
+   "modulo": "nokia-fabric-motor.js",
+   "estado": "ejercitado",
+   "total": 18,
+   "usadas": 16,
+   "pct": 89
+  },
+  {
    "modulo": "funciones-activas.js",
    "estado": "ejercitado",
    "total": 53,
@@ -272,11 +272,11 @@
    "pct": 91
   },
   {
-   "modulo": "nokia-fabric-motor.js",
+   "modulo": "fuentes.js",
    "estado": "ejercitado",
-   "total": 17,
-   "usadas": 16,
-   "pct": 94
+   "total": 5,
+   "usadas": 5,
+   "pct": 100
   },
   {
    "modulo": "motor-ingenieria.js",

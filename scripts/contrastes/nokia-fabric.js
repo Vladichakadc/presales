@@ -5,7 +5,7 @@
  * «sin conducir» en la cobertura, y un cambio del leaf, el spine o sus cantidades solo lo veia la
  * equivalencia del corte que lo movio. Esta linea base fija, leida en la pantalla de main, que leaf
  * y que spine salen, cuantos de cada uno y la sobresuscripcion lograda, en los escenarios que mueven
- * la decision: cada velocidad de acceso (1, 25 y 100 GbE), el doble homing, una sobresuscripcion
+ * la decision: cada velocidad de acceso que la pagina ofrece (25 y 100 GbE), el doble homing, una sobresuscripcion
  * sin bloqueo y una grande que obliga a crecer el spine.
  */
 // Medida en la pantalla de main (0c6a8d5) el 2026-11-11.
@@ -21,9 +21,6 @@ const BASE_LINEA = [
     leaf: '7220 IXR-D2L', leafs: '11', spine: '7220 IXR-D3L', spines: '8', lograda: '1.5:1 — pedida 1:1' },
   { n: '2.000 servidores a 25 GbE, 6:1', esc: { servers: '2000', accesoVel: '25', oversub: '6' },
     leaf: '7220 IXR-D2L', leafs: '42', spine: '7220 IXR-D3L', spines: '2', lograda: '6.0:1 — pedida 6:1' },
-  // La pagina ofrece 1 GbE, pero ningun 7220 IXR del catalogo lo publica: sin diseno, con su motivo.
-  { n: '300 servidores a 1 GbE, 3:1', esc: { servers: '300', accesoVel: '1', oversub: '3' },
-    leaf: null, leafs: null, spine: null, spines: null, lograda: 'Ningún modelo de la línea 7220 IXR ofrece puertos de acceso a 1 GbE.' },
   { n: '100 servidores a 100 GbE, 3:1', esc: { servers: '100', accesoVel: '100', oversub: '3' },
     leaf: '7220 IXR-D3L', leafs: '5', spine: '7220 IXR-D3L', spines: '8', lograda: '3.0:1 — pedida 3:1' },
   { n: '600 servidores a 100 GbE, 2:1, con doble homing', esc: { servers: '600', accesoVel: '100', oversub: '2', dual: true },
