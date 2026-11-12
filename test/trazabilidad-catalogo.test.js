@@ -26,12 +26,7 @@ test('el nombre del fabricante va en la version, y la de Fortinet ya calculada s
 
 test('la ruta /api/dimensionador/<v> devuelve datasetVersion en los ocho dimensionadores con catalogo', async () => {
   const dir = fs.mkdtempSync(path.join(require('os').tmpdir(), 'trazab-'));
-  process.env.DATABASE_PATH = path.join(dir, 'db.sqlite');
   process.env.AUTH_STATE_DIR = dir;
-  const { sequelize } = require('../server/models');
-  const seedCatalog = require('../server/seed/seedCatalog');
-  await sequelize.sync();
-  await seedCatalog();
   const express = require('express');
   const app = express();
   app.use('/api', require('../server/routes/dimensionador'));
@@ -51,7 +46,6 @@ test('la ruta /api/dimensionador/<v> devuelve datasetVersion en los ocho dimensi
     assert.strictEqual(vistos.size, 8, 'ocho dimensionadores, ocho versiones distintas');
   } finally {
     server.close();
-    await sequelize.close();
   }
 });
 

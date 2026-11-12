@@ -1,10 +1,13 @@
 'use strict';
-// Los modelos que leen las proyecciones: los de Sequelize (SQLite) por defecto; `usarModelos()`
-// los cambia por los de `catalogoEnMemoria.js` (ADR-3). Las consultas no cambian.
+// Los modelos que leen las proyecciones: los del catalogo en memoria del proceso (ADR-3; hasta el
+// 2026-11-11, SQLite). `usarModelos()` los cambia por otros, como hacen las pruebas con un catalogo
+// propio. Las consultas no cambiaron al dejar SQLite. Cada proyeccion exportada espera a que el
+// catalogo del proceso este sembrado (`listo()`, ver el final del archivo).
+const catalogoDelProceso = require('./catalogoEnMemoria');
 let {
   Vendor, Product, OpticCategory, Optic, Part,
   SupportTier, LicenseBundle, RoleRecommendation,
-} = require('../models');
+} = catalogoDelProceso.catalogo;
 function usarModelos(modelos) {
   ({ Vendor, Product, OpticCategory, Optic, Part, SupportTier, LicenseBundle, RoleRecommendation } = modelos);
 }
@@ -766,7 +769,7 @@ function versionDeCatalogo(vendor, datos) {
   return `${vendor}@${MOTOR_FORTINET.sha256(MOTOR_FORTINET.canon(datos)).slice(0, 16)}`;
 }
 
-module.exports = {
+const PROYECCIONES = {
   usarModelos,
   versionDeCatalogo,
   toDimensionadorNokiaRouter,
@@ -785,3 +788,7 @@ module.exports = {
   toDimensionadorNokia,
   toGuiaRoles,
 };
+
+// Las asincronas esperan al catalogo del proceso; las puras (versionDeCatalogo, fueraDeVenta…) no.
+module.exports = Object.fromEntries(Object.entries(PROYECCIONES).map(([nombre, fn]) => [nombre,
+  fn.constructor.name === 'AsyncFunction' ? async (...args) => { await catalogoDelProceso.listo(); return fn(...args); } : fn]));

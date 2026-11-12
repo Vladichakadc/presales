@@ -70,7 +70,7 @@ Tailwind…) se retira: empuja el trabajo hacia una arquitectura que aquí no ex
 | `vibesec` · `insecure-defaults` · `sharp-edges` | Código seguro, valores por defecto que fallan abiertos, APIs fáciles de usar mal. |
 | `supply-chain-risk-auditor` · `codeql` · `semgrep` · `semgrep-rule-creator` · `sarif-parsing` | Dependencias y análisis estático. |
 | `variant-analysis` · `fp-check` · `audit-context-building` · `differential-review` · `code-review-guide` | Auditoría y revisión de diffs. |
-| `frontend-design` · `feature-planning` · `project-kickoff` · `database-designer` | Interfaz (HTML y JS a mano, sin build), planes por archivo, arranque, modelo Sequelize. |
+| `frontend-design` · `feature-planning` · `project-kickoff` · `database-designer` | Interfaz (HTML y JS a mano, sin build), planes por archivo, arranque, modelo de datos (el catálogo en memoria imita el subconjunto de Sequelize que usaba). |
 | `accessibility` | WCAG 2.2 sobre HTML y ARIA nativos (de ECC, MIT; las secciones de iOS y Android no aplican). Lo que manda es `e2e-accesibilidad.js` (axe 2.1 AA): un criterio 2.2 que merezca frenar se convierte en una comprobación de esa batería. Ver su `LEEME.md`. |
 | `agent-browser` | Explorar una pantalla por su árbol de accesibilidad. **Explorar con agent-browser, comprobar con Playwright**: `pantallas`, `contraste`, `e2e` y `manual` siguen en Playwright porque son lo que CI mira. Pide `--executable-path` al Chromium de `/opt/pw-browsers`. |
 | `agent-reach` | Router a 16 plataformas sociales. **Desde este contenedor no trae nada** (el proxy de egreso corta las 16); sirve desde una máquina con salida. Lo que traiga es lectura humana, nunca vía de escritura a `legacyData/`. Credenciales: ver su `LEEME.md`. |
@@ -86,7 +86,7 @@ que ya no dice lo que su skill.
 Presales: herramientas internas de preventa de equipos de red —calculadoras de
 dimensionamiento, cotizador/BOM y guía de diseño— para **Huawei, Cisco, Fortinet, MikroTik,
 Aruba, Nokia y Juniper** (siete fabricantes; Arista se retiró por completo en agosto de 2026),
-más el módulo de Starlink LEO. Express + SQLite que sirve páginas HTML/CSS/JS a mano tras un
+más el módulo de Starlink LEO. Express, con el catálogo en memoria, que sirve páginas HTML/CSS/JS a mano tras un
 login, en un solo servicio de Railway (mismo patrón que los proyectos hermanos `chikisdtv` y
 `credifuturo`, sin cliente compilado).
 
@@ -98,9 +98,9 @@ npm run dev        # node --watch server/server.js, http://localhost:4000
 npm start          # node server/server.js
 ```
 
-Sin build: `public/*.html` y `public/js/*.js` se sirven tal cual. `DATABASE_PATH` (ver
-`.env.example`) decide dónde vive el SQLite; sin ella, `./database.sqlite`. Con la base vacía,
-`server/seed/seedCatalog.js` siembra el catálogo al arrancar (borrar la base fuerza la resiembra).
+Sin build: `public/*.html` y `public/js/*.js` se sirven tal cual. **El catálogo vive en memoria**
+(ADR-3, 2026-11-11, PR #183): `server/seed/seedCatalog.js` lo siembra desde `legacyData/` en cada
+arranque (unos 100 ms), así que un cambio de `legacyData/` se ve al reiniciar. No hay base de datos.
 Sin `AUTH_PASSWORD` nadie entra: en local el servidor avisa, y con `NODE_ENV=production` **se
 niega a arrancar** (fallo cerrado deliberado). `AUTH_USER`, `SESSION_SECRET` y `AUTH_STATE_DIR`,
 en `.env.example`.
@@ -152,11 +152,11 @@ npm run manual      # manual de usuario a PDF (docs/manual-usuario/)
 
 `pantallas` y `contraste` hablan con un servidor ya arrancado en modo producción (`e2e` levanta el
 suyo), con base y credenciales de usar y tirar: un `AUTH_STATE_DIR` reutilizado conserva el
-`usuarios.json` anterior y rechaza la clave nueva, y una base que ya existe no se resiembra.
+`usuarios.json` anterior y rechaza la clave nueva.
 
 ```
 NODE_ENV=production PORT=4000 AUTH_USER=presales AUTH_PASSWORD=local SESSION_SECRET=local \
-  DATABASE_PATH="$(mktemp -d)/db.sqlite" AUTH_STATE_DIR="$(mktemp -d)" node server/server.js &
+  AUTH_STATE_DIR="$(mktemp -d)" node server/server.js &
 AUTH_USER=presales AUTH_PASSWORD=local npm run pantallas -- --base=http://127.0.0.1:4000 --salida=/tmp/capturas
 AUTH_PASSWORD=local npm run contraste -- --todos --base=http://127.0.0.1:4000
 ```
@@ -175,7 +175,7 @@ sigue ignorado):
   dice el comando y sigue; otra versión ya instalada no la toca), avisa si el grafo local no refleja
   algún archivo que lee (se lo pregunta a graphify contra su manifiesto; sin CLI, compara el commit)
   y si `npm install` reescribió el lock. No instala Playwright, no construye el grafo, no
-  inventa `AUTH_PASSWORD`, no siembra la base.
+  inventa `AUTH_PASSWORD`, no siembra el catálogo.
 - `aprendizaje.sh`: anota cada `npm run …` en `.claude/learning/runs.jsonl` con tres estados
   (`PreToolUse` abre, `PostToolUse` cierra, lo que queda abierto lo salda el arranque como fallo),
   porque `PostToolUse` no se dispara cuando el comando falla. Antes de cada corrida, si las dos
@@ -221,14 +221,14 @@ en un issue, para no saltar un despliegue que espera.
 **Antes de fusionar en `main`:**
 - `npm run verificar` y `npm run auditar`.
 - Arrancar con `NODE_ENV=production`: tres comportamientos solo existen ahí (el fallo cerrado sin
-  `AUTH_PASSWORD`, la cookie `Secure`, las rutas `/api/sync/apply` en 503).
+  `AUTH_PASSWORD`, la cookie `Secure` y el `NODE_ENV` que leen las pantallas).
 - Conducir la pantalla cambiada en un navegador, no solo la API: toda regresión real de este
   repositorio era invisible a `curl`. `npm run pantallas`, los casos de `contraste` que toquen, la
   batería `e2e`, `npm run visibles` si se tocó `public/` y `npm run puerta`.
 
-**Después de empujar:** el despliegue en SUCCESS, sus logs con `[seed]`, la línea `[db]` y
+**Después de empujar:** el despliegue en SUCCESS, sus logs con `[seed]`, la línea `[catalogo]` y
 `Presales corriendo en`, el healthcheck `/salud` superado (Railway lo usa como healthcheck; responde
-503 con la base vacía) y la sonda: `sonda-produccion.yml` escucha el `deployment_status` que Railway
+503 con el catálogo vacío o sin sembrar) y la sonda: `sonda-produccion.yml` escucha el `deployment_status` que Railway
 publica en GitHub, corre `/salud`, `/login` y `npm run puerta` contra el dominio real, y abre o
 cierra un issue con la etiqueta `despliegue`. Lo que nunca termina lo vigila
 `vigilia-despliegue.yml` (cada media hora, `scripts/vigilia-despliegue.js`; como el cron de GitHub solo corría el 10 % de las veces, una tarea programada de Claude la lanza además cada hora en el minuto 12): si la cabeza de `main`
@@ -239,10 +239,10 @@ rojo o sin terminar, en cola, sin despliegue) y lo cierra al desplegarse; un fal
 - Un push de bot (`GITHUB_TOKEN`) no dispara workflows: los workflows que escriben llevan su
   resultado a una rama (`scripts/empujar-rama.js`, con la lease que espera la cabeza actual) y una
   persona abre el PR. GitHub no deja que Actions cree PR en este repositorio.
-- La base de producción es efímera: se resiembra desde `legacyData/` en cada despliegue
-  (`DATABASE_PATH=./database.sqlite`, fuera del volumen `/data`). Por eso un cambio de catálogo no
-  necesita migración, y por eso `apply` de la sincronización no se usa en producción. Una base que
-  sobreviviera serviría el catálogo anterior: el arranque lo dice en la línea `[db]`.
+- El catálogo vive en memoria y se siembra desde `legacyData/` en cada arranque (ADR-3, PR #183;
+  hasta el 2026-11-11, una SQLite efímera): un cambio de catálogo no necesita migración, ningún
+  despliegue puede servir el catálogo anterior y la sincronización no escribe en ninguna parte
+  (`apply` responde 503 y remite a `npm run propuesta`). La variable `DATABASE_PATH` ya no se lee.
 
 **Runtime y cadena de suministro:**
 - **Node 24 LTS, declarado una sola vez** en `engines.node` (`"24"`); Railpack y los workflows lo
@@ -251,9 +251,10 @@ rojo o sin terminar, en cola, sin despliegue) y lo cierra al desplegarse; un fal
 - **Railpack instala con `npm ci`** (variable de servicio `RAILPACK_INSTALL_CMD`, que ninguna
   prueba ve: su confirmación es el log de construcción). `test/lock-origen.test.js` exige que el
   lock solo descargue de `registry.npmjs.org`, del archivo de su nombre y versión.
-- `sqlite3` es la única dependencia que ejecuta código al instalarse: va aprobada **fijada a su
-  versión** en `allowScripts` (nunca `false`: npm se salta el script en silencio y el servidor se
-  cae al arrancar). `test/scripts-instalacion.test.js` se pone en rojo cuando Dependabot la sube.
+- **Ninguna dependencia ejecuta código al instalarse** desde que salió `sqlite3` (ADR-3, PR #183).
+  Si vuelve alguna, va aprobada **fijada a su versión** en `allowScripts` (nunca `false`: npm se
+  salta el script en silencio); `test/scripts-instalacion.test.js` se pone en rojo hasta que una
+  persona la revise.
 - **Las acciones de GitHub, fijadas por commit** (`actions/<acción>@<sha> # vX.Y.Z`), solo
   oficiales, con Dependabot vigilándolas (`test/workflows-acciones.test.js`).
 - **Un `node -e "..."` de un workflow no lleva comillas invertidas ni `$` sin escapar, ni una
@@ -330,14 +331,14 @@ salvo la página de acceso va tras un muro: la API responde 401 en JSON y la nav
 `/login` conservando el destino y el querystring.
 
 **El recorrido de un dato:** la verdad está en `server/seed/legacyData/*.js`, con su procedencia
-en `fuentes.js` → `seedCatalog.js` la vuelca a SQLite con la base vacía → 
+en `fuentes.js` → `seedCatalog.js` la siembra en memoria al arrancar → 
 `services/catalogProjection.js` da a cada página la forma exacta que espera → la página la pide a
 su ruta. En el navegador, lo común vive en módulos compartidos de `public/js/` (`ficha.js`,
 `bom.js`, `estado.js`, `procedencia.js`). Un cambio de catálogo entra por un importador que ancla
 contra lo verificado, queda como diff de `legacyData/` y llega a producción con el merge.
 
 - `server/usuarios.js` — usuarios y roles en `AUTH_STATE_DIR/usuarios.json` (volumen persistente,
-  no SQLite). Sin archivo, el primer administrador sale de `AUTH_PASSWORD`. Los permisos
+  no el catálogo). Sin archivo, el primer administrador sale de `AUTH_PASSWORD`. Los permisos
   (`herramientas`, `usuarios`, `sync`) se declaran por rol en `ROLES`. El nombre de usuario se
   compara normalizado (`normalizarUsuario`). Nadie cambia la contraseña de otro; reponer un acceso
   es borrar `usuarios.json` del volumen. El alta (`POST /api/usuarios`) genera una contraseña de 24
@@ -352,9 +353,13 @@ contra lo verificado, queda como diff de `legacyData/` y llega a producción con
 - `server.js` también: CSP estricta con helmet (`script-src 'self'`), **respuestas comprimidas** (`compression`, brotli o gzip, 2026-11-01: un dimensionador bajaba ~1 MB y ahora ~300 KB; `/login`, `/logout`, `/api/cuenta/*` y `/api/usuarios` fuera por BREACH, `test/compresion.test.js`), sin `cors()`, SheetJS en
   `/vendor/xlsx.js` desde `npm:@e965/xlsx` (el `xlsx` de npm quedó abandonado con un aviso alto),
   `RENOMBRADAS` para páginas renombradas (conserva el querystring), `/salud` público.
-- `server/models/` — Sequelize. `Product` es la tabla central, con `specs` JSON (campos numéricos
-  por fabricante) en vez de decenas de columnas; `OpticCategory`/`Optic`, `Part`, `SupportTier`,
-  `LicenseBundle`, `RoleRecommendation` (`SyncLog`, que nadie leía ni escribía, se archivó el 2026-11-09: `docs/archivo/`).
+- `server/services/catalogoEnMemoria.js` — **el catálogo en memoria** (ADR-3, PR #174 y #183): los diez
+  modelos (`Product`, la tabla central, con `specs` JSON por fabricante; `OpticCategory`/`Optic`, `Part`,
+  `SupportTier`, `LicenseBundle`, `RoleRecommendation` y las intermedias) con el subconjunto de Sequelize que
+  usan la siembra y las proyecciones, que corren tal cual. Cada consulta da objetos nuevos, el orden es el de
+  SQLite (BINARY, NULL primero) y un uso que no imita **lanza**: uno nuevo se añade con su caso en
+  `test/catalogo-en-memoria.test.js`. Un catálogo por proceso (`catalogo`, sembrado por `listo()`); las
+  proyecciones lo esperan solas. Donde el orden importa, va escrito en la consulta, nunca en el plan.
 - `server/services/catalogProjection.js` — el único sitio que da forma a las filas para cada página
   (`toIndexPR`, `toCotizadorCatalog`, `toDimensionador*`, `toGuiaRoles`, `toFuentes`).
   `fueraDeVenta()` aplica en portal, cotizador y guía la misma regla que `FICHA.rango()`.
@@ -365,8 +370,8 @@ contra lo verificado, queda como diff de `legacyData/` y llega a producción con
 - `server/routes/` — rutas finas. `fortinet.js` **evalúa** con el mismo `public/js/fortinet-motor.js`
   del navegador; `starlinkSizing.js`, con el mismo motor de Starlink.
 - **Sincronización** (`routes/sync.js` + `services/aiSync.js`; documentación en
-  `docs/sincronizacion.md`). **Analizar** corre en cualquier entorno; **escribir en la base, solo en
-  local**. El cambio durable no pasa por `apply`: se descarga la propuesta y
+  `docs/sincronizacion.md`). **Analizar** corre en cualquier entorno; **`apply` no escribe en ninguna
+  parte** (503 en todas, desde el ADR-3). El cambio durable se hace así: se descarga la propuesta y
   `aplicar-propuesta.yml` la aplica sobre `legacyData/` con anclaje (`npm run propuesta`: el
   `oldValue` tiene que casar con el catálogo de hoy, URL oficial obligatoria, las altas nunca se
   aplican solas). **Una hoja CSV/XLSX se contrasta primero sin IA** con `public/js/contraste.js` (el
