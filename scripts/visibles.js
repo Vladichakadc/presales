@@ -367,6 +367,9 @@ function worktreeDe(ref) {
   }
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'visibles-base-'));
   git(['worktree', 'add', '--detach', '--force', dir, ref]);
+  // Una base que traiga `node_modules` versionado (el PR #191 dejó en main un enlace a la máquina de
+  // quien lo hizo) no puede frenar la medida: se quita del worktree, que es de usar y tirar.
+  fs.rmSync(path.join(dir, 'node_modules'), { recursive: true, force: true });
   if (mismoLock(dir)) {
     fs.symlinkSync(path.join(RAIZ, 'node_modules'), path.join(dir, 'node_modules'), 'dir');
   } else {

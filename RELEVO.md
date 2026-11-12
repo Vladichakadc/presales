@@ -429,6 +429,13 @@ existen los workflows de transporte. Huawei y HPE niegan además el navegador au
 
 ## Mejoras propuestas sin decidir
 
+- **Llevar al motor de Cisco el orden por ciclo de vida y el recomendado** (propuesta al cerrar el PR #194). Es el
+  último motor cuya página ordena: `evaluar(models, p)` no recibe `rango`, así que la página aplica
+  `FICHA.ordenar` y `FICHA.recomendar`, y la envoltura del contrato repite esa regla (hoy la sujeta una prueba
+  de texto). Con un tercer argumento `opciones` opcional, el motor ordenaría y recomendaría, y la página y la
+  envoltura solo leerían. Coste: dos líneas de la página, la envoltura y un caso de equivalencia como el de
+  Aruba. Si se hace mal, un fin de venta anunciado cambiaría de sitio en la lista: el caso mide con el catálogo
+  de la ruta.
 - **La misma regla para todo el catálogo de Fortinet: cada modelo y cada variante, con figura o con su motivo**
   (propuesta al cerrar el PR #193). La prueba del #193 cubre los siete FortiExtender; los 71 de `MODELS` y las 13
   `VARIANTES` de `fortinetVariantes.js` también tienen figura hoy (medido el 2026-11-12), pero nada lo exige: un
@@ -462,12 +469,6 @@ existen los workflows de transporte. Huawei y HPE niegan además el navegador au
   dibujo en la página y en el Excel. Cuesta una entrada en `scripts/transporte/documentos.js`, una corrida del
   transporte y dos recortes con su lock. Si se hace mal, se serviría la figura de otro modelo: entra solo si la
   guía rotula el dibujo como FEV-212F.
-- **La misma firma de `evaluar` en los ocho y una prueba de contrato que la exija** (propuesta al cerrar el PR #171).
-  ADR-1 pide `evaluar(escenario, catalogo, opciones)` con el mismo sobre en todos; Juniper y Nokia ya lo tienen,
-  Cisco (`evaluar(models, p)`), Huawei y MikroTik conservan su firma y Aruba no tiene `evaluar`. Con una envoltura por
-  fabricante (sin tocar las firmas de hoy) una sola prueba recorrería los ocho y exigiría versión, candidatos
-  ordenados, recomendado y apartados: la «batería única» del ADR. Coste: ocho envolturas y una prueba, cada envoltura
-  con su caso de equivalencia. Si se hace mal, una envoltura que reordene los candidatos cambiaría el recomendado.
 - **Dejar pedir un módulo MPIM en Juniper, para que el SRX320 tenga cuándo salir** (propuesta al cerrar el PR #168).
   Empata con el SRX300 en todas las cifras, y su única diferencia en el catálogo son dos ranuras MPIM (LTE, VDSL…);
   sin forma de pedir un módulo, el desempate nunca lo recomienda y una sucursal que lo necesita sale con un SRX300

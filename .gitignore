@@ -1,4 +1,5 @@
-node_modules/
+# Sin barra final: con ella git no ignora un ENLACE llamado node_modules, y uno entró en main (PR #191).
+node_modules
 database.sqlite
 .env
 .DS_Store
