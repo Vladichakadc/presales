@@ -13,8 +13,10 @@ const path = require('node:path');
 const { FORTIEXTENDER } = require('../server/seed/legacyData/fortinetVariantes');
 const VISTAS = require('../public/data/fortinet-vistas-equipos.json');
 
-// Modelo de la tabla que ningún documento oficial dibuja: id -> motivo (qué se buscó y dónde). Hoy, ninguno.
-const SIN_FIGURA = {};
+// Modelo de la tabla que ningún documento oficial dibuja: id -> motivo (qué se buscó y dónde).
+const SIN_FIGURA = {
+  'FortiExtender Vehicle 212F': 'la ficha Rugged FEXR-DAT-R08 (pp. 2 a 4) dibuja el Vehicle 211F, el Vehicle 511G y el Rugged 511G; del 212F solo da la tabla, y su QuickStart Guide no se ha traído (PR #190)',
+};
 
 const PUBLIC = path.join(__dirname, '..', 'public');
 const existe = (ruta) => typeof ruta === 'string' && fs.existsSync(path.join(PUBLIC, ruta.replace(/^\//, '')));
@@ -41,7 +43,7 @@ function sinCubrir(modelos, vistas, sinFigura) {
 }
 
 test('cada FortiExtender de la tabla tiene figura de un documento, o su motivo para no tenerla', () => {
-  assert.ok(FORTIEXTENDER.modelos.length >= 7, 'la tabla de FortiExtender no se cargó entera');
+  assert.ok(FORTIEXTENDER.modelos.length >= 12, 'la tabla de FortiExtender no se cargó entera');
   assert.deepStrictEqual(sinCubrir(FORTIEXTENDER.modelos, VISTAS, SIN_FIGURA), []);
 });
 

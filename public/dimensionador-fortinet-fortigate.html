@@ -448,7 +448,7 @@ h1{font-size:clamp(24px,3.4vw,36px)}
         <option value="7.6.0-7.6.2">7.6.0 a 7.6.2</option>
         <option value="7.4">7.4.x</option>
       </select>
-      <p class="hint" id="fortiOSHint">Decide qué funciones están disponibles, no qué cifra aplica. En 7.6.3 o superior el acceso remoto SSL-VPN en modo túnel ya no existe: se diseña con IPsec.</p>
+      <div class="hint" id="fortiOSHint">Decide qué funciones están disponibles, no qué cifra aplica. En 7.6.3 o superior el acceso remoto SSL-VPN en modo túnel ya no existe: se diseña con IPsec.</div>
     </div>
     <div class="field">
       <label for="modoInspeccion">Modo de inspección</label>
@@ -729,6 +729,13 @@ h1{font-size:clamp(24px,3.4vw,36px)}
       <select id="celularVia" aria-describedby="celularViaHint"><option value="">Elegir…</option><option value="integrado">Módem en el propio equipo (40F-3G4G, 50G-5G, 51G-5G o FortiWiFi 50G-5G-II)</option><option value="extender">FortiExtender junto al FortiGate (equipo aparte, en el BOM)</option></select>
       <p class="hint" id="celularViaHint">Con módem integrado solo compiten las variantes que lo traen; con FortiExtender el FortiGate se elige como siempre y el FortiExtender se elige por la generación y la bajada del enlace, uno por enlace 4G/5G.</p>
       <div id="celularResultado" class="hint" hidden></div>
+    </div>
+    <!-- Dónde va el FortiExtender (2026-11-11): los de vehículo y exterior son otra línea de producto
+         (ficha Rugged) y solo compiten al pedirlos. Sin elegir, los de interior de siempre. -->
+    <div class="field" id="fldCelularEntorno" data-regla="fisico.celularEntorno" hidden>
+      <label for="celularEntorno">Dónde va el FortiExtender</label>
+      <select id="celularEntorno" aria-describedby="celularEntornoHint"><option value="">Interior (sobremesa o pared)</option><option value="vehiculo">En un vehículo (FortiExtender Vehicle, IP64)</option><option value="exterior">A la intemperie (FortiExtender Rugged, IP67)</option></select>
+      <p class="hint" id="celularEntornoHint">Los FortiExtender Vehicle (211F, 212F y 511G) y el Rugged 511G salen de su propia ficha y solo compiten cuando se pide su entorno. El FortiExtender 200F no tiene módem: no sirve un enlace 4G/5G.</p>
     </div>
     <div class="field" style="margin-top:14px">
       <label for="reqPqc">Criptografía post-cuántica (exigir)</label>
