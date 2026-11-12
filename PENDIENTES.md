@@ -2327,11 +2327,11 @@ Un modelo que se incorpore sale de `REVISADAS` (la prueba lo frena si se queda).
 Lo que dejó la entrega de FortiWiFi, FortiGate con módem 4G/5G y FortiExtender
 (`docs/entregas/2026-11-04-pr-140.md`):
 
-1. **Precio y licencias de los FortiWiFi y de los FortiExtender.** La lista firmada no se extrajo para
-   ellos: `scripts/importar-skus-fortinet.js` solo casa bloques `FortiGate-XX` anclados a un SKU y un
-   precio ya verificados, y estos no los tienen. Lo cierra ampliar el importador a esas filas (ancla
-   propuesta: el SKU exacto de la «Ordering Information» de su ficha) y correrlo con la lista, que tiene
-   el dueño. Hasta entonces van «consultar», y la pantalla lo dice como «no se extrajo».
+1. **Precio y licencias de los FortiWiFi y de los FortiExtender** (solo el dueño). El importador ya
+   extrae esas filas desde el PR #143 (`scripts/importar-skus-fortinet.js`); falta correrlo con la lista
+   firmada, que tiene el dueño: `npm run skus -- <lista.xlsx>`, revisar el diff de `fortinetSkus.js` y
+   declarar el `lic`/`bdl` que sugiere para cada FortiWiFi (detalle en `RELEVO.md`). Hasta entonces van
+   «consultar», y la pantalla lo dice como «no se extrajo».
 2. **PQC del FortiWiFi 50G-5G-II**: «no consta». Las otras diez variantes la llevan desde el PR #146,
    porque «Supported models» de las Release Notes de FortiOS 7.6.7 las nombra; esa lista dice FWF-50G-5G
    y el SKU de esta es FWF-50G-5G-II. Las de 7.6.8 (build 3744) y 8.0.2 (build 0251), traídas en el
@@ -2339,10 +2339,13 @@ Lo que dejó la entrega de FortiWiFi, FortiGate con módem 4G/5G y FortiExtender
    FWF-50G-5G-II (su ficha, o una respuesta escrita de Fortinet), no otras Release Notes.
 3. **Caudal del módem integrado** (40F-3G4G, 50G-5G, 51G-5G y FortiWiFi 50G-5G-II): su ficha no lo publica
    y el motor lo avisa en vez de comprobarlo. Lo cierra un documento de Fortinet con esa cifra.
-4. **Figuras de las variantes**: la ficha del equipo no las trae todavía. Las fichas por serie traen las
-   figuras de cada columna (página «Hardware»).
-5. **Fuera a propósito**: FEX-511G-WiFi (el mismo equipo con radio, sin caso en el dimensionador),
-   FortiExtender Vehicle y Rugged. Los FortiWiFi 40F, 60F y 80F-2R y el FG-80F-3G4G no son un pendiente:
+4. **Figuras de los tres FortiGate con módem** (40F-3G4G, 50G-5G y 51G-5G). Las de los FortiWiFi
+   entraron en el PR #148 (y las de 50G-SFP y 50G-DSL en el #181); las de los FortiExtender WAN 50G, 511G y
+   511G-WiFi, en el #172. Las de estos tres están en la página «Hardware» de su ficha por serie (FG-40F-R49 y
+   FGFWF-50G-R17). Encargado por el dueño el 2026-11-11; se hace cuando se fusione el PR #185 (figuras de los
+   FortiExtender 4G), que toca los mismos archivos.
+5. **Fuera a propósito**: FortiExtender Vehicle y Rugged. El FEX-511G-WiFi, que el PR #140 dejaba fuera,
+   entró en el PR #172. Los FortiWiFi 40F, 60F y 80F-2R y el FG-80F-3G4G no son un pendiente:
    las fichas vigentes de esas series (R49/R51/R48, 2026-10-01) ya no los publican.
 
 ## ~~Abierto~~ Cerrado: herramienta externa Cisco (2026-10-20)

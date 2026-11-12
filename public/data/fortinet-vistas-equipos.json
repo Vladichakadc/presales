@@ -482,5 +482,165 @@
     ]
    ]
   }
+ },
+ "FortiExtender 101G": {
+  "front": "/img/equipos/fex-101g-front.webp",
+  "rear": "/img/equipos/fex-101g-rear.webp",
+  "fuente": "QuickStart Guide FortiExtender 101G (FEX-101G; docs.fortinet.com, FEX-101G-QSG.pdf), p. 5 «FEX-101G Right View» (cara de puertos, la que se da como frontal) y «FEX-101G Top View» (cara superior con los LED y las antenas, en la pestaña trasera). La ficha de la serie no dibuja este modelo.",
+  "frontLeyenda": {
+   "tabla": "lista «FEX-101G Right View» junto a la figura, p. 5",
+   "filas": [
+    [
+     1,
+     "CONSOLE Port (RJ45) · CLI management",
+     "Puerto de consola (RJ45), gestión por CLI"
+    ],
+    [
+     2,
+     "USB 2.0 Port",
+     "Puerto USB 2.0"
+    ],
+    [
+     3,
+     "WAN Port (RJ45) and LED",
+     "Puerto WAN (RJ45) con su LED"
+    ],
+    [
+     4,
+     "LAN Ports 1 to 4 (RJ45) and LEDs · POE Port 4 PoE PD 802.3af/at",
+     "Puertos LAN 1 a 4 (RJ45) con sus LED; el puerto 4 se alimenta por PoE (PD 802.3af/at)"
+    ],
+    [
+     5,
+     "12VDC/2.5A Input (optional)",
+     "Entrada de 12 V CC / 2,5 A (opcional)"
+    ],
+    [
+     6,
+     "LTE Antenna Connectors x3",
+     "Tres conectores de antena LTE"
+    ]
+   ]
+  },
+  "rearLeyenda": {
+   "tabla": "lista «FEX-101G Top View» junto a la figura, p. 5",
+   "filas": [
+    [
+     1,
+     "LTE Antenna Connectors x3 · AUX, GNSS, MAIN",
+     "Tres conectores de antena LTE: AUX, GNSS y MAIN"
+    ],
+    [
+     2,
+     "LTE Carrier",
+     "LED de operador LTE"
+    ],
+    [
+     3,
+     "Power LED",
+     "LED de encendido"
+    ],
+    [
+     4,
+     "FortiSASE LAN Extension",
+     "LED de extensión LAN de FortiSASE"
+    ],
+    [
+     5,
+     "Management",
+     "LED de gestión"
+    ],
+    [
+     6,
+     "Signal Strength",
+     "LED de intensidad de señal"
+    ]
+   ]
+  }
+ },
+ "FortiExtender 211G": {
+  "front": "/img/equipos/fex-211g-front.webp",
+  "rear": "/img/equipos/fex-211g-rear.webp",
+  "fuente": "QuickStart Guide FortiExtender 211G (FEX-211G; docs.fortinet.com, FEX-211G-QSG.pdf), p. 5 «FEX-211G Right View» (cara de puertos, la que se da como frontal) y «FEX-211G Top View» (cara superior con los LED y las antenas, en la pestaña trasera). La ficha de la serie no dibuja este modelo.",
+  "frontLeyenda": {
+   "tabla": "lista «FEX-211G Right View» junto a la figura, p. 5",
+   "filas": [
+    [
+     1,
+     "CONSOLE Port (RJ45) · CLI management",
+     "Puerto de consola (RJ45), gestión por CLI"
+    ],
+    [
+     2,
+     "USB 2.0 Port",
+     "Puerto USB 2.0"
+    ],
+    [
+     3,
+     "WAN Port (RJ45) and LED",
+     "Puerto WAN (RJ45) con su LED"
+    ],
+    [
+     4,
+     "LAN Ports 1 to 4 (RJ45) and LEDs · POE Port 4 PoE PD 802.3af/at",
+     "Puertos LAN 1 a 4 (RJ45) con sus LED; el puerto 4 se alimenta por PoE (PD 802.3af/at)"
+    ],
+    [
+     5,
+     "12VDC/2.5A Input (optional)",
+     "Entrada de 12 V CC / 2,5 A (opcional)"
+    ],
+    [
+     6,
+     "LTE Antenna Connectors x3",
+     "Tres conectores de antena LTE"
+    ]
+   ]
+  },
+  "rearLeyenda": {
+   "tabla": "lista «FEX-211G Top View» junto a la figura, p. 5",
+   "filas": [
+    [
+     1,
+     "LTE Antenna Connectors x3 · AUX, GNSS, MAIN",
+     "Tres conectores de antena LTE: AUX, GNSS y MAIN"
+    ],
+    [
+     2,
+     "LTE Carrier",
+     "LED de operador LTE"
+    ],
+    [
+     3,
+     "Power LED",
+     "LED de encendido"
+    ],
+    [
+     4,
+     "FortiSASE LAN Extension",
+     "LED de extensión LAN de FortiSASE"
+    ],
+    [
+     5,
+     "Management",
+     "LED de gestión"
+    ],
+    [
+     6,
+     "Signal Strength",
+     "LED de intensidad de señal"
+    ]
+   ]
+  }
+ },
+ "FortiExtender 201F": {
+  "front": "/img/equipos/fex-201f-front.webp",
+  "rear": "/img/equipos/fex-201f-rear.webp",
+  "fuente": "QuickStart Guide FortiExtender 201F (FEX-201F-EA; docs.fortinet.com, FortiExtender-201F-QuickStart_Online.pdf), p. 4 «Ports, LEDs, and Buttons». La guía no nombra las caras: frontal, la de los puertos; trasera, la de la bahía SIM y el Bluetooth. Los rótulos van escritos sobre el dibujo, sin números. La ficha de la serie no dibuja este modelo."
+ },
+ "FortiExtender 202F": {
+  "front": "/img/equipos/fex-202f-front.webp",
+  "rear": "/img/equipos/fex-202f-rear.webp",
+  "fuente": "QuickStart Guide FortiExtender 202F (FEX-202F-AM; docs.fortinet.com, FortiExtender-202F-QuickStart_Online.pdf), p. 4 «Ports, LEDs, and Buttons». La guía no nombra las caras: frontal, la de los puertos; trasera, la de la bahía SIM y el Bluetooth. Los rótulos van escritos sobre el dibujo, sin números. La ficha de la serie no dibuja este modelo."
  }
 }
