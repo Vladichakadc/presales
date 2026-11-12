@@ -2,29 +2,33 @@
 
 - **Tema:** cache-proyecciones
 - **Rama:** claude/elegant-pascal-7ymts7
-- **Cuenta:** (no consta)
-- **Estado:** reservado
-- **Actualizado:** 2026-11-12 12:36
-- **Archivos que toca:** server/services/cacheRespuestas.js, server/routes/catalog.js, server/routes/cotizador.js, server/routes/guia.js, server/routes/dimensionador.js, test/cache-respuestas.test.js
-- **Siguiente paso:** empezar: el tema está reservado y todavía no tiene código
+- **Cuenta:** vladichakadc (sesión de Claude Code en la nube)
+- **Estado:** en revisión (PR abierto)
+- **Actualizado:** 2026-11-12 13:20
+- **Archivos que toca:** server/services/cacheRespuestas.js, server/services/catalogProjection.js, server/routes/catalog.js, server/routes/cotizador.js, server/routes/guia.js, server/routes/dimensionador.js, test/cache-respuestas.test.js
+- **Siguiente paso:** CI del PR; commit de cierre (entrega, RELEVO, CLAUDE.md) y fusión
 
 ## Encargo del dueño
 
-<Las palabras del dueño, literales, y lo que se entendió de ellas.>
+«Avanza con los pendientes y mejoras propuestas»; en la pregunta de la sesión eligió las cuatro, entre ellas «Caché de proyecciones» (propuesta al cerrar el PR #183).
 
 ## Hecho
 
-- <Lo terminado, con el commit que lo contiene.>
+- `server/services/cacheRespuestas.js`: el cuerpo serializado de `/api/vendors`, `/api/catalog`, `/api/cotizador/catalog`, `/api/guia/roles` y `/api/dimensionador/:vendor`, una vez por día UTC; `usarModelos()` la vacía. `/api/fuentes` y `/api/v1/fortinet/*`, fuera.
+- `test/cache-respuestas.test.js`: siete pruebas, con sus sabotajes.
 
 ## Falta
 
-- <Lo pendiente de este tema, en orden.>
+- CI, cierre y fusión.
 
 ## Decisiones y hallazgos
 
-
-- <Lo decidido y su porqué; lo medido; lo que no funcionó, para no repetirlo.>
+- El día UTC va en la clave porque `fueraDeVenta()` compara `lastOrder` con la hora; todos son AAAA-MM-DD y la prueba lo exige.
+- Se guarda la promesa del JSON: dos primeras peticiones comparten el cálculo; un fallo se borra.
+- Medido: `/api/dimensionador/fortinet` pasa de 21,8 ms a 1,7 ms de media (20 peticiones, local).
+- `main` versiona `node_modules` como un enlace a sí mismo; `npm ci` lo reemplaza por la carpeta. No se toca aquí.
 
 ## Verificación
 
-- <Qué se corrió (`npm run verificar`, `auditar`, `pantallas`…) y con qué resultado.>
+- `npm run verificar`: 1.586/1.586. `npm run auditar`: verde. `npm run puerta` contra el servidor en producción: cerrada.
+- Las 14 rutas de `main` y de la rama en producción, byte a byte y con el mismo `Content-Type`: iguales.

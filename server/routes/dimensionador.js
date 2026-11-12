@@ -12,6 +12,8 @@ const {
   versionDeCatalogo,
 } = require('../services/catalogProjection');
 
+const { cuerpo } = require('../services/cacheRespuestas');
+
 const router = express.Router();
 
 const projections = {
@@ -31,18 +33,25 @@ const projections = {
 // (Nokia tiene dos porque tiene dos preguntas), no al fabricante del catalogo de fuentes.
 const FABRICANTE = { 'nokia-sr': 'nokia' };
 
+// La respuesta entera (con `cicloVida` y `datasetVersion`, cuya huella SHA-256 era buena parte del
+// coste) se guarda serializada por fabricante: ver cacheRespuestas.js.
+async function respuesta(clave) {
+  // `cicloVida` se anade AQUI y no dentro de cada proyeccion: son ocho funciones y la regla
+  // es una. Repetirla ocho veces es como `llevarABom` acabo divergiendo en seis copias.
+  const datos = await projections[clave]();
+  const vendor = FABRICANTE[clave] || clave;
+  // `datasetVersion` se anade aqui por la misma razon: una regla, no ocho copias. Se calcula
+  // sobre los datos y el ciclo de vida, que es todo lo que la pagina pinta del catalogo.
+  const cicloVida = respaldoCicloVida(vendor);
+  return { ...datos, cicloVida, datasetVersion: versionDeCatalogo(clave, { ...datos, cicloVida }) };
+}
+
 router.get('/dimensionador/:vendor', async (req, res, next) => {
-  const projection = projections[req.params.vendor];
-  if (!projection) return res.status(404).json({ error: 'Vendor sin dimensionador' });
+  const clave = req.params.vendor;
+  // Un fabricante desconocido no toca la caché: `hasOwn`, para que «constructor» no sea una clave.
+  if (!Object.prototype.hasOwnProperty.call(projections, clave)) return res.status(404).json({ error: 'Vendor sin dimensionador' });
   try {
-    // `cicloVida` se anade AQUI y no dentro de cada proyeccion: son ocho funciones y la regla
-    // es una. Repetirla ocho veces es como `llevarABom` acabo divergiendo en seis copias.
-    const datos = await projection();
-    const vendor = FABRICANTE[req.params.vendor] || req.params.vendor;
-    // `datasetVersion` se anade aqui por la misma razon: una regla, no ocho copias. Se calcula
-    // sobre los datos y el ciclo de vida, que es todo lo que la pagina pinta del catalogo.
-    const cicloVida = respaldoCicloVida(vendor);
-    res.json({ ...datos, cicloVida, datasetVersion: versionDeCatalogo(req.params.vendor, { ...datos, cicloVida }) });
+    res.type('json').send(await cuerpo(`dimensionador:${clave}`, () => respuesta(clave)));
   } catch (err) {
     next(err);
   }

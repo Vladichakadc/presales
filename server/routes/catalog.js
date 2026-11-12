@@ -1,23 +1,15 @@
 const express = require('express');
 const { getVendorsList, toIndexPR, toFuentes } = require('../services/catalogProjection');
 
+const { servir } = require('../services/cacheRespuestas');
+
 const router = express.Router();
 
-router.get('/vendors', async (req, res, next) => {
-  try {
-    res.json(await getVendorsList());
-  } catch (err) {
-    next(err);
-  }
-});
+router.get('/vendors', servir('vendors', getVendorsList));
 
-router.get('/catalog', async (req, res, next) => {
-  try {
-    res.json(await toIndexPR());
-  } catch (err) {
-    next(err);
-  }
-});
+router.get('/catalog', servir('catalog', toIndexPR));
+
+// `/fuentes` NO pasa por la caché: lee las fuentes subidas al volumen (cacheRespuestas.js).
 
 // `?vendor=<code>` da solo ese fabricante, con la misma forma que sin él. Un código que no es un
 // texto corto de letras se rechaza (400) y uno que no existe da 404: nunca un `{}` que la pantalla
