@@ -83,7 +83,6 @@ jobs:
           AUTH_PASSWORD: contrasena-solo-de-esta-corrida
           SESSION_SECRET: secreto-solo-de-esta-corrida
           AUTH_STATE_DIR: ./.auth-ci
-          DATABASE_PATH: ./ci.sqlite
         run: |
           npm start > arranque.log 2>&1 &
           for i in $(seq 1 60); do

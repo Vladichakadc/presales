@@ -87,20 +87,14 @@ test('la cantidad, el resumen, la ficha y el BOM salen de licenciaHa, y la regla
 });
 
 test('haLicenciaUnica llega al navegador: la proyección de /api/dimensionador/fortinet la conserva', () => {
-  // Se siembra una base en memoria con la siembra del arranque, como scripts/ayuda/pantallas-servidas.js.
+  // El catalogo en memoria, sembrado con la siembra del arranque, como scripts/ayuda/pantallas-servidas.js.
   const programa = `
-    process.env.DATABASE_PATH = ':memory:';
     console.log = (...a) => console.error(...a);
-    const { sequelize } = require('./server/models');
-    const seedCatalog = require('./server/seed/seedCatalog');
     const proyeccion = require('./server/services/catalogProjection');
     (async () => {
-      await sequelize.sync();
-      await seedCatalog();
       const d = await proyeccion.toDimensionadorFortinet();
       const m = d.models.find((x) => x.id === 'FortiGate 61F');
       process.stdout.write(JSON.stringify(m.haLicenciaUnica || null));
-      await sequelize.close();
     })().catch((e) => { console.error(e); process.exit(1); });`;
   const salida = execFileSync(process.execPath, ['-e', programa], {
     cwd: path.join(__dirname, '..'), encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'],

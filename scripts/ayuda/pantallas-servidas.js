@@ -7,28 +7,22 @@
  * el dia que nacio: la capacidad de Nokia llegaba al portal en Gbps donde todo el portal lee
  * Mbps, y eso no estaba en ningun archivo — `indexPR.js` dice «300 Gbps» y tiene razon.
  *
- * Asi que se siembra una base EN MEMORIA con la misma `seedCatalog()` del arranque y se
+ * Asi que se siembra el catalogo en memoria con la misma `seedCatalog()` del arranque y se
  * devuelve, en JSON por la salida estandar, lo que sirven `/api/catalog` y `/api/guia/roles`,
  * mas los equipos fuera de venta segun la misma regla que aplica la proyeccion.
  *
- * EN MEMORIA Y NO EN UN ARCHIVO, a proposito: `DATABASE_PATH` se fija aqui, antes de cargar los
- * modelos, y no se lee del entorno. Un valor heredado apuntaria a la base de alguien, y sembrar
- * o leer esa no es lo que se pidio.
  */
-process.env.DATABASE_PATH = ':memory:';
 
 // La siembra escribe en la consola («[seed] ...»): va al canal de errores para que la salida
 // estandar sea solo el JSON que lee quien llama.
 console.log = (...a) => console.error(...a);
 
-const { sequelize, Product, Vendor } = require('../../server/models');
-const seedCatalog = require('../../server/seed/seedCatalog');
+const { listo } = require('../../server/services/catalogoEnMemoria');
 const proyeccion = require('../../server/services/catalogProjection');
 const { normalizarModelo } = require('../../server/services/cifrasCotizador');
 
 (async () => {
-  await sequelize.sync();
-  await seedCatalog();
+  const { Product, Vendor } = await listo();
   const productos = await Product.findAll({ include: [{ model: Vendor }] });
   const fueraDeVenta = productos
     .filter((p) => proyeccion.fueraDeVenta(p.eol, p.specs))
@@ -39,7 +33,6 @@ const { normalizarModelo } = require('../../server/services/cifrasCotizador');
     fueraDeVenta,
   };
   process.stdout.write(JSON.stringify(salida));
-  await sequelize.close();
 })().catch((e) => {
   console.error(e && e.stack ? e.stack : String(e));
   process.exit(1);

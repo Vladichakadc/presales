@@ -403,15 +403,12 @@ function escapeHtml(v) {
   return String(v ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
 }
 
-// El entorno lo informa el servidor (/api/sync/estado): no se puede deducir en el cliente, y
-// de el dependen dos cosas — que «aplicar a base local» solo aparezca en local (en produccion
-// esa escritura no persiste), y que se avise si falta la clave antes de gastar un analisis.
+// El servidor dice si hay clave (/api/sync/estado), para avisar antes de gastar un analisis.
 let syncEstado = { produccion: false, tieneClave: true };
 
 async function openSyncModal() {
   document.getElementById('syncModal').hidden = false;
   document.getElementById('syncResult').innerHTML = '<p>Selecciona un fabricante y haz clic en Analizar.</p>';
-  document.getElementById('btnApplySync').hidden = true;
   document.getElementById('btnDescargarPropuesta').hidden = true;
   try {
     const res = await fetch('/api/sync/estado');
@@ -474,11 +471,9 @@ async function analyzeSync() {
   const vendor = document.getElementById('syncVendor').value;
   const fileInput = document.getElementById('syncFile');
   const resultDiv = document.getElementById('syncResult');
-  const btn = document.getElementById('btnApplySync');
   const btnDesc = document.getElementById('btnDescargarPropuesta');
 
   resultDiv.innerHTML = '<p>Analizando el catálogo (una hoja Excel/CSV se contrasta primero sin IA; con un PDF o con columnas que no se reconocen interviene la IA y puede tardar unos minutos)...</p>';
-  btn.hidden = true;
   btnDesc.hidden = true;
   
   try {
@@ -541,49 +536,14 @@ async function analyzeSync() {
     html += '</table>';
 
     resultDiv.innerHTML = html;
-    // Descargar la propuesta es el camino durable y va siempre. Aplicar a la base local solo
-    // se ofrece fuera de produccion, donde esa escritura si sirve para iterar.
+    // Descargar la propuesta es el unico camino: se aplica con `npm run propuesta` o con el
+    // workflow «aplicar-propuesta» (el catalogo vive en memoria desde el ADR-3, 2026-11-11).
     btnDesc.hidden = false;
-    btn.hidden = !!syncEstado.produccion;
   } catch (err) {
     // Se escapa con el helper que ya usa esta pagina: el mensaje puede venir del servidor,
     // y concatenarlo crudo en innerHTML seria una via de XSS en cuanto alguien incluya en
     // un error algun dato de la peticion o del modelo.
     resultDiv.innerHTML = `<p style="color:var(--red)">${escapeHtml(err.message || 'Ocurrió un error al analizar el catálogo.')}</p>`;
-  }
-}
-
-async function applySync() {
-  const vendor = document.getElementById('syncVendor').value;
-  const resultDiv = document.getElementById('syncResult');
-  const btn = document.getElementById('btnApplySync');
-  
-  btn.innerHTML = 'Aplicando...';
-  btn.disabled = true;
-  
-  try {
-    const res = await fetch('/api/sync/apply', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ vendor, changes: pendingChanges })
-    });
-    
-    if (!res.ok) {
-      const e = await res.json().catch(() => ({}));
-      throw new Error(e.error || 'Error aplicando');
-    }
-    const data = await res.json();
-
-    const skippedNote = data.skippedCount > 0 ? ` (${data.skippedCount} cambios se saltaron por datos inválidos, ver logs del servidor)` : '';
-    resultDiv.innerHTML = `<p style="color:var(--green);font-weight:600">Se actualizaron ${data.appliedCount} registros en la base local${skippedNote}.</p>`
-      + '<p style="font-size:13px;color:var(--steel)">Estos cambios viven solo en tu base local. Para que lleguen a producción, trasládalos a los archivos de <code>server/seed/legacyData/</code> y despliega — el catálogo de producción se resiembra desde ahí en cada despliegue.</p>';
-    btn.hidden = true;
-    btn.innerHTML = 'Aprobar e Impactar DB';
-    btn.disabled = false;
-  } catch (err) {
-    resultDiv.innerHTML += `<p style="color:var(--red)">${escapeHtml(err.message || 'Error al aplicar los cambios.')}</p>`;
-    btn.innerHTML = 'Aprobar e Impactar DB';
-    btn.disabled = false;
   }
 }
 
@@ -625,7 +585,6 @@ document.addEventListener('click', (e) => {
   else if (id === 'btnAbrirSync') openSyncModal();
   else if (id === 'navLogout') logout();
   else if (id === 'btnAnalizarSync') analyzeSync();
-  else if (id === 'btnApplySync') applySync();
   else if (id === 'btnDescargarPropuesta') descargarPropuesta();
   else if (id === 'btnComparar') runCompare();
   else if (id === 'btnCalcular') runCalc();

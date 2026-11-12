@@ -43,7 +43,6 @@ function arrancar() {
         PORT: String(PORT),
         AUTH_PASSWORD: 'no-se-usa-porque-hay-usuarios',
         AUTH_STATE_DIR: dir,
-        DATABASE_PATH: path.join(dir, 'catalogo.sqlite'),
         SESSION_SECRET: 'secreto-de-prueba',
         ANTHROPIC_API_KEY: '',
       },
@@ -80,46 +79,11 @@ test.after(() => { if (servidor) servidor.kill(); });
 test('el arranque en produccion siembra el catalogo y llega a escuchar', () => {
   assert.match(salida, /\[seed\]/);
   assert.match(salida, /Presales corriendo en/);
-  // Y dice donde vive la base y que la sembro: es la linea que se lee en el log de Railway.
-  assert.ok(salida.includes(`[db] SQLite en ${path.join(dir, 'catalogo.sqlite')}: catálogo sembrado desde legacyData/ en este arranque.`), salida);
+  // Y dice que el catalogo vive en memoria y que lo sembro este arranque: es la linea que se lee
+  // en el log de Railway (hasta el ADR-3, 2026-11-11, la linea [db] de SQLite).
+  assert.match(salida, /\[catalogo\] En memoria, sembrado desde legacyData\/ en este arranque: 7 fabricantes y \d+ modelos en \d+ ms\./);
+  assert.doesNotMatch(salida, /\[db\]/);
   assert.doesNotMatch(salida, /no se volvió a sembrar/);
-});
-
-test('un arranque en produccion sobre una base que ya trae catalogo lo avisa', async () => {
-  // POR QUE. La siembra solo corre con la base vacia, asi que una base que sobrevive al
-  // despliegue (DATABASE_PATH dentro del volumen) sigue sirviendo el catalogo de antes y los
-  // cambios de legacyData/ no llegan a produccion. Aqui la base es la que acaba de sembrar el
-  // primer arranque, que es exactamente ese caso.
-  const puerto = PORT + 1;
-  let otra = '';
-  const segundo = spawn(process.execPath, ['server/server.js'], {
-    cwd: RAIZ,
-    env: {
-      ...process.env,
-      NODE_ENV: 'production',
-      PORT: String(puerto),
-      AUTH_PASSWORD: 'no-se-usa-porque-hay-usuarios',
-      AUTH_STATE_DIR: dir,
-      DATABASE_PATH: path.join(dir, 'catalogo.sqlite'),
-      SESSION_SECRET: 'secreto-de-prueba',
-      ANTHROPIC_API_KEY: '',
-    },
-  });
-  try {
-    await new Promise((resolve, reject) => {
-      const t = setTimeout(() => reject(new Error(`el segundo arranque no llego a escuchar:\n${otra}`)), 60000);
-      const oir = (c) => { otra += c; if (otra.includes('Presales corriendo en')) { clearTimeout(t); resolve(); } };
-      segundo.stdout.on('data', oir);
-      segundo.stderr.on('data', oir);
-      segundo.on('exit', (code) => { clearTimeout(t); reject(new Error(`el segundo arranque salio con ${code}:\n${otra}`)); });
-    });
-  } finally {
-    segundo.removeAllListeners('exit');
-    segundo.kill();
-  }
-  assert.doesNotMatch(otra, /\[seed\]/);
-  assert.match(otra, /\[db\] SQLite en .*: catálogo reutilizado de un arranque anterior\./);
-  assert.match(otra, /\[db\] La base ya traía catálogo y no se volvió a sembrar: los cambios de legacyData\/ de este despliegue NO están en producción/);
 });
 
 test('/salud responde sin sesion y cuenta el catalogo sembrado', async () => {
@@ -164,9 +128,9 @@ test('el permiso sync se exige en la ruta: consulta recibe 403, administrador pa
   assert.match(cuerpo.error, /ANTHROPIC_API_KEY/);
 });
 
-test('aplicar a la base sí sigue bloqueado en producción: la base es efímera', async () => {
-  // La escritura a la base no tiene sentido en producción y ese muro se queda. El camino
-  // durable es descargar la propuesta y abrir el PR desde el workflow.
+test('aplicar no escribe en ninguna base: responde 503 y remite a npm run propuesta', async () => {
+  // El catalogo vive en memoria (ADR-3): no hay base en la que escribir, ni en produccion ni en
+  // local. El camino durable es descargar la propuesta y aplicarla sobre legacyData/.
   const ana = await sesionDe('ana', 'contrasena-de-ana-larga');
   const res = await fetch(`${BASE}/api/sync/apply`, {
     method: 'POST',
@@ -174,7 +138,9 @@ test('aplicar a la base sí sigue bloqueado en producción: la base es efímera'
     body: JSON.stringify({ vendor: 'fortinet', changes: [] }),
   });
   assert.strictEqual(res.status, 503);
-  assert.match((await res.json()).error, /aplicar-propuesta|efímera|PR/i);
+  const { error } = await res.json();
+  assert.match(error, /npm run propuesta/);
+  assert.match(error, /aplicar-propuesta/);
 });
 
 test('/api/sync/estado informa entorno y presencia de clave, bajo el permiso sync', async () => {

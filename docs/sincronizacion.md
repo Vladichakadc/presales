@@ -26,7 +26,7 @@ en la base de producción no persiste** — el cambio se perdería en el siguien
 | Acción | Qué hace | Producción | Local |
 |---|---|---|---|
 | **Analizar** (`POST /api/sync/analyze`) | Lee el catálogo vigente + el documento y llama a la IA. Devuelve una lista de cambios. **No escribe nada.** | Sí | Sí |
-| **Aplicar a base local** (`POST /api/sync/apply`) | Escribe los cambios en la base SQLite. Solo para iterar en local. | **No** (503) | Sí |
+| ~~Aplicar a base local~~ (`POST /api/sync/apply`) | Retirado el 2026-11-11 (ADR-3): el catálogo vive en memoria y se siembra desde `legacyData/` en cada arranque, así que no hay base en la que escribir. Responde 503 y remite a `npm run propuesta`. | **No** (503) | **No** (503) |
 | **Descargar propuesta** (cliente) | Serializa los cambios al JSON que consume el importador. | Sí | Sí |
 | **Aplicar de verdad** (`aplicar-propuesta.yml`) | Aplica la propuesta sobre `legacyData/` con anclaje y la deja en una rama con el enlace para abrir el PR. | — (corre en Actions) | — |
 
@@ -143,7 +143,7 @@ se contrastan aquí —extraer una tabla de un PDF sin equivocar de fila es just
 repositorio no automatiza—: la ventana lo dice y remite al análisis por IA o a los importadores.
 
 **Dónde viven los archivos.** En el volumen persistente (`AUTH_STATE_DIR/fuentes/`), igual que
-`usuarios.json` — no en la base de catálogo, que es efímera y se resiembra en cada despliegue.
+`usuarios.json` — no en el catálogo, que vive en memoria y se siembra en cada arranque.
 Así los documentos subidos sobreviven a un deploy. El nombre en disco lo genera el servidor
 (`<fabricante>-<id>.<ext>`), nunca el del archivo subido, y el tipo se decide por la firma del
 contenido (415 si no es PDF/XLSX/CSV/TXT). `server/fuentesSubidas.js` es el módulo; las rutas

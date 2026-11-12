@@ -27,22 +27,18 @@ function trozo(src, desde, hasta) {
   return src.slice(i, j + hasta.length);
 }
 
-// Lo que recibe la página (GET /api/dimensionador/aruba), de una base de usar y tirar sembrada desde
+// Lo que recibe la página (GET /api/dimensionador/aruba), del catálogo en memoria sembrado desde
 // legacyData. Va a un archivo y no a la salida: la siembra escribe sus avisos por ella.
 function proyeccion() {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'equiv-aruba-bom-'));
   const salida = path.join(dir, 'aruba.json');
   const codigo = `(async () => {
-    const { sequelize } = require('./server/models');
-    await sequelize.sync();
-    await require('./server/seed/seedCatalog')();
     const d = await require('./server/services/catalogProjection').toDimensionadorAruba();
     require('fs').writeFileSync(process.env.SALIDA_EQUIV, JSON.stringify(d));
-    await sequelize.close();
   })().catch((e) => { console.error(e); process.exit(1); });`;
   try {
     execFileSync(process.execPath, ['-e', codigo], { cwd: RAIZ, stdio: ['ignore', 'ignore', 'pipe'], maxBuffer: 64 * 1024 * 1024,
-      env: { ...process.env, DATABASE_PATH: path.join(dir, 'db.sqlite'), AUTH_STATE_DIR: dir, SALIDA_EQUIV: salida } });
+      env: { ...process.env, AUTH_STATE_DIR: dir, SALIDA_EQUIV: salida } });
     return JSON.parse(fs.readFileSync(salida, 'utf8'));
   } finally {
     fs.rmSync(dir, { recursive: true, force: true });

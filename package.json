@@ -56,8 +56,6 @@
     "headroom.js": "^0.12.0",
     "helmet": "^8.1.0",
     "multer": "^2.2.0",
-    "sequelize": "^6.37.7",
-    "sqlite3": "^6.0.1",
     "xlsx": "npm:@e965/xlsx@^0.20.3"
   },
   "devDependencies": {
@@ -65,8 +63,5 @@
     "eslint": "^10.14.0",
     "pdf-parse": "^2.4.5",
     "pdfjs-dist": "5.4.296"
-  },
-  "allowScripts": {
-    "sqlite3@6.0.1": true
   }
 }

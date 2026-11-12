@@ -76,8 +76,9 @@ function lockDePrueba(cambios = {}) {
 test('el lock del repositorio solo descarga del registro oficial, el archivo de cada paquete, con huella sha512', () => {
   const lock = JSON.parse(fs.readFileSync(path.join(RAIZ, 'package-lock.json'), 'utf8'));
   assert.deepStrictEqual(problemasDelLock(lock), []);
-  // Que no pase en vacío: el lock trae cientos de entradas, y todas se miraron.
-  assert.ok(Object.keys(lock.packages).length > 300, 'el lock trae menos entradas de las esperadas');
+  // Que no pase en vacío: el lock trae cientos de entradas, y todas se miraron. (Eran más de 450
+  // hasta el 2026-11-11: sqlite3, que se fue con el ADR-3, arrastraba su cadena de compilación.)
+  assert.ok(Object.keys(lock.packages).length > 200, 'el lock trae menos entradas de las esperadas');
 });
 
 test('un lock sintético con la forma del real pasa', () => {
