@@ -17,13 +17,17 @@
 //
 // Uso:
 //   npm run figuras-fortinet                       comprueba lock, figuras y pies (no escribe nada)
-//   npm run figuras-fortinet -- --rehacer <carpeta-con-los-pdf> [--solo <ruta>] [--aplicar]
+//   npm run figuras-fortinet -- --rehacer <carpeta-con-los-pdf> [--solo <ruta>] [--aplicar] [--aunque-dudosa]
 //       Rehace cada figura desde su caja: pdftoppm (Poppler) rasteriza y recorta, y cwebp (o, si no
 //       está, Pillow) la guarda en WebP con calidad 90, como las existentes. Sin --aplicar solo dice
 //       cuánto difiere cada una de la servida (contra la diferencia que dio al medirla) y si el PDF
 //       es la misma edición que la del lock; con --aplicar escribe las figuras y pone al día su
 //       huella y su diferencia. Un PDF de OTRA edición no se usa sin
 //       revisar la caja: el dibujo puede haber cambiado de sitio.
+//       Cada recorte se compara además con las otras figuras de su documento, en lo que las
+//       distingue: si se parece más a una vecina sale DUDOSA, cuenta como fallo y no se aplica
+//       (--aunque-dudosa la fuerza, tras confirmar la caja por el rótulo). Ver «LA CAJA, CONTRA LAS
+//       FIGURAS VECINAS».
 //   npm run figuras-fortinet -- --traer <carpeta> [--json] [--todas]
 //       Lo que corre el job `contrastar_figuras` del vigía cada lunes (2026-11-09, mejora propuesta
 //       al cerrar el PR #149). Baja cada documento del lock de su `url` y lo compara con su huella:
@@ -226,9 +230,71 @@ function compararFigura(ruta, f, pdf) {
   }
 }
 
+// LA CAJA, CONTRA LAS FIGURAS VECINAS (2026-11-12, mejora propuesta al cerrar el PR #191 y aprobada
+// por el dueño: «Ejecuta pendientes y mejora propuesta»). El freno de solapes caza dos cajas sobre el
+// mismo dibujo; no caza dos cajas CAMBIADAS entre sí, ni dice nada mientras se mide una caja nueva.
+// Aquí el recorte de cada caja se compara con su figura servida y con las demás del mismo documento,
+// pero SOLO EN LOS PÍXELES DONDE LAS DOS FIGURAS DIFIEREN (el rótulo, el LED «WIFI», las antenas): el
+// detalle que solo tiene una. Comparar la imagen entera no sirve y se midió: entre un FortiGate y su
+// FortiWiFi el ruido de remuestrear pesa más que el rótulo, y tres figuras bien medidas (70G frontal,
+// 30G trasera) salían más cerca de su vecina que de sí mismas. En la zona que difiere, las 92 figuras
+// del lock quedan a +48 o más de su vecina más parecida, y las dos cajas erradas hasta el PR #188, a
+// -53 y -66. Dos figuras sin zona que las distinga (las traseras del 30G son el mismo dibujo) salen
+// «indistinguibles»: la imagen no puede decidir, y se dice en vez de darlas por buenas.
+const ANCHO_DETALLE = 800; // a 400 px el rótulo «5G» de una antena ya no se distingue
+const UMBRAL_DETALLE = 40; // diferencia de gris (0-255) para contar un píxel como «difiere»
+const MINIMO_DETALLE = 12; // con menos píxeles que difieran, las dos figuras no se distinguen
+
+// Mide el recorte contra la figura propia y cada vecina. Devuelve, por vecina, {ruta, propia, vecina,
+// pixeles} o {ruta, indistinguible: true, pixeles}. Necesita Python con Pillow y numpy.
+function medirVecinas(recorte, propia, vecinas) {
+  if (!vecinas.length) return [];
+  const py = [
+    'import sys',
+    'from PIL import Image, ImageFilter',
+    'import numpy as n',
+    'W, U, K = int(sys.argv[1]), float(sys.argv[2]), int(sys.argv[3])',
+    'def carga(p, size=None):',
+    '    i = Image.open(p).convert("L")',
+    '    if size is None: size = (W, max(1, round(i.height * W / i.width)))',
+    '    return n.asarray(i.resize(size, Image.LANCZOS).filter(ImageFilter.GaussianBlur(1.5)), dtype=float), size',
+    'crop, size = carga(sys.argv[4])',
+    'a, _ = carga(sys.argv[5], size)',
+    'for p in sys.argv[6:]:',
+    '    b, _ = carga(p, size)',
+    '    m = abs(a - b) > U',
+    '    k = int(m.sum())',
+    '    if k < K: print("x", "x", k)',
+    '    else: print(round(float(abs(crop - a)[m].mean()), 1), round(float(abs(crop - b)[m].mean()), 1), k)',
+  ].join('\n');
+  const lineas = cp.execFileSync('python3', ['-I', '-c', py, String(ANCHO_DETALLE), String(UMBRAL_DETALLE), String(MINIMO_DETALLE),
+    recorte, propia.archivo, ...vecinas.map((v) => v.archivo)]).toString().trim().split('\n');
+  return vecinas.map((v, i) => {
+    const [a, b, k] = lineas[i].split(' ');
+    return a === 'x' ? { ruta: v.ruta, indistinguible: true, pixeles: Number(k) }
+      : { ruta: v.ruta, propia: Number(a), vecina: Number(b), pixeles: Number(k) };
+  });
+}
+
+// Pura: qué vecinas ponen la caja en duda (en lo que las distingue, el recorte se parece más a la
+// vecina que a la figura propia) y de cuáles no se puede distinguir.
+function juzgarVecinas(medidas) {
+  return {
+    dudosas: medidas.filter((m) => !m.indistinguible && m.vecina < m.propia),
+    indistinguibles: medidas.filter((m) => m.indistinguible),
+  };
+}
+
+// Las demás figuras del mismo documento que tienen archivo servido.
+function vecinasDe(ruta, figuras, existe = (r) => fs.existsSync(path.join(RAIZ, 'public', r))) {
+  const f = figuras[ruta];
+  return Object.entries(figuras).filter(([r, g]) => r !== ruta && g.documento === f.documento && existe(r))
+    .map(([r]) => ({ ruta: r, archivo: path.join(RAIZ, 'public', r) }));
+}
+
 const faltaHerramienta = () => ['pdftoppm', 'pdfinfo', 'python3'].find((cmd) => !tiene(cmd)) || null;
 
-function rehacer(carpeta, { solo, aplicar }) {
+function rehacer(carpeta, { solo, aplicar, aunqueDudosa }) {
   const falta = faltaHerramienta();
   if (falta) { console.error(`Falta ${falta} (Poppler y Python con Pillow).`); return 2; }
   const lock = leerJson(LOCK);
@@ -242,8 +308,16 @@ function rehacer(carpeta, { solo, aplicar }) {
     const huella = huellas[pdf] || (huellas[pdf] = sha256(fs.readFileSync(pdf)));
     const otraEdicion = huella !== doc.sha256;
     const { diferencia: d, tope, nueva } = compararFigura(ruta, f, pdf);
-    const estado = otraEdicion ? 'EDICION' : d <= tope ? 'IGUAL  ' : 'DISTINTA';
+    const { dudosas, indistinguibles } = juzgarVecinas(medirVecinas(nueva, { ruta, archivo: path.join(RAIZ, 'public', ruta) }, vecinasDe(ruta, lock.figuras)));
+    const dudosa = dudosas.length > 0 && !aunqueDudosa;
+    const estado = otraEdicion ? 'EDICION' : dudosas.length ? 'DUDOSA ' : d <= tope ? 'IGUAL  ' : 'DISTINTA';
     console.log(`${estado} ${ruta}: diferencia media ${d}${otraEdicion ? ' — el PDF no es la edición del lock: revisa la caja antes de aplicar' : ''}`);
+    for (const v of dudosas) {
+      console.log(`        en lo que la distingue de ${v.ruta} (${v.pixeles} px), el recorte se parece más a esa (${v.vecina}) que a la suya (${v.propia}): `
+        + `la caja cae seguramente en el dibujo de la otra${aplicar && dudosa ? '; no se aplica (--aunque-dudosa la fuerza, tras confirmarla por el rótulo)' : ''}`);
+    }
+    for (const v of indistinguibles) console.log(`        no se distingue de ${v.ruta} por la imagen (${v.pixeles} px distintos): la caja se confirma mirando el rótulo de la página`);
+    if (dudosa) { fallos++; fs.unlinkSync(nueva); continue; }
     if (aplicar && !otraEdicion) {
       fs.copyFileSync(nueva, path.join(RAIZ, 'public', ruta));
       f.sha256 = sha256(fs.readFileSync(nueva));
@@ -349,9 +423,9 @@ async function main(argv) {
   const i = args.indexOf('--rehacer');
   if (i >= 0) {
     const carpeta = args[i + 1];
-    if (!carpeta) { console.error('Uso: --rehacer <carpeta-con-los-pdf> [--solo <ruta>] [--aplicar]'); return 2; }
+    if (!carpeta) { console.error('Uso: --rehacer <carpeta-con-los-pdf> [--solo <ruta>] [--aplicar] [--aunque-dudosa]'); return 2; }
     const j = args.indexOf('--solo');
-    return rehacer(carpeta, { solo: j >= 0 ? args[j + 1] : null, aplicar: args.includes('--aplicar') });
+    return rehacer(carpeta, { solo: j >= 0 ? args[j + 1] : null, aplicar: args.includes('--aplicar'), aunqueDudosa: args.includes('--aunque-dudosa') });
   }
   const problemas = comprobar(leerJson(VISTAS), leerJson(LOCK), leerFigura);
   for (const p of problemas) console.log(`  · ${p}`);
@@ -362,4 +436,4 @@ async function main(argv) {
 
 if (require.main === module) main(process.argv).then((c) => process.exit(c), (e) => { console.error(e); process.exit(2); });
 
-module.exports = { comprobar, paginasDelPie, solapeDe, SOLAPE_MAXIMO, SOLAPES_DECLARADOS, rehacerUna, sha256, traer, codigoDe, resumen, MARGEN, MISMO_ENCUADRE };
+module.exports = { medirVecinas, juzgarVecinas, vecinasDe, comprobar, paginasDelPie, solapeDe, SOLAPE_MAXIMO, SOLAPES_DECLARADOS, rehacerUna, sha256, traer, codigoDe, resumen, MARGEN, MISMO_ENCUADRE };
