@@ -1828,6 +1828,13 @@ module.exports = [
   { archivo: 'fortinet-fortiextender-200f-qsg.pdf', tipo: 'pdf', para: 'FORTINET', urls: [
     'https://fortinetweb.s3.amazonaws.com/docs.fortinet.com/v2/attachments/871190a7-10d8-11ec-a4c4-00505692583a/FortiExtender-200F-QuickStart_Online.pdf',
   ] },
+  // 2026-11-12 (pendiente del PR #190): el Vehicle 212F, que la ficha Rugged FEXR-DAT-R08 no dibuja. El
+  // listado de hardware traído (rama fuente/fortiextender-hardware-2026-11-11) enlaza su guía
+  // «FortiExtenderVehicle 212F/212F-AM QuickStart Guide»; su PDF, del almacén de documentos de Fortinet
+  // (URL buscada, no compuesta: la página de la guía responde 503 al ejecutor).
+  { archivo: 'fortinet-fortiextender-vehicle-212f-qsg.pdf', tipo: 'pdf', para: 'FORTINET', urls: [
+    'https://fortinetweb.s3.amazonaws.com/docs.fortinet.com/v2/attachments/7c0ddfdb-d4ff-11ef-8766-ca4255feedd9/FortiExtenderVehicle-212F-QuickStart_Online.pdf',
+  ] },
   // 2026-11-11 (mejora propuesta al cerrar el PR #166, aprobada por el dueño): lo que las Release
   // Notes de 8.0.2 no traen. La guía «New Features» de FortiOS 8.0 (portada e índice por versión,
   // URL buscadas) va como exploración: no se sabe aún si docs.fortinet.com la sirve al ejecutor.

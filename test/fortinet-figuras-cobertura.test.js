@@ -9,10 +9,9 @@ const assert = require('node:assert');
 const VISTAS = require('../public/data/fortinet-vistas-equipos.json');
 const { VARIANTES, FORTIEXTENDER } = require('../server/seed/legacyData/fortinetVariantes.js');
 
-// id → motivo. Solo para un equipo que ningún documento oficial traído dibuja.
-const SIN_FIGURA = {
-  'FortiExtender Vehicle 212F': 'la ficha Rugged FEXR-DAT-R08 (pp. 2 a 4) dibuja el Vehicle 211F, el Vehicle 511G y el Rugged 511G; del 212F solo da la tabla, y su QuickStart Guide no se ha traído (PR #190)',
-};
+// id → motivo. Solo para un equipo que ningún documento oficial traído dibuja. Vacío desde el 2026-11-12:
+// el Vehicle 212F, el último, tiene las figuras de su QuickStart Guide.
+const SIN_FIGURA = {};
 
 const EQUIPOS = [...FORTIEXTENDER.modelos, ...VARIANTES].map((m) => m.id);
 

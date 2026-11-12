@@ -273,6 +273,13 @@
    "url": "https://fortinetweb.s3.amazonaws.com/docs.fortinet.com/v2/attachments/871190a7-10d8-11ec-a4c4-00505692583a/FortiExtender-200F-QuickStart_Online.pdf",
    "urlDe": "rama fuente/fex-fortios8-2026-11-11, fuente-cisco-huawei/informe.json (traer-cisco-huawei): 200 en esa URL",
    "sha256": "18a06ea9a18cf2cc637cda9c64bcbc71ac06eecae9fc17b1140af4f22794d061"
+  },
+  "FortiExtenderVehicle-212F-QuickStart_Online.pdf": {
+   "rama": "fuente/fortiextender-212f-2026-11-12",
+   "ruta": "fuente-cisco-huawei/fortinet-fortiextender-vehicle-212f-qsg.pdf",
+   "url": "https://fortinetweb.s3.amazonaws.com/docs.fortinet.com/v2/attachments/7c0ddfdb-d4ff-11ef-8766-ca4255feedd9/FortiExtenderVehicle-212F-QuickStart_Online.pdf",
+   "urlDe": "rama fuente/fortiextender-212f-2026-11-12, fuente-cisco-huawei/informe.json (traer-cisco-huawei, corrida 43311964126): 200 en esa URL; el listado de hardware traído (fuente/fortiextender-hardware-2026-11-11) enlaza la guía «FortiExtenderVehicle 212F/212F-AM QuickStart Guide», cuya página da 503 al ejecutor",
+   "sha256": "2a6f0725a063c63809d5d0d1d9d948a8680cec2a33739aa22c9d83f0a6905b93"
   }
  },
  "figuras": {
@@ -1974,6 +1981,40 @@
    ],
    "sha256": "3ef7349e8711ad3fa461f76ef9f2f3ecfdf5c467f021ac75eb07a13c7ce2dd0d",
    "medido": "figura nueva (2026-11-11): caja a 300 ppp sobre la página, medida con la caja de la imagen incrustada (pdfplumber) y mirada en el recorte: la figura de «Power Input» con sus rótulos, sin el título; correlación 0.9921 entre la figura servida y el recorte de la página rasterizada entera a 300 ppp",
+   "diferencia": 0
+  },
+  "/img/equipos/fev-212f-front.webp": {
+   "documento": "FortiExtenderVehicle-212F-QuickStart_Online.pdf",
+   "pagina": 5,
+   "caja": [
+    25,
+    64,
+    305,
+    247
+   ],
+   "tamano": [
+    1271,
+    1029
+   ],
+   "sha256": "15f4486333199fa6519469e072f84f5711e8e72d54cba48ffcecf7cfb1e89994",
+   "medido": "figura nueva (2026-11-12): caja medida a 300 ppp sobre la página (dibujo con sus rótulos y líneas de llamada, sin el título de la página); la figura servida es la que rehace npm run figuras-fortinet --rehacer; correlación 0.9999 entre ella y su recorte a 300 ppp",
+   "diferencia": 0
+  },
+  "/img/equipos/fev-212f-rear.webp": {
+   "documento": "FortiExtenderVehicle-212F-QuickStart_Online.pdf",
+   "pagina": 4,
+   "caja": [
+    40,
+    58,
+    286,
+    171
+   ],
+   "tamano": [
+    1192,
+    712
+   ],
+   "sha256": "9ae325f44e89187dd1cb2bb945fff1b2d7afb18e8f590c210c30b81f8152b559",
+   "medido": "figura nueva (2026-11-12): caja medida a 300 ppp sobre la página (dibujo con sus rótulos y líneas de llamada, sin el título de la página); la figura servida es la que rehace npm run figuras-fortinet --rehacer; correlación 0.9893 entre ella y su recorte a 300 ppp",
    "diferencia": 0
   }
  }
