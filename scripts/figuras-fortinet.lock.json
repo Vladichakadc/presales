@@ -1388,18 +1388,18 @@
    "documento": "fortigate-fortiwifi-50g-series.pdf",
    "pagina": 10,
    "caja": [
-    34.91,
-    263.35,
-    374.88,
-    69.35
+    45.25,
+    539.5,
+    350,
+    64.75
    ],
    "tamano": [
     1600,
     296
    ],
    "sha256": "bbcff028d07991cad6843c514c3f7f51dd8b8dc38860e18f688f470e8859cf9b",
-   "medido": "correlación 0.9783 con la figura servida, a su escala, 2026-11-09",
-   "diferencia": 4.9
+   "medido": "corregida el 2026-11-11: la caja medida el 2026-11-09 (y = 263,35, correlación 0.9783) caía en la trasera del FortiGate 50G-5G de la misma página, casi igual a esta pero rotulada «SIGNED FIRMWARE» y con «5G», «GPS» y «5G» bajo sus antenas; la figura servida es la del FortiWiFi 50G-5G-II («Signed Firmware», sin esos rótulos). Caja nueva por diferencia mínima contra la figura servida, rehecha con pdftoppm; correlación 0.9339 entre la figura servida y su recorte a 300 ppp",
+   "diferencia": 6.32
   },
   "/img/equipos/fwf-50g-front.webp": {
    "documento": "fortigate-fortiwifi-50g-series.pdf",
@@ -1507,10 +1507,10 @@
    "documento": "FortiExtender.pdf",
    "pagina": 2,
    "caja": [
-    30.0,
-    294.0,
-    296.0,
-    127.0
+    30,
+    294,
+    296,
+    127
    ],
    "tamano": [
     1000,
@@ -1524,10 +1524,10 @@
    "documento": "FortiExtender.pdf",
    "pagina": 3,
    "caja": [
-    18.0,
-    176.0,
-    561.0,
-    131.0
+    18,
+    176,
+    561,
+    131
    ],
    "tamano": [
     1600,
@@ -1541,10 +1541,10 @@
    "documento": "FortiExtender.pdf",
    "pagina": 3,
    "caja": [
-    20.0,
-    506.0,
-    570.0,
-    127.0
+    20,
+    506,
+    570,
+    127
    ],
    "tamano": [
     1600,
@@ -1756,6 +1756,74 @@
    ],
    "sha256": "77f69ce09e3e5a03b2f2d398bc99beeb54b89d1b8e75d5b40458d542578d8cdc",
    "medido": "figura nueva (2026-11-11): caja medida a 300 ppp sobre la página (foto con sus rótulos y líneas de llamada, sin el título de la página); correlación 0.9772 entre la figura servida y su recorte a 300 ppp",
+   "diferencia": 0
+  },
+  "/img/equipos/fg-40f-3g4g-front.webp": {
+   "documento": "fortigate-fortiwifi-40f-series.pdf",
+   "pagina": 7,
+   "caja": [
+    34.78,
+    384.58,
+    267.48,
+    46.92
+   ],
+   "tamano": [
+    1600,
+    281
+   ],
+   "sha256": "6547df562f190053aa6b15543ad601375e88cb9cd4fb3ade0e13eaeda684dde5",
+   "medido": "figura nueva (2026-11-11): caja del dibujo medida a 300 ppp sobre la página, con 1,5 pt de margen, el método que reproduce a menos de 1 pt las cajas ya medidas de la p. 7 (FortiGate 50G y 40F); la trasera, desde el borde del chasis, sin las líneas de su leyenda; correlación 0.9546 entre la figura servida y su recorte a 300 ppp",
+   "diferencia": 0
+  },
+  "/img/equipos/fg-40f-3g4g-rear.webp": {
+   "documento": "fortigate-fortiwifi-40f-series.pdf",
+   "pagina": 7,
+   "caja": [
+    35.02,
+    442.46,
+    267.72,
+    47.84
+   ],
+   "tamano": [
+    1600,
+    286
+   ],
+   "sha256": "9ae3d28515c1995216996a40857d00b7fa79f883ded43a15c22298d5c00b83eb",
+   "medido": "figura nueva (2026-11-11): caja del dibujo medida a 300 ppp sobre la página, con 1,5 pt de margen, el método que reproduce a menos de 1 pt las cajas ya medidas de la p. 7 (FortiGate 50G y 40F); la trasera, desde el borde del chasis, sin las líneas de su leyenda; correlación 0.9414 entre la figura servida y su recorte a 300 ppp",
+   "diferencia": 0
+  },
+  "/img/equipos/fg-50g-5g-front.webp": {
+   "documento": "fortigate-fortiwifi-50g-series.pdf",
+   "pagina": 10,
+   "caja": [
+    34.78,
+    176.18,
+    375,
+    67.56
+   ],
+   "tamano": [
+    1600,
+    288
+   ],
+   "sha256": "3a13b82970388e0df6a5f6fa488f9d2d1b377c5e15a652b2d85cf1cc399fcb37",
+   "medido": "figura nueva (2026-11-11): caja del dibujo medida a 300 ppp sobre la página, con 1,5 pt de margen, el método que reproduce a menos de 1 pt las cajas ya medidas de la p. 7 (FortiGate 50G y 40F); la trasera, desde el borde del chasis, sin las líneas de su leyenda; correlación 0.9682 entre la figura servida y su recorte a 300 ppp",
+   "diferencia": 0
+  },
+  "/img/equipos/fg-50g-5g-rear.webp": {
+   "documento": "fortigate-fortiwifi-50g-series.pdf",
+   "pagina": 10,
+   "caja": [
+    34.78,
+    263.22,
+    374.76,
+    69.72
+   ],
+   "tamano": [
+    1600,
+    298
+   ],
+   "sha256": "35b8af28c72b951bf73bcca6a96a099e5dd5a15d68b66b03c2c5ec2a72d888a6",
+   "medido": "figura nueva (2026-11-11): caja del dibujo medida a 300 ppp sobre la página, con 1,5 pt de margen, el método que reproduce a menos de 1 pt las cajas ya medidas de la p. 7 (FortiGate 50G y 40F); la trasera, desde el borde del chasis, sin las líneas de su leyenda; correlación 0.9694 entre la figura servida y su recorte a 300 ppp",
    "diferencia": 0
   }
  }
