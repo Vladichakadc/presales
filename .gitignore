@@ -1,4 +1,5 @@
-node_modules/
+# Sin barra: la barra solo casa carpetas, y el 2026-11-12 entró un enlace node_modules (PR #191).
+node_modules
 database.sqlite
 .env
 .DS_Store

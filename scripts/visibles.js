@@ -361,6 +361,22 @@ function mismoLock(dir) {
   const a = leer(RAIZ);
   return a !== null && a === leer(dir);
 }
+// Un `node_modules` que la base trae versionado (el 2026-11-12 el PR #191 coló un enlace a la
+// carpeta de su sesión, y `visibles` cayó con EEXIST en todos los PR) se quita del worktree antes de
+// enlazar el del árbol. Solo un enlace o una carpeta vacía: una carpeta con contenido no se toca y se
+// dice, porque entonces la base trae sus propias dependencias y no se sabe con cuáles arranca.
+function prepararNodeModules(dir) {
+  const nm = path.join(dir, 'node_modules');
+  let st;
+  try { st = fs.lstatSync(nm); } catch { return 'libre'; }
+  if (st.isSymbolicLink() || st.isFile()) {
+    fs.unlinkSync(nm);
+    console.error('[visibles] la base trae node_modules versionado (un enlace): se quita del worktree y se usa el del árbol');
+    return 'quitado';
+  }
+  if (st.isDirectory() && fs.readdirSync(nm).length === 0) { fs.rmdirSync(nm); return 'quitado'; }
+  throw new Error(`la base trae ${nm} con contenido versionado: no se reutilizan las dependencias del árbol`);
+}
 function worktreeDe(ref) {
   try { git(['rev-parse', '--verify', `${ref}^{commit}`]); } catch {
     throw new Error(`la referencia «${ref}» no existe aquí (¿falta git fetch?)`);
@@ -368,6 +384,7 @@ function worktreeDe(ref) {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'visibles-base-'));
   git(['worktree', 'add', '--detach', '--force', dir, ref]);
   if (mismoLock(dir)) {
+    prepararNodeModules(dir);
     fs.symlinkSync(path.join(RAIZ, 'node_modules'), path.join(dir, 'node_modules'), 'dir');
   } else {
     console.error(`[visibles] la base (${ref}) declara otras dependencias: npm ci en su worktree`);
@@ -488,4 +505,4 @@ if (require.main === module) {
   principal(process.argv.slice(2)).then((rc) => { process.exitCode = rc; }, (e) => { console.error(e); process.exitCode = 2; });
 }
 
-module.exports = { aceptaciones, cimas, comparar, agrupar, lineaDe, fotoDeLaPagina, DIMENSIONADORES };
+module.exports = { aceptaciones, cimas, comparar, agrupar, lineaDe, fotoDeLaPagina, prepararNodeModules, DIMENSIONADORES };

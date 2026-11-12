@@ -138,3 +138,26 @@ test('el workflow corre en los PR que tocan public/, contra su base y con la des
   assert.strictEqual(runs.length, 3, `se esperaban tres run: (${runs.length})`);
   for (const r of runs) assert.doesNotMatch(r, /\$\{\{/, `nada de github.* interpolado en un run: («${r.trim()}»)`);
 });
+
+test('una base con node_modules versionado: el enlace se quita, una carpeta con contenido frena', () => {
+  const fs = require('fs');
+  const os = require('os');
+  const path = require('path');
+  const { prepararNodeModules } = require('../scripts/visibles');
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'vis-nm-'));
+  assert.strictEqual(prepararNodeModules(dir), 'libre');
+  fs.symlinkSync('/no/existe/node_modules', path.join(dir, 'node_modules'));
+  assert.strictEqual(prepararNodeModules(dir), 'quitado');
+  assert.ok(!fs.existsSync(path.join(dir, 'node_modules')));
+  fs.mkdirSync(path.join(dir, 'node_modules'));
+  assert.strictEqual(prepararNodeModules(dir), 'quitado');
+  fs.mkdirSync(path.join(dir, 'node_modules', 'x'), { recursive: true });
+  assert.throws(() => prepararNodeModules(dir), /con contenido/);
+});
+
+test('.gitignore frena node_modules también como enlace (sin barra final)', () => {
+  const fs = require('fs');
+  const path = require('path');
+  const lineas = fs.readFileSync(path.join(__dirname, '..', '.gitignore'), 'utf8').split('\n').map((l) => l.trim());
+  assert.ok(lineas.includes('node_modules'), 'falta «node_modules» sin barra');
+});
