@@ -1,13 +1,13 @@
 'use strict';
-// EL CATALOGO EN MEMORIA (ADR-3 de la auditoria del 2026-11-09, corte 1).
+// EL CATALOGO EN MEMORIA (ADR-3 de la auditoria del 2026-11-09; desde el 2026-11-11, el unico).
 //
-// POR QUE. En produccion la base SQLite se resiembra desde legacyData/ en cada arranque y no se
-// escribe nunca: es una cache que se tira. ADR-3 propone proyectar legacyData/ en memoria «con las
-// mismas funciones de catalogProjection.js». La forma con menos riesgo de que el resultado sea el
-// mismo es no reescribir ni la siembra ni las 29 consultas: este modulo da los diez modelos del
-// catalogo con el subconjunto de Sequelize que usan `seedCatalog.js` y `catalogProjection.js`, y las
-// dos se ejecutan tal cual contra el. `test/catalogo-en-memoria.test.js` compara cada proyeccion
-// con la de SQLite, campo a campo.
+// POR QUE. La base SQLite se resembraba desde legacyData/ en cada arranque y no se escribia nunca
+// en produccion: era una cache que se tiraba, con la unica dependencia que ejecutaba codigo al
+// instalarse (sqlite3). ADR-3 la cambio por legacyData/ proyectado en memoria «con las mismas
+// funciones de catalogProjection.js»: este modulo da los diez modelos del catalogo con el
+// subconjunto de Sequelize que usaban `seedCatalog.js` y `catalogProjection.js`, que corren tal
+// cual contra el. Antes de quitar SQLite (PR #174) se midio que las 16 proyecciones salian
+// identicas byte a byte; despues, contra las de main con SQLite (PR del 2026-11-11).
 //
 // LO QUE IMITA DE SQLITE, a proposito:
 //   - cada consulta devuelve objetos nuevos: los campos JSON se guardan como texto y se leen otra
@@ -262,16 +262,18 @@ function toPlain(fila) {
   return salida;
 }
 
-// El catalogo sembrado con la misma seedCatalog() del arranque. Se siembra una vez por proceso:
-// legacyData/ no cambia sin un despliegue.
+// EL catalogo del proceso: uno solo, sembrado una vez con la misma seedCatalog() de siempre.
+// legacyData/ no cambia sin un despliegue, asi que no hay nada que refrescar. `catalogo` existe
+// desde que se carga el modulo (vacio) para que las proyecciones puedan nombrar sus modelos en
+// los `include`; `listo()` lo siembra la primera vez y devuelve siempre la misma promesa.
+const catalogo = crearCatalogo();
 let sembrado = null;
-function catalogoEnMemoria() {
+function listo() {
   if (!sembrado) {
-    const modelos = crearCatalogo();
     const seedCatalog = require('../seed/seedCatalog');
-    sembrado = seedCatalog(modelos).then(() => modelos);
+    sembrado = seedCatalog(catalogo).then(() => catalogo);
   }
   return sembrado;
 }
 
-module.exports = { crearCatalogo, catalogoEnMemoria, comparar };
+module.exports = { crearCatalogo, catalogo, listo, comparar };

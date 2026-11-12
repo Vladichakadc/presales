@@ -6,10 +6,10 @@
 //   - aprobado con su versión exacta: corre sin aviso;
 //   - denegado (`false`): se salta en silencio y `npm ci` sale con 0 sin el binario nativo, así
 //     que el servidor se cae al arrancar y no al instalar.
-// `sqlite3` es la única dependencia no opcional con script de instalación, y el suyo baja un
-// binario de las releases de GitHub que luego corre dentro del servidor. Se aprueba fijado a la
-// versión revisada: cuando Dependabot suba la versión, esta prueba se pone en rojo hasta que una
-// persona revise esa versión y la apruebe. Una aprobación que se queda en la versión vieja es una
+// `sqlite3` era la única dependencia no opcional con script de instalación (bajaba un binario de
+// las releases de GitHub que luego corría dentro del servidor), y salió con el ADR-3 el
+// 2026-11-11: hoy no hay ninguna. Si vuelve alguna, se aprueba fijada a la versión revisada: cuando
+// Dependabot suba la versión, esta prueba se pone en rojo hasta que una persona la revise. Una aprobación que se queda en la versión vieja es una
 // lista que ya no protege nada, y además volvería el aviso que se acaba de quitar.
 const test = require('node:test');
 const assert = require('node:assert');
@@ -30,7 +30,6 @@ const conScript = Object.entries(lock.packages)
 const COMO = 'revisa esa versión y apruébala con `npm install-scripts approve <paquete>` (npm 11, Node 24), o cambia la versión a mano en allowScripts';
 
 test('cada dependencia con script de instalación está aprobada en su versión exacta', () => {
-  assert.ok(conScript.some((d) => d.nombre === 'sqlite3'), 'sqlite3 tiene script de instalación: si ya no lo tiene, esta prueba hay que revisarla');
   for (const { nombre, version } of conScript) {
     assert.strictEqual(permitidos[`${nombre}@${version}`], true, `${nombre}@${version} ejecuta código al instalarse y no está aprobado: ${COMO}`);
   }
@@ -48,4 +47,8 @@ test('ninguna aprobación queda sin fijar, vieja o denegando algo que hace falta
     assert.match(entrada, /^(@[^/]+\/)?[^@]+@\d+\.\d+\.\d+$/, `${entrada}: una aprobación sin versión deja pasar cualquier versión futura sin revisarla`);
     assert.ok(instaladas.has(entrada), `${entrada} ya no es lo que está instalado: ${COMO}`);
   }
+});
+
+test('desde el ADR-3 ninguna dependencia ejecuta codigo al instalarse', () => {
+  assert.deepStrictEqual(conScript, [], 'una dependencia nueva con script de instalacion: revisala y apruebala, y cambia esta prueba');
 });

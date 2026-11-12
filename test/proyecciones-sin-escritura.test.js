@@ -23,7 +23,6 @@ const os = require('os');
 const path = require('path');
 const util = require('util');
 
-process.env.DATABASE_PATH = ':memory:';
 process.env.AUTH_STATE_DIR = fs.mkdtempSync(path.join(os.tmpdir(), 'proyecciones-sin-escritura-'));
 
 const test = require('node:test');
@@ -107,12 +106,6 @@ test.before(async () => {
   congelados = new Set();
   for (const m of MODULOS) congelar(m.exports, congelados);
   try { congelada = await proyectar(); } catch (e) { errorCongelada = e; }
-});
-
-test.after(async () => {
-  // Solo existe si lo cargo catalogProjection (con Sequelize). Cerrarlo no falla si nunca conecto.
-  const modelos = require.cache[require.resolve('../server/models')];
-  if (modelos && modelos.exports.sequelize) await modelos.exports.sequelize.close();
 });
 
 test('la lista de llamadas cubre todas las proyecciones que exporta catalogProjection', () => {

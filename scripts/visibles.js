@@ -330,7 +330,6 @@ async function levantar(dir, usuario, clave) {
       AUTH_USER: usuario,
       AUTH_PASSWORD: clave,
       SESSION_SECRET: crypto.randomBytes(24).toString('hex'),
-      DATABASE_PATH: path.join(tmp, 'catalogo.sqlite'),
       AUTH_STATE_DIR: path.join(tmp, 'auth'),
     },
     stdio: ['ignore', 'pipe', 'pipe'],
@@ -352,15 +351,28 @@ async function levantar(dir, usuario, clave) {
   return { url, apagar };
 }
 
-// La base en un worktree aparte, con los node_modules del árbol (las dependencias de la base son
-// las mismas salvo que el PR las cambie; si no arranca, se dice y sale con 2).
+// La base en un worktree aparte. Con el mismo lock que el árbol, reutiliza sus node_modules; si el
+// PR cambia las dependencias, la base instala las suyas (`npm ci`, con sus scripts de instalación):
+// el 2026-11-11 el PR #183 quitó sqlite3 y el servidor de la base, que aún lo necesitaba, no
+// arrancaba con los node_modules del PR (el job se cancelaba a los 20 min). Si no arranca, se dice
+// y sale con 2.
+function mismoLock(dir) {
+  const leer = (d) => { try { return fs.readFileSync(path.join(d, 'package-lock.json'), 'utf8'); } catch { return null; } };
+  const a = leer(RAIZ);
+  return a !== null && a === leer(dir);
+}
 function worktreeDe(ref) {
   try { git(['rev-parse', '--verify', `${ref}^{commit}`]); } catch {
     throw new Error(`la referencia «${ref}» no existe aquí (¿falta git fetch?)`);
   }
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'visibles-base-'));
   git(['worktree', 'add', '--detach', '--force', dir, ref]);
-  fs.symlinkSync(path.join(RAIZ, 'node_modules'), path.join(dir, 'node_modules'), 'dir');
+  if (mismoLock(dir)) {
+    fs.symlinkSync(path.join(RAIZ, 'node_modules'), path.join(dir, 'node_modules'), 'dir');
+  } else {
+    console.error(`[visibles] la base (${ref}) declara otras dependencias: npm ci en su worktree`);
+    execFileSync('npm', ['ci', '--no-audit', '--no-fund'], { cwd: dir, stdio: ['ignore', 'ignore', 'inherit'] });
+  }
   return { dir, quitar: () => { try { git(['worktree', 'remove', '--force', dir]); } catch { /* se queda en tmp */ } } };
 }
 
