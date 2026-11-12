@@ -1047,6 +1047,18 @@
   // de procedencia, el mismo que la ficha en pantalla) y las vistas declaradas, a lo sumo
   // 860 px de ancho para que la hoja se maneje cómoda — el PNG incrustado conserva la
   // resolución natural completa. Devuelve cuántas fotos se incrustaron de verdad.
+  /* Los equipos cuyas figuras viajan a «Fotos del equipo» (2026-11-11, encargo del dueño: «todos los
+     gráficos correspondientes»). El primero es el recomendado, como siempre; detrás, opt-in
+     `fotos.acompanan`: los equipos que el BOM lleva junto a él y que tienen figura oficial propia (hoy,
+     el FortiExtender del enlace celular). Cada uno con su modelo, su pie y sus leyendas: la figura de
+     un equipo nunca va bajo el nombre de otro, y uno sin `modelo` o sin ninguna cara no se escribe. */
+  function equiposDeFotos(fotos) {
+    if (!fotos) return [];
+    const otros = (Array.isArray(fotos.acompanan) ? fotos.acompanan : [])
+      .filter((x) => x && x.modelo && (x.front || x.rear));
+    return [{ ...fotos, acompanan: undefined, principal: true }, ...otros.map((x) => ({ ...x, principal: false }))];
+  }
+
   async function hojaDeFotos(libro, fotos) {
     const h = libro.addWorksheet('Fotos del equipo');
     h.getColumn(1).width = 110;
@@ -1074,30 +1086,33 @@
     // {tabla, filas: [[n, rótulo literal, traducción]]}; una tabla a medias no se escribe.
     const leyendaValida = (ley) => !!(ley && Array.isArray(ley.filas) && ley.filas.length
       && ley.filas.every((f) => Array.isArray(f) && Number.isInteger(f[0]) && f[1] && f[2]));
-    const leyendas = { frontal: fotos.frontLeyenda, trasera: fotos.rearLeyenda };
-    for (const [cara, src] of [['frontal', fotos.front], ['trasera', fotos.rear]]) {
-      if (!src) continue;
-      pon(`Vista ${cara}`, true);
-      try {
-        const f = await fotoPng(src);
-        const W = Math.min(f.w, 860);
-        const H = Math.round(f.h * W / f.w);
-        const id = libro.addImage({ base64: f.b64, extension: 'png' });
-        h.addImage(id, { tl: { col: 0, row: r - 1 }, ext: { width: W, height: H } });
-        r += Math.ceil(H / 20) + 2;
-        incrustadas++;
-      } catch (e) {
-        // Honestidad antes que silencio: la foto declarada que no se pudo incrustar
-        // deja constancia en la hoja, con su causa y dónde verla.
-        pon(`La foto ${cara} no se pudo incrustar (${e.message}) — está disponible en la ficha del equipo dentro de la herramienta.`);
+    const caras = async (eq) => {
+      const leyendas = { frontal: eq.frontLeyenda, trasera: eq.rearLeyenda };
+      for (const [cara, src] of [['frontal', eq.front], ['trasera', eq.rear]]) {
+        if (!src) continue;
+        pon(`Vista ${cara}`, true);
+        try {
+          const f = await fotoPng(src);
+          const W = Math.min(f.w, 860);
+          const H = Math.round(f.h * W / f.w);
+          const id = libro.addImage({ base64: f.b64, extension: 'png' });
+          h.addImage(id, { tl: { col: 0, row: r - 1 }, ext: { width: W, height: H } });
+          r += Math.ceil(H / 20) + 2;
+          incrustadas++;
+        } catch (e) {
+          // Honestidad antes que silencio: la foto declarada que no se pudo incrustar
+          // deja constancia en la hoja, con su causa y dónde verla.
+          pon(`La foto ${cara} no se pudo incrustar (${e.message}) — está disponible en la ficha del equipo dentro de la herramienta.`);
+        }
+        const ley = leyendas[cara];
+        if (leyendaValida(ley)) {
+          pon(`Qué es cada número de la vista ${cara}${ley.tabla ? ` (${ley.tabla})` : ''}`, true);
+          for (const [n, literal, es] of ley.filas) pon(`  ${n}. ${es} — «${literal}»`);
+          r++;
+        }
       }
-      const ley = leyendas[cara];
-      if (leyendaValida(ley)) {
-        pon(`Qué es cada número de la vista ${cara}${ley.tabla ? ` (${ley.tabla})` : ''}`, true);
-        for (const [n, literal, es] of ley.filas) pon(`  ${n}. ${es} — «${literal}»`);
-        r++;
-      }
-    }
+    };
+    await caras(fotos);
     // Foto de producto a color (opt-in `foto` + `fotoFuente`, mejora aprobada el 2026-10-27):
     // donde la frontal es el dibujo numerado de la guía (Cisco 8500 e ISR 1111X-8P) o hay foto
     // aparte (Juniper), la imagen que el cliente reconoce viaja también, con su propio pie: sale
@@ -1116,6 +1131,13 @@
       } catch (e) {
         pon(`La foto de producto no se pudo incrustar (${e.message}) — está disponible en la ficha del equipo dentro de la herramienta.`);
       }
+    }
+    // Los equipos que acompañan al recomendado, cada uno con su nombre y su pie.
+    for (const eq of equiposDeFotos(fotos).slice(1)) {
+      r++;
+      pon(`EQUIPO QUE ACOMPAÑA: ${eq.modelo}${eq.qty ? ` × ${eq.qty}` : ''}`, true);
+      if (eq.pie) pon(eq.pie);
+      await caras(eq);
     }
     return incrustadas;
   }
@@ -1755,7 +1777,7 @@
     });
   }
 
-  global.BOM = { renderTabla, exportarExcel, comoTexto, matrizExcel, matrizSupuestos, lineasPorFuncion, cicloDe, cicloDelEquipo, cicloDePerfiles, avisoCicloConsolidado, refrescarCiclo, refrescarCicloTodos, fuentesDelEquipo, money, esc, claveFila,
+  global.BOM = { renderTabla, exportarExcel, equiposDeFotos, comoTexto, matrizExcel, matrizSupuestos, lineasPorFuncion, cicloDe, cicloDelEquipo, cicloDePerfiles, avisoCicloConsolidado, refrescarCiclo, refrescarCicloTodos, fuentesDelEquipo, money, esc, claveFila,
     enviarACotizador, recogerEntrada, montarBotonCotizador, montarPerfiles, pintarPerfiles: pintarPerfilesMontado, normalizar,
     sincronizar, soltarManual, avisoDesvio, fijarRepintado,
     agregarRef, quitarRef, cantidadRef, refsExtra, fijarVendor, fijarCatalogo,
