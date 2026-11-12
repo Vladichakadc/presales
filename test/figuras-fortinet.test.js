@@ -10,12 +10,14 @@ const assert = require('node:assert');
 const fs = require('fs');
 const path = require('path');
 const os = require('os');
-const { comprobar, paginasDelPie, sha256, traer, codigoDe } = require('../scripts/figuras-fortinet.js');
+const { comprobar, paginasDelPie, sha256, traer, codigoDe, solapeDe, SOLAPE_MAXIMO, SOLAPES_DECLARADOS } = require('../scripts/figuras-fortinet.js');
 
 const RAIZ = path.join(__dirname, '..');
 const VISTAS = JSON.parse(fs.readFileSync(path.join(RAIZ, 'public/data/fortinet-vistas-equipos.json'), 'utf8'));
 const LOCK = JSON.parse(fs.readFileSync(path.join(RAIZ, 'scripts/figuras-fortinet.lock.json'), 'utf8'));
 const leer = (ruta) => fs.readFileSync(path.join(RAIZ, 'public', ruta));
+// La caja de la trasera del FortiWiFi 50G-5G-II en el lock de main antes del PR #188 (medida el 2026-11-09).
+const LOCK_MAIN_50G5G_II_REAR = [34.91, 263.35, 374.88, 69.35];
 
 test('las figuras que se sirven casan con su lock y su pie', () => {
   assert.deepStrictEqual(comprobar(VISTAS, LOCK, leer), []);
@@ -48,10 +50,10 @@ function caso() {
   const datos = Buffer.from('figura');
   const vistas = { 'FortiGate X': { front: '/img/equipos/fg-x-front.webp', rear: '/img/equipos/fg-x-rear.webp',
     fuente: 'Datasheet FortiGate X Series, p. 7 «Hardware» — «FortiGate X»' } };
-  const fig = (pagina) => ({ documento: 'x.pdf', pagina, caja: [1, 2, 3, 4], tamano: [10, 5], sha256: sha256(datos) });
+  const fig = (pagina, y = 2) => ({ documento: 'x.pdf', pagina, caja: [1, y, 3, 4], tamano: [10, 5], sha256: sha256(datos) });
   const lock = { documentos: { 'x.pdf': { rama: 'fuente/x', ruta: 'x.pdf', url: 'https://www.fortinet.com/x.pdf',
     urlDe: 'rama fuente/x, informe.json', sha256: 'a'.repeat(64) } },
-    figuras: { '/img/equipos/fg-x-front.webp': fig(7), '/img/equipos/fg-x-rear.webp': fig(7) } };
+    figuras: { '/img/equipos/fg-x-front.webp': fig(7), '/img/equipos/fg-x-rear.webp': fig(7, 20) } };
   return { vistas, lock, leer: () => datos };
 }
 
@@ -146,4 +148,60 @@ test('traer: lo que no se pudo bajar o no es un PDF es un error, nunca «sin cam
   const sinHerramientas = await correr(lock, async () => respuesta(PDF), { herramientas: () => 'pdftoppm' });
   assert.match(sinHerramientas.documentos[0].figuras[0].error, /falta pdftoppm/);
   assert.strictEqual(codigoDe(sinHerramientas), 2);
+});
+
+// DOS CAJAS DE LA MISMA PÁGINA NO SE PISAN (2026-11-12, mejora propuesta al cerrar el PR #188). Los
+// dos casos son los que pasaron de verdad: cajas del lock de main antes del PR #188, cuyas figuras
+// servidas eran las buenas pero cuyas cajas caían en el dibujo del FortiGate de la misma página.
+function casoSolape(cajaA, cajaB, paginaB = 7) {
+  const { vistas, lock, leer: l } = caso();
+  vistas['FortiWiFi X'] = { front: '/img/equipos/fwf-x-front.webp', rear: '/img/equipos/fwf-x-rear.webp',
+    fuente: `Datasheet FortiGate X Series, p. ${paginaB} «Hardware» — «FortiWiFi X»` };
+  lock.figuras['/img/equipos/fg-x-front.webp'].caja = cajaA;
+  lock.figuras['/img/equipos/fwf-x-front.webp'] = { ...lock.figuras['/img/equipos/fg-x-front.webp'], pagina: paginaB, caja: cajaB };
+  lock.figuras['/img/equipos/fwf-x-rear.webp'] = { ...lock.figuras['/img/equipos/fg-x-rear.webp'], pagina: paginaB, caja: [1, 900, 3, 4] };
+  return { vistas, lock, l };
+}
+
+test('frena dos cajas del mismo documento y página que se solapan: el frontal del FortiWiFi 50G antes del PR #188', () => {
+  // fg-50g-front y fwf-50g-front, p. 7 de la ficha FGFWF-50G-DAT-R17.
+  const { vistas, lock, l } = casoSolape([35.16, 174.65, 373.92, 68.22], [35.29, 174.81, 373.92, 68.01]);
+  const p = comprobar(vistas, lock, l).join('\n');
+  assert.match(p, /fg-x-front\.webp y \/img\/equipos\/fwf-x-front\.webp: sus cajas de la p\. 7 de «x\.pdf» se solapan un 100 %/);
+  assert.match(p, /no por la correlación/);
+});
+
+test('frena el otro caso real: la trasera del FortiWiFi 50G-5G-II con la caja de la del FortiGate 50G-5G', () => {
+  // fwf-50g-5g-ii-rear del lock de main (y = 263,35) y fg-50g-5g-rear tal como la midió el PR #188, p. 10.
+  const viejaFwf = LOCK_MAIN_50G5G_II_REAR;
+  assert.ok(solapeDe([34.78, 263.22, 374.76, 69.72], viejaFwf) > SOLAPE_MAXIMO);
+  const { vistas, lock, l } = casoSolape([34.78, 263.22, 374.76, 69.72], viejaFwf);
+  assert.match(comprobar(vistas, lock, l).join('\n'), /se solapan un \d+ %/);
+});
+
+test('no cuenta cajas de otra página, ni las que se tocan sin pisarse, ni una figura que comparten dos modelos', () => {
+  const limpio = (c) => comprobar(c.vistas, c.lock, c.l);
+  assert.deepStrictEqual(limpio(casoSolape([1, 2, 3, 4], [1, 2, 3, 4], 8)), []);
+  assert.strictEqual(solapeDe([0, 0, 10, 10], [0, 5, 10, 10]), 0.5); // la mitad justa no frena
+  assert.deepStrictEqual(limpio(casoSolape([0, 0, 10, 10], [0, 5, 10, 10])), []);
+  assert.strictEqual(solapeDe([0, 0, 10, 10], [10, 0, 10, 10]), 0);
+  const { vistas, lock, leer: l } = caso();
+  vistas['FortiGate X-SSD'] = { ...vistas['FortiGate X'] };
+  assert.deepStrictEqual(comprobar(vistas, lock, l), []);
+});
+
+test('un solape declarado pasa con su motivo; sin motivo, o si ya no se solapa, avisa', () => {
+  const { vistas, lock, l } = casoSolape([1, 2, 3, 4], [1, 2, 3, 4]);
+  const clave = '/img/equipos/fg-x-front.webp|/img/equipos/fwf-x-front.webp';
+  assert.deepStrictEqual(comprobar(vistas, lock, l, { [clave]: 'la ficha dibuja una sola unidad para las dos' }), []);
+  assert.match(comprobar(vistas, lock, l, { [clave]: ' ' }).join('\n'), /solape declarado sin motivo/);
+  lock.figuras['/img/equipos/fwf-x-front.webp'].caja = [1, 500, 3, 4];
+  assert.match(comprobar(vistas, lock, l, { [clave]: 'motivo' }).join('\n'), /ya no se solapan; sobra/);
+});
+
+test('los solapes declarados del lock real llevan su motivo', () => {
+  for (const [clave, motivo] of Object.entries(SOLAPES_DECLARADOS)) {
+    assert.match(clave, /^\/img\/equipos\/[^|]+\|\/img\/equipos\/[^|]+$/, clave);
+    assert.ok(String(motivo).trim().length > 20, `${clave}: motivo`);
+  }
 });
