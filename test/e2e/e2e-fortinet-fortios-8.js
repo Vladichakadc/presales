@@ -54,7 +54,14 @@ const SUCURSAL = new URLSearchParams({
   await page.selectOption('#fortiOS', '8.0');
   await asentar(page);
   const ayuda = await texto('#fortiOSHint');
-  t.ok(/Release Notes de 8\.0\.2/.test(ayuda) && /la tabla de 8\.0 no se ha traído/.test(ayuda), `la ayuda dice qué se aplica de 8.0.2 y qué no (${ayuda.slice(0, 80)}…)`);
+  t.ok(/Release Notes de 8\.0\.2/.test(ayuda) && /Maximum Values Table/.test(ayuda) && /las cifras de rendimiento no se publican por versión/.test(ayuda),
+    `la ayuda dice qué se aplica de 8.0.2, qué cambia en sus topes y qué no (${ayuda.slice(0, 80)}…)`);
+  // Las novedades de la rama: títulos de su guía, con enlace, del catálogo (2026-11-11).
+  const nov = await page.$eval('#fortiOSHint details.fortios-novedades', (d) => ({ n: d.querySelectorAll('li').length,
+    enlace: (d.querySelector('a') || {}).href || '', texto: d.textContent })).catch(() => null);
+  t.ok(nov && nov.n >= 6 && /docs\.fortinet\.com\/document\/fortigate\/8\.0\.0\/new-features/.test(nov.enlace),
+    `con 8.0 se listan las novedades de la rama con el enlace a su guía (${nov ? `${nov.n}, ${nov.enlace}` : 'no están'})`);
+  t.ok(nov && /Increase number of supported switches/.test(nov.texto) && /FortiExtender integration with SD-WAN/.test(nov.texto), 'con el título literal de la guía');
   const con8 = (await texto('#bomBody .model')).trim();
   t.ok(!/FortiWiFi 50G-5G-II/.test(con8), `con 8.0 el FortiWiFi 50G-5G-II ya no es el recomendado (${con8 || 'sin recomendación'})`);
   t.ok(/FortiWiFi 50G-5G-II cumple el escenario pero no figura entre los modelos que esa versión soporta/.test(await cuerpo()), 'y la página dice la causa: 8.0.2 no lo nombra');

@@ -15,7 +15,9 @@
 //
 // Uso:
 //   npm run reservar -- <tema> --archivos "ruta, ruta/, …" [--descripcion "…"] [--cuenta "…"]
-//                          [--siguiente "…"] [--aunque <rama>]… [--comprobar] [--sin-fetch] [--en-esta-rama]
+//                          [--siguiente "…"] [--aunque <rama>]… [--propuesta <N>]… [--comprobar] [--sin-fetch] [--en-esta-rama]
+//   --propuesta   el tema sale de la mejora propuesta al cerrar el PR #N: va al Tema del traspaso y se avisa si
+//                 otro tema en curso cita la misma (también la cita «propuesta al cerrar el PR #N» de --descripcion).
 //   --comprobar   solo dice si hay choque; no crea nada.
 //   --en-esta-rama  el traspaso va en un commit de la rama actual, no en claude/<tema>: para la sesión que
 //                 trabaja en una rama fija (las de la nube la traen asignada). Ver «EN LA RAMA DE LA SESIÓN».
@@ -121,6 +123,43 @@ function avisoEquivalencias(lista) {
     ...lista.map((c) => `    equivalencia-acepta: ${c.caso}: <motivo>`)].join('\n');
 }
 
+// LA MISMA MEJORA CON OTRO NOMBRE (2026-11-12, mejora propuesta al cerrar el PR #198). El PR #192 y el #193
+// hicieron la misma prueba (cada FortiExtender con su figura), los dos «mejora propuesta al cerrar el PR #185»:
+// temas de nombre distinto y archivos distintos, así que ni GitHub ni `choques` vieron nada, y uno se quitó
+// en el #198. Lo que los delata es la propuesta que citan. Se leen las de cada tema en curso (su «Tema» y su
+// «Encargo del dueño»; en un PR sin traspaso, su título y su descripción) y, si alguna coincide con la de la
+// reserva, se avisa con quién. Solo avisa, nunca frena: un tema puede tomar otra parte de la misma propuesta.
+const CITA_PROPUESTA = /propuesta\s+(?:al\s+cerrar\s+el|del)\s+PR\s*#(\d+)/gi;
+function propuestasCitadas(texto) {
+  return [...new Set([...String(texto || '').matchAll(CITA_PROPUESTA)].map((m) => Number(m[1])))].sort((a, b) => a - b);
+}
+// Del traspaso, solo lo que dice de qué va el tema: la línea «Tema» y la sección «Encargo del dueño». Las
+// demás secciones cuentan la historia y citan propuestas viejas de pasada.
+function textoDeEncargo(traspaso) {
+  const t = String(traspaso || '');
+  const tema = (/^- \*\*Tema:\*\* (.*)$/m.exec(t) || [])[1] || '';
+  const encargo = (/^## Encargo del dueño\s*$([\s\S]*?)(?=^## |(?![\s\S]))/m.exec(t) || [])[1] || '';
+  return `${tema}\n${encargo}`;
+}
+// Puro: los temas en curso que citan alguna de las propuestas de `propias`. Un traspaso cerrado no cuenta.
+function mismaPropuesta(propias, ocupados, { ignorar = [] } = {}) {
+  if (!propias.length) return [];
+  const out = [];
+  for (const o of ocupados || []) {
+    if (!o || ignorar.includes(o.origen)) continue;
+    if (/^cerrado/i.test(String(o.estado || '').trim())) continue;
+    const comunes = (o.propuestas || []).filter((n) => propias.includes(n));
+    if (comunes.length) out.push({ ...o, comunes });
+  }
+  return out;
+}
+function avisoMismaPropuesta(lista) {
+  if (!lista.length) return '';
+  return [`AVISO: ${lista.length} tema(s) en curso salen de la misma mejora propuesta:`,
+    ...lista.map((c) => `  ${c.origen} — ${c.tema || '(sin tema)'} [${c.estado || 'sin estado'}]: cita ${c.comunes.map((n) => `la propuesta al cerrar el PR #${n}`).join(', ')}`),
+    '  Mira su traspaso o su PR antes de escribir código: si hacen lo mismo, retoma ese en vez de duplicarlo (PR #192 y #193).'].join('\n');
+}
+
 const diasDesde = (fecha, ahora = Date.now()) => {
   const t = Date.parse(fecha);
   return Number.isFinite(t) ? (ahora - t) / 86400000 : null;
@@ -158,7 +197,7 @@ function traspasoInicial({ tema, rama, descripcion, cuenta, archivos, siguiente,
 }
 
 function argumentos(argv) {
-  const o = { aunque: [], comprobar: false, sinFetch: false };
+  const o = { aunque: [], propuesta: [], comprobar: false, sinFetch: false };
   for (let i = 0; i < argv.length; i += 1) {
     const a = argv[i];
     const sig = () => { i += 1; return argv[i]; };
@@ -167,7 +206,11 @@ function argumentos(argv) {
     else if (a === '--cuenta') o.cuenta = sig();
     else if (a === '--siguiente') o.siguiente = sig();
     else if (a === '--aunque') o.aunque.push(String(sig() || '').replace(/^origin\//, ''));
-    else if (a === '--comprobar') o.comprobar = true;
+    else if (a === '--propuesta') {
+      const n = Number(String(sig() || '').replace(/^#/, ''));
+      if (!Number.isInteger(n) || n <= 0) throw new Error('--propuesta pide el número del PR que la propuso (--propuesta 198)');
+      o.propuesta.push(n);
+    } else if (a === '--comprobar') o.comprobar = true;
     else if (a === '--sin-fetch') o.sinFetch = true;
     else if (a === '--en-esta-rama') o.enEstaRama = true;
     else if (!a.startsWith('--') && !o.tema) o.tema = a;
@@ -193,7 +236,8 @@ function ocupadosRemotos() {
     let listado;
     try { listado = git(['ls-tree', '--name-only', ref, CARPETA]); } catch { continue; }
     for (const nombre of archivosDeTema(listado)) {
-      const cab = leerCabecera(git(['show', `${ref}:${CARPETA}${nombre}`]));
+      const texto = git(['show', `${ref}:${CARPETA}${nombre}`]);
+      const cab = leerCabecera(texto);
       const rama = ref.replace(/^origin\//, '');
       // Un tema que main ya cerró (borró este traspaso después del último commit de la rama) no
       // bloquea: su rama es una reserva que nadie borró (`npm run traspasos` lo marca CERRADO EN MAIN).
@@ -204,16 +248,19 @@ function ocupadosRemotos() {
       // Cuándo se reservó: el commit que añadió el traspaso (el arbitraje de --en-esta-rama).
       let reservado = null;
       try { reservado = git(['log', '-1', '--diff-filter=A', '--format=%cI', ref, '--', `${CARPETA}${nombre}`]).trim() || null; } catch { reservado = null; }
-      ocupados.push({ origen: rama, tema: cab.Tema, estado: cab.Estado, fecha, reservado, archivos: normalizarArchivos(cab['Archivos que toca']) });
+      ocupados.push({ origen: rama, tema: cab.Tema, estado: cab.Estado, fecha, reservado, archivos: normalizarArchivos(cab['Archivos que toca']),
+        propuestas: propuestasCitadas(textoDeEncargo(texto)) });
     }
   }
   let avisoPrs = null;
   try {
     const repo = repoDeOrigen(git(['remote', 'get-url', 'origin']));
     const prs = JSON.parse(gh(['api', `repos/${repo}/pulls?state=open&per_page=50`]));
+    const cuerpo = new Map(prs.map((x) => [x.number, `${x.title || ''}\n${x.body || ''}`]));
     for (const p of prsSinTraspaso(prs, ramasConTraspaso).filter((x) => !/^dependabot\//.test(x.rama))) {
       const archivos = JSON.parse(gh(['api', `repos/${repo}/pulls/${p.numero}/files?per_page=100`])).map((f) => f.filename);
-      ocupados.push({ origen: p.rama, tema: `PR #${p.numero} «${p.titulo}»`, estado: 'PR abierto', fecha: p.actualizado, archivos });
+      ocupados.push({ origen: p.rama, tema: `PR #${p.numero} «${p.titulo}»`, estado: 'PR abierto', fecha: p.actualizado, archivos,
+        propuestas: propuestasCitadas(cuerpo.get(p.numero)) });
     }
   } catch (e) {
     avisoPrs = `no se pudieron leer los PR abiertos (${String(e.stderr || e.message).trim().split('\n')[0]}): miralos a mano antes de seguir`;
@@ -319,6 +366,11 @@ function main(argv, opts = {}) {
     console.error('Falta --archivos: sin los archivos que el tema va a tocar, la reserva no protege nada.');
     return 2;
   }
+  // La propuesta de la que sale el tema: la que cite la descripción y la de --propuesta, que se añade al Tema
+  // del traspaso para que las demás sesiones la lean.
+  const propias = [...new Set([...propuestasCitadas(o.descripcion), ...o.propuesta])].sort((a, b) => a - b);
+  const sinCitar = o.propuesta.filter((n) => !propuestasCitadas(o.descripcion).includes(n));
+  if (sinCitar.length) o.descripcion = `${o.descripcion || o.tema} (${sinCitar.map((n) => `mejora propuesta al cerrar el PR #${n}`).join('; ')})`;
   let rama = `claude/${o.tema}`;
   if (o.enEstaRama) {
     let actual = '';
@@ -349,6 +401,8 @@ function main(argv, opts = {}) {
     console.log(`CHOQUE: el tema «${o.tema}» ya tiene rama o traspaso en origin. Elige otro nombre o retoma ese (npm run traspasos).`);
     return 1;
   }
+  const misma = mismaPropuesta(propias, ocupados, { ignorar: o.aunque });
+  if (misma.length) console.log(avisoMismaPropuesta(misma));
   const lista = choques(archivos, ocupados, { ignorar: o.aunque });
   if (lista.length) {
     console.log(`CHOQUE: ${lista.length} tema(s) en curso declaran archivos de este:`);
@@ -387,7 +441,12 @@ function main(argv, opts = {}) {
   // Tras empujar, se vuelve a mirar (en las dos formas): la carrera la decide la reserva más antigua.
   try { git(['fetch', '--prune', '--quiet', 'origin']); } catch { /* se mira con lo que haya */ }
   const propia = { rama, fecha: git(['show', '-s', '--format=%cI', commit]).trim() };
-  const rivales = choques(archivos, ocupadosRemotos().ocupados, { ignorar: [...o.aunque, rama] });
+  const despues = ocupadosRemotos().ocupados;
+  const rivales = choques(archivos, despues, { ignorar: [...o.aunque, rama] });
+  // Quien citó la misma propuesta entre la primera mirada y el push no salió antes: se avisa ahora.
+  const yaAvisados = new Set(misma.map((m) => m.origen));
+  const nuevasMisma = mismaPropuesta(propias, despues, { ignorar: [...o.aunque, rama] }).filter((m) => !yaAvisados.has(m.origen));
+  if (nuevasMisma.length) console.log(avisoMismaPropuesta(nuevasMisma));
   const antes = rivales.filter((r) => !ganaLaReserva(propia, { rama: r.origen, fecha: r.reservado || r.fecha }));
   if (antes.length) {
     const quien = antes.map((r) => r.origen);
@@ -414,5 +473,5 @@ function main(argv, opts = {}) {
 
 if (require.main === module) process.exitCode = main(process.argv.slice(2));
 
-module.exports = { main, ocupadosRemotos, ganaLaReserva, traspasoCedido, casosQueVigilan, avisoEquivalencias, normalizarArchivos, solapan, choques, esComun, traspasoInicial, horaBogota, argumentos, diasDesde,
+module.exports = { main, ocupadosRemotos, propuestasCitadas, textoDeEncargo, mismaPropuesta, avisoMismaPropuesta, ganaLaReserva, traspasoCedido, casosQueVigilan, avisoEquivalencias, normalizarArchivos, solapan, choques, esComun, traspasoInicial, horaBogota, argumentos, diasDesde,
   COMUNES_AL_CIERRE, DIAS_PARADA };

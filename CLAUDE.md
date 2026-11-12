@@ -48,7 +48,7 @@ completo está allí.
 - **Trabajo en paralelo y traspaso entre sesiones** (`docs/traspaso/README.md`). Varias sesiones,
   a veces de cuentas distintas, trabajan a la vez y solo comparten GitHub. Al empezar, `npm run
   traspasos` dice qué temas tienen rama y qué archivos declaran, y los PR abiertos sin traspaso
-  con los suyos: **no se toma un tema ni un archivo ajeno**. **El tema se reserva antes de escribir código** (`npm run reservar -- <tema> --archivos "…"`, 2026-11-01): empuja la rama con su traspaso en el primer minuto y se niega si otro tema declara alguno de esos archivos; la carrera la arbitra GitHub (push sin `--force`). Una sesión con rama fija reserva con `--en-esta-rama` (2026-11-03, PR #131): el traspaso va en un commit de su rama, sin crear `claude/<tema>`, y tras empujar manda la reserva más antigua. **Las dos formas vuelven a mirar tras empujar** (2026-11-09, PR #164: el #160 y el #161 reservaron lo mismo con 15 s de diferencia y nombres distintos): la reserva normal que pierde no borra su rama, la deja cedida, con el traspaso en «cerrado (cedido: <rama> reservó lo mismo antes)», que no bloquea. `npm run traspasos` la marca «CEDIDA a <rama>» y, como las CERRADO EN MAIN, la cuenta aparte de los temas en curso (PR #165). Cada tema va en su rama con `docs/traspaso/<tema>.md` (de `PLANTILLA.md`) al
+  con los suyos: **no se toma un tema ni un archivo ajeno**. **El tema se reserva antes de escribir código** (`npm run reservar -- <tema> --archivos "…"`, 2026-11-01): empuja la rama con su traspaso en el primer minuto y se niega si otro tema declara alguno de esos archivos; la carrera la arbitra GitHub (push sin `--force`). Una sesión con rama fija reserva con `--en-esta-rama` (2026-11-03, PR #131): el traspaso va en un commit de su rama, sin crear `claude/<tema>`, y tras empujar manda la reserva más antigua. **Las dos formas vuelven a mirar tras empujar** (2026-11-09, PR #164: el #160 y el #161 reservaron lo mismo con 15 s de diferencia y nombres distintos): la reserva normal que pierde no borra su rama, la deja cedida, con el traspaso en «cerrado (cedido: <rama> reservó lo mismo antes)», que no bloquea. `npm run traspasos` la marca «CEDIDA a <rama>» y, como las CERRADO EN MAIN, la cuenta aparte de los temas en curso (PR #165). **Y avisa de la misma mejora propuesta con otro nombre** (2026-11-12, PR #199: el #192 y el #193 hicieron la misma prueba con archivos distintos): lee la «propuesta al cerrar el PR #N» del Tema y el Encargo de cada traspaso, y del título y la descripción de cada PR sin traspaso; avisa, nunca frena. Un tema que sale de una mejora propuesta la cita con `--propuesta <N>`. Cada tema va en su rama con `docs/traspaso/<tema>.md` (de `PLANTILLA.md`) al
   día en cada commit, y se empuja a menudo: lo no empujado se pierde si la sesión se corta.
   Retomar es leer ese traspaso y seguir su «Siguiente paso». `PENDIENTES.md` y `CLAUDE.md` se
   tocan solo al fusionar, y en ese commit el traspaso se borra.
@@ -606,6 +606,14 @@ y mover una regla de la página al motor deja su caso en `scripts/equivalencias/
 motor» (`e2e-trazabilidad-catalogo.js`): un Excel dice con qué reglas se hizo, así que se sube al
 cambiar una regla. Donde el motor ordena candidatos, el empate termina en el id natural
 (`localeCompare` numérico), nunca en el orden del catálogo.
+**Los ocho se llaman con una sola firma** (2026-11-12, PR #194): `server/services/contratoMotores.js`
+envuelve cada motor sin tocar la suya —`evaluar(fabricante, escenario, catalogo, opciones)` da
+`{ fabricante, version, candidatos, recomendado, apartados, nativo }`— y `test/contrato-motores.test.js`
+les exige lo mismo sobre el catálogo de su ruta: el recomendado sale de los candidatos y no está fuera
+de venta, nadie es a la vez candidato y apartado, y barajar el catálogo no cambia el recomendado. Una
+envoltura no decide; un motor nuevo entra con su envoltura y su batería. En Aruba el orden y el
+recomendado salen de `ArubaReglas.evaluar`, no de la página; en Cisco el ciclo de vida lo ordena todavía
+la página, y la prueba sujeta esas dos líneas.
 
 - **Fortinet** (`public/js/fortinet-motor.js`, `fortinet-reglas.js`; historia en
   `docs/rediseno-fortinet.md` y `docs/auditoria-fortinet-2026-09-23/`). **Arquitectura aprobada por
@@ -639,7 +647,7 @@ cambiar una regla. Donde el motor ordena candidatos, el empate termina en el id 
   así que nada cambia sin pedirla. `fisico.wifi`, `fisico.celular` (`4g`/`5g`) y `fisico.celularVia`
   (`integrado`/`extender`, obligatorio con celular) solo existen si se piden: la huella de lo guardado no
   cambia. Con `extender`, el FortiGate se elige como siempre y el FortiExtender (`FORTIEXTENDER`, de su ficha)
-  por generación y bajada de los enlaces `4G/5G`, uno por enlace y dos como mucho por FortiGate. La tabla lleva el 511G-WiFi (2026-11-10, PR #172: mismo módem y cifras que el 511G, que va antes y gana el empate; su SKU con código regional, `skuRegional`), y el WAN 50G, el 511G y el 511G-WiFi tienen figura de la ficha R57 con leyenda en `fortinet-vistas-equipos.json` y el mismo lock que las de los FortiGate (documento `FortiExtender.pdf`); los 101G, 201F, 202F y 211G, que la ficha no dibuja, la tienen de su QuickStart Guide (PR #185; el 201F y el 202F rotulan sobre el dibujo y no llevan leyenda): el mapa admite los ids de `FORTIEXTENDER`. La página enseña las figuras del FortiExtender elegido, las dos caras con su leyenda (`figuraExtender`), y el Excel las lleva a «Fotos del equipo» detrás del FortiGate (`fotos.acompanan`, `BOM.equiposDeFotos`; PR #187). Los FortiWiFi
+  por generación y bajada de los enlaces `4G/5G`, uno por enlace y dos como mucho por FortiGate. La tabla lleva el 511G-WiFi (2026-11-10, PR #172: mismo módem y cifras que el 511G, que va antes y gana el empate; su SKU con código regional, `skuRegional`), y el WAN 50G, el 511G y el 511G-WiFi tienen figura de la ficha R57 con leyenda en `fortinet-vistas-equipos.json` y el mismo lock que las de los FortiGate (documento `FortiExtender.pdf`); los 101G, 201F, 202F y 211G, que la ficha no dibuja, la tienen de su QuickStart Guide (PR #185; el 201F y el 202F rotulan sobre el dibujo y no llevan leyenda): el mapa admite los ids de `FORTIEXTENDER`. La página enseña las figuras del FortiExtender elegido, las dos caras con su leyenda (`figuraExtender`), y el Excel las lleva a «Fotos del equipo» detrás del FortiGate (`fotos.acompanan`, `BOM.equiposDeFotos`; PR #187). Desde el PR #190 la tabla lleva los doce de la ficha y la guía de pedido: el 200F (sin módem, nunca sirve un enlace 4G/5G) y los Vehicle 211F, 212F y 511G y el Rugged 511G, de la ficha Rugged FEXR-DAT-R08, que solo compiten al pedir su entorno (`fisico.celularEntorno`: `vehiculo` o `exterior`; solo existe si se elige); todos con figura; el Vehicle 212F, que la ficha no dibuja, de su QuickStart Guide (PR #200). Los FortiWiFi
   llevan el SKU con `[RC]` (código regional, no se elige) y, como los FortiExtender, van «consultar»
   (`listaSinExtraer`: la lista no se extrajo para ellos, que no es «no la trae»); las variantes celulares
   se cotizan por SKU exacto de la lista (`test/fortinet-wifi-celular.test.js`, `e2e-fortinet-wifi-celular.js`).
@@ -647,8 +655,10 @@ cambiar una regla. Donde el motor ordena candidatos, el empate termina en el id 
   existen, no qué cifra aplica. **8.0 (8.0.2)** (2026-11-10, PR #166, encargo del dueño) aplica lo que dicen sus
   Release Notes, leídas: solo compiten los modelos de «Supported models» (`RN802_SOPORTADOS`; el que no está se
   aparta con `FORTIOS_MODELO`, hoy el FortiWiFi 50G-5G-II), el modo túnel SSL-VPN está retirado y los modelos
-  de 2 GB no admiten inspección proxy. Las cifras y los topes siguen siendo los de 7.6.7 y se dice en los
-  supuestos; las funciones nuevas de la rama no entran sin su documento (`test/fortinet-fortios-8.test.js`,
+  de 2 GB no admiten inspección proxy. Los topes que su Maximum Values Table da distintos entran por modelo y solo
+  con esa versión (`porVersion`, `conVersion`; PR #190: FortiSwitch de 50G, 200G y 2600F, y vecinos BGP de 400G, 3000G y
+  3500G); el resto y las cifras de rendimiento, los de 7.6.7. Las novedades de su guía «New Features» se listan en la
+  ayuda con su título literal y no cambian ningún cálculo (`test/fortinet-fortios-8.test.js`,
   `e2e-fortinet-fortios-8.js`). Una rama nueva es una entrada del catálogo, no código en el motor. La versión del motor
   lleva su nota fechada encima, y la prueba exige que la última nota sea la de `VERSION_MOTOR` (PR #177).
 - **Aruba** (`dimensionador-aruba-edgeconnect.js`, `aruba-reglas.js`, `motor-ingenieria.js`). El

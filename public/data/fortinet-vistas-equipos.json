@@ -643,6 +643,121 @@
   "rear": "/img/equipos/fex-202f-rear.webp",
   "fuente": "QuickStart Guide FortiExtender 202F (FEX-202F-AM; docs.fortinet.com, FortiExtender-202F-QuickStart_Online.pdf), p. 4 «Ports, LEDs, and Buttons». La guía no nombra las caras: frontal, la de los puertos; trasera, la de la bahía SIM y el Bluetooth. Los rótulos van escritos sobre el dibujo, sin números. La ficha de la serie no dibuja este modelo."
  },
+ "FortiExtender Vehicle 211F": {
+  "front": "/img/equipos/fev-211f-front.webp",
+  "rear": "/img/equipos/fev-211f-rear.webp",
+  "fuente": "Datasheet FortiExtender Rugged Series (FEXR-DAT-R08-20260805), p. 2 «Hardware» — «FortiExtender Vehicle 211F». La ficha rotula las vistas «FEV-211F Rear View» (la cara de puertos, la primera aquí) y «FEV-211F Front View» (la de los LED y las bahías SIM); dibuja además una vista superior, «FEV-211F Top View», que no se sirve.",
+  "frontLeyenda": {
+   "tabla": "lista «Interfaces» junto a la figura, p. 2",
+   "filas": [
+    [
+     1,
+     "4 x GE RJ45 Ethernet Ports",
+     "Cuatro puertos Ethernet GE RJ45"
+    ],
+    [
+     2,
+     "1 x GE RJ45 WAN Port",
+     "Un puerto WAN GE RJ45"
+    ],
+    [
+     3,
+     "1 x Digital I/O Connector · 1 x USB 2.0 Port",
+     "Un conector de E/S digital y un puerto USB 2.0"
+    ],
+    [
+     4,
+     "1 x Console Port",
+     "Un puerto de consola"
+    ],
+    [
+     5,
+     "6 x Antenna Ports",
+     "Seis conectores de antena"
+    ]
+   ]
+  }
+ },
+ "FortiExtender Vehicle 511G": {
+  "front": "/img/equipos/fev-511g-front.webp",
+  "rear": "/img/equipos/fev-511g-rear.webp",
+  "fuente": "Datasheet FortiExtender Rugged Series (FEXR-DAT-R08-20260805), p. 3 «Hardware» — «FortiExtender Vehicle 511G». La ficha rotula las vistas «FEV-511G Rear View» (la cara de puertos, la primera aquí) y «FEV-511G Front View» (la de los LED y las bahías SIM); dibuja además una vista superior, «FEV-511G Top View», que no se sirve.",
+  "frontLeyenda": {
+   "tabla": "lista «Interfaces» junto a la figura, p. 3",
+   "filas": [
+    [
+     1,
+     "4 x LAN Ports",
+     "Cuatro puertos LAN"
+    ],
+    [
+     2,
+     "1 x GE RJ45 WAN Port",
+     "Un puerto WAN GE RJ45"
+    ],
+    [
+     3,
+     "1 x USB 2.0 Port",
+     "Un puerto USB 2.0"
+    ],
+    [
+     4,
+     "1 x Console Port",
+     "Un puerto de consola"
+    ],
+    [
+     5,
+     "7-50VDC input",
+     "Entrada de 7 a 50 V CC"
+    ],
+    [
+     6,
+     "Wi-Fi Antenna",
+     "Antena Wi-Fi"
+    ]
+   ]
+  }
+ },
+ "FortiExtender Rugged 511G": {
+  "front": "/img/equipos/fer-511g-front.webp",
+  "rear": "/img/equipos/fer-511g-rear.webp",
+  "fuente": "Datasheet FortiExtender Rugged Series (FEXR-DAT-R08-20260805), p. 4 «Hardware» — «FortiExtender Rugged 511G». La ficha no nombra caras frontal ni trasera: rotula «FER-511G Bottom View» (la cara inferior, con los puertos, la primera aquí) y «FER-511G Top View» (la tapa, con los LED).",
+  "frontLeyenda": {
+   "tabla": "lista «Interfaces» junto a la figura, p. 4",
+   "filas": [
+    [
+     1,
+     "1x LAN1 /POE (RJ45) 2.5 Gbps 802.3at (25.5W) PoE Ethernet IP67 Port",
+     "Puerto LAN1/PoE (RJ45) de 2,5 Gb/s, alimentado por PoE 802.3at (25,5 W), con protección IP67"
+    ],
+    [
+     2,
+     "1x CONSOLE (RJ45) CLI management",
+     "Puerto de consola (RJ45), gestión por CLI"
+    ],
+    [
+     3,
+     "1x USB 2.0 (USB-A) Port",
+     "Puerto USB 2.0 tipo A"
+    ],
+    [
+     4,
+     "2x SIM Slots MicroSIM - 3FF",
+     "Dos ranuras SIM (micro-SIM, 3FF)"
+    ],
+    [
+     5,
+     "1x LAN2 (RJ45) 1 Gbps Ethernet Port",
+     "Puerto LAN2 (RJ45) de 1 Gb/s"
+    ]
+   ]
+  }
+ },
+ "FortiExtender 200F": {
+  "front": "/img/equipos/fex-200f-front.webp",
+  "rear": "/img/equipos/fex-200f-rear.webp",
+  "fuente": "QuickStart Guide FortiExtender 200F (FEX-200F; docs.fortinet.com, FortiExtender-200F-QuickStart_Online.pdf, 11 de marzo de 2024), p. 4 «Ports, LEDs, and Buttons» y, en la misma página, «Power Input». La guía no nombra las caras: frontal, la de los puertos; trasera, la de la entrada de 12 V y la toma de tierra. Los rótulos van escritos sobre el dibujo, sin números. La ficha de la serie no dibuja este modelo."
+ },
  "FortiGate 40F-3G4G": {
   "front": "/img/equipos/fg-40f-3g4g-front.webp",
   "rear": "/img/equipos/fg-40f-3g4g-rear.webp",
@@ -657,5 +772,10 @@
   "front": "/img/equipos/fg-50g-5g-front.webp",
   "rear": "/img/equipos/fg-50g-5g-rear.webp",
   "fuente": "Datasheet FortiGate/FortiWiFi 50G Series (FGFWF-50G-DAT-R17-20260901), p. 10 «Hardware» — «FortiGate 50G-5G/51G-5G». Unidad dibujada: FortiGate 50G-5G (antenas «5G» y «GPS» en las dos caras)"
+ },
+ "FortiExtender Vehicle 212F": {
+  "front": "/img/equipos/fev-212f-front.webp",
+  "rear": "/img/equipos/fev-212f-rear.webp",
+  "fuente": "QuickStart Guide FortiExtenderVehicle 212F/212F-AM (docs.fortinet.com, FortiExtenderVehicle-212F-QuickStart_Online.pdf), p. 5 «Ports, LEDs, Buttons, and Antenna Connectors» (cara de puertos, la que se da como frontal, como en el Vehicle 211F) y p. 4 «Front Panel LEDs & Controls» (cara de los LED, el botón Reset y la bahía SIM, en la pestaña trasera). Los rótulos van escritos sobre el dibujo, sin números. La ficha Rugged FEXR-DAT-R08 no dibuja este modelo."
  }
 }

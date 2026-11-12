@@ -1239,6 +1239,13 @@
       "bytes": 4013073,
       "medido": "2026-11-04T14:20:00.000Z"
     },
+    "fortinet::https://www.fortinet.com/content/dam/fortinet/assets/data-sheets/fortiextender-rugged.pdf": {
+      "documento": "FortiExtender Rugged Data Sheet (FEXR-DAT-R08-20260805)",
+      "hashVerificado": "3de571af40c105c0b3c45105eb353b66f6fd10456d3ca156c99091c7ca112b95",
+      "clase": "bytes",
+      "bytes": 16068358,
+      "medido": "2026-11-11T21:05:00.000Z"
+    },
     "fortinet::https://www.fortinet.com/content/dam/fortinet/assets/data-sheets/og-fortiextender.pdf": {
       "documento": "FortiExtender Ordering Guide (FEX-OG-R18-20250626)",
       "hashVerificado": "4167944fdc2d4086ba84c65213fc3864bab2dd0587a3733f4f663982c9848a45",

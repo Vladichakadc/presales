@@ -9,7 +9,8 @@ const assert = require('node:assert');
 const VISTAS = require('../public/data/fortinet-vistas-equipos.json');
 const { VARIANTES, FORTIEXTENDER } = require('../server/seed/legacyData/fortinetVariantes.js');
 
-// id → motivo. Solo para un equipo que ningún documento oficial traído dibuja.
+// id → motivo. Solo para un equipo que ningún documento oficial traído dibuja. Vacío desde el 2026-11-12:
+// el Vehicle 212F, el último, tiene las figuras de su QuickStart Guide.
 const SIN_FIGURA = {};
 
 const EQUIPOS = [...FORTIEXTENDER.modelos, ...VARIANTES].map((m) => m.id);
@@ -43,5 +44,5 @@ test('mutación de control: la regla ve un equipo nuevo sin figura y una cara si
   assert.strictEqual(fallos(nuevo, VISTAS, SIN_FIGURA).length, 1);
   const sinNota = { ...VISTAS, 'FortiExtender WAN 50G': { ...VISTAS['FortiExtender WAN 50G'], rearNota: undefined } };
   assert.strictEqual(fallos(EQUIPOS, sinNota, SIN_FIGURA).length, 1);
-  assert.strictEqual(fallos(EQUIPOS, VISTAS, { 'FortiExtender 101G': 'x' }).length, 1, 'una excepción de más también se ve');
+  assert.strictEqual(fallos(EQUIPOS, VISTAS, { ...SIN_FIGURA, 'FortiExtender 101G': 'x' }).length, 1, 'una excepción de más también se ve');
 });

@@ -41,7 +41,8 @@ test('sin cifra no se afirma que cumpla: se cuenta aparte', () => {
 
 test('la página delega en ArubaReglas.filtrarCandidatos y no conserva el filtro', () => {
   const pag = fs.readFileSync(path.join(__dirname, '..', 'public/js/dimensionador-aruba-edgeconnect.js'), 'utf8');
-  assert.match(pag, /= ArubaReglas\.filtrarCandidatos\(MODELS, \{/);
+  // Desde el 2026-11-12 la página llama a ArubaReglas.evaluar, que filtra con filtrarCandidatos y ordena.
+  assert.match(pag, /= ArubaReglas\.evaluar\(\{/);
   assert.match(pag, /nivelPqc: \$\('reqPqc'\)\.value,/);
   assert.doesNotMatch(pag, /const candidates=MODELS\.filter\(/, 'el filtro no vuelve a la página');
   const mod = fs.readFileSync(path.join(__dirname, '..', 'public/js/aruba-reglas.js'), 'utf8');

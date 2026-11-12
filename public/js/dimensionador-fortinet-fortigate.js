@@ -128,6 +128,7 @@ const UI = [
   ['fisico.wifi', 'chkWifi', 'chk'],
   ['fisico.celular', 'celularGen', 'txt'],
   ['fisico.celularVia', 'celularVia', 'txt'],
+  ['fisico.celularEntorno', 'celularEntorno', 'txt'],
   ['fisico.registro', 'registroDestino', 'txt'],
   ['fisico.registroGbDia', 'registroGbDia', 'num', 0],
   ['fisico.registroDias', 'registroDias', 'num', 0],
@@ -172,7 +173,7 @@ const CAMPO_N = {
   'remoto.usuarios': 'usuarios de acceso remoto', 'remoto.mbps': 'caudal de acceso remoto', 'remoto.mfa': 'doble factor',
   'seguridad.tlsCifradoPct': 'parte cifrada del tráfico', 'seguridad.tlsExentoPct': 'tráfico exento de inspección TLS',
   'seguridad.pqc': 'criptografía post-cuántica exigida',
-  'fisico.celularVia': 'cómo llega el enlace 4G/5G',
+  'fisico.celularVia': 'cómo llega el enlace 4G/5G', 'fisico.celularEntorno': 'dónde va el FortiExtender',
   'fisico.registroGbDia': 'GB/día de registro', 'fisico.registroDias': 'días de retención',
   'comercial.emsEndpoints': 'endpoints de FortiClient EMS', 'comercial.sandbox': 'modo de FortiSandbox',
   'comercial.emsDespliegue': 'despliegue de FortiClient EMS', 'comercial.saseEdicion': 'edición de FortiSASE',
@@ -199,7 +200,7 @@ const CAMPOS_ESCENARIO = ['nombreCliente', 'refProyecto', 'wanLinksData',
   'chkRemoto', 'vpnTipo', 'vpnUsers', 'vpnMbps', 'chkMfa',
   'users', 'sesUser', 'sessNeed', 'vidaSes', 'cpsMedido', 'vdoms', 'fortiAps', 'fortiSwitches', 'bgpPeers',
   'pt_rj45_1g', 'pt_rj45_10g', 'pt_sfp_1g', 'pt_sfpp_10g', 'pt_sfp28_25g', 'pt_qsfp28_100g',
-  'poeW', 'chkPsuRed', 'chkWifi', 'celularGen', 'celularVia', 'reqPqc', 'registroDestino', 'registroGbDia', 'registroDias', 'head', 'techoUtil',
+  'poeW', 'chkPsuRed', 'chkWifi', 'celularGen', 'celularVia', 'celularEntorno', 'reqPqc', 'registroDestino', 'registroGbDia', 'registroDias', 'head', 'techoUtil',
   'motivoCompra', 'serieInstalada', 'pickModel', 'justificacionEol', 'termYears', 'licBundle', 'careLevel',
   'chkSdwanMon', 'chkSdwanOrq', 'chkSdwanSase', 'saseUsuarios', 'saseEdicion', 'chkEms', 'emsEndpoints', 'emsDespliegue',
   'chkConverter', 'selDescuento', 'dtoCustom'];
@@ -493,6 +494,7 @@ function leerEscenario() {
   if (!s.fisico.wifi) delete s.fisico.wifi;
   if (!s.fisico.celular) delete s.fisico.celular;
   if (!s.fisico.celularVia) delete s.fisico.celularVia;
+  if (!s.fisico.celularEntorno) delete s.fisico.celularEntorno;
   return s;
 }
 
@@ -612,7 +614,7 @@ const NUMERICOS = UI.filter(([, , t]) => t === 'num').map(([, id]) => id).concat
 for (const id of NUMERICOS) { const n = $(id); if (n) n.addEventListener('input', () => programar(n.type === 'range', id)); }
 const INMEDIATOS = ['fortiOS', 'modoInspeccion', 'chkHa', 'haModo', 'chkAv', 'chkWeb', 'chkIotDlp', 'chkSsl', 'pctCifrado',
   'pctTlsExento', 'chkSandbox', 'sandboxModo', 'sandboxModalidad', 'chkNoConcurrente', 'chkRemoto', 'vpnTipo', 'chkMfa',
-  'chkPsuRed', 'chkWifi', 'celularGen', 'celularVia', 'reqPqc', 'registroDestino', 'techoUtil', 'motivoCompra', 'termYears', 'licBundle', 'careLevel',
+  'chkPsuRed', 'chkWifi', 'celularGen', 'celularVia', 'celularEntorno', 'reqPqc', 'registroDestino', 'techoUtil', 'motivoCompra', 'termYears', 'licBundle', 'careLevel',
   'chkHaLicUnica', 'chkSdwanMon', 'chkSdwanOrq', 'chkSdwanSase', 'saseEdicion', 'chkEms', 'emsDespliegue', 'chkConverter'];
 for (const id of INMEDIATOS) { const n = $(id); if (n) n.addEventListener(n.tagName === 'SELECT' ? 'change' : 'input', () => programar(true, id)); }
 // Los selects tambien disparan `input` en los navegadores actuales; con `change` basta y
@@ -703,6 +705,19 @@ function pintarCelular(r) {
   if (fex.fuente) partes.push(`Fuente: ${fex.url ? `<a href="${esc(fex.url)}" target="_blank" rel="noopener">${esc(fex.fuente)}</a>` : esc(fex.fuente)}.`);
   caja.innerHTML = partes.join(' ') + (x ? figuraExtender(x) : '');
   caja.hidden = false;
+}
+
+/* Lo nuevo de la rama elegida (2026-11-11): los títulos de su guía «New Features» que tocan lo que esta
+   página dimensiona, con la versión en que entra cada uno y el enlace a la guía. Salen del catálogo
+   (`FORTIOS.versiones[].novedades`), no de esta página, y son para leer: no cambian ninguna cifra. */
+function novedadesFortiOS(version) {
+  const v = CAT && CAT.fortios && (CAT.fortios.versiones || []).find((x) => x.id === version);
+  const n = v && v.novedades;
+  if (!n || !Array.isArray(n.lista) || !n.lista.length) return '';
+  const url = /^https:\/\//.test(n.url || '') ? n.url : null;
+  return `<details class="fortios-novedades" style="margin-top:6px"><summary>Novedades de la rama que tocan este diseño (${n.lista.length})</summary>`
+    + `<ul style="margin:6px 0 0 18px;padding:0">${n.lista.map((x) => `<li>${esc(x.es)} <span class="sku">«<span lang="en">${esc(x.titulo)}</span>», desde ${esc(x.desde)}</span></li>`).join('')}</ul>`
+    + `<p style="margin:6px 0 0">Son títulos de ${url ? `<a href="${esc(url)}" target="_blank" rel="noopener">${esc(n.fuente)}</a>` : esc(n.fuente)}: el detalle está en la guía, y salvo donde se dice «aplicado» no cambian ningún cálculo.</p></details>`;
 }
 
 /* Las figuras del FortiExtender elegido (2026-11-10 y 2026-11-11, encargo del dueño: «todos los
@@ -838,7 +853,9 @@ function pintarControles(r) {
   opSsl.disabled = retirado && $('vpnTipo').value !== 'sslvpn';
   opSsl.textContent = retirado ? `SSL-VPN en modo túnel — retirado en FortiOS ${s.software.fortiOS}` : 'SSL-VPN en modo túnel';
   $('fortiOSHint').innerHTML = s.software.fortiOS === '8.0'
-    ? 'Con <b>FortiOS 8.0</b> se aplica lo que dicen las Release Notes de 8.0.2: solo compiten los modelos que soporta, <b>el modo túnel SSL-VPN no existe</b> y los modelos de 2 GB de RAM (40F, 50G, 60F) no admiten inspección proxy. Las cifras y los topes siguen siendo los publicados para 7.6: la tabla de 8.0 no se ha traído.'
+    ? 'Con <b>FortiOS 8.0</b> se aplica lo que dicen las Release Notes de 8.0.2: solo compiten los modelos que soporta, <b>el modo túnel SSL-VPN no existe</b> y los modelos de 2 GB de RAM (40F, 50G, 60F) no admiten inspección proxy. '
+      + 'Y lo que su Maximum Values Table da distinto de la de 7.6.7: <b>más FortiSwitch gestionados</b> en las series 50G (16), 200G (96) y 2600F (300), y <b>vecinos BGP</b> para 400G, 3000G y 3500G. Políticas, túneles y el resto de vecinos BGP son los mismos; las cifras de rendimiento no se publican por versión.'
+      + novedadesFortiOS(s.software.fortiOS)
     : retirado
     ? 'Decide qué funciones existen, no qué cifra aplica. En <b>7.6.3 o superior el modo túnel SSL-VPN ya no existe</b>: el acceso remoto se diseña con IPsec.'
     : `Con ${esc(s.software.fortiOS)} el modo túnel SSL-VPN existe salvo en los modelos que el Product Matrix excluye (serie 90G${s.software.fortiOS === '7.6.0-7.6.2' ? ', y los de 2 GB de RAM' : ''}).`;
