@@ -844,7 +844,7 @@
   // Evalúa cada modelo de la plataforma contra la demanda. Devuelve todos, con su utilización y
   // sus motivos; los que cumplen van ordenados por su capacidad equivalente para esta mezcla de
   // tráfico (la menor primero: el más pequeño que cumple).
-  // `opciones` (2026-11-12, PR de la firma común): con `rango` y `recomendar` de FICHA, el motor da
+  // `opciones` (2026-11-12, PR #203): con `rango` y `recomendar` de FICHA, el motor da
   // también `orden` (los modelos que cumplen, vigente antes que fuera de venta y, dentro, el orden de
   // `candidatos`) y `recomendado`. Eran dos líneas de la página. Sin opciones, todo cuenta como vigente
   // y se recomienda el primero. `candidatos` no cambia: sigue siendo la lista de filas por capacidad.

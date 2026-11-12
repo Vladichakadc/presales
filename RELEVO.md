@@ -429,19 +429,18 @@ existen los workflows de transporte. Huawei y HPE niegan además el navegador au
 
 ## Mejoras propuestas sin decidir
 
+- **Que el caso `aruba-eleccion` mida con el catálogo en el orden de la ruta** (propuesta al cerrar el PR #203). Hoy
+  usa el orden de `legacyData/`, que la página nunca ve: al medir el PR #194 daba 387 diferencias que en producción
+  no existen, y hubo que ordenar aparte en `aruba-orden.js`. Con una ayuda común (`scripts/ayuda/`) que dé a
+  cualquier caso los modelos como los sirve la ruta, los dos casos de Aruba medirían lo mismo que ve el usuario.
+  Coste: la ayuda y volver a medir el caso (tiene que seguir en 0). Si se hace mal, el caso dejaría de ver el
+  filtro: lo cubre su mutación de control.
 - **El mismo aviso de propuesta compartida en el job `solapes` de cada PR** (propuesta al cerrar el PR #199).
   `reservar` ya avisa (PR #199), pero solo a quien lo corre: un PR abierto sin reservar, o sin citar su propuesta,
   solo lo vería la otra sesión. `scripts/solapes-pr.js` reutilizaría `propuestasCitadas` y `mismaPropuesta` con la
   descripción del PR y dejaría un `::warning`. Coste: dos funciones importadas, un caso en `test/solapes-pr.test.js`
   y el cuerpo del PR del evento. Si se hace mal y lee las descripciones enteras de los demás, avisaría por citas
   históricas: tiene que leer solo la cita de la que sale el tema, y avisar sin frenar.
-- **Llevar al motor de Cisco el orden por ciclo de vida y el recomendado** (propuesta al cerrar el PR #194). Es el
-  último motor cuya página ordena: `evaluar(models, p)` no recibe `rango`, así que la página aplica
-  `FICHA.ordenar` y `FICHA.recomendar`, y la envoltura del contrato repite esa regla (hoy la sujeta una prueba
-  de texto). Con un tercer argumento `opciones` opcional, el motor ordenaría y recomendaría, y la página y la
-  envoltura solo leerían. Coste: dos líneas de la página, la envoltura y un caso de equivalencia como el de
-  Aruba. Si se hace mal, un fin de venta anunciado cambiaría de sitio en la lista: el caso mide con el catálogo
-  de la ruta.
 - **La misma regla para los FortiGate de `MODELS`: cada uno con figura o con su motivo** (propuesta al cerrar el
   PR #193, acotada en el PR #198). `test/fortinet-figuras-cobertura.test.js` (PR #192) ya la exige a los FortiExtender
   y a las variantes. Los 71 de `MODELS` también tienen figura hoy (medido el 2026-11-12), pero nada lo exige: un
