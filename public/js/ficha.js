@@ -1332,6 +1332,9 @@
     // El aviso del equipo elegido, expuesto para probar lo que dice (2026-10-29).
     avisoDe,
     cicloHtml,
+    // La tabla de la leyenda numerada, para la figura del FortiExtender elegido (Fortinet, 2026-11-10),
+    // que no es la ficha de un equipo pero tiene que leerse igual.
+    tablaLeyenda,
     seccionPuertos,
     // La pagina lo llama una vez, con el `cicloVida` que le devuelve /api/dimensionador/<v>.
     // Quien no lo llame no pinta nada: es lo correcto: un hueco no afirma vigencia, y una
