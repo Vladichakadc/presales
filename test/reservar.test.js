@@ -367,3 +367,74 @@ test('la primera en reservar no cede ante la que llega después: lo dice como av
     assert.match(sh(b, 'show', 'origin/claude/tema-b:docs/traspaso/tema-b.md'), /- \*\*Estado:\*\* reservado/);
   } finally { fs.rmSync(base, { recursive: true, force: true }); }
 });
+
+// ── La misma mejora propuesta con otro nombre (2026-11-12, mejora propuesta al cerrar el PR #198) ──────────
+test('las propuestas citadas se leen de la frase de siempre, sin repetir y en orden', () => {
+  assert.deepStrictEqual(R.propuestasCitadas('Mejora propuesta al cerrar el PR #185; también la propuesta del PR #63 y la Propuesta al cerrar el PR #185'), [63, 185]);
+  assert.deepStrictEqual(R.propuestasCitadas('lo que dejó el PR #185, sin la frase'), [], 'nombrar un PR no es citar su propuesta');
+  assert.deepStrictEqual(R.propuestasCitadas(null), []);
+});
+
+test('del traspaso cuenta su Tema y su Encargo, no la historia de las demás secciones', () => {
+  const t = R.traspasoInicial({ tema: 'x', rama: 'claude/x', descripcion: 'Figuras (mejora propuesta al cerrar el PR #185)', archivos: ['a.js'], fecha: '2026-11-12 10:00' })
+    .replace('<Las palabras del dueño, literales, y lo que se entendió de ellas.>', 'Ejecuta la propuesta del PR #90.')
+    .replace('<Lo decidido y su porqué; lo medido; lo que no funcionó, para no repetirlo.>', 'Se miró la propuesta al cerrar el PR #12.');
+  assert.deepStrictEqual(R.propuestasCitadas(R.textoDeEncargo(t)), [90, 185]);
+});
+
+test('mismaPropuesta avisa con quién comparte propuesta; un cerrado, un pasado por alto o sin propuesta propia, no', () => {
+  const ocupados = [
+    { origen: 'claude/a', tema: 'A', estado: 'en curso', propuestas: [185] },
+    { origen: 'claude/b', tema: 'B', estado: 'cerrado (cedido: claude/a reservó lo mismo antes)', propuestas: [185] },
+    { origen: 'claude/c', tema: 'C', estado: 'en curso', propuestas: [185] },
+    { origen: 'claude/d', tema: 'D', estado: 'en curso', propuestas: [63] },
+    { origen: 'claude/e', tema: 'E', estado: 'en curso' },
+  ];
+  const l = R.mismaPropuesta([185, 198], ocupados, { ignorar: ['claude/c'] });
+  assert.deepStrictEqual(l.map((x) => [x.origen, x.comunes]), [['claude/a', [185]]]);
+  assert.deepStrictEqual(R.mismaPropuesta([], ocupados), []);
+  assert.match(R.avisoMismaPropuesta(l), /claude\/a — A \[en curso\]: cita la propuesta al cerrar el PR #185/);
+  assert.strictEqual(R.avisoMismaPropuesta([]), '');
+});
+
+test('el caso del #192 y el #193: archivos distintos, la misma propuesta; la segunda reserva avisa y se hace igual', () => {
+  const { base, clonar } = escenario();
+  try {
+    const a = clonar('sesion-a');
+    const b = clonar('sesion-b');
+    const r1 = correr(a, ['fortinet-figuras-cobertura', '--archivos', 'test/fortinet-figuras-cobertura.test.js', '--descripcion', 'Cobertura de figuras', '--propuesta', '185']);
+    assert.strictEqual(r1.rc, 0, r1.salida);
+    assert.match(sh(a, 'show', 'origin/claude/fortinet-figuras-cobertura:docs/traspaso/fortinet-figuras-cobertura.md'),
+      /- \*\*Tema:\*\* Cobertura de figuras \(mejora propuesta al cerrar el PR #185\)/, '--propuesta queda en el Tema para que la lean las demás');
+    const r2 = correr(b, ['fortiextender-figuras', '--archivos', 'test/fortiextender-figuras.test.js', '--descripcion', 'Cada FortiExtender con figura (mejora propuesta al cerrar el PR #185)']);
+    assert.strictEqual(r2.rc, 0, `solo avisa, no frena: ${r2.salida}`);
+    assert.match(r2.salida, /AVISO: 1 tema\(s\) en curso salen de la misma mejora propuesta/);
+    assert.match(r2.salida, /claude\/fortinet-figuras-cobertura — Cobertura de figuras/);
+    assert.match(r2.salida, /Reservado: claude\/fortiextender-figuras/);
+    // Mutación de control: otra propuesta no avisa.
+    const r3 = correr(b, ['otro-tema', '--archivos', 'test/otro.test.js', '--propuesta', '186', '--comprobar']);
+    assert.strictEqual(r3.rc, 0, r3.salida);
+    assert.doesNotMatch(r3.salida, /misma mejora propuesta/);
+  } finally { fs.rmSync(base, { recursive: true, force: true }); }
+});
+
+test('un PR abierto sin traspaso que cita la propuesta en su descripción también avisa', () => {
+  const { base, clonar } = escenario();
+  try {
+    const a = clonar('sesion-a');
+    const pr = [{ number: 192, title: 'Figuras de Fortinet', body: 'Mejora propuesta al cerrar el PR #185.', head: { ref: 'claude/sin-traspaso' }, user: { login: 'otra' }, updated_at: '2026-11-12T10:00:00Z' }];
+    const gh = (args) => (/\/files/.test(args[1]) ? JSON.stringify([{ filename: 'test/otra.test.js' }]) : JSON.stringify(pr));
+    const lineas = [];
+    const log = console.log;
+    console.log = (...x) => lineas.push(x.join(' '));
+    let rc;
+    try { rc = R.main(['mi-tema', '--archivos', 'test/mia.test.js', '--propuesta', '#185', '--comprobar'], { raiz: a, gh }); } finally { console.log = log; }
+    assert.strictEqual(rc, 0, lineas.join('\n'));
+    assert.match(lineas.join('\n'), /claude\/sin-traspaso — PR #192 «Figuras de Fortinet» \[PR abierto\]: cita la propuesta al cerrar el PR #185/);
+  } finally { fs.rmSync(base, { recursive: true, force: true }); }
+});
+
+test('--propuesta pide un número', () => {
+  assert.throws(() => R.argumentos(['t', '--propuesta', 'x']), /número del PR/);
+  assert.deepStrictEqual(R.argumentos(['t', '--propuesta', '#5', '--propuesta', '7']).propuesta, [5, 7]);
+});

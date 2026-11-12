@@ -95,3 +95,13 @@ Empujar a la rama propia siempre funciona, así que GitHub ya no arbitra la carr
 vuelve a mirar, y si otra rama declaró lo mismo **manda la reserva más antigua**, por la fecha del
 commit que añadió cada traspaso y, a igual segundo, por el nombre de la rama. Las dos sesiones hacen
 la misma cuenta; la que pierde retira su traspaso con otro commit y sale con 1.
+
+**La misma mejora propuesta con otro nombre** (2026-11-12, mejora propuesta al cerrar el PR #198). El PR
+#192 y el #193 hicieron la misma prueba con nombres y archivos distintos: los dos salían de la «mejora
+propuesta al cerrar el PR #185», y ni GitHub ni el choque por archivos lo vieron. Ahora `reservar` lee la
+propuesta de la que sale cada tema en curso (la frase «propuesta al cerrar el PR #N» o «propuesta del PR
+#N» en su línea **Tema** y su sección **Encargo del dueño**; en un PR abierto sin traspaso, en su título y
+su descripción) y, si coincide con la de la reserva, **avisa** con quién, antes de empujar y otra vez tras
+empujar. Nunca frena: un tema puede tomar otra parte de la misma propuesta. La propuesta propia sale de
+`--descripcion` o de `--propuesta <N>` (repetible), que la añade al **Tema** del traspaso para que las
+demás sesiones la lean: **quien reserve un tema que sale de una mejora propuesta, que lo diga así**.
