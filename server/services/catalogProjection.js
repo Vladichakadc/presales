@@ -8,8 +8,11 @@ let {
   Vendor, Product, OpticCategory, Optic, Part,
   SupportTier, LicenseBundle, RoleRecommendation,
 } = catalogoDelProceso.catalogo;
+const cacheRespuestas = require('./cacheRespuestas');
 function usarModelos(modelos) {
   ({ Vendor, Product, OpticCategory, Optic, Part, SupportTier, LicenseBundle, RoleRecommendation } = modelos);
+  // Otros modelos son otro catálogo: las respuestas guardadas del anterior ya no valen.
+  cacheRespuestas.invalidar();
 }
 const cotizadorCatalog = require('../seed/legacyData/cotizadorCatalog');
 

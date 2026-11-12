@@ -18,10 +18,8 @@
        apartados    lo que no cumple, con la forma y los motivos de cada motor (no se reescriben)
        nativo       lo que devolvio el motor, entero: quien necesite una cifra la lee de ahi
 
-   UNA ENVOLTURA NO DECIDE. No filtra y no cambia el recomendado: lee lo que el motor ya decidio. La
-   unica que ordena es la de Cisco, y lo hace con la regla que tiene su pagina (vigente antes que
-   fuera de venta sobre el orden del motor, y FICHA.recomendar): test/contrato-motores.test.js
-   sujeta esas dos lineas de la pagina, para que no haya dos reglas sin que nadie lo vea.
+   UNA ENVOLTURA NO DECIDE. No filtra, no ordena y no cambia el recomendado: lee lo que el motor ya
+   decidio.
 
    Lo usa la prueba de contrato, que recorre los ocho con una sola bateria. */
 const path = require('path');
@@ -37,7 +35,6 @@ const NokiaFabric = motor('nokia-fabric-motor.js');
 const Aruba = motor('aruba-reglas.js');
 
 const modelos = (catalogo) => (catalogo && catalogo.models) || [];
-const primero = (lista) => lista[0] || null;
 
 const MOTORES = {
   fortinet: {
@@ -52,15 +49,11 @@ const MOTORES = {
   },
   cisco: {
     motor: Cisco,
-    // El motor ordena por capacidad equivalente e id; el ciclo de vida lo pone la pagina con
-    // FICHA.ordenar, que es un orden estable sobre el del motor. Aqui, la misma regla.
+    // Con `rango` y `recomendar` en las opciones, el motor da `orden` (vigente antes que fuera de
+    // venta sobre su orden por capacidad) y `recomendado`: lo mismo que lee su pagina.
     evaluar(escenario, catalogo, opciones) {
-      const o = opciones || {};
-      const nativo = Cisco.evaluar(modelos(catalogo), escenario);
-      const rango = typeof o.rango === 'function' ? o.rango : () => 0;
-      const candidatos = nativo.candidatos.map((f) => f.m).sort((a, b) => rango(a) - rango(b));
-      const recomendar = typeof o.recomendar === 'function' ? o.recomendar : primero;
-      return { candidatos, recomendado: recomendar(candidatos), apartados: nativo.apartados, nativo };
+      const nativo = Cisco.evaluar(modelos(catalogo), escenario, opciones);
+      return { candidatos: nativo.orden, recomendado: nativo.recomendado, apartados: nativo.apartados, nativo };
     },
   },
   huawei: {

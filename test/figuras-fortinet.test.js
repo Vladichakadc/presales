@@ -10,7 +10,7 @@ const assert = require('node:assert');
 const fs = require('fs');
 const path = require('path');
 const os = require('os');
-const { comprobar, paginasDelPie, sha256, traer, codigoDe, solapeDe, SOLAPE_MAXIMO, SOLAPES_DECLARADOS } = require('../scripts/figuras-fortinet.js');
+const { comprobar, paginasDelPie, sha256, traer, codigoDe, solapeDe, SOLAPE_MAXIMO, SOLAPES_DECLARADOS, medirVecinas, juzgarVecinas, vecinasDe } = require('../scripts/figuras-fortinet.js');
 
 const RAIZ = path.join(__dirname, '..');
 const VISTAS = JSON.parse(fs.readFileSync(path.join(RAIZ, 'public/data/fortinet-vistas-equipos.json'), 'utf8'));
@@ -204,4 +204,40 @@ test('los solapes declarados del lock real llevan su motivo', () => {
     assert.match(clave, /^\/img\/equipos\/[^|]+\|\/img\/equipos\/[^|]+$/, clave);
     assert.ok(String(motivo).trim().length > 20, `${clave}: motivo`);
   }
+});
+
+// LA CAJA, CONTRA LAS FIGURAS VECINAS (2026-11-12, mejora propuesta al cerrar el PR #191). --rehacer
+// compara cada recorte con las demás figuras de su documento en lo que las distingue.
+test('una caja es dudosa si, en lo que las distingue, el recorte se parece más a la vecina; la que no se distingue se dice aparte', () => {
+  const j = juzgarVecinas([
+    { ruta: 'a', propia: 3, vecina: 69.7, pixeles: 202 }, // lo medido en el frontal del FortiWiFi 50G con su caja buena
+    { ruta: 'b', propia: 69.1, vecina: 3.1, pixeles: 202 }, // y con la caja del FortiGate 50G, la de antes del PR #188
+    { ruta: 'c', indistinguible: true, pixeles: 0 }, // las traseras del 30G: el mismo dibujo
+  ]);
+  assert.deepStrictEqual(j.dudosas.map((m) => m.ruta), ['b']);
+  assert.deepStrictEqual(j.indistinguibles.map((m) => m.ruta), ['c']);
+  assert.deepStrictEqual(juzgarVecinas([]), { dudosas: [], indistinguibles: [] });
+});
+
+test('las vecinas de una figura son las demás de su documento que tienen archivo', () => {
+  const figuras = { '/a': { documento: 'x.pdf' }, '/b': { documento: 'x.pdf' }, '/c': { documento: 'y.pdf' }, '/d': { documento: 'x.pdf' } };
+  assert.deepStrictEqual(vecinasDe('/a', figuras, (r) => r !== '/d').map((v) => v.ruta), ['/b']);
+});
+
+// La medición de verdad, con las figuras servidas (sin PDF): la figura del FortiGate 50G, puesta como
+// «recorte» del FortiWiFi 50G, es justo lo que daba su caja errada. Necesita Python con Pillow y numpy.
+const hayPillow = require('child_process').spawnSync('python3', ['-I', '-c', 'import PIL, numpy']).status === 0;
+test('medirVecinas: el dibujo del FortiGate 50G como recorte del FortiWiFi 50G sale dudoso; el suyo, no', { skip: !hayPillow && 'sin Python con Pillow y numpy' }, () => {
+  const en = (n) => ({ ruta: `/img/equipos/${n}.webp`, archivo: path.join(RAIZ, 'public/img/equipos', `${n}.webp`) });
+  const fwf = en('fwf-50g-front');
+  const fg = en('fg-50g-front');
+  const mal = juzgarVecinas(medirVecinas(fg.archivo, fwf, [fg]));
+  assert.deepStrictEqual(mal.dudosas.map((m) => m.ruta), [fg.ruta]);
+  assert.ok(mal.dudosas[0].propia - mal.dudosas[0].vecina > 30, 'la distancia no es de ruido');
+  const bien = juzgarVecinas(medirVecinas(fwf.archivo, fwf, [fg]));
+  assert.deepStrictEqual(bien, { dudosas: [], indistinguibles: [] });
+  // Las traseras del 30G son el mismo dibujo: no se pueden distinguir, y se dice.
+  const iguales = juzgarVecinas(medirVecinas(en('fg-30g-rear').archivo, en('fg-30g-rear'), [en('fwf-30g-rear')]));
+  assert.strictEqual(iguales.indistinguibles.length, 1);
+  assert.strictEqual(iguales.dudosas.length, 0);
 });
