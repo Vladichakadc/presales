@@ -3,28 +3,33 @@
 - **Tema:** Todos los FortiExtender de la ficha y la guía de pedido en la tabla (200F, Vehicle 211F/212F/511G, Rugged 511G), con su ficha Rugged traída; y el transporte de los documentos de FortiOS 8.0
 - **Rama:** claude/fortiextender-rugged-200f
 - **Cuenta:** servicioiptv2025@gmail.com (sesión de Claude Code en la nube)
-- **Estado:** reservado
-- **Actualizado:** 2026-11-11 15:58
-- **Archivos que toca:** scripts/transporte/documentos.js, server/seed/legacyData/fortinetVariantes.js, server/seed/legacyData/fuentes.js, public/js/fortinet-motor.js, test/fortinet-wifi-celular.test.js, test/fortinet-fortiextender-todos.test.js
-- **Siguiente paso:** empezar: el tema está reservado y todavía no tiene código
+- **Estado:** en curso
+- **Actualizado:** 2026-11-11 22:40
+- **Archivos que toca:** scripts/transporte/documentos.js, server/seed/legacyData/fortinetVariantes.js, server/seed/legacyData/fuentes.js, public/js/fortinet-motor.js, test/fortinet-wifi-celular.test.js, test/fortinet-fortiextender-todos.test.js, server/seed/legacyData/fortinet.js, public/js/fortinet-reglas.js, public/dimensionador-fortinet-fortigate.html, public/js/dimensionador-fortinet-fortigate.js, test/fortinet-fortios-8.test.js, test/e2e/e2e-fortinet-fortios-8.js, test/e2e/e2e-fortinet-wifi-celular.js, public/data/fortinet-vistas-equipos.json, scripts/figuras-fortinet.lock.json, public/img/equipos/
+- **Siguiente paso:** sacar las figuras de los cinco FortiExtender nuevos (200F de su QSG; Vehicle 211F/212F/511G y Rugged 511G de la ficha Rugged, rama `fuente/fex-fortios8-2026-11-11`) con su lock; abrir el PR; CI; cierre y fusión
 
 ## Encargo del dueño
 
-<Las palabras del dueño, literales, y lo que se entendió de ellas.>
+«Ejecuta pendientes y mejora propuesta e incluye equipos fortiExtender WAN 50G,511G y todos los equipos referencia FEX y todos los gráficos correspondientes» (2026-11-11). Se entendió: (1) la mejora propuesta al cerrar el PR #166, traer la guía «New Features» y la Maximum Values Table de FortiOS 8.0 y aplicar lo que digan; (2) todos los FortiExtender de la ficha y de la guía de pedido en la tabla del dimensionador; (3) la figura de cada uno, con su lock.
 
 ## Hecho
 
-- <Lo terminado, con el commit que lo contiene.>
+- 495306d: transporte de la ficha Rugged, la QSG del 200F, la guía New Features y la MVT de 8.0 (rama `fuente/fex-fortios8-2026-11-11`).
+- f799675: los doce FortiExtender en la tabla (200F sin módem, Vehicle 211F/212F/511G, Rugged 511G) y el entorno del equipo (`fisico.celularEntorno`) en el motor, 7.4.0.
+- 958da19: FortiOS 8.0 con los topes que su MVT da distintos (FortiSwitch de 50G, 200G, 2600F; vecinos BGP de 400G, 3000G, 3500G) y las novedades de su guía.
+- Este commit: la página (selector «Dónde va el FortiExtender», novedades de la rama en la ayuda) y sus e2e.
+- El PR #187 (figuras del FortiExtender elegido en la página y el Excel), del que parte esta rama, ya está en main.
 
 ## Falta
 
-- <Lo pendiente de este tema, en orden.>
+- Figuras de los cinco FortiExtender nuevos, con lock y leyenda donde el dibujo lleve números.
+- PR, CI (e2e solo corre allí), cierre.
 
 ## Decisiones y hallazgos
 
-
-- <Lo decidido y su porqué; lo medido; lo que no funcionó, para no repetirlo.>
+- Los de vehículo y exterior solo compiten al pedir su entorno: nada cambia para lo guardado (la huella no lleva el campo si está vacío).
+- El 200F no tiene módem: está en la tabla y nunca sirve un enlace 4G/5G.
 
 ## Verificación
 
-- <Qué se corrió (`npm run verificar`, `auditar`, `pantallas`…) y con qué resultado.>
+- `node --test test/fortinet-*.test.js`: 203 de 204; la que falla (`haLicenciaUnica llega al navegador`) es del entorno local, que no tiene las dependencias del servidor.
