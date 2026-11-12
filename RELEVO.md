@@ -436,14 +436,13 @@ existen los workflows de transporte. Huawei y HPE niegan además el navegador au
   envoltura solo leerían. Coste: dos líneas de la página, la envoltura y un caso de equivalencia como el de
   Aruba. Si se hace mal, un fin de venta anunciado cambiaría de sitio en la lista: el caso mide con el catálogo
   de la ruta.
-- **La misma regla para todo el catálogo de Fortinet: cada modelo y cada variante, con figura o con su motivo**
-  (propuesta al cerrar el PR #193). La prueba del #193 cubre los siete FortiExtender; los 71 de `MODELS` y las 13
-  `VARIANTES` de `fortinetVariantes.js` también tienen figura hoy (medido el 2026-11-12), pero nada lo exige: un
-  FortiGate o un FortiWiFi nuevo entraría sin figura en silencio. Sería extender `sinCubrir` de
-  `test/fortiextender-figuras.test.js` a esas dos tablas, con su `SIN_FIGURA`. No fija un número de modelos
-  con foto, que es lo que `fortinet-vistas-equipos.test.js` evita a propósito: fija que no haya hueco sin motivo.
-  Coste: una prueba sin red. Si se hace mal, una variante nueva sin dibujo propio tentaría a servir el de su
-  FortiGate, que el PR #148 prohibió; la salida es `SIN_FIGURA`, nunca la figura de otro.
+- **La misma regla para los FortiGate de `MODELS`: cada uno con figura o con su motivo** (propuesta al cerrar el
+  PR #193, acotada en el PR #198). `test/fortinet-figuras-cobertura.test.js` (PR #192) ya la exige a los FortiExtender
+  y a las variantes. Los 71 de `MODELS` también tienen figura hoy (medido el 2026-11-12), pero nada lo exige: un
+  FortiGate nuevo entraría sin figura en silencio. Sería sumar `MODELS` a `EQUIPOS` en esa prueba, con su
+  `SIN_FIGURA`. No fija cuántos modelos tienen foto, que es lo que `fortinet-vistas-equipos.test.js` evita a
+  propósito: fija que no haya hueco sin motivo. Coste: una línea y la medida. Si se hace mal, un FortiGate sin
+  dibujo propio tentaría a servir el de su serie hermana; la salida es `SIN_FIGURA`, nunca la figura de otro.
 - **Servir cada proyección ya serializada y cacheada por arranque** (propuesta al cerrar el PR #183). El catálogo
   vive en memoria y no cambia sin un despliegue, pero cada petición vuelve a proyectar (Fortinet, 215 KB). El PR
   #175 garantiza que las proyecciones no escriben en `legacyData/`, así que una caché por función y argumento es
