@@ -627,7 +627,9 @@
   // sola vez, en esa misma pasada (antes, la fila manual se soltaba solo para la siguiente).
   // 1.0.2 (2026-11-11): lineasBom devuelve `delMotor`, lo que pone el diseño con SKU del catálogo de
   // accesorios y su origen, para que el modal lo marque; las filas no cambian.
-  const VERSION_MOTOR = '1.0.2';
+  // 1.0.3 (2026-11-12): evaluar() ordena y recomienda (antes, la pagina), y dos candidatos con la misma
+  // capacidad maxima se desempatan por id natural, no por el orden en que llega el catalogo.
+  const VERSION_MOTOR = '1.0.3';
 
   /* LA LISTA DE MATERIALES (fase 2 de la auditoria del 2026-11-09, ADR-1, primer corte). Las filas
      que renderBom() armaba entre el pintado salen aqui, sin DOM ni estado: la pagina lee lo que hay
@@ -915,9 +917,33 @@
     return { filas, soltar, licHa, delMotor };
   }
 
+  /* evaluar(escenario, catalogo, opciones): el sobre del contrato comun (ADR-1; 2026-11-12). El orden
+     y el recomendado, que eran dos lineas de render(), salen aqui con la misma regla: vigente antes
+     que fuera de venta (opciones.rango, de FICHA) y, dentro, la menor capacidad maxima; lo nuevo es
+     el desempate por id. El filtro es filtrarCandidatos, sin tocar.
+       escenario   lo que cambia con la pantalla: famMode, personaMode, boost, secMode, needProc, needDe,
+                   users, aps, flujosReq, D, soMode y nivelPqc
+       catalogo    { models }: los modelos con las cifras del SO elegido
+       opciones    { rango, recomendar } de FICHA (sin ellos, todo vigente y el primero) y `pagina`, lo
+                   que el filtro lee de la pagina (coincideFiltro, capacidadMax, evaluarPuertos...)
+     Devuelve { version, candidatos (ordenados), recomendado, apartados (cada contador o lista de
+     filtrarCandidatos, con su nombre) }. */
+  function evaluar(escenario, catalogo, opciones) {
+    const o = opciones || {};
+    const ctx = { ...(o.pagina || {}), ...(escenario || {}) };
+    const { candidates, ...apartados } = filtrarCandidatos((catalogo && catalogo.models) || [], ctx);
+    const rango = typeof o.rango === 'function' ? o.rango : () => 0;
+    // El empate de capacidad termina en el id natural, como en los demas motores: en la pagina lo
+    // decidia el orden en que llegaba el catalogo (EC-10106 y EC-XS, 9004 y 9004-LTE).
+    const candidatos = [...candidates].sort((a, b) => rango(a) - rango(b) || ctx.capacidadMax(a) - ctx.capacidadMax(b)
+      || String(a.id).localeCompare(String(b.id), 'en', { numeric: true }));
+    const recomendar = typeof o.recomendar === 'function' ? o.recomendar : (l) => l[0] || null;
+    return { version: VERSION_MOTOR, candidatos, recomendado: recomendar(candidatos, null), apartados };
+  }
+
   return { VERSION_MOTOR, BOOST_CUOTA, tierParaCaudal, capacidadSo, boostMbpsSitio, boostRecMbps, admiteDtd, escenariosUnderlay, escenarioBoost,
     MEDIO_MBPS, medioMinimo, asignarPuertos, asignarPuertosPar, enlacesSobreMedio,
     LAN_RESERVADOS, NOMBRE_PUERTO, VELOCIDAD_OPTICA, VEL_JAULA, fmt, opticasPorVelocidad, parEdgeHA, velocidadEdgeHA, sinJaulasSfp,
     velocidadesJaula, opcionesHa, interconexionEdgeHA, inventarioTxt, cobreSfp, auditarPuertos, motivoPuertos, evaluarPuertos,
-    clientesMax, apsMax, nivelLicenciaNecesario, bloquesBoost, flujosDe, tierPrice, tierSku, baseParaModelo, centralParaModelo, filtrarCandidatos, lineasBom };
+    clientesMax, apsMax, nivelLicenciaNecesario, bloquesBoost, flujosDe, tierPrice, tierSku, baseParaModelo, centralParaModelo, filtrarCandidatos, lineasBom, evaluar };
 });

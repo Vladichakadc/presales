@@ -63,7 +63,8 @@ test('el semáforo de #wanResumen y el escalado usan la MISMA regla (evaluarPuer
   const reglas = require('fs').readFileSync(require('path').join(__dirname, '..', 'public/js/aruba-reglas.js'), 'utf8');
   assert.ok(reglas.includes('const ev=evaluarPuertos(m,D.wanLinks)'),
     'el descarte por puertos ya no usa evaluarPuertos — regla duplicada otra vez');
-  assert.match(js, /ArubaReglas\.filtrarCandidatos\(MODELS, \{[^}]*\bevaluarPuertos\b/, 'la página no pasa su evaluarPuertos al filtro');
+  // Desde el 2026-11-12 lo pasa por ArubaReglas.evaluar, en `pagina`, que lo entrega al filtro tal cual.
+  assert.match(js, /ArubaReglas\.evaluar\(\{[^}]*\}, \{ models: MODELS \}, \{[^}]*pagina: \{[^}]*\bevaluarPuertos\b/, 'la página no pasa su evaluarPuertos al filtro');
   assert.ok(js.includes('const ev=evaluarPuertos(m,links)'),
     '#wanResumen ya no usa evaluarPuertos — regla duplicada otra vez');
 });

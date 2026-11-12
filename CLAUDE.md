@@ -605,6 +605,14 @@ y mover una regla de la página al motor deja su caso en `scripts/equivalencias/
 motor» (`e2e-trazabilidad-catalogo.js`): un Excel dice con qué reglas se hizo, así que se sube al
 cambiar una regla. Donde el motor ordena candidatos, el empate termina en el id natural
 (`localeCompare` numérico), nunca en el orden del catálogo.
+**Los ocho se llaman con una sola firma** (2026-11-12, PR #194): `server/services/contratoMotores.js`
+envuelve cada motor sin tocar la suya —`evaluar(fabricante, escenario, catalogo, opciones)` da
+`{ fabricante, version, candidatos, recomendado, apartados, nativo }`— y `test/contrato-motores.test.js`
+les exige lo mismo sobre el catálogo de su ruta: el recomendado sale de los candidatos y no está fuera
+de venta, nadie es a la vez candidato y apartado, y barajar el catálogo no cambia el recomendado. Una
+envoltura no decide; un motor nuevo entra con su envoltura y su batería. En Aruba el orden y el
+recomendado salen de `ArubaReglas.evaluar`, no de la página; en Cisco el ciclo de vida lo ordena todavía
+la página, y la prueba sujeta esas dos líneas.
 
 - **Fortinet** (`public/js/fortinet-motor.js`, `fortinet-reglas.js`; historia en
   `docs/rediseno-fortinet.md` y `docs/auditoria-fortinet-2026-09-23/`). **Arquitectura aprobada por
