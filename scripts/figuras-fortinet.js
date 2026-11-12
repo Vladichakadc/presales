@@ -64,9 +64,55 @@ function paginasDelPie(fuente) {
   return [...String(fuente || '').matchAll(/p\. (\d+) «/g)].map((m) => Number(m[1]));
 }
 
+// DOS CAJAS DE LA MISMA PÁGINA NO SE PISAN (2026-11-12, mejora propuesta al cerrar el PR #188 y
+// aprobada por el dueño: «Ejecuta mejora y pendientes»). Las cajas se midieron por correlación, y en
+// una página con dos dibujos casi iguales (el FortiGate y el FortiWiFi de la misma serie) la
+// correlación elige el que no es: la trasera del FortiWiFi 50G-5G-II tenía la caja de la del
+// FortiGate 50G-5G, y el frontal del FortiWiFi 50G la del FortiGate 50G, las dos hasta el PR #188.
+// La figura servida era la buena; el lock no, y el vigía la habría rehecho con el dibujo del otro.
+// Dos figuras distintas del mismo documento y página cuyas cajas se solapan más de la mitad del área
+// de la menor son un error. Una figura que comparten dos modelos es UN archivo y no cuenta. Un solape
+// a propósito se declara aquí, con su motivo; uno declarado que ya no se solapa también avisa.
+const SOLAPE_MAXIMO = 0.5;
+const SOLAPES_DECLARADOS = {}; // 'ruta-a|ruta-b' (en orden alfabético) → motivo
+
+function solapeDe(a, b) {
+  const ancho = Math.min(a[0] + a[2], b[0] + b[2]) - Math.max(a[0], b[0]);
+  const alto = Math.min(a[1] + a[3], b[1] + b[3]) - Math.max(a[1], b[1]);
+  if (!(ancho > 0 && alto > 0)) return 0;
+  return (ancho * alto) / Math.min(a[2] * a[3], b[2] * b[3]);
+}
+
+function cajasQueSePisan(figuras, declarados) {
+  const problemas = [];
+  const vistos = new Set();
+  const lista = Object.entries(figuras).filter(([, f]) => Array.isArray(f.caja) && f.caja.length === 4)
+    .sort(([a], [b]) => a.localeCompare(b));
+  for (let i = 0; i < lista.length; i++) {
+    for (let j = i + 1; j < lista.length; j++) {
+      const [ra, a] = lista[i];
+      const [rb, b] = lista[j];
+      if (a.documento !== b.documento || a.pagina !== b.pagina) continue;
+      const s = solapeDe(a.caja, b.caja);
+      const clave = `${ra}|${rb}`;
+      if (s <= SOLAPE_MAXIMO) continue;
+      vistos.add(clave);
+      if (Object.prototype.hasOwnProperty.call(declarados, clave)) continue;
+      problemas.push(`${ra} y ${rb}: sus cajas de la p. ${a.pagina} de «${a.documento}» se solapan un ${Math.round(s * 100)} % `
+        + 'de la menor; una de las dos es seguramente el dibujo de la otra. Confírmalo por un detalle que solo tenga una '
+        + '(rótulo, LED, antenas), no por la correlación, o declara el par en SOLAPES_DECLARADOS con su motivo');
+    }
+  }
+  for (const [clave, motivo] of Object.entries(declarados)) {
+    if (!String(motivo || '').trim()) problemas.push(`${clave}: solape declarado sin motivo`);
+    else if (!vistos.has(clave)) problemas.push(`${clave}: está en SOLAPES_DECLARADOS y sus cajas ya no se solapan; sobra`);
+  }
+  return problemas;
+}
+
 // Todo lo que tiene que cuadrar entre el mapa de figuras, el lock y los archivos. Pura: recibe
 // la lectura de cada .webp para poder probarla sin disco.
-function comprobar(vistas, lock, leer) {
+function comprobar(vistas, lock, leer, declarados = SOLAPES_DECLARADOS) {
   const problemas = [];
   const figuras = (lock && lock.figuras) || {};
   const documentos = (lock && lock.documentos) || {};
@@ -107,6 +153,7 @@ function comprobar(vistas, lock, leer) {
     if (!/^https:\/\/[a-z0-9.-]+\.(?:fortinet\.com|amazonaws\.com)\//.test(d.url || '')) problemas.push(`${nombre}: sin URL https de Fortinet en el lock`);
     if (!d.urlDe || !/fuente\//.test(d.urlDe)) problemas.push(`${nombre}: la URL no dice de qué rama fuente/* sale (urlDe)`);
   }
+  problemas.push(...cajasQueSePisan(figuras, declarados));
   return problemas;
 }
 
@@ -315,4 +362,4 @@ async function main(argv) {
 
 if (require.main === module) main(process.argv).then((c) => process.exit(c), (e) => { console.error(e); process.exit(2); });
 
-module.exports = { comprobar, paginasDelPie, rehacerUna, sha256, traer, codigoDe, resumen, MARGEN, MISMO_ENCUADRE };
+module.exports = { comprobar, paginasDelPie, solapeDe, SOLAPE_MAXIMO, SOLAPES_DECLARADOS, rehacerUna, sha256, traer, codigoDe, resumen, MARGEN, MISMO_ENCUADRE };
