@@ -419,7 +419,7 @@ traspaso (el #37, de otra sesión, se fusionó mientras se cerraba esta).
 - **Fortinet**: el resto de F4, F5 (derates), 17 renovaciones sin precio en la lista firmada y
   co-term. F3 cerrado (PR #56); el heartbeat, dicho para las series con licencia única.
   Del PR #140: la PQC del FortiWiFi 50G-5G-II (las otras doce la llevan desde el PR #146 y el #181, por
-  «Supported models» de FortiOS 7.6.7, que dice FWF-50G-5G y no FWF-50G-5G-II; revisado el 2026-11-09: tampoco lo nombran las de 7.6.8, build 3744 con edición del 2026-11-03, ni las de 8.0.2, build 0251, traídas en el PR #163; tres ediciones seguidas dicen FWF-50G-5G, así que no lo cerrarán otras Release Notes sino un documento de Fortinet que diga qué FortiOS corre el FWF-50G-5G-II, su ficha o una respuesta escrita de Fortinet) y el caudal del módem integrado (ninguna ficha lo publica).
+  «Supported models» de FortiOS 7.6.7, que dice FWF-50G-5G y no FWF-50G-5G-II; revisado el 2026-11-09: tampoco lo nombran las de 7.6.8, build 3744 con edición del 2026-11-03, ni las de 8.0.2, build 0251, traídas en el PR #163; tres ediciones seguidas dicen FWF-50G-5G, así que no lo cerrarán otras Release Notes sino un documento de Fortinet que diga qué FortiOS corre el FWF-50G-5G-II, su ficha o una respuesta escrita de Fortinet) y el caudal del módem integrado (ninguna ficha lo publica). Revisado el 2026-11-12 (PR #201): la guía de pedido NGFW (2026-08-28) y la Wireless Product Matrix (2026-11-08), traídas, nombran solo el FWF-50G-5G-II como variante LTE/5G del FortiWiFi 50G y ningún FWF-50G-5G sin «-II»; no dicen que sean el mismo ni dan el caudal del módem (Telit FN990A28-HP, ficha R17). Igualarlos es decisión del dueño.
 
 ### Bloqueado por acceso (se reporta, no se rodea)
 
@@ -488,6 +488,7 @@ existen los workflows de transporte. Huawei y HPE niegan además el navegador au
 
 ## Decisiones del dueño abiertas
 
+- **¿El «FWF-50G-5G» de las Release Notes es el FortiWiFi 50G-5G-II?** (PR #201). La guía de pedido NGFW y la Wireless Product Matrix solo traen el FWF-50G-5G-II como variante LTE/5G del FortiWiFi 50G, pero ningún documento dice que sean el mismo. Igualarlos le daría la PQC ML-KEM de FortiOS 7.6.1 por inferencia. Opción recomendada: no igualarlos y pedir a Fortinet la confirmación escrita.
 - **Enrutar micro-forks con Jev** (punto 4 del encargo del PR #94: «Enruta forks determinísticos rápidos —elección de herramienta, selección de ruta, reintentos— a través de JEV»). Falta saber cómo se accede a Jev (clave de TypeSafe u OpenRouter) y el alcance: los routers de Jev que existen eligen el modelo por turno y romperían Sonnet fijo con asesor; lo compatible es un hook que decida reintentar o parar tras un fallo y valide la llamada que propone la sesión. La parte que no necesita a Jev (recordar el asesor tras el segundo fallo seguido) se hizo en el PR #137.
 - La protección de `main` (aprobada, falta configurarla) y el aviso de Railway (ver arriba).
 - Borrar la rama `claude/visibles-contra-main`: sobra, la creó `npm run reservar` en una sesión con rama
