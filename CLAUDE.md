@@ -633,7 +633,7 @@ cambiar una regla. Donde el motor ordena candidatos, el empate termina en el id 
   así que nada cambia sin pedirla. `fisico.wifi`, `fisico.celular` (`4g`/`5g`) y `fisico.celularVia`
   (`integrado`/`extender`, obligatorio con celular) solo existen si se piden: la huella de lo guardado no
   cambia. Con `extender`, el FortiGate se elige como siempre y el FortiExtender (`FORTIEXTENDER`, de su ficha)
-  por generación y bajada de los enlaces `4G/5G`, uno por enlace y dos como mucho por FortiGate. La tabla lleva el 511G-WiFi (2026-11-10, PR #172: mismo módem y cifras que el 511G, que va antes y gana el empate; su SKU con código regional, `skuRegional`), y el WAN 50G, el 511G y el 511G-WiFi tienen figura de la ficha R57 con leyenda en `fortinet-vistas-equipos.json` y el mismo lock que las de los FortiGate (documento `FortiExtender.pdf`); los 101G, 201F, 202F y 211G, que la ficha no dibuja, la tienen de su QuickStart Guide (PR #185; el 201F y el 202F rotulan sobre el dibujo y no llevan leyenda): el mapa admite los ids de `FORTIEXTENDER`. La página enseña las figuras del FortiExtender elegido, las dos caras con su leyenda (`figuraExtender`), y el Excel las lleva a «Fotos del equipo» detrás del FortiGate (`fotos.acompanan`, `BOM.equiposDeFotos`; PR #187). Los FortiWiFi
+  por generación y bajada de los enlaces `4G/5G`, uno por enlace y dos como mucho por FortiGate. La tabla lleva el 511G-WiFi (2026-11-10, PR #172: mismo módem y cifras que el 511G, que va antes y gana el empate; su SKU con código regional, `skuRegional`), y el WAN 50G, el 511G y el 511G-WiFi tienen figura de la ficha R57 con leyenda en `fortinet-vistas-equipos.json` y el mismo lock que las de los FortiGate (documento `FortiExtender.pdf`); los 101G, 201F, 202F y 211G, que la ficha no dibuja, la tienen de su QuickStart Guide (PR #185; el 201F y el 202F rotulan sobre el dibujo y no llevan leyenda): el mapa admite los ids de `FORTIEXTENDER`. La página enseña las figuras del FortiExtender elegido, las dos caras con su leyenda (`figuraExtender`), y el Excel las lleva a «Fotos del equipo» detrás del FortiGate (`fotos.acompanan`, `BOM.equiposDeFotos`; PR #187). Desde el PR #190 la tabla lleva los doce de la ficha y la guía de pedido: el 200F (sin módem, nunca sirve un enlace 4G/5G) y los Vehicle 211F, 212F y 511G y el Rugged 511G, de la ficha Rugged FEXR-DAT-R08, que solo compiten al pedir su entorno (`fisico.celularEntorno`: `vehiculo` o `exterior`; solo existe si se elige); todos con figura salvo el Vehicle 212F, que la ficha no dibuja. Los FortiWiFi
   llevan el SKU con `[RC]` (código regional, no se elige) y, como los FortiExtender, van «consultar»
   (`listaSinExtraer`: la lista no se extrajo para ellos, que no es «no la trae»); las variantes celulares
   se cotizan por SKU exacto de la lista (`test/fortinet-wifi-celular.test.js`, `e2e-fortinet-wifi-celular.js`).
@@ -641,8 +641,10 @@ cambiar una regla. Donde el motor ordena candidatos, el empate termina en el id 
   existen, no qué cifra aplica. **8.0 (8.0.2)** (2026-11-10, PR #166, encargo del dueño) aplica lo que dicen sus
   Release Notes, leídas: solo compiten los modelos de «Supported models» (`RN802_SOPORTADOS`; el que no está se
   aparta con `FORTIOS_MODELO`, hoy el FortiWiFi 50G-5G-II), el modo túnel SSL-VPN está retirado y los modelos
-  de 2 GB no admiten inspección proxy. Las cifras y los topes siguen siendo los de 7.6.7 y se dice en los
-  supuestos; las funciones nuevas de la rama no entran sin su documento (`test/fortinet-fortios-8.test.js`,
+  de 2 GB no admiten inspección proxy. Los topes que su Maximum Values Table da distintos entran por modelo y solo
+  con esa versión (`porVersion`, `conVersion`; PR #190: FortiSwitch de 50G, 200G y 2600F, y vecinos BGP de 400G, 3000G y
+  3500G); el resto y las cifras de rendimiento, los de 7.6.7. Las novedades de su guía «New Features» se listan en la
+  ayuda con su título literal y no cambian ningún cálculo (`test/fortinet-fortios-8.test.js`,
   `e2e-fortinet-fortios-8.js`). Una rama nueva es una entrada del catálogo, no código en el motor. La versión del motor
   lleva su nota fechada encima, y la prueba exige que la última nota sea la de `VERSION_MOTOR` (PR #177).
 - **Aruba** (`dimensionador-aruba-edgeconnect.js`, `aruba-reglas.js`, `motor-ingenieria.js`). El
