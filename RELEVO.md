@@ -323,10 +323,17 @@ traspaso (el #37, de otra sesión, se fusionó mientras se cerraba esta).
   pintaría de vigentes a los 47 FortiGate que nadie miró. Lo cierra mirar esos 47 en el portal: los que
   tengan fecha entran en `EOL_ANNOUNCED`, y con la línea entera mirada la fuente pasa a
   `campos: ['eolAnnounced']` y `modelos: '*'`.
-0. **Borrar las ramas** `claude/leyendas-figuras-cisco`, `claude/leyendas-retoques`,
-   `claude/ia-pliego-cisco` (el PR #23 ya está cerrado) y `claude/fortinet-wifi-celular` (fusionada en el PR #140;
-   el 2026-11-11 el borrado desde la sesión lo cortó el proxy de git): el control de permisos de la sesión no deja
-   borrar ramas remotas. Sus commits están en `main` o en sus PR cerrados; es solo limpieza.
+0. **Borrar las ramas ya cerradas** (revisado el 2026-11-12; las cuatro de la lista anterior ya no existen). El control de
+   permisos de la sesión deniega el borrado también por la API (`DELETE …/git/refs/heads/…`), así que va a mano.
+   `main` ya contiene `claude/archivar-codigo-muerto`, `claude/reservar-segunda-mirada`, `claude/fortiwifi-50g-sfp-dsl`,
+   `claude/fortiextender-4g-figuras`, `claude/fortiextender-figura-pagina` y `claude/traspasos-cedidas`. Dos más
+   tienen commits fuera de `main`, pero su trabajo ya está hecho por otro camino:
+   - `claude/skus-fortinet-variantes`: PR #142, cuyo importador de FortiWiFi y FortiExtender entró por el PR #143.
+   - `claude/contrato-motor`: cedida a la fase 2 por decisión del dueño; `VERSION_MOTOR` entró en los motores por
+     los PR #167 a #171. Le queda solo un `motores.lock.json` que frena cambiar un motor sin subir su versión: si se
+     quiere, es una mejora aparte.
+
+   `npm run traspasos` dice el comando de cada una. Es solo limpieza.
 
 1. **Proteger `main`** (el 2026-11-01 se volvió a intentar por la API de rulesets y el control de permisos de la sesión la denegó de nuevo): *Settings → Rules → Rulesets* (o *Branches*): exigir las comprobaciones
    `verificar` y `pantallas` y «Require branches to be up to date before merging», **con el
