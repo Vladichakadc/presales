@@ -642,5 +642,20 @@
   "front": "/img/equipos/fex-202f-front.webp",
   "rear": "/img/equipos/fex-202f-rear.webp",
   "fuente": "QuickStart Guide FortiExtender 202F (FEX-202F-AM; docs.fortinet.com, FortiExtender-202F-QuickStart_Online.pdf), p. 4 «Ports, LEDs, and Buttons». La guía no nombra las caras: frontal, la de los puertos; trasera, la de la bahía SIM y el Bluetooth. Los rótulos van escritos sobre el dibujo, sin números. La ficha de la serie no dibuja este modelo."
+ },
+ "FortiGate 40F-3G4G": {
+  "front": "/img/equipos/fg-40f-3g4g-front.webp",
+  "rear": "/img/equipos/fg-40f-3g4g-rear.webp",
+  "fuente": "Datasheet FortiGate 40F Series (FG-40F-DAT-R48-20260421), p. 7 «Hardware» — «FortiGate 40F-3G4G». Unidad dibujada: FortiGate 40F-3G4G (tres antenas SMA en cada cara: «3G/4G», «GPS» y «3G/4G» en la frontal)"
+ },
+ "FortiGate 50G-5G": {
+  "front": "/img/equipos/fg-50g-5g-front.webp",
+  "rear": "/img/equipos/fg-50g-5g-rear.webp",
+  "fuente": "Datasheet FortiGate/FortiWiFi 50G Series (FGFWF-50G-DAT-R17-20260901), p. 10 «Hardware» — «FortiGate 50G-5G/51G-5G». Unidad dibujada: FortiGate 50G-5G (antenas «5G» y «GPS» en las dos caras)"
+ },
+ "FortiGate 51G-5G": {
+  "front": "/img/equipos/fg-50g-5g-front.webp",
+  "rear": "/img/equipos/fg-50g-5g-rear.webp",
+  "fuente": "Datasheet FortiGate/FortiWiFi 50G Series (FGFWF-50G-DAT-R17-20260901), p. 10 «Hardware» — «FortiGate 50G-5G/51G-5G». Unidad dibujada: FortiGate 50G-5G (antenas «5G» y «GPS» en las dos caras)"
  }
 }

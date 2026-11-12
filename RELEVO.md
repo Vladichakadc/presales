@@ -357,9 +357,6 @@ traspaso (el #37, de otra sesión, se fusionó mientras se cerraba esta).
 ### Se pueden hacer desde una sesión, sin acceso especial
 
 1. **Mejoras propuestas**: las de abajo, cuando el dueño las apruebe (no se hacen solas).
-2. **Figuras de los FortiGate 40F-3G4G, 50G-5G y 51G-5G** (encargo del dueño del 2026-11-11): de la página
-   «Hardware» de su ficha por serie, como las de los FortiWiFi. Esperan a que se fusione el PR #185, que toca
-   `fortinet-vistas-equipos.json` y `figuras-fortinet.lock.json`.
 2. **Fases 2 y 3 de la auditoría de los dimensionadores** (decididas por el dueño el 2026-11-10: «Ejecuta fase 2 y fase 3»;
    las fases 0 y 1 se hicieron en los PR #150, #153, #156 y #162). Fase 2, un corte por PR medido con `npm run
    equivalencia`: 1, la lista de materiales de Aruba fuera de `renderBom()` (hecho, PR #167); 2, Juniper con motor,
@@ -429,11 +426,18 @@ existen los workflows de transporte. Huawei y HPE niegan además el navegador au
 
 ## Mejoras propuestas sin decidir
 
+- **Que la medición de una caja nueva de Fortinet compruebe que no coincide con la de otra figura del mismo
+  documento** (propuesta al cerrar el PR #188). La trasera del FortiWiFi 50G-5G-II tenía en el lock la caja de la
+  del FortiGate 50G-5G de la misma página: dos dibujos casi iguales engañaron a la correlación. Una comprobación en
+  `npm run figuras-fortinet` (dos cajas de la misma página que se solapan más de la mitad son un error, salvo las
+  declaradas) lo frenaría. Cuesta esa comprobación y su prueba; mal ajustada, frenaría figuras legítimas muy juntas.
+
 - **Servir cada proyección ya serializada y cacheada por arranque** (propuesta al cerrar el PR #183). El catálogo
   vive en memoria y no cambia sin un despliegue, pero cada petición vuelve a proyectar (Fortinet, 215 KB). El PR
   #175 garantiza que las proyecciones no escriben en `legacyData/`, así que una caché por función y argumento es
   segura. Coste: el mapa y la prueba de que la caché sirve lo mismo que una proyección nueva. Si se hace mal,
   `toFuentes`, que lee las fuentes subidas al volumen, quedaría congelada: va fuera de la caché.
+
 - **Borrar desde Actions las ramas que ya no bloquean** (propuesta al cerrar el PR #165). Desde una sesión el
   proxy de git corta el borrado de ramas remotas («the remote end hung up»: el 2026-11-09 y el 2026-11-10 fallaron
   las seis veces), así que las ramas CEDIDA y CERRADO EN MAIN se acumulan. Un `workflow_dispatch` con
@@ -441,6 +445,7 @@ existen los workflows de transporte. Huawei y HPE niegan además el navegador au
   lista que se le pase— y diga en una anotación cuáles borró. Evita que el listado crezca con ramas muertas. Cuesta
   un workflow, exportar la lectura de `traspasos.js` y su prueba. Si se hace mal, borraría una rama viva: por eso
   solo las dos marcas que ya se calculan con fechas y nunca una PARADA (que decide una persona).
+
 - **Quitar «1 GbE» del acceso del 7220 IXR, o decir junto a la opción que ningún modelo lo publica** (propuesta al cerrar el PR #182).
   La página lo ofrece, y su propia nota dice «solo se listan las velocidades que la línea 7220 IXR realmente publica», pero
   elegirlo da «sin diseño posible». Lo mejor sería que las opciones salieran de los puertos del catálogo (`puertosDe`)
