@@ -90,3 +90,29 @@ test('un traspaso cerrado se marca aunque sea reciente; los PR nombrados se leen
   assert.doesNotMatch(m, /--aunque/, 'reservar ya ignora un traspaso cerrado');
   assert.deepStrictEqual(prsNombrados('PR #62 y el PR #58; otra vez PR #62, no #7'), [58, 62]);
 });
+
+// RAMAS CEDIDAS (2026-11-10, mejora propuesta al cerrar el PR #164).
+const T = require('../scripts/traspasos');
+const R = require('../scripts/reservar');
+test('una rama cedida dice a quién cedió, con el mismo texto que escribe npm run reservar', () => {
+  const t = R.traspasoCedido(R.traspasoInicial({ tema: 'b', rama: 'claude/b', archivos: ['x.js'], fecha: '2026-11-10 05:00' }), ['claude/a']);
+  const estado = T.leerCabecera(t).Estado;
+  assert.deepStrictEqual(T.cedidaA(estado), ['claude/a']);
+  const m = T.marcaParada({ rama: 'claude/b', fecha: new Date().toISOString(), estado });
+  assert.match(m, /^CEDIDA a claude\/a: perdió la carrera/);
+  assert.match(m, /git push origin --delete claude\/b/);
+  assert.deepStrictEqual(T.cedidaA('cerrado (cedido: claude/a, claude/c reservó lo mismo antes)'), ['claude/a', 'claude/c']);
+});
+
+test('un traspaso cerrado por otro motivo no es una cedida', () => {
+  assert.strictEqual(T.cedidaA('cerrado sin fusionar: duplicado del PR #62'), null);
+  assert.strictEqual(T.cedidaA('en curso (cedido: nada)'), null);
+  assert.strictEqual(T.cedidaA(undefined), null);
+  assert.match(T.marcaParada({ rama: 'claude/x', fecha: new Date().toISOString(), estado: 'cerrado sin fusionar: duplicado del PR #62' }), /^CERRADO: /);
+});
+
+test('la línea final cuenta aparte lo que ya no bloquea', () => {
+  assert.strictEqual(T.resumenTemas(2), '2 tema(s) en curso. No tomes un tema ni un archivo que ya declaren.');
+  assert.strictEqual(T.resumenTemas(5, { cedidas: 1, cerradasEnMain: 2 }),
+    '2 tema(s) en curso; aparte, 1 cedida(s) y 2 cerrada(s) en main, que ya no bloquean y se pueden borrar. No tomes un tema ni un archivo que ya declaren.');
+});
