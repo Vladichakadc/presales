@@ -766,19 +766,37 @@ function accEtiquetas(a){
   if(a.plc==='ES') t.push('FIN DE VENTA');
   return t.join(' · ');
 }
+// Lo que el diseño pone con un SKU del catálogo de accesorios, del último recálculo (2026-11-11, mejora
+// propuesta al cerrar el PR #179). Desde el PR #179, un accesorio del modal que el motor también pone
+// sale una sola vez, la fila del motor, pero desaparecía de la selección sin decir por qué. El modal lo
+// marca con su porqué y no deja elegirlo. Se lee al abrir el modal, nunca se guarda: si el escenario
+// cambia y el diseño deja de ponerlo, la próxima vez vuelve a poder elegirse.
+let accDelDiseno={ modelo:null, items:new Map() };
+function motivoDelDiseno(d){
+  const PF=window.POR_FUNCION;
+  const nombre=id=>(PF&&PF.nombre&&PF.nombre(id))||id;
+  const cuantos=`${d.qty} en la lista de materiales`;
+  if(d.origen==='enlace') return `Ya lo pone el diseño: la óptica ${d.medio} de los enlaces WAN, ${cuantos}.`;
+  if(d.origen==='edgeha') return `Ya lo pone el diseño: la interconexión EdgeHA del par, ${cuantos}.`;
+  return `Ya lo pone el diseño, por «${nombre(d.por)}»: ${cuantos}.`;
+}
 function pintarAccModal(m){
   const cfg=ACCESSORY_COMPAT[m.id];
   if(!cfg) return;
   $('accModelo').textContent=m.id;
   $('accHint').textContent=cfg.nota;
+  const diseno=accDelDiseno.modelo===m.id?accDelDiseno.items:new Map();
   $('accLista').innerHTML=cfg.items.map(sku=>{
     const a=ACCESSORY_CATALOG[sku];
     if(!a) return '';
-    const qty=accesoriosElegidos[sku]||0;
-    return `<div class="acc-fila"><span class="acc-d"><code>${sku}</code> — ${esc(a.name)}`
-      +`<span class="sku" style="display:block;margin-top:2px">${esc(accEtiquetas(a))}</span></span>`
+    const d=diseno.get(sku);
+    const qty=d?d.qty:(accesoriosElegidos[sku]||0);
+    return `<div class="acc-fila"${d?' data-diseno="1"':''}><span class="acc-d"><code>${sku}</code> — ${esc(a.name)}`
+      +`<span class="sku" style="display:block;margin-top:2px">${esc(accEtiquetas(a))}</span>`
+      +(d?`<span class="sku" id="accDis-${sku}" style="display:block;margin-top:2px;font-weight:600">${esc(motivoDelDiseno(d))}</span>`:'')+`</span>`
       +`<span class="acc-p">${a.listPrice!=null?('$ '+a.listPrice.toLocaleString('en-US')):'consultar'}</span>`
-      +`<input type="number" min="0" step="1" value="${qty}" data-acc="${sku}" aria-label="Cantidad ${sku}"></div>`;
+      +`<input type="number" min="0" step="1" value="${qty}" data-acc="${sku}" aria-label="Cantidad ${sku}"`
+      +(d?` disabled aria-describedby="accDis-${sku}"`:'')+`></div>`;
   }).join('');
 }
 $('accBtn').addEventListener('click',()=>{
@@ -788,7 +806,7 @@ $('accBtn').addEventListener('click',()=>{
   $('accModal').hidden=false;
   // El foco entra en la ventana (la primera cantidad, o «Cerrar» si no hay ninguna), como en el
   // consolidado desde el PR #62: quien navega con teclado no se queda detrás del velo.
-  ($('accLista').querySelector('input')||$('accCerrar')).focus();
+  ($('accLista').querySelector('input:not([disabled])')||$('accCerrar')).focus();
 });
 // Cerrar, de las tres maneras, devuelve el foco al botón que la abrió (2026-11-01, mejora propuesta
 // al cerrar el PR #95). Escape se escucha en la propia ventana y no sube al documento: así no cierra
@@ -2642,6 +2660,7 @@ function renderBom(){
       ACCESSORY_CATALOG, ACCESSORY_COMPAT, DTD, SSE },
     opticaResuelta, necesidadesOptica });
   lb.soltar.forEach(sku=>{ delete accesoriosElegidos[sku]; });
+  accDelDiseno={ modelo:m.id, items:new Map((lb.delMotor||[]).map(d=>[d.sku,d])) };
   const filas=lb.filas, licHa=lb.licHa;
 
   // Fin de venta: cualquier línea cuyo SKU figure en la lista con PLC «ES» (End of Sale)

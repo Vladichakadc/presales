@@ -4,9 +4,9 @@
 - **Rama:** claude/aruba-modal-diseno
 - **Cuenta:** servicioiptv2025@gmail.com
 - **Estado:** reservado
-- **Actualizado:** 2026-11-11 22:22
+- **Actualizado:** 2026-11-11 22:55
 - **Archivos que toca:** public/js/aruba-reglas.js, public/js/dimensionador-aruba-edgeconnect.js, test/aruba-lineas-bom.test.js, test/e2e/e2e-aruba-modal-diseno.js
-- **Siguiente paso:** empezar: el tema está reservado y todavía no tiene código
+- **Siguiente paso:** CI verde (la batería `e2e-aruba-modal-diseno` corre en `pantallas`), commit de cierre con su entrega y fusión
 
 ## Encargo del dueño
 
