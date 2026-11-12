@@ -80,3 +80,14 @@ test('7220: el sobre trae la version del motor y el motivo cuando no hay fabric 
   assert.strictEqual(no.ok, false);
   assert.match(no.motivo, /7 GbE/);
 });
+
+test('7220 IXR: el desplegable de acceso ofrece exactamente las velocidades que publica algún leaf del catálogo', () => {
+  // La página ofrecía «1 GbE», que ningún modelo trae: elegirlo daba «sin diseño posible» (PR #182).
+  const html = require('fs').readFileSync(require('path').join(__dirname, '..', 'public/dimensionador-nokia-7220ixr.html'), 'utf8');
+  const sel = html.slice(html.indexOf('<select id="accesoVel">'), html.indexOf('</select>', html.indexOf('<select id="accesoVel">')));
+  const ofrecidas = [...sel.matchAll(/<option value="(\d+)"/g)].map((m) => Number(m[1]));
+  const publicadas = NFM.velocidadesAcceso(MODELS);
+  assert.ok(publicadas.length > 0);
+  assert.deepStrictEqual(ofrecidas, publicadas, 'una opción sin modelo da «sin diseño», y una velocidad publicada sin opción no se puede pedir');
+  for (const v of ofrecidas) assert.ok(NFM.evaluar({ servers: 48, accesoVel: v, dual: false, oversub: 3 }, { models: MODELS }).ok, `${v} GbE da diseño`);
+});

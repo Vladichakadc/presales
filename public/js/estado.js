@@ -166,10 +166,22 @@
       });
     }
 
+    // UNA OPCIÓN QUE EL DESPLEGABLE YA NO OFRECE (2026-11-12, PR #204). `escribir` no la pone, y el
+    // campo se quedaba en su valor por defecto sin decir nada: un enlace con «1 GbE» de acceso en el
+    // 7220 IXR, retirada porque ningún modelo la publica, abría el escenario a 25 GbE. Se apunta
+    // para que `avisoOrigen` lo diga. Solo en los desplegables que la página declara de opciones
+    // fijas (`cfg.opcionesFijas`, las escritas en su HTML): uno que el catálogo rellena después, como
+    // el modelo de Fortinet, todavía no tiene la opción y daría un aviso falso.
+    const sinOpcion = [];
     const pendientesSeg = [];
     for (const id of campos) {
       if (!(id in guardado)) continue;
       const nodo = document.getElementById(id);
+      if (nodo && nodo.tagName === 'SELECT' && (cfg.opcionesFijas || []).includes(id) && nodo.options && nodo.options.length
+          && ![...nodo.options].some((o) => o.value === guardado[id])) {
+        const o = nodo.options[nodo.selectedIndex];
+        sinOpcion.push({ id, valor: guardado[id], campo: etiquetaDe(nodo, id), queda: o ? o.textContent.trim() : '' });
+      }
       if (!escribir(nodo, guardado[id])) continue;
       if (segs.includes(id)) pendientesSeg.push({ nodo, valor: guardado[id] });
     }
@@ -279,7 +291,7 @@
     });
     setTimeout(volcar, 0);
 
-    return { origen, volcar, ignorados };
+    return { origen, volcar, ignorados, sinOpcion };
   }
 
   // Botón "Copiar enlace". Se inyecta desde JavaScript y no desde el HTML de cada página
@@ -314,9 +326,20 @@
   function avisoOrigen(contenedor, estado) {
     const info = (estado && typeof estado === 'object') ? estado : { origen: estado, ignorados: [] };
     const ignorados = info.ignorados || [];
+    const sinOpcion = info.sinOpcion || [];
     if (!info.origen && !ignorados.length) return;
     const host = typeof contenedor === 'string' ? document.getElementById(contenedor) : contenedor;
     if (!host) return;
+    // Lo que el escenario pedía y el desplegable ya no ofrece: campo, valor pedido y lo que quedó.
+    for (const x of sinOpcion) {
+      const av = document.createElement('p');
+      av.className = 'hint estado-sin-opcion';
+      av.style.marginTop = '8px';
+      av.innerHTML = `${info.origen === 'enlace' ? 'Este enlace' : 'Tu última visita'} pedía <b>«${esc(x.valor)}»</b> en `
+        + `<b>${esc(x.campo || x.id)}</b>, una opción que esta pantalla ya no ofrece: se ha dejado `
+        + `<b>${esc(x.queda || 'el valor por defecto')}</b>. Compruébalo antes de cotizar sobre este escenario.`;
+      host.appendChild(av);
+    }
     if (info.origen) {
       const p = document.createElement('p');
       p.className = 'hint estado-origen';

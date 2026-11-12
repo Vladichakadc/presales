@@ -41,6 +41,15 @@
     return { acceso: 0, uplinks: 0 };
   }
 
+  // Las velocidades de acceso que algun leaf del catalogo publica: las que la pagina puede ofrecer.
+  // test/nokia-motores.test.js exige que su desplegable sean exactamente estas (2026-11-12: ofrecia
+  // «1 GbE», que ningun modelo trae, y elegirlo daba «sin diseno posible»).
+  function velocidadesAcceso(models) {
+    return [...new Set((models || []).filter((m) => (m.rol || []).includes('leaf'))
+      .flatMap((m) => (m.puertos || []).filter((p) => p.uso === 'acceso' || p.uso === 'ambos').map((p) => p.veloc)))]
+      .sort((a, b) => a - b);
+  }
+
   function calcularFabric({ models: servidos, servers, accesoVel, dual, oversub }) {
     // El leaf y el spine son el primero de su rol que sirve la velocidad: en el orden natural del id
     // (D2L antes que D3L), no en el que llegue el catalogo (fase 2 de la auditoria del 2026-11-09).
@@ -116,5 +125,5 @@
     return { version: VERSION_MOTOR, ...calcularFabric({ ...e, models: (catalogo && catalogo.models) || [] }) };
   }
 
-  return { VERSION_MOTOR, puertosDe, velocidadesFabric, repartoCompartido, calcularFabric, evaluar };
+  return { VERSION_MOTOR, puertosDe, velocidadesFabric, velocidadesAcceso, repartoCompartido, calcularFabric, evaluar };
 });
