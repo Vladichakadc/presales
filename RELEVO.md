@@ -429,6 +429,12 @@ existen los workflows de transporte. Huawei y HPE niegan además el navegador au
 
 ## Mejoras propuestas sin decidir
 
+- **Que `npm run reservar` avise cuando otro tema en curso cita la misma propuesta** (propuesta al cerrar el PR
+  #198). El #192 y el #193 hicieron la misma mejora porque cada uno declaraba su propio archivo de prueba, y
+  `reservar` solo cruza archivos. Los dos traspasos decían «mejora propuesta al cerrar el PR #185»: `reservar`
+  compararía esa cita con la de los traspasos y los PR abiertos y lo diría antes de empujar. Coste: una expresión
+  y su caso en la prueba de `reservar`. Si se hace mal y frena en vez de avisar, bloquearía dos temas legítimos
+  que nacen de la misma entrega con partes distintas: tiene que avisar, como el job `solapes`.
 - **Llevar al motor de Cisco el orden por ciclo de vida y el recomendado** (propuesta al cerrar el PR #194). Es el
   último motor cuya página ordena: `evaluar(models, p)` no recibe `rango`, así que la página aplica
   `FICHA.ordenar` y `FICHA.recomendar`, y la envoltura del contrato repite esa regla (hoy la sujeta una prueba
