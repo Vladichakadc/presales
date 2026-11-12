@@ -259,6 +259,20 @@
    "url": "https://fortinetweb.s3.amazonaws.com/docs.fortinet.com/v2/attachments/38ede52b-9f0c-11f0-855d-6af4c3636dc7/FEX-211G-QSG.pdf",
    "urlDe": "rama fuente/fortiextender-qsg-2026-11-11-3, fuente-cisco-huawei/informe.json (traer-cisco-huawei, corrida 43014445156): 200 en esa URL; la página de docs.fortinet.com dio 503 al ejecutor dos veces (corridas 43012304805 y 43013866088)",
    "sha256": "0f49d1e088a35758b29bfb789ce3392cd614cf4b251f97737e97fdbce67a053a"
+  },
+  "fortiextender-rugged.pdf": {
+   "rama": "fuente/fex-fortios8-2026-11-11",
+   "ruta": "fuente-cisco-huawei/fortinet-fortiextender-rugged-ds.pdf",
+   "url": "https://www.fortinet.com/content/dam/fortinet/assets/data-sheets/fortiextender-rugged.pdf",
+   "urlDe": "rama fuente/fex-fortios8-2026-11-11, fuente-cisco-huawei/informe.json (traer-cisco-huawei): 200 en esa URL",
+   "sha256": "3de571af40c105c0b3c45105eb353b66f6fd10456d3ca156c99091c7ca112b95"
+  },
+  "FortiExtender-200F-QuickStart_Online.pdf": {
+   "rama": "fuente/fex-fortios8-2026-11-11",
+   "ruta": "fuente-cisco-huawei/fortinet-fortiextender-200f-qsg.pdf",
+   "url": "https://fortinetweb.s3.amazonaws.com/docs.fortinet.com/v2/attachments/871190a7-10d8-11ec-a4c4-00505692583a/FortiExtender-200F-QuickStart_Online.pdf",
+   "urlDe": "rama fuente/fex-fortios8-2026-11-11, fuente-cisco-huawei/informe.json (traer-cisco-huawei): 200 en esa URL",
+   "sha256": "18a06ea9a18cf2cc637cda9c64bcbc71ac06eecae9fc17b1140af4f22794d061"
   }
  },
  "figuras": {
@@ -1507,10 +1521,10 @@
    "documento": "FortiExtender.pdf",
    "pagina": 2,
    "caja": [
-    30.0,
-    294.0,
-    296.0,
-    127.0
+    30,
+    294,
+    296,
+    127
    ],
    "tamano": [
     1000,
@@ -1524,10 +1538,10 @@
    "documento": "FortiExtender.pdf",
    "pagina": 3,
    "caja": [
-    18.0,
-    176.0,
-    561.0,
-    131.0
+    18,
+    176,
+    561,
+    131
    ],
    "tamano": [
     1600,
@@ -1541,10 +1555,10 @@
    "documento": "FortiExtender.pdf",
    "pagina": 3,
    "caja": [
-    20.0,
-    506.0,
-    570.0,
-    127.0
+    20,
+    506,
+    570,
+    127
    ],
    "tamano": [
     1600,
@@ -1756,6 +1770,142 @@
    ],
    "sha256": "77f69ce09e3e5a03b2f2d398bc99beeb54b89d1b8e75d5b40458d542578d8cdc",
    "medido": "figura nueva (2026-11-11): caja medida a 300 ppp sobre la página (foto con sus rótulos y líneas de llamada, sin el título de la página); correlación 0.9772 entre la figura servida y su recorte a 300 ppp",
+   "diferencia": 0
+  },
+  "/img/equipos/fev-211f-front.webp": {
+   "documento": "fortiextender-rugged.pdf",
+   "pagina": 2,
+   "caja": [
+    190,
+    182,
+    373,
+    122
+   ],
+   "tamano": [
+    1554,
+    508
+   ],
+   "sha256": "9f435b53eca34a633beb02f7ced4c284a31ee375b4a4dc288f1fb87b95207f19",
+   "medido": "figura nueva (2026-11-11): caja a 300 ppp sobre la página, medida con la caja de la imagen incrustada (pdfplumber) y mirada en el recorte: la vista «FEV-211F Rear View» con la fila de números de su leyenda; correlación 0.9925 entre la figura servida y el recorte de la página rasterizada entera a 300 ppp",
+   "diferencia": 0
+  },
+  "/img/equipos/fev-211f-rear.webp": {
+   "documento": "fortiextender-rugged.pdf",
+   "pagina": 2,
+   "caja": [
+    196,
+    392,
+    376,
+    96
+   ],
+   "tamano": [
+    1567,
+    400
+   ],
+   "sha256": "a2534de7e7e92a0617592c923c93c6de19793e6f57137743e425a597431727b9",
+   "medido": "figura nueva (2026-11-11): caja a 300 ppp sobre la página, medida con la caja de la imagen incrustada (pdfplumber) y mirada en el recorte: la vista «FEV-211F Front View»; correlación 0.9977 entre la figura servida y el recorte de la página rasterizada entera a 300 ppp",
+   "diferencia": 0
+  },
+  "/img/equipos/fev-511g-front.webp": {
+   "documento": "fortiextender-rugged.pdf",
+   "pagina": 3,
+   "caja": [
+    174,
+    176,
+    404,
+    126
+   ],
+   "tamano": [
+    1683,
+    525
+   ],
+   "sha256": "a5516da0709c753ddbac6f297b880f2bfdc7921e68677d376e4a5ee99df15041",
+   "medido": "figura nueva (2026-11-11): caja a 300 ppp sobre la página, medida con la caja de la imagen incrustada (pdfplumber) y mirada en el recorte: la vista «FEV-511G Rear View» con la fila de números de su leyenda; correlación 0.9932 entre la figura servida y el recorte de la página rasterizada entera a 300 ppp",
+   "diferencia": 0
+  },
+  "/img/equipos/fev-511g-rear.webp": {
+   "documento": "fortiextender-rugged.pdf",
+   "pagina": 3,
+   "caja": [
+    174,
+    391,
+    404,
+    88
+   ],
+   "tamano": [
+    1683,
+    367
+   ],
+   "sha256": "7733092bd9178d78e032c4f7e9ed153ec9cd3d2999e5f9967123d5525988c641",
+   "medido": "figura nueva (2026-11-11): caja a 300 ppp sobre la página, medida con la caja de la imagen incrustada (pdfplumber) y mirada en el recorte: la vista «FEV-511G Front View»; correlación 0.9817 entre la figura servida y el recorte de la página rasterizada entera a 300 ppp",
+   "diferencia": 0
+  },
+  "/img/equipos/fer-511g-front.webp": {
+   "documento": "fortiextender-rugged.pdf",
+   "pagina": 4,
+   "caja": [
+    211,
+    193,
+    329,
+    165
+   ],
+   "tamano": [
+    1371,
+    688
+   ],
+   "sha256": "7ba407a84827752a2182bfdd5c45f57e0b62d7fa033b1bda85851a1caef66fb0",
+   "medido": "figura nueva (2026-11-11): caja a 300 ppp sobre la página, medida con la caja de la imagen incrustada (pdfplumber) y mirada en el recorte: la vista «FER-511G Bottom View» con sus números y el rótulo «RESET button»; correlación 0.9933 entre la figura servida y el recorte de la página rasterizada entera a 300 ppp",
+   "diferencia": 0
+  },
+  "/img/equipos/fer-511g-rear.webp": {
+   "documento": "fortiextender-rugged.pdf",
+   "pagina": 4,
+   "caja": [
+    270,
+    444,
+    206,
+    320
+   ],
+   "tamano": [
+    858,
+    1333
+   ],
+   "sha256": "854e6be7e0c1cfb1829b5f0c0c819991cfe78b32da5c83072dce3c9d3a0f8115",
+   "medido": "figura nueva (2026-11-11): caja a 300 ppp sobre la página, medida con la caja de la imagen incrustada (pdfplumber) y mirada en el recorte: la vista «FER-511G Top View»; correlación 0.9878 entre la figura servida y el recorte de la página rasterizada entera a 300 ppp",
+   "diferencia": 0
+  },
+  "/img/equipos/fex-200f-front.webp": {
+   "documento": "FortiExtender-200F-QuickStart_Online.pdf",
+   "pagina": 4,
+   "caja": [
+    15,
+    76,
+    250,
+    136
+   ],
+   "tamano": [
+    1042,
+    567
+   ],
+   "sha256": "9f13b47439c547980c47b93d0dee7ae7560919f9b654aa2c25905e53b4976cd8",
+   "medido": "figura nueva (2026-11-11): caja a 300 ppp sobre la página, medida con la caja de la imagen incrustada (pdfplumber) y mirada en el recorte: la figura de «Ports, LEDs, and Buttons» con sus rótulos y líneas de llamada, sin el título; correlación 0.9077 entre la figura servida y el recorte de la página rasterizada entera a 300 ppp",
+   "diferencia": 0
+  },
+  "/img/equipos/fex-200f-rear.webp": {
+   "documento": "FortiExtender-200F-QuickStart_Online.pdf",
+   "pagina": 4,
+   "caja": [
+    20,
+    292,
+    232,
+    85
+   ],
+   "tamano": [
+    967,
+    354
+   ],
+   "sha256": "3ef7349e8711ad3fa461f76ef9f2f3ecfdf5c467f021ac75eb07a13c7ce2dd0d",
+   "medido": "figura nueva (2026-11-11): caja a 300 ppp sobre la página, medida con la caja de la imagen incrustada (pdfplumber) y mirada en el recorte: la figura de «Power Input» con sus rótulos, sin el título; correlación 0.9921 entre la figura servida y el recorte de la página rasterizada entera a 300 ppp",
    "diferencia": 0
   }
  }

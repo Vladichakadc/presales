@@ -121,3 +121,25 @@ test('exterior: el Rugged 511G, y avisa de que su ficha no publica el caudal del
   const r4 = ev({ celular: '4g', celularVia: 'extender', celularEntorno: 'exterior' }, 100);
   assert.strictEqual(r4.celular.extender.recomendado.id, 'FortiExtender Rugged 511G');
 });
+
+test('cada FortiExtender de la tabla tiene su figura, salvo el que ningún documento traído dibuja', () => {
+  const fs = require('fs');
+  const path = require('path');
+  const vistas = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'public/data/fortinet-vistas-equipos.json'), 'utf8'));
+  const { FORTIEXTENDER } = require('../server/seed/legacyData/fortinet.js');
+  // La ficha Rugged (FEXR-DAT-R08) dibuja el Vehicle 211F, el Vehicle 511G y el Rugged 511G; del
+  // Vehicle 212F solo da la tabla. Servirle la figura del 211F sería la de otro equipo.
+  const SIN_FIGURA = { 'FortiExtender Vehicle 212F': 'la ficha Rugged no lo dibuja y su QuickStart Guide no se ha traído' };
+  for (const x of FORTIEXTENDER.modelos) {
+    const v = vistas[x.id];
+    if (SIN_FIGURA[x.id]) { assert.ok(!v, `${x.id}: ya tiene figura; quítalo de SIN_FIGURA`); continue; }
+    assert.ok(v && v.front, `${x.id}: sin figura de su cara de puertos`);
+    assert.ok(v.rear || v.rearNota, `${x.id}: sin la otra cara y sin decir por qué`);
+  }
+  for (const id of Object.keys(SIN_FIGURA)) assert.ok(FORTIEXTENDER.modelos.some((x) => x.id === id), `${id} ya no está en la tabla`);
+  // Las de la ficha Rugged llevan la leyenda de su lista «Interfaces» en la cara numerada.
+  for (const id of ['FortiExtender Vehicle 211F', 'FortiExtender Vehicle 511G', 'FortiExtender Rugged 511G']) {
+    assert.match(vistas[id].fuente, /FEXR-DAT-R08-20260805/);
+    assert.ok(vistas[id].frontLeyenda && !vistas[id].rearLeyenda, `${id}: la leyenda va en la cara de puertos y solo en ella`);
+  }
+});

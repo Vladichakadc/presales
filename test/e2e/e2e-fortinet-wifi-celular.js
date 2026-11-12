@@ -89,6 +89,9 @@ const SUCURSAL = new URLSearchParams({
   t.ok(/FortiExtender: FortiExtender Vehicle 511G/.test(resVeh) && /FortiExtender Rugged Data Sheet/.test(resVeh), `en vehículo va el Vehicle 511G, citando su ficha (${resVeh.slice(0, 90)}…)`);
   t.ok(/FortiExtender Vehicle 511G/.test(await texto('#bomTabla')) && /FEV-511G/.test(await texto('#bomTabla')), 'y entra en el BOM con su SKU');
   t.ok(/vehiculo/.test(page.url()), 'el entorno viaja en el enlace');
+  t.ok((await page.$$('#celularResultado figure.fex-figura .fex-cara')).length === 2 && /FEXR-DAT-R08-20260805/.test(resVeh + (await texto('#celularResultado'))),
+    'el Vehicle 511G enseña sus dos caras, de la ficha Rugged');
+  t.ok((await page.$$('#celularResultado figure.fex-figura .fex-cara[data-cara="front"] details.ficha-vista-leyenda')).length === 1, 'con la leyenda de la cara de puertos');
   await page.selectOption('#celularEntorno', 'exterior');
   await asentar(page);
   t.ok(/FortiExtender: FortiExtender Rugged 511G/.test(await texto('#celularResultado')), 'a la intemperie va el Rugged 511G');

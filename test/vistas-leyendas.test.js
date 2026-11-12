@@ -25,7 +25,11 @@ const CARAS = ['front', 'rear'];
 // Las del 101G y el 211G (2026-11-11) salen de su QuickStart Guide, que numera las dos vistas; las
 // del 201F y el 202F, de la suya, que escribe los rótulos sobre el dibujo sin números.
 const CON_NUMEROS = (ruta) => /^\/img\/equipos\/jn-/.test(ruta) || /^\/img\/equipos\/gw-7010-(front|rear)\.webp$/.test(ruta)
-  || (/^\/img\/equipos\/fex-/.test(ruta) && !/^\/img\/equipos\/fex-20[12]f-/.test(ruta));
+  || (/^\/img\/equipos\/fex-/.test(ruta) && !/^\/img\/equipos\/fex-20[012]f-/.test(ruta))
+  // Los de vehículo y exterior (2026-11-11), de la ficha Rugged: numera solo la cara de puertos
+  // (su «Rear View» o «Bottom View»), que aquí es la primera. El 200F, de su QuickStart Guide,
+  // rotula sobre el dibujo como el 201F y el 202F.
+  || /^\/img\/equipos\/fe[vr]-[0-9a-z]+-front\.webp$/.test(ruta);
 
 function entradas(fab) {
   return Object.entries(leer(fab)).filter(([k, v]) => !k.startsWith('_') && v && typeof v === 'object');
