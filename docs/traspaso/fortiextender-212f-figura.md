@@ -3,10 +3,10 @@
 - **Tema:** figura del FortiExtender Vehicle 212F desde su QuickStart Guide (mejora propuesta al cerrar el PR #190, aprobada por el dueño el 2026-11-12)
 - **Rama:** claude/fortiextender-212f-figura
 - **Cuenta:** servicioiptv2025@gmail.com (sesión de Claude Code en la nube)
-- **Estado:** reservado
+- **Estado:** cerrado (cedido: ya hecho en main por el PR #200, antes de esta reserva)
 - **Actualizado:** 2026-11-12 19:50
 - **Archivos que toca:** scripts/transporte/documentos.js, scripts/figuras-fortinet.lock.json, public/data/fortinet-vistas-equipos.json, public/img/equipos/fev-212f-front.webp, public/img/equipos/fev-212f-rear.webp, test/fortiextender-figuras.test.js, test/fortinet-figuras-cobertura.test.js, server/seed/legacyData/fuentes.js
-- **Siguiente paso:** empezar: el tema está reservado y todavía no tiene código
+- **Siguiente paso:** ninguno; la rama se puede borrar
 
 ## Encargo del dueño
 
