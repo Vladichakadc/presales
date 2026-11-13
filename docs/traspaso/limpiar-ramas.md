@@ -3,10 +3,10 @@
 - **Tema:** limpiar-ramas
 - **Rama:** claude/limpiar-ramas
 - **Cuenta:** (no consta)
-- **Estado:** reservado
+- **Estado:** en revisión
 - **Actualizado:** 2026-11-12 19:50
 - **Archivos que toca:** .github/workflows/limpiar-ramas.yml, scripts/limpiar-ramas.js, test/limpiar-ramas.test.js
-- **Siguiente paso:** empezar: el tema está reservado y todavía no tiene código
+- **Siguiente paso:** CI, cierre, fusión y una corrida sin aplicar
 
 ## Encargo del dueño
 
