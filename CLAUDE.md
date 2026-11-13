@@ -236,6 +236,10 @@ lleva 90 min sin un despliegue en `success`, abre un issue `despliegue-en-espera
 rojo o sin terminar, en cola, sin despliegue) y lo cierra al desplegarse; un fallido es de la sonda.
 
 **Agujeros conocidos de la red:**
+- Una sesión no puede borrar ramas remotas (el control de permisos lo deniega, también por la API). Las
+  cerradas las borra `limpiar-ramas.yml` (PR #206), lanzado a mano por una persona: sin `aplicar` solo
+  lista, y con él borra solo las `claude/*` que `main` contiene entera y sin PR abierto
+  (`scripts/limpiar-ramas.js`, `test/limpiar-ramas.test.js`).
 - Un push de bot (`GITHUB_TOKEN`) no dispara workflows: los workflows que escriben llevan su
   resultado a una rama (`scripts/empujar-rama.js`, con la lease que espera la cabeza actual) y una
   persona abre el PR. GitHub no deja que Actions cree PR en este repositorio.

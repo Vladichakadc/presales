@@ -1,0 +1,68 @@
+name: limpiar-ramas
+
+# BORRA LAS RAMAS claude/* YA CERRADAS (2026-11-12, mejora aprobada por el dueño).
+#
+# Desde una sesión el control de permisos no deja borrar ramas remotas, y se acumulaban. Este
+# workflow, lanzado a mano, borra solo las ramas claude/* que main contiene entera (0 commits por
+# delante) y sin PR abierto. Una rama con commits propios no se toca nunca. La decision vive en
+# scripts/limpiar-ramas.js (test/limpiar-ramas.test.js). Sin `aplicar`, solo lista lo que borraria.
+
+on:
+  workflow_dispatch:
+    inputs:
+      aplicar:
+        description: 'Borrar de verdad (sin marcar, solo lista)'
+        type: boolean
+        required: false
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  limpiar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+      pull-requests: read
+
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          sparse-checkout: |
+            scripts/limpiar-ramas.js
+          sparse-checkout-cone-mode: false
+
+      - name: Clasificar y, con aplicar, borrar
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        env:
+          APLICAR: ${{ inputs.aplicar }}
+        with:
+          script: |
+            const L = require('./scripts/limpiar-ramas.js');
+            const { owner, repo } = context.repo;
+            const aplicar = process.env.APLICAR === 'true';
+            const ramas = await github.paginate(github.rest.repos.listBranches, { owner, repo, per_page: 100 });
+            const prs = await github.paginate(github.rest.pulls.list, { owner, repo, state: 'open', per_page: 100 });
+            const abiertos = prs.filter((p) => p.head.repo && p.head.repo.full_name === `${owner}/${repo}`).map((p) => p.head.ref);
+            const medidas = [];
+            for (const b of ramas.filter((x) => x.name.startsWith(L.PREFIJO))) {
+              let porDelante = null;
+              try {
+                const c = await github.rest.repos.compareCommitsWithBasehead({ owner, repo, basehead: `main...${b.name}`, per_page: 1 });
+                porDelante = c.data.ahead_by;
+              } catch (e) { core.warning(`${b.name}: no se pudo comparar (${e.message})`); }
+              medidas.push({ nombre: b.name, porDelante });
+            }
+            const r = L.clasificar(medidas, abiertos);
+            if (aplicar) {
+              for (const n of r.borrar) {
+                await github.rest.git.deleteRef({ owner, repo, ref: `heads/${n}` });
+              }
+            }
+            const texto = L.resumen(r, aplicar);
+            core.info(texto);
+            core.notice(`limpiar-ramas: ${aplicar ? 'borradas' : 'se borrarían'} ${r.borrar.length}, quedan ${r.quedan.length}`);
+            await core.summary.addCodeBlock(texto).write();
