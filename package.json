@@ -59,9 +59,9 @@
     "xlsx": "npm:@e965/xlsx@^0.20.3"
   },
   "devDependencies": {
-    "axe-core": "^4.14.0",
-    "eslint": "^10.14.0",
+    "axe-core": "^4.14.1",
+    "eslint": "^10.15.0",
     "pdf-parse": "^2.4.5",
-    "pdfjs-dist": "5.4.296"
+    "pdfjs-dist": "5.7.284"
   }
 }
